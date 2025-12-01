@@ -25,12 +25,7 @@ export class Webhooks {
   @CatchAsync
   public async receiveSNSWebhook(req: Request, res: Response, next: NextFunction) {
     try {
-      // Parse the SNS message body
-      const body = JSON.parse(req.body.Message);
-      const eventType = body.eventType as 'Bounce' | 'Delivery' | 'Open' | 'Complaint' | 'Click';
-      const messageId = body.mail?.messageId;
-
-      // Handle SNS subscription confirmation
+      // Handle SNS subscription confirmation FIRST (before parsing Message field)
       if (req.body.Type === 'SubscriptionConfirmation') {
         signale.info('SNS Subscription Confirmation received');
         signale.info('Subscribe URL:', req.body.SubscribeURL);
@@ -61,6 +56,17 @@ export class Webhooks {
           });
         }
       }
+
+      // Handle SNS notification messages - parse the Message field
+      if (req.body.Type !== 'Notification') {
+        signale.warn('[WEBHOOK] Unknown SNS message type:', req.body.Type);
+        return res.status(200).json({success: false, message: 'Unknown message type'});
+      }
+
+      // Parse the nested SES event from the Message field
+      const body = JSON.parse(req.body.Message);
+      const eventType = body.eventType as 'Bounce' | 'Delivery' | 'Open' | 'Complaint' | 'Click';
+      const messageId = body.mail?.messageId;
 
       if (!messageId) {
         signale.warn('[WEBHOOK] No messageId found in SNS notification');
