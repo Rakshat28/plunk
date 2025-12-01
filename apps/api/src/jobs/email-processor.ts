@@ -74,10 +74,15 @@ export function createEmailWorker() {
           includeUnsubscribe: email.sourceType !== EmailSourceType.TRANSACTIONAL, // Don't add unsubscribe to transactional emails
         });
 
-        // Parse from email (format: "Name <email@domain.com>" or just "email@domain.com")
-        const fromMatch = /(.*?)<(.+?)>/.exec(email.from) || [null, email.from, email.from];
-        const fromName = fromMatch[1]?.trim() || email.project.name;
-        const fromEmail = fromMatch[2]?.trim() || email.from;
+        // Use fromName from database if available, otherwise fall back to project name
+        // The 'from' field in the database is just the email address
+        const fromName = email.fromName || email.project.name;
+        const fromEmail = email.from;
+
+        // Build recipient with name if available
+        const recipient: {name?: string; email: string} | string = email.toName
+          ? {name: email.toName, email: email.contact.email}
+          : email.contact.email;
 
         // Send via AWS SES
         const result = await sendRawEmail({
@@ -85,13 +90,14 @@ export function createEmailWorker() {
             name: fromName,
             email: fromEmail,
           },
-          to: [email.contact.email],
+          to: typeof recipient === 'string' ? [recipient] : [{name: recipient.name, email: recipient.email}],
           content: {
             subject: formattedEmail.subject,
             html: compiledHtml,
           },
           reply: email.replyTo || undefined,
           tracking: email.project.trackingEnabled, // Use project's tracking preference
+          attachments: email.attachments as {filename: string; content: string; contentType: string}[] | null,
         });
 
         // Mark as sent with SES message ID

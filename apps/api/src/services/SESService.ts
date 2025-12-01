@@ -6,7 +6,7 @@ import {
   AWS_SES_SECRET_ACCESS_KEY,
   DASHBOARD_URI,
   SES_CONFIGURATION_SET,
-  SES_CONFIGURATION_SET_NO_TRACKING,
+  SES_CONFIGURATION_SET_NO_TRACKING
 } from '../app/constants.js';
 
 /**
@@ -26,7 +26,7 @@ interface SendRawEmailParams {
     name: string;
     email: string;
   };
-  to: string[];
+  to: string[] | {name?: string; email: string}[];
   content: {
     subject: string;
     html: string;
@@ -102,9 +102,23 @@ export async function sendRawEmail({
   const boundary = `----=_NextPart_${Math.random().toString(36).substring(2)}`;
   const mixedBoundary = attachments?.length ? `----=_MixedPart_${Math.random().toString(36).substring(2)}` : null;
 
+  // Format To header with names if provided
+  const toHeader = to
+    .map(recipient => {
+      if (typeof recipient === 'string') {
+        return recipient;
+      } else {
+        return recipient.name ? `${recipient.name} <${recipient.email}>` : recipient.email;
+      }
+    })
+    .join(', ');
+
+  // Extract just email addresses for Destinations (SES requirement)
+  const destinations = to.map(recipient => (typeof recipient === 'string' ? recipient : recipient.email));
+
   // Build raw MIME message
   const rawMessage = `From: ${from.name} <${from.email}>
-To: ${to.join(', ')}
+To: ${toHeader}
 Reply-To: ${reply || from.email}
 Subject: ${content.subject}
 MIME-Version: 1.0
@@ -131,17 +145,16 @@ Content-Transfer-Encoding: 7bit
 ${breakLongLines(content.html, 500)}
 --${boundary}--
 ${
-  attachments?.length
-    ? attachments
+  attachments && attachments.length > 0
+    ? '\n' +
+      attachments
         .map(
-          attachment => `
---${mixedBoundary}
+          attachment => `--${mixedBoundary}
 Content-Type: ${attachment.contentType}
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="${attachment.filename}"
 
-${breakLongLines(attachment.content, 76, true)}
-`,
+${breakLongLines(attachment.content, 76, true)}`,
         )
         .join('\n')
     : ''
@@ -149,7 +162,7 @@ ${breakLongLines(attachment.content, 76, true)}
 
   // Send via SES
   const response = await ses.sendRawEmail({
-    Destinations: to,
+    Destinations: destinations,
     ConfigurationSetName: tracking ? SES_CONFIGURATION_SET : SES_CONFIGURATION_SET_NO_TRACKING,
     RawMessage: {
       Data: new TextEncoder().encode(rawMessage),

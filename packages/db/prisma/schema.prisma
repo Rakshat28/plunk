@@ -490,6 +490,7 @@ model Email {
   // Recipient
   contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
   contactId String
+  toName    String? // Recipient display name for To header
 
   // Content (denormalized for history)
   subject  String

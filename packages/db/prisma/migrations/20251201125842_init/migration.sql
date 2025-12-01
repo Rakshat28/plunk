@@ -256,6 +256,7 @@ CREATE TABLE "workflow_step_executions" (
 CREATE TABLE "emails" (
     "id" TEXT NOT NULL,
     "contactId" TEXT NOT NULL,
+    "toName" TEXT,
     "subject" TEXT NOT NULL,
     "body" TEXT NOT NULL,
     "from" TEXT NOT NULL,

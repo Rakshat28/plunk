@@ -285,7 +285,43 @@ function handleData(
 
     const fromAddress = parsed.from?.value[0]?.address ?? session.address;
     const fromName = parsed.from?.value[0]?.name;
-    const recipients = session.envelope.rcptTo.map((to: SMTPServerAddress) => to.address);
+
+    // Build from object with name if available
+    const from = fromName ? {name: fromName, email: fromAddress} : fromAddress;
+
+    // Parse recipients with names from To/CC headers
+    // Build a map of email -> name from the parsed headers
+    const recipientNameMap = new Map<string, string>();
+
+    // Helper to extract addresses from AddressObject
+    const extractAddresses = (addressObj: any) => {
+      if (!addressObj) return [];
+      // Handle both single AddressObject and array
+      const addresses = Array.isArray(addressObj) ? addressObj : [addressObj];
+      return addresses.flatMap((obj: any) => obj.value || []);
+    };
+
+    if (parsed.to) {
+      for (const addr of extractAddresses(parsed.to)) {
+        if (addr.address && addr.name) {
+          recipientNameMap.set(addr.address.toLowerCase(), addr.name);
+        }
+      }
+    }
+
+    if (parsed.cc) {
+      for (const addr of extractAddresses(parsed.cc)) {
+        if (addr.address && addr.name) {
+          recipientNameMap.set(addr.address.toLowerCase(), addr.name);
+        }
+      }
+    }
+
+    // Map SMTP recipients to objects with names when available
+    const recipients = session.envelope.rcptTo.map((to: SMTPServerAddress) => {
+      const name = recipientNameMap.get(to.address.toLowerCase());
+      return name ? {name, email: to.address} : to.address;
+    });
 
     // Parse attachments
     const attachments = parsed.attachments
@@ -360,8 +396,7 @@ function handleData(
           'Authorization': `Bearer ${session.user}`,
         },
         body: JSON.stringify({
-          from: fromAddress,
-          name: fromName,
+          from: from,
           to: recipients,
           subject: parsed.subject,
           body: bodyContent,
@@ -376,7 +411,15 @@ function handleData(
         return callback(new Error(`Failed to send email: ${response.statusText}`));
       }
 
-      signale.success(`Email relayed: ${fromAddress} → ${recipients.join(', ')}`);
+      // Build log message showing recipients (with names if available)
+      const recipientList = session.envelope.rcptTo
+        .map((to: SMTPServerAddress) => {
+          const name = recipientNameMap.get(to.address.toLowerCase());
+          return name ? `${name} <${to.address}>` : to.address;
+        })
+        .join(', ');
+
+      signale.success(`Email relayed: ${fromName ? `${fromName} <${fromAddress}>` : fromAddress} → ${recipientList}`);
       callback();
     } catch (error) {
       signale.error('Relay error:', error);

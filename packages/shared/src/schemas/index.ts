@@ -307,13 +307,39 @@ export const ActionSchemas = {
   }),
   send: z
     .object({
-      to: z.union([email, z.array(email)]),
+      to: z.union([
+        email, // Simple email string (backward compatible)
+        z.object({
+          // Object with name and email
+          name: z.string().optional(),
+          email: email,
+        }),
+        z.array(
+          z.union([
+            email, // Array of email strings
+            z.object({
+              // Array of objects with name and email
+              name: z.string().optional(),
+              email: email,
+            }),
+          ]),
+        ),
+      ]),
       subject: z.string().min(1).max(998).optional(),
       body: z.string().min(1).optional(),
       template: uuid.optional(),
       subscribed: z.boolean().optional().default(false),
       name: z.string().optional(),
-      from: email.optional(),
+      from: z
+        .union([
+          email, // Simple email string (backward compatible)
+          z.object({
+            // Object with name and email
+            name: z.string().optional(),
+            email: email,
+          }),
+        ])
+        .optional(),
       reply: email.optional(),
       headers: z.record(z.string().max(998)).optional(),
       data: jsonSchema.optional(),

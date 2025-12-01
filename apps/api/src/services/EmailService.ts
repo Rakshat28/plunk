@@ -23,6 +23,7 @@ interface SendEmailParams {
   body: string;
   from: string;
   fromName?: string;
+  toName?: string;
   replyTo?: string;
   headers?: Record<string, string>;
   attachments?: Attachment[];
@@ -85,6 +86,7 @@ export class EmailService {
         body: params.body,
         from: params.from,
         fromName: params.fromName,
+        toName: params.toName,
         replyTo: params.replyTo,
         headers: params.headers ? (params.headers as Prisma.InputJsonValue) : undefined,
         attachments: params.attachments ? (params.attachments as unknown as Prisma.InputJsonValue) : undefined,

@@ -94,7 +94,7 @@ describe('Actions API Integration Tests', () => {
     });
 
     it('should validate required fields for /v1/track', () => {
-      
+
 
       const result = ActionSchemas.track.safeParse({
         email: 'test@example.com',
@@ -105,6 +105,164 @@ describe('Actions API Integration Tests', () => {
       if (!result.success) {
         expect(result.error.errors.some(e => e.path.includes('event'))).toBe(true);
       }
+    });
+
+    it('should accept from as string (backward compatible)', () => {
+      const result = ActionSchemas.send.safeParse({
+        to: 'test@example.com',
+        subject: 'Test',
+        body: 'Test',
+        from: 'sender@example.com',
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept from as object with name and email', () => {
+      const result = ActionSchemas.send.safeParse({
+        to: 'test@example.com',
+        subject: 'Test',
+        body: 'Test',
+        from: {
+          name: 'John Doe',
+          email: 'sender@example.com',
+        },
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept from as object with only email', () => {
+      const result = ActionSchemas.send.safeParse({
+        to: 'test@example.com',
+        subject: 'Test',
+        body: 'Test',
+        from: {
+          email: 'sender@example.com',
+        },
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    it('should reject from object with invalid email', () => {
+      const result = ActionSchemas.send.safeParse({
+        to: 'test@example.com',
+        subject: 'Test',
+        body: 'Test',
+        from: {
+          name: 'John Doe',
+          email: 'not-an-email',
+        },
+      });
+
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject from object missing email field', () => {
+      const result = ActionSchemas.send.safeParse({
+        to: 'test@example.com',
+        subject: 'Test',
+        body: 'Test',
+        from: {
+          name: 'John Doe',
+        },
+      });
+
+      expect(result.success).toBe(false);
+    });
+
+    it('should accept to as string (backward compatible)', () => {
+      const result = ActionSchemas.send.safeParse({
+        to: 'test@example.com',
+        subject: 'Test',
+        body: 'Test',
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept to as object with name and email', () => {
+      const result = ActionSchemas.send.safeParse({
+        to: {
+          name: 'Jane Doe',
+          email: 'test@example.com',
+        },
+        subject: 'Test',
+        body: 'Test',
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept to as object with only email', () => {
+      const result = ActionSchemas.send.safeParse({
+        to: {
+          email: 'test@example.com',
+        },
+        subject: 'Test',
+        body: 'Test',
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept to as array of strings', () => {
+      const result = ActionSchemas.send.safeParse({
+        to: ['test1@example.com', 'test2@example.com'],
+        subject: 'Test',
+        body: 'Test',
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept to as array of objects with name and email', () => {
+      const result = ActionSchemas.send.safeParse({
+        to: [
+          {name: 'Jane Doe', email: 'test1@example.com'},
+          {name: 'John Smith', email: 'test2@example.com'},
+        ],
+        subject: 'Test',
+        body: 'Test',
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept to as mixed array of strings and objects', () => {
+      const result = ActionSchemas.send.safeParse({
+        to: ['test1@example.com', {name: 'John Smith', email: 'test2@example.com'}],
+        subject: 'Test',
+        body: 'Test',
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    it('should reject to object with invalid email', () => {
+      const result = ActionSchemas.send.safeParse({
+        to: {
+          name: 'Jane Doe',
+          email: 'not-an-email',
+        },
+        subject: 'Test',
+        body: 'Test',
+      });
+
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject to object missing email field', () => {
+      const result = ActionSchemas.send.safeParse({
+        to: {
+          name: 'Jane Doe',
+        },
+        subject: 'Test',
+        body: 'Test',
+      });
+
+      expect(result.success).toBe(false);
     });
   });
 

@@ -87,31 +87,67 @@ export class Actions {
    * Send transactional email(s)
    *
    * Request body:
-   * - to: string | string[] (required) - Recipient email(s)
+   * - to: string | object | array (required) - Recipient email(s)
+   *   - String: "user@example.com"
+   *   - Object: {name: "Jane Doe", email: "user@example.com"}
+   *   - Array: ["user1@example.com", {name: "Jane", email: "user2@example.com"}]
    * - subject: string (required) - Email subject
    * - body: string (required) - Email HTML body
    * - subscribed: boolean (optional, default: false) - Contact subscription status
-   * - name: string (optional) - Sender name
-   * - from: string (optional) - Sender email (must be from verified domain)
+   * - name: string (optional) - Sender name (alternative to from.name)
+   * - from: string | object (optional) - Sender email or {name, email} object (must be from verified domain)
    * - reply: string (optional) - Reply-to email
    * - headers: object (optional) - Additional email headers
    * - data: object (optional) - Contact data and template variables
    *   - Simple values are saved to contact (persistent)
    *   - {value: any, persistent: false} are only used for this email (non-persistent)
+   * - attachments: array (optional) - Email attachments (max 10, 10MB total)
+   *   - filename: string (required) - Attachment filename
+   *   - content: string (required) - Base64 encoded file content
+   *   - contentType: string (required) - MIME type (e.g., "application/pdf")
    *
    * Response:
    * - success: boolean
    * - data: object with emails array and timestamp
    *
-   * Example:
+   * Examples:
+   *
+   * Simple format (backward compatible):
    * {
    *   to: "user@example.com",
    *   subject: "Password Reset",
    *   body: "<p>Reset code: {{resetCode}}</p><p>Hello {{firstName}}!</p>",
+   *   from: "noreply@example.com",
+   *   name: "My App",
    *   data: {
    *     firstName: "John",                              // Persistent - saved to contact
    *     resetCode: {value: "ABC123", persistent: false} // Non-persistent - this email only
    *   }
+   * }
+   *
+   * Object format (recommended):
+   * {
+   *   to: {
+   *     name: "Jane Doe",
+   *     email: "user@example.com"
+   *   },
+   *   subject: "Password Reset",
+   *   body: "<p>Reset code: {{resetCode}}</p>",
+   *   from: {
+   *     name: "My App",
+   *     email: "noreply@example.com"
+   *   }
+   * }
+   *
+   * Multiple recipients with names:
+   * {
+   *   to: [
+   *     {name: "Jane Doe", email: "jane@example.com"},
+   *     {name: "John Smith", email: "john@example.com"}
+   *   ],
+   *   subject: "Newsletter",
+   *   body: "<p>Hello {{name}}!</p>",
+   *   from: {name: "Newsletter", email: "news@example.com"}
    * }
    */
   @Post('send')
@@ -123,13 +159,36 @@ export class Actions {
     const {to, subject, body, subscribed, name, from, reply, headers, data, template, attachments} =
       ActionSchemas.send.parse(req.body);
 
-    // Normalize recipients to array
-    const recipients = Array.isArray(to) ? to : [to];
+    // Normalize recipients to array and parse email/name
+    type Recipient = {email: string; name?: string};
+    const recipients: Recipient[] = (Array.isArray(to) ? to : [to]).map(recipient => {
+      if (typeof recipient === 'string') {
+        return {email: recipient};
+      } else {
+        return {email: recipient.email, name: recipient.name};
+      }
+    });
+
+    // Parse 'from' field - can be string or object {name, email}
+    let emailFrom: string | undefined;
+    let emailFromName: string | undefined;
+
+    if (typeof from === 'string') {
+      // Backward compatible: from is just an email string
+      emailFrom = from;
+      emailFromName = name; // Use separate 'name' field if provided
+    } else if (from && typeof from === 'object') {
+      // New format: from is an object with {name, email}
+      emailFrom = from.email;
+      emailFromName = from.name || name; // Prefer from.name, fallback to separate 'name' field
+    } else {
+      // No 'from' provided
+      emailFromName = name;
+    }
+
     // Fetch template if provided
     let emailSubject = subject;
     let emailBody = body;
-    let emailFrom = from;
-    let emailFromName = name;
     let emailReplyTo = reply;
     let templateId: string | undefined;
 
@@ -148,8 +207,15 @@ export class Actions {
       // Use template values, allow overrides from request
       emailSubject = subject || templateRecord.subject;
       emailBody = body || templateRecord.body;
-      emailFrom = from || templateRecord.from;
-      emailFromName = name || templateRecord.fromName || undefined;
+
+      // Handle from field - if not already set and template has a from, use it
+      if (!emailFrom && templateRecord.from) {
+        emailFrom = templateRecord.from;
+      }
+      if (!emailFromName && templateRecord.fromName) {
+        emailFromName = templateRecord.fromName;
+      }
+
       emailReplyTo = reply || templateRecord.replyTo || undefined;
       templateId = templateRecord.id;
     }
@@ -168,12 +234,17 @@ export class Actions {
     const emailResults = [];
 
     // Process each recipient
-    for (const recipientEmail of recipients) {
+    for (const recipient of recipients) {
+      // Merge recipient name with data if provided
+      const recipientData = recipient.name
+        ? {...(data as Record<string, unknown> | undefined), name: recipient.name}
+        : (data as Record<string, unknown> | undefined);
+
       // Create or update contact with metadata
       const contact = await ContactService.upsert(
         auth.projectId,
-        recipientEmail,
-        data as Record<string, unknown> | undefined,
+        recipient.email,
+        recipientData,
         subscribed,
       );
 
@@ -214,6 +285,7 @@ export class Actions {
         body: renderedBody,
         from: senderEmail,
         fromName: emailFromName,
+        toName: recipient.name,
         replyTo: replyToEmail,
         headers: headers || undefined,
         attachments: attachments || undefined,

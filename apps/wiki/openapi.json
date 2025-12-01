@@ -192,17 +192,54 @@
                     "oneOf": [
                       {
                         "type": "string",
-                        "format": "email"
+                        "format": "email",
+                        "description": "Simple email address"
+                      },
+                      {
+                        "type": "object",
+                        "required": ["email"],
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "Recipient display name"
+                          },
+                          "email": {
+                            "type": "string",
+                            "format": "email",
+                            "description": "Recipient email address"
+                          }
+                        },
+                        "description": "Recipient with name and email"
                       },
                       {
                         "type": "array",
                         "items": {
-                          "type": "string",
-                          "format": "email"
-                        }
+                          "oneOf": [
+                            {
+                              "type": "string",
+                              "format": "email"
+                            },
+                            {
+                              "type": "object",
+                              "required": ["email"],
+                              "properties": {
+                                "name": {
+                                  "type": "string",
+                                  "description": "Recipient display name"
+                                },
+                                "email": {
+                                  "type": "string",
+                                  "format": "email",
+                                  "description": "Recipient email address"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "description": "Array of recipients (strings or objects)"
                       }
                     ],
-                    "description": "Recipient email(s)"
+                    "description": "Recipient email(s). Can be a string, an object with {name, email}, or an array of either."
                   },
                   "subject": {
                     "type": "string",
@@ -217,9 +254,34 @@
                     "description": "Template identifier to use"
                   },
                   "from": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "email",
+                        "description": "Simple email address"
+                      },
+                      {
+                        "type": "object",
+                        "required": ["email"],
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "Sender display name"
+                          },
+                          "email": {
+                            "type": "string",
+                            "format": "email",
+                            "description": "Sender email address"
+                          }
+                        },
+                        "description": "Sender with name and email"
+                      }
+                    ],
+                    "description": "Custom from address (requires verified domain). Can be a string or an object with {name, email}."
+                  },
+                  "name": {
                     "type": "string",
-                    "format": "email",
-                    "description": "Custom from address (requires verified domain)"
+                    "description": "Sender display name (alternative to using from.name)"
                   },
                   "subscribed": {
                     "type": "boolean",
@@ -280,6 +342,45 @@
                     "data": {
                       "resetLink": "https://example.com/reset/abc123"
                     }
+                  }
+                },
+                "withNames": {
+                  "summary": "Email with recipient and sender names",
+                  "value": {
+                    "to": {
+                      "name": "Jane Doe",
+                      "email": "jane@example.com"
+                    },
+                    "from": {
+                      "name": "My Company",
+                      "email": "hello@mycompany.com"
+                    },
+                    "subject": "Welcome to Our Service",
+                    "body": "<h1>Welcome {{name}}!</h1><p>We're glad to have you.</p>",
+                    "data": {
+                      "name": "Jane"
+                    }
+                  }
+                },
+                "multipleRecipients": {
+                  "summary": "Multiple recipients with names",
+                  "value": {
+                    "to": [
+                      {
+                        "name": "Jane Doe",
+                        "email": "jane@example.com"
+                      },
+                      {
+                        "name": "John Smith",
+                        "email": "john@example.com"
+                      }
+                    ],
+                    "from": {
+                      "name": "Newsletter",
+                      "email": "news@mycompany.com"
+                    },
+                    "subject": "Monthly Update",
+                    "body": "<h1>Hello {{name}}!</h1>"
                   }
                 },
                 "withTemplate": {
