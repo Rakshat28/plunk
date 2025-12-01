@@ -1,5 +1,3 @@
-import {STATUS_CODES} from 'node:http';
-
 import {Server} from '@overnightjs/core';
 import cookies from 'cookie-parser';
 import cors from 'cors';
@@ -12,16 +10,16 @@ import {ZodError} from 'zod';
 
 import {
   DASHBOARD_URI,
+  GITHUB_OAUTH_ENABLED,
+  GOOGLE_OAUTH_ENABLED,
   LANDING_URI,
   NODE_ENV,
   PORT,
-  STRIPE_ENABLED,
-  WIKI_URI,
   S3_ENABLED,
-  GITHUB_OAUTH_ENABLED,
-  GOOGLE_OAUTH_ENABLED,
-  TRACKING_TOGGLE_ENABLED,
   SMTP_ENABLED,
+  STRIPE_ENABLED,
+  TRACKING_TOGGLE_ENABLED,
+  WIKI_URI
 } from './app/constants.js';
 import {Actions} from './controllers/Actions.js';
 import {Activity} from './controllers/Activity.js';
@@ -41,7 +39,7 @@ import {Webhooks} from './controllers/Webhooks.js';
 import {Workflows} from './controllers/Workflows.js';
 import {Config} from './controllers/Config.js';
 import {prisma} from './database/prisma.js';
-import {ErrorCode, HttpException, type FieldError, ValidationError} from './exceptions/index.js';
+import {ErrorCode, type FieldError, HttpException, ValidationError} from './exceptions/index.js';
 import {apiRequestCleanupQueue, domainVerificationQueue, segmentCountQueue} from './services/QueueService.js';
 import * as S3Service from './services/S3Service.js';
 import {requestIdMiddleware} from './middleware/requestId.js';
@@ -300,8 +298,7 @@ server.app.use((error: Error, req: Request, res: Response, _next: NextFunction) 
       message: 'An unexpected error occurred',
       statusCode,
       requestId,
-      suggestion:
-        'This is an internal server error. Please contact support with the request ID if the issue persists.',
+      suggestion: 'This is an internal server error. Please contact support with the request ID if the issue persists.',
     },
     timestamp: new Date().toISOString(),
   };

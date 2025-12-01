@@ -5,6 +5,7 @@ import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
 
 import {EventService} from './EventService.js';
+import {ContactService} from './ContactService.js';
 
 export interface PaginatedWorkflows {
   workflows: Workflow[];
@@ -647,5 +648,28 @@ export class WorkflowService {
         completedAt: new Date(),
       },
     });
+  }
+
+  /**
+   * Get all available fields for workflow conditions (contact fields + event fields)
+   */
+  public static async getAvailableFields(projectId: string, eventName?: string) {
+    // Get contact fields (standard + custom data fields)
+    const contactFields = await ContactService.getAvailableFields(projectId);
+
+    // Add standard contact fields
+    const standardContactFields = ['contact.email', 'contact.subscribed'];
+
+    // Get event fields by analyzing actual event data
+    // This will only show fields that have been seen in actual events
+    const eventFields = await EventService.getAvailableEventFields(projectId, eventName);
+
+    // Combine all fields
+    const allFields = [...standardContactFields, ...contactFields, ...eventFields].sort();
+
+    return {
+      fields: allFields,
+      count: allFields.length,
+    };
   }
 }

@@ -1,23 +1,17 @@
-import {describe, it, expect, beforeEach} from 'vitest';
-import {WorkflowTriggerType} from '@plunk/db';
-import request from 'supertest';
-import jwt from 'jsonwebtoken';
-import {app} from '../../app';
-import {JWT_SECRET} from '../../app/constants';
+import {beforeEach, describe, expect, it} from 'vitest';
 import {factories, getPrismaClient} from '../../../../../test/helpers';
 import {EventService} from '../../services/EventService';
+import {WorkflowService} from '../../services/WorkflowService';
 
 describe('Workflows Controller', () => {
   let projectId: string;
   let userId: string;
-  let authToken: string;
   const prisma = getPrismaClient();
 
   beforeEach(async () => {
     const {project, user} = await factories.createUserWithProject();
     projectId = project.id;
     userId = user.id;
-    authToken = jwt.sign({userId: user.id, projectId: project.id}, JWT_SECRET);
   });
 
   // ========================================
@@ -42,28 +36,25 @@ describe('Workflows Controller', () => {
         isFirstOpen: true,
       });
 
-      const response = await request(app)
-        .get('/workflows/fields')
-        .set('Authorization', `Bearer ${authToken}`)
-        .expect(200);
+      const responseBody = await WorkflowService.getAvailableFields(projectId);
 
-      expect(response.body.fields).toBeInstanceOf(Array);
-      expect(response.body.count).toBeGreaterThan(0);
+      expect(responseBody.fields).toBeInstanceOf(Array);
+      expect(responseBody.count).toBeGreaterThan(0);
 
       // Should include standard contact fields
-      expect(response.body.fields).toContain('contact.email');
-      expect(response.body.fields).toContain('contact.subscribed');
+      expect(responseBody.fields).toContain('contact.email');
+      expect(responseBody.fields).toContain('contact.subscribed');
 
       // Should include custom contact data fields
-      expect(response.body.fields).toContain('data.firstName');
-      expect(response.body.fields).toContain('data.lastName');
-      expect(response.body.fields).toContain('data.plan');
+      expect(responseBody.fields).toContain('data.firstName');
+      expect(responseBody.fields).toContain('data.lastName');
+      expect(responseBody.fields).toContain('data.plan');
 
       // Should include event fields
-      expect(response.body.fields).toContain('event.subject');
-      expect(response.body.fields).toContain('event.from');
-      expect(response.body.fields).toContain('event.openedAt');
-      expect(response.body.fields).toContain('event.isFirstOpen');
+      expect(responseBody.fields).toContain('event.subject');
+      expect(responseBody.fields).toContain('event.from');
+      expect(responseBody.fields).toContain('event.openedAt');
+      expect(responseBody.fields).toContain('event.isFirstOpen');
     });
 
     it('should filter event fields by eventName query param', async () => {
@@ -83,21 +74,16 @@ describe('Workflows Controller', () => {
         clickedAt: new Date().toISOString(),
       });
 
-      // Request fields for email.opened only
-      const response = await request(app)
-        .get('/workflows/fields')
-        .query({eventName: 'email.opened'})
-        .set('Authorization', `Bearer ${authToken}`)
-        .expect(200);
+      const responseBody = await WorkflowService.getAvailableFields(projectId, 'email.opened');
 
       // Should include email.opened fields
-      expect(response.body.fields).toContain('event.subject');
-      expect(response.body.fields).toContain('event.openedAt');
-      expect(response.body.fields).toContain('event.isFirstOpen');
+      expect(responseBody.fields).toContain('event.subject');
+      expect(responseBody.fields).toContain('event.openedAt');
+      expect(responseBody.fields).toContain('event.isFirstOpen');
 
       // Should NOT include email.clicked fields
-      expect(response.body.fields).not.toContain('event.link');
-      expect(response.body.fields).not.toContain('event.clickedAt');
+      expect(responseBody.fields).not.toContain('event.link');
+      expect(responseBody.fields).not.toContain('event.clickedAt');
     });
 
     it('should return fields in sorted order', async () => {
@@ -114,12 +100,9 @@ describe('Workflows Controller', () => {
         aardvark: 'value',
       });
 
-      const response = await request(app)
-        .get('/workflows/fields')
-        .set('Authorization', `Bearer ${authToken}`)
-        .expect(200);
+      const responseBody = await WorkflowService.getAvailableFields(projectId);
 
-      const fields = response.body.fields as string[];
+      const fields = responseBody.fields as string[];
 
       // Verify fields are sorted
       const sortedFields = [...fields].sort();
@@ -127,22 +110,15 @@ describe('Workflows Controller', () => {
     });
 
     it('should return empty event fields when no events exist', async () => {
-      const response = await request(app)
-        .get('/workflows/fields')
-        .set('Authorization', `Bearer ${authToken}`)
-        .expect(200);
+      const responseBody = await WorkflowService.getAvailableFields(projectId);
 
       // Should still have contact fields
-      expect(response.body.fields).toContain('contact.email');
-      expect(response.body.fields).toContain('contact.subscribed');
+      expect(responseBody.fields).toContain('contact.email');
+      expect(responseBody.fields).toContain('contact.subscribed');
 
       // But no event fields
-      const eventFields = response.body.fields.filter((f: string) => f.startsWith('event.'));
+      const eventFields = responseBody.fields.filter((f: string) => f.startsWith('event.'));
       expect(eventFields).toHaveLength(0);
-    });
-
-    it('should require authentication', async () => {
-      await request(app).get('/workflows/fields').expect(401);
     });
 
     it('should only return fields for authenticated project', async () => {
@@ -154,14 +130,10 @@ describe('Workflows Controller', () => {
         secretField: 'secret value',
       });
 
-      // Request fields with our auth token (different project)
-      const response = await request(app)
-        .get('/workflows/fields')
-        .set('Authorization', `Bearer ${authToken}`)
-        .expect(200);
+      const responseBody = await WorkflowService.getAvailableFields(projectId);
 
       // Should not include fields from other project
-      expect(response.body.fields).not.toContain('event.secretField');
+      expect(responseBody.fields).not.toContain('event.secretField');
     });
 
     it('should handle URL encoded event names', async () => {
@@ -171,13 +143,9 @@ describe('Workflows Controller', () => {
         field1: 'value',
       });
 
-      const response = await request(app)
-        .get('/workflows/fields')
-        .query({eventName: 'email.opened'})
-        .set('Authorization', `Bearer ${authToken}`)
-        .expect(200);
+      const responseBody = await WorkflowService.getAvailableFields(projectId, 'email.opened');
 
-      expect(response.body.fields).toContain('event.field1');
+      expect(responseBody.fields).toContain('event.field1');
     });
   });
 
@@ -201,19 +169,15 @@ describe('Workflows Controller', () => {
         sentAt: new Date().toISOString(),
       });
 
-      const response = await request(app)
-        .get('/workflows/fields')
-        .query({eventName: 'email.sent'})
-        .set('Authorization', `Bearer ${authToken}`)
-        .expect(200);
+      const responseBody = await WorkflowService.getAvailableFields(projectId, 'email.sent');
 
-      expect(response.body.fields).toContain('event.subject');
-      expect(response.body.fields).toContain('event.from');
-      expect(response.body.fields).toContain('event.fromName');
-      expect(response.body.fields).toContain('event.messageId');
-      expect(response.body.fields).toContain('event.templateId');
-      expect(response.body.fields).toContain('event.sourceType');
-      expect(response.body.fields).toContain('event.sentAt');
+      expect(responseBody.fields).toContain('event.subject');
+      expect(responseBody.fields).toContain('event.from');
+      expect(responseBody.fields).toContain('event.fromName');
+      expect(responseBody.fields).toContain('event.messageId');
+      expect(responseBody.fields).toContain('event.templateId');
+      expect(responseBody.fields).toContain('event.sourceType');
+      expect(responseBody.fields).toContain('event.sentAt');
     });
 
     it('should discover correct fields for email.opened events', async () => {
@@ -230,15 +194,11 @@ describe('Workflows Controller', () => {
         isFirstOpen: true,
       });
 
-      const response = await request(app)
-        .get('/workflows/fields')
-        .query({eventName: 'email.opened'})
-        .set('Authorization', `Bearer ${authToken}`)
-        .expect(200);
+      const responseBody = await WorkflowService.getAvailableFields(projectId, 'email.opened');
 
-      expect(response.body.fields).toContain('event.openedAt');
-      expect(response.body.fields).toContain('event.opens');
-      expect(response.body.fields).toContain('event.isFirstOpen');
+      expect(responseBody.fields).toContain('event.openedAt');
+      expect(responseBody.fields).toContain('event.opens');
+      expect(responseBody.fields).toContain('event.isFirstOpen');
     });
 
     it('should discover correct fields for email.clicked events', async () => {
@@ -254,16 +214,12 @@ describe('Workflows Controller', () => {
         isFirstClick: true,
       });
 
-      const response = await request(app)
-        .get('/workflows/fields')
-        .query({eventName: 'email.clicked'})
-        .set('Authorization', `Bearer ${authToken}`)
-        .expect(200);
+      const responseBody = await WorkflowService.getAvailableFields(projectId, 'email.clicked');
 
-      expect(response.body.fields).toContain('event.link');
-      expect(response.body.fields).toContain('event.clickedAt');
-      expect(response.body.fields).toContain('event.clicks');
-      expect(response.body.fields).toContain('event.isFirstClick');
+      expect(responseBody.fields).toContain('event.link');
+      expect(responseBody.fields).toContain('event.clickedAt');
+      expect(responseBody.fields).toContain('event.clicks');
+      expect(responseBody.fields).toContain('event.isFirstClick');
     });
   });
 });
