@@ -8,6 +8,7 @@ import type Stripe from 'stripe';
 import {STRIPE_ENABLED, STRIPE_WEBHOOK_SECRET} from '../app/constants.js';
 import {stripe} from '../app/stripe.js';
 import {prisma} from '../database/prisma.js';
+import {EventService} from '../services/EventService.js';
 import {SecurityService} from '../services/SecurityService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
 
@@ -23,7 +24,7 @@ export class Webhooks {
    */
   @Post('sns')
   @CatchAsync
-  public async receiveSNSWebhook(req: Request, res: Response, next: NextFunction) {
+  public async receiveSNSWebhook(req: Request, res: Response) {
     try {
       // Handle SNS subscription confirmation FIRST (before parsing Message field)
       if (req.body.Type === 'SubscriptionConfirmation') {
@@ -90,7 +91,18 @@ export class Webhooks {
       const now = new Date();
       const updateData: Prisma.EmailUpdateInput = {};
       const eventName = `email.${eventType.toLowerCase()}`;
-      let eventData: Record<string, unknown> = {};
+
+      // Base event data with email metadata
+      const baseEventData = {
+        subject: email.subject,
+        from: email.from,
+        fromName: email.fromName,
+        messageId: email.messageId,
+        templateId: email.templateId,
+        campaignId: email.campaignId,
+        sourceType: email.sourceType,
+      };
+      let eventData: Record<string, unknown> = baseEventData;
 
       // Process event based on type
       switch (eventType) {
@@ -98,6 +110,10 @@ export class Webhooks {
           signale.success(`[WEBHOOK] Delivery confirmed for ${email.contact.email} from ${email.project.name}`);
           updateData.status = EmailStatus.DELIVERED;
           updateData.deliveredAt = now;
+          eventData = {
+            ...baseEventData,
+            deliveredAt: now.toISOString(),
+          };
           break;
 
         case 'Open':
@@ -108,6 +124,12 @@ export class Webhooks {
           }
           updateData.opens = (email.opens || 0) + 1;
           updateData.status = EmailStatus.OPENED;
+          eventData = {
+            ...baseEventData,
+            openedAt: email.openedAt?.toISOString() || now.toISOString(),
+            opens: (email.opens || 0) + 1,
+            isFirstOpen: !email.openedAt,
+          };
           break;
 
         case 'Click': {
@@ -119,7 +141,13 @@ export class Webhooks {
           }
           updateData.clicks = (email.clicks || 0) + 1;
           updateData.status = EmailStatus.CLICKED;
-          eventData = {link: clickedLink};
+          eventData = {
+            ...baseEventData,
+            link: clickedLink,
+            clickedAt: email.clickedAt?.toISOString() || now.toISOString(),
+            clicks: (email.clicks || 0) + 1,
+            isFirstClick: !email.clickedAt,
+          };
           break;
         }
 
@@ -132,7 +160,11 @@ export class Webhooks {
             where: {id: email.contactId},
             data: {subscribed: false},
           });
-          eventData = body.bounce ? {bounceType: body.bounce.bounceType} : {};
+          eventData = {
+            ...baseEventData,
+            bounceType: body.bounce?.bounceType,
+            bouncedAt: now.toISOString(),
+          };
           break;
 
         case 'Complaint':
@@ -144,6 +176,10 @@ export class Webhooks {
             where: {id: email.contactId},
             data: {subscribed: false},
           });
+          eventData = {
+            ...baseEventData,
+            complainedAt: now.toISOString(),
+          };
           break;
 
         default:
@@ -157,16 +193,8 @@ export class Webhooks {
         data: updateData,
       });
 
-      // Track event
-      await prisma.event.create({
-        data: {
-          projectId: email.projectId,
-          contactId: email.contactId,
-          emailId: email.id,
-          name: eventName,
-          data: eventData as Prisma.InputJsonValue,
-        },
-      });
+      // Track event (this will trigger workflows)
+      await EventService.trackEvent(email.projectId, eventName, email.contactId, email.id, eventData);
 
       // Check security limits for bounce and complaint events
       if (eventType === 'Bounce' || eventType === 'Complaint') {
@@ -188,7 +216,7 @@ export class Webhooks {
    */
   @Post('incoming/stripe')
   @CatchAsync
-  public async receiveStripeWebhook(req: Request, res: Response, next: NextFunction) {
+  public async receiveStripeWebhook(req: Request, res: Response) {
     // Return 404 if billing is disabled
     if (!STRIPE_ENABLED || !stripe) {
       signale.warn('[WEBHOOK] Stripe webhook received but billing is disabled');

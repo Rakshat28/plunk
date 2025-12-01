@@ -9,6 +9,7 @@ import {type Job, Worker} from 'bullmq';
 
 import {prisma} from '../database/prisma.js';
 import {EmailService} from '../services/EmailService.js';
+import {EventService} from '../services/EventService.js';
 import {MeterService} from '../services/MeterService.js';
 import {emailQueue, type SendEmailJobData} from '../services/QueueService.js';
 import {sendRawEmail} from '../services/SESService.js';
@@ -119,19 +120,16 @@ export function createEmailWorker() {
           await MeterService.recordEmailSent(email.project.customer, emailCount, `email_${emailId}`);
         }
 
-        // Track event
-        await prisma.event.create({
-          data: {
-            projectId: email.projectId,
-            contactId: email.contactId,
-            emailId: email.id,
-            name: 'email.sent',
-            data: {
-              subject: formattedEmail.subject,
-              from: email.from,
-              messageId: result.messageId,
-            } as Prisma.InputJsonValue,
-          },
+        // Track event (this will trigger workflows)
+        await EventService.trackEvent(email.projectId, 'email.sent', email.contactId, email.id, {
+          subject: formattedEmail.subject,
+          from: email.from,
+          fromName: email.fromName,
+          messageId: result.messageId,
+          templateId: email.templateId,
+          campaignId: email.campaignId,
+          sourceType: email.sourceType,
+          sentAt: new Date().toISOString(),
         });
       } catch (error) {
         console.error(`[EMAIL-PROCESSOR] Failed to send email ${emailId}:`, error);

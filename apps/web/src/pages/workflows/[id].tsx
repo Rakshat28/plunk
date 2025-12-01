@@ -654,14 +654,21 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {data: templatesData} = useSWR<{templates: Template[]}>('/templates?pageSize=100');
+  const {data: workflow} = useSWR<WorkflowWithDetails>(workflowId ? `/workflows/${workflowId}` : null);
 
-  // Fetch available contact fields when dialog opens and type is CONDITION
+  // Fetch available fields when dialog opens and type is CONDITION
   useEffect(() => {
     const fetchAvailableFields = async () => {
-      if (type === 'CONDITION' && open) {
+      if (type === 'CONDITION' && open && workflow) {
         setLoadingFields(true);
         try {
-          const response = await network.fetch<{fields: string[]}>('GET', '/contacts/fields');
+          // Get event name from workflow trigger config
+          const triggerConfig = workflow.triggerConfig as {eventName?: string} | null;
+          const eventName = triggerConfig?.eventName;
+
+          // Pass eventName as query param to filter event fields
+          const url = eventName ? `/workflows/fields?eventName=${encodeURIComponent(eventName)}` : '/workflows/fields';
+          const response = await network.fetch<{fields: string[]}>('GET', url);
           setAvailableFields(response.fields);
 
           // Set default field if available
@@ -679,7 +686,7 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
 
     void fetchAvailableFields();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type, open]);
+  }, [type, open, workflow]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1162,14 +1169,21 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
   const [exitReason, setExitReason] = useState(String(config?.reason || 'completed'));
 
   const {data: templatesData} = useSWR<{templates: Template[]}>('/templates?pageSize=100');
+  const {data: workflow} = useSWR<WorkflowWithDetails>(workflowId ? `/workflows/${workflowId}` : null);
 
   // Fetch available contact fields when dialog opens and type is CONDITION
   useEffect(() => {
     const fetchAvailableFields = async () => {
-      if (step.type === 'CONDITION' && open) {
+      if (step.type === 'CONDITION' && open && workflow) {
         setLoadingFields(true);
         try {
-          const response = await network.fetch<{fields: string[]}>('GET', '/contacts/fields');
+          // Get event name from workflow trigger config
+          const triggerConfig = workflow.triggerConfig as {eventName?: string} | null;
+          const eventName = triggerConfig?.eventName;
+
+          // Pass eventName as query param to filter event fields
+          const url = eventName ? `/workflows/fields?eventName=${encodeURIComponent(eventName)}` : '/workflows/fields';
+          const response = await network.fetch<{fields: string[]}>('GET', url);
           setAvailableFields(response.fields);
         } catch (error) {
           console.error('Failed to fetch available fields:', error);
@@ -1181,7 +1195,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
     };
 
     void fetchAvailableFields();
-  }, [step.type, open]);
+  }, [step.type, open, workflow, workflowId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

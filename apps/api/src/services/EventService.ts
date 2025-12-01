@@ -1,4 +1,5 @@
-import type {Event, Prisma} from '@plunk/db';
+import type {Event} from '@plunk/db';
+import {Prisma} from '@plunk/db';
 
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
@@ -137,6 +138,43 @@ export class EventService {
     });
 
     return events.map(e => e.name);
+  }
+
+  /**
+   * Get available event data fields for a specific event name
+   * Analyzes actual event data to discover which fields are present
+   * This is optimized for large datasets - only samples recent events
+   */
+  public static async getAvailableEventFields(projectId: string, eventName?: string): Promise<string[]> {
+    // Query recent events to discover data fields (limit to 100 for performance)
+    const events = await prisma.event.findMany({
+      where: {
+        projectId,
+        ...(eventName ? {name: eventName} : {}),
+        data: {
+          not: Prisma.DbNull, // Only events with data (not null)
+        },
+      },
+      select: {
+        data: true,
+      },
+      orderBy: {createdAt: 'desc'},
+      take: 100, // Sample recent events for performance
+    });
+
+    // Extract all unique keys from event data
+    const fieldSet = new Set<string>();
+
+    for (const event of events) {
+      if (event.data && typeof event.data === 'object' && !Array.isArray(event.data)) {
+        const data = event.data as Record<string, unknown>;
+        for (const key of Object.keys(data)) {
+          fieldSet.add(`event.${key}`);
+        }
+      }
+    }
+
+    return Array.from(fieldSet).sort();
   }
 
   /**

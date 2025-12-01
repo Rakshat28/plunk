@@ -599,6 +599,197 @@ describe('EventService', () => {
     });
   });
 
+  // ========================================
+  // FIELD DISCOVERY
+  // ========================================
+  describe('getAvailableEventFields', () => {
+    it('should discover fields from event data', async () => {
+      const contact = await factories.createContact({projectId});
+
+      // Create events with various fields
+      await EventService.trackEvent(projectId, 'email.opened', contact.id, undefined, {
+        subject: 'Welcome',
+        from: 'hello@example.com',
+        openedAt: new Date().toISOString(),
+      });
+
+      await EventService.trackEvent(projectId, 'email.opened', contact.id, undefined, {
+        subject: 'Newsletter',
+        from: 'news@example.com',
+        isFirstOpen: true,
+        opens: 1,
+      });
+
+      const fields = await EventService.getAvailableEventFields(projectId, 'email.opened');
+
+      expect(fields).toContain('event.subject');
+      expect(fields).toContain('event.from');
+      expect(fields).toContain('event.openedAt');
+      expect(fields).toContain('event.isFirstOpen');
+      expect(fields).toContain('event.opens');
+      expect(fields).toHaveLength(5);
+    });
+
+    it('should filter fields by event name', async () => {
+      const contact = await factories.createContact({projectId});
+
+      // Create email.opened events
+      await EventService.trackEvent(projectId, 'email.opened', contact.id, undefined, {
+        subject: 'Test',
+        openedAt: new Date().toISOString(),
+      });
+
+      // Create email.clicked events
+      await EventService.trackEvent(projectId, 'email.clicked', contact.id, undefined, {
+        subject: 'Test',
+        link: 'https://example.com',
+        clickedAt: new Date().toISOString(),
+      });
+
+      // Get fields for email.opened only
+      const openedFields = await EventService.getAvailableEventFields(projectId, 'email.opened');
+
+      expect(openedFields).toContain('event.subject');
+      expect(openedFields).toContain('event.openedAt');
+      expect(openedFields).not.toContain('event.link');
+      expect(openedFields).not.toContain('event.clickedAt');
+    });
+
+    it('should return all event fields when no event name specified', async () => {
+      const contact = await factories.createContact({projectId});
+
+      await EventService.trackEvent(projectId, 'email.opened', contact.id, undefined, {
+        openedAt: new Date().toISOString(),
+      });
+
+      await EventService.trackEvent(projectId, 'email.clicked', contact.id, undefined, {
+        link: 'https://example.com',
+      });
+
+      const allFields = await EventService.getAvailableEventFields(projectId);
+
+      expect(allFields).toContain('event.openedAt');
+      expect(allFields).toContain('event.link');
+    });
+
+    it('should return empty array when no events exist', async () => {
+      const fields = await EventService.getAvailableEventFields(projectId, 'nonexistent.event');
+
+      expect(fields).toHaveLength(0);
+    });
+
+    it('should ignore events with null data', async () => {
+      const contact = await factories.createContact({projectId});
+
+      // Event without data
+      await EventService.trackEvent(projectId, 'simple.event', contact.id);
+
+      // Event with data
+      await EventService.trackEvent(projectId, 'simple.event', contact.id, undefined, {
+        field1: 'value1',
+      });
+
+      const fields = await EventService.getAvailableEventFields(projectId, 'simple.event');
+
+      expect(fields).toEqual(['event.field1']);
+    });
+
+    it('should handle nested field structures', async () => {
+      const contact = await factories.createContact({projectId});
+
+      await EventService.trackEvent(projectId, 'complex.event', contact.id, undefined, {
+        user: {
+          name: 'John',
+          email: 'john@example.com',
+        },
+        metadata: {
+          source: 'web',
+        },
+      });
+
+      const fields = await EventService.getAvailableEventFields(projectId, 'complex.event');
+
+      // Should return top-level keys
+      expect(fields).toContain('event.user');
+      expect(fields).toContain('event.metadata');
+    });
+
+    it('should deduplicate fields across multiple events', async () => {
+      const contact = await factories.createContact({projectId});
+
+      // Create 5 events with same fields
+      for (let i = 0; i < 5; i++) {
+        await EventService.trackEvent(projectId, 'test.event', contact.id, undefined, {
+          field1: `value${i}`,
+          field2: `value${i}`,
+        });
+      }
+
+      const fields = await EventService.getAvailableEventFields(projectId, 'test.event');
+
+      expect(fields).toEqual(['event.field1', 'event.field2']);
+    });
+
+    it('should respect 100 event sample limit for performance', async () => {
+      const contact = await factories.createContact({projectId});
+
+      // Create 150 events with different fields
+      for (let i = 0; i < 150; i++) {
+        await EventService.trackEvent(projectId, 'test.event', contact.id, undefined, {
+          [`field${i}`]: `value${i}`,
+        });
+      }
+
+      const fields = await EventService.getAvailableEventFields(projectId, 'test.event');
+
+      // Should sample only last 100 events (most recent)
+      // So we should see field50-field149 (100 fields)
+      expect(fields.length).toBeLessThanOrEqual(100);
+    });
+
+    it('should return fields in alphabetical order', async () => {
+      const contact = await factories.createContact({projectId});
+
+      await EventService.trackEvent(projectId, 'test.event', contact.id, undefined, {
+        zebra: 'last',
+        apple: 'first',
+        middle: 'middle',
+      });
+
+      const fields = await EventService.getAvailableEventFields(projectId, 'test.event');
+
+      expect(fields).toEqual(['event.apple', 'event.middle', 'event.zebra']);
+    });
+
+    it('should handle email event data structure', async () => {
+      const contact = await factories.createContact({projectId});
+      const email = await factories.createEmail(projectId, contact.id);
+
+      // Simulate actual email.sent event data
+      await EventService.trackEvent(projectId, 'email.sent', contact.id, email.id, {
+        subject: 'Welcome Email',
+        from: 'hello@example.com',
+        fromName: 'Example Team',
+        messageId: 'msg-123',
+        templateId: 'tpl-456',
+        campaignId: null,
+        sourceType: 'TRANSACTIONAL',
+        sentAt: new Date().toISOString(),
+      });
+
+      const fields = await EventService.getAvailableEventFields(projectId, 'email.sent');
+
+      expect(fields).toContain('event.subject');
+      expect(fields).toContain('event.from');
+      expect(fields).toContain('event.fromName');
+      expect(fields).toContain('event.messageId');
+      expect(fields).toContain('event.templateId');
+      expect(fields).toContain('event.campaignId');
+      expect(fields).toContain('event.sourceType');
+      expect(fields).toContain('event.sentAt');
+    });
+  });
+
   describe('Event Data - Persistent vs Non-Persistent', () => {
     it('should store all event data (persistent + non-persistent) in event record', async () => {
       const contact = await factories.createContact({projectId});

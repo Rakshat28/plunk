@@ -954,4 +954,299 @@ describe('WorkflowExecutionService - Integration Tests', () => {
       expect(savedContact?.data).not.toHaveProperty('trackingUrl');
     });
   });
+
+  // ========================================
+  // EVENT DATA IN WORKFLOW CONDITIONS
+  // ========================================
+  describe('Event Data in Workflow Conditions', () => {
+    it('should evaluate conditions using event.* fields', async () => {
+      const contact = await factories.createContact({projectId});
+      const workflow = await factories.createWorkflow({projectId});
+
+      const triggerStep = await prisma.workflowStep.findFirst({
+        where: {workflowId: workflow.id, type: 'TRIGGER'},
+      });
+
+      // Create condition step that checks event data
+      const conditionStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.CONDITION,
+          name: 'Check if first open',
+          position: {x: 100, y: 0},
+          config: {
+            field: 'event.isFirstOpen',
+            operator: 'equals',
+            value: true, // Use boolean, not string
+          } as Prisma.InputJsonValue,
+        },
+      });
+
+      const yesStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'First Open',
+          position: {x: 200, y: 0},
+          config: {reason: 'first_open'} as Prisma.InputJsonValue,
+        },
+      });
+
+      const noStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'Not First Open',
+          position: {x: 200, y: 100},
+          config: {reason: 'not_first_open'} as Prisma.InputJsonValue,
+        },
+      });
+
+      // Connect steps
+      await prisma.workflowTransition.create({
+        data: {fromStepId: triggerStep!.id, toStepId: conditionStep.id},
+      });
+      await prisma.workflowTransition.create({
+        data: {fromStepId: conditionStep.id, toStepId: yesStep.id, condition: {branch: 'yes'} as Prisma.InputJsonValue},
+      });
+      await prisma.workflowTransition.create({
+        data: {fromStepId: conditionStep.id, toStepId: noStep.id, condition: {branch: 'no'} as Prisma.InputJsonValue},
+      });
+
+      // Create execution with event data
+      const execution = await prisma.workflowExecution.create({
+        data: {
+          workflowId: workflow.id,
+          contactId: contact.id,
+          status: WorkflowExecutionStatus.RUNNING,
+          currentStepId: triggerStep!.id,
+          context: {
+            subject: 'Welcome Email',
+            from: 'hello@example.com',
+            isFirstOpen: true,
+            openedAt: new Date().toISOString(),
+          } as Prisma.InputJsonValue,
+        },
+      });
+
+      // Process the workflow
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep!.id);
+
+      // Verify it followed YES branch (first open)
+      const completedExecution = await prisma.workflowExecution.findUnique({
+        where: {id: execution.id},
+        include: {stepExecutions: true},
+      });
+
+      expect(completedExecution?.status).toBe(WorkflowExecutionStatus.COMPLETED);
+      expect(completedExecution?.exitReason).toBe('first_open');
+    });
+
+    it('should evaluate conditions using event.subject field', async () => {
+      const contact = await factories.createContact({projectId});
+      const workflow = await factories.createWorkflow({projectId});
+
+      const triggerStep = await prisma.workflowStep.findFirst({
+        where: {workflowId: workflow.id, type: 'TRIGGER'},
+      });
+
+      const conditionStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.CONDITION,
+          name: 'Check subject',
+          position: {x: 100, y: 0},
+          config: {
+            field: 'event.subject',
+            operator: 'contains',
+            value: 'Welcome',
+          } as Prisma.InputJsonValue,
+        },
+      });
+
+      const exitStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'Done',
+          position: {x: 200, y: 0},
+          config: {reason: 'matched'} as Prisma.InputJsonValue,
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {fromStepId: triggerStep!.id, toStepId: conditionStep.id},
+      });
+      await prisma.workflowTransition.create({
+        data: {fromStepId: conditionStep.id, toStepId: exitStep.id, condition: {branch: 'yes'} as Prisma.InputJsonValue},
+      });
+
+      const execution = await prisma.workflowExecution.create({
+        data: {
+          workflowId: workflow.id,
+          contactId: contact.id,
+          status: WorkflowExecutionStatus.RUNNING,
+          currentStepId: triggerStep!.id,
+          context: {
+            subject: 'Welcome to Plunk!',
+            from: 'team@plunk.com',
+          } as Prisma.InputJsonValue,
+        },
+      });
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep!.id);
+
+      const completedExecution = await prisma.workflowExecution.findUnique({
+        where: {id: execution.id},
+      });
+
+      expect(completedExecution?.status).toBe(WorkflowExecutionStatus.COMPLETED);
+      expect(completedExecution?.exitReason).toBe('matched');
+    });
+
+    it('should handle numeric event fields in conditions', async () => {
+      const contact = await factories.createContact({projectId});
+      const workflow = await factories.createWorkflow({projectId});
+
+      const triggerStep = await prisma.workflowStep.findFirst({
+        where: {workflowId: workflow.id, type: 'TRIGGER'},
+      });
+
+      const conditionStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.CONDITION,
+          name: 'Check opens count',
+          position: {x: 100, y: 0},
+          config: {
+            field: 'event.opens',
+            operator: 'greaterThan',
+            value: '3',
+          } as Prisma.InputJsonValue,
+        },
+      });
+
+      const exitStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'Done',
+          position: {x: 200, y: 0},
+          config: {reason: 'engaged'} as Prisma.InputJsonValue,
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {fromStepId: triggerStep!.id, toStepId: conditionStep.id},
+      });
+      await prisma.workflowTransition.create({
+        data: {fromStepId: conditionStep.id, toStepId: exitStep.id, condition: {branch: 'yes'} as Prisma.InputJsonValue},
+      });
+
+      const execution = await prisma.workflowExecution.create({
+        data: {
+          workflowId: workflow.id,
+          contactId: contact.id,
+          status: WorkflowExecutionStatus.RUNNING,
+          currentStepId: triggerStep!.id,
+          context: {
+            subject: 'Newsletter',
+            opens: 5,
+          } as Prisma.InputJsonValue,
+        },
+      });
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep!.id);
+
+      const completedExecution = await prisma.workflowExecution.findUnique({
+        where: {id: execution.id},
+      });
+
+      expect(completedExecution?.status).toBe(WorkflowExecutionStatus.COMPLETED);
+      expect(completedExecution?.exitReason).toBe('engaged');
+    });
+  });
+
+  // ========================================
+  // EVENT DATA IN WEBHOOK CALLS
+  // ========================================
+  describe('Event Data in Webhook Calls', () => {
+    it('should include event data in webhook payload', async () => {
+      // Mock fetch to capture webhook calls
+      const mockFetch = vi.fn(async () => ({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({success: true}),
+      }));
+      global.fetch = mockFetch as any;
+
+      const contact = await factories.createContact({
+        projectId,
+        email: 'test@example.com',
+      });
+      const workflow = await factories.createWorkflow({projectId});
+
+      const triggerStep = await prisma.workflowStep.findFirst({
+        where: {workflowId: workflow.id, type: 'TRIGGER'},
+      });
+
+      const webhookStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.WEBHOOK,
+          name: 'Send Webhook',
+          position: {x: 100, y: 0},
+          config: {
+            url: 'https://webhook.example.com/test',
+            method: 'POST',
+          } as Prisma.InputJsonValue,
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {fromStepId: triggerStep!.id, toStepId: webhookStep.id},
+      });
+
+      const execution = await prisma.workflowExecution.create({
+        data: {
+          workflowId: workflow.id,
+          contactId: contact.id,
+          status: WorkflowExecutionStatus.RUNNING,
+          currentStepId: triggerStep!.id,
+          context: {
+            subject: 'Welcome Email',
+            from: 'hello@example.com',
+            messageId: 'msg-123',
+            isFirstOpen: true,
+            openedAt: '2024-01-15T10:00:00Z',
+          } as Prisma.InputJsonValue,
+        },
+      });
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep!.id);
+
+      // Verify webhook was called with event data
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://webhook.example.com/test',
+        expect.objectContaining({
+          method: 'POST',
+          body: expect.stringContaining('"event"'),
+        }),
+      );
+
+      // Parse the body to verify event data structure
+      const callArgs = mockFetch.mock.calls[0];
+      const body = JSON.parse(callArgs[1].body);
+
+      expect(body.event).toMatchObject({
+        subject: 'Welcome Email',
+        from: 'hello@example.com',
+        messageId: 'msg-123',
+        isFirstOpen: true,
+        openedAt: '2024-01-15T10:00:00Z',
+      });
+
+      expect(body.contact.email).toBe('test@example.com');
+    });
+  });
 });

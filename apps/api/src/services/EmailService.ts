@@ -8,6 +8,7 @@ import {HttpException} from '../exceptions/index.js';
 
 import {BillingLimitService} from './BillingLimitService.js';
 import {DomainService} from './DomainService.js';
+import {EventService} from './EventService.js';
 import {QueueService} from './QueueService.js';
 import {sendRawEmail} from './SESService.js';
 
@@ -386,19 +387,16 @@ export class EmailService {
         },
       });
 
-      // Track event
-      await prisma.event.create({
-        data: {
-          projectId: email.projectId,
-          contactId: email.contactId,
-          emailId: email.id,
-          name: 'email.sent',
-          data: {
-            subject: formattedEmail.subject,
-            from: email.from,
-            messageId: result.messageId,
-          },
-        },
+      // Track event (this will trigger workflows)
+      await EventService.trackEvent(email.projectId, 'email.sent', email.contactId, email.id, {
+        subject: formattedEmail.subject,
+        from: email.from,
+        fromName: email.fromName,
+        messageId: result.messageId,
+        templateId: email.templateId,
+        campaignId: email.campaignId,
+        sourceType: email.sourceType,
+        sentAt: new Date().toISOString(),
       });
     } catch (error) {
       console.error(`[EMAIL] Failed to send email ${emailId}:`, error);

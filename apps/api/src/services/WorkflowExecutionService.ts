@@ -591,7 +591,8 @@ export class WorkflowExecutionService {
     // Structure allows access to:
     // - contact.email, contact.subscribed
     // - data.firstName, data.lastName, etc.
-    // - workflow.* (execution context)
+    // - workflow.* (execution context - alias for event data)
+    // - event.* (event data that triggered the workflow)
     const actualValue = this.resolveField(field, {
       contact: {
         email: contact.email,
@@ -599,6 +600,7 @@ export class WorkflowExecutionService {
       },
       data: contactData,
       workflow: context,
+      event: context, // Alias for easier access to event data
     });
 
     // Evaluate the condition
@@ -665,6 +667,7 @@ export class WorkflowExecutionService {
       contact.data && typeof contact.data === 'object' && !Array.isArray(contact.data)
         ? (contact.data as Record<string, unknown>)
         : {};
+    const context = execution.context || {};
 
     const payload = body || {
       contact: {
@@ -680,6 +683,7 @@ export class WorkflowExecutionService {
         id: execution.id,
         startedAt: execution.startedAt,
       },
+      event: context, // Include event data that triggered the workflow
     };
 
     // Make HTTP request

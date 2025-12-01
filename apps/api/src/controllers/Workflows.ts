@@ -4,6 +4,8 @@ import type {NextFunction, Request, Response} from 'express';
 
 import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth} from '../middleware/auth.js';
+import {ContactService} from '../services/ContactService.js';
+import {EventService} from '../services/EventService.js';
 import {WorkflowService} from '../services/WorkflowService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
 
@@ -25,6 +27,45 @@ export class Workflows {
     const result = await WorkflowService.list(auth.projectId!, page, pageSize, search);
 
     return res.status(200).json(result);
+  }
+
+  /**
+   * GET /workflows/fields
+   * Get all available fields for workflow conditions (contact fields + event fields)
+   * Query param: eventName - Optional event name to filter event fields
+   * NOTE: This must be defined BEFORE the :id route to avoid conflicts
+   */
+  @Get('fields')
+  @Middleware([requireAuth])
+  @CatchAsync
+  public async getAvailableFields(req: Request, res: Response, next: NextFunction) {
+    const auth = res.locals.auth as AuthResponse;
+    const eventName = req.query.eventName as string | undefined;
+
+    try {
+      // Get contact fields (standard + custom data fields)
+      const contactFields = await ContactService.getAvailableFields(auth.projectId!);
+
+      // Add standard contact fields
+      const standardContactFields = ['contact.email', 'contact.subscribed'];
+
+      // Get event fields by analyzing actual event data
+      // This will only show fields that have been seen in actual events
+      const eventFields = await EventService.getAvailableEventFields(auth.projectId!, eventName);
+
+      // Combine all fields
+      const allFields = [...standardContactFields, ...contactFields, ...eventFields].sort();
+
+      return res.status(200).json({
+        fields: allFields,
+        count: allFields.length,
+      });
+    } catch (error) {
+      console.error('[WORKFLOWS] Failed to get available fields:', error);
+      return res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to get available fields',
+      });
+    }
   }
 
   /**
