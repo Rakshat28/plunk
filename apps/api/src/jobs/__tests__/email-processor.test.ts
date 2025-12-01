@@ -1,5 +1,5 @@
 import {describe, it, expect, beforeEach, vi} from 'vitest';
-import {EmailStatus} from '@plunk/db';
+import {EmailStatus, EmailSourceType} from '@plunk/db';
 import {factories, getPrismaClient, createServiceMocks} from '../../../../../test/helpers';
 import type {Prisma} from '@plunk/db';
 
@@ -260,6 +260,7 @@ describe('Email Processor', () => {
           body: '<p>Test email with attachments</p>',
           from: 'test@example.com',
           status: EmailStatus.PENDING,
+          sourceType: EmailSourceType.TRANSACTIONAL,
           attachments: [
             {
               filename: 'document.pdf',
@@ -302,6 +303,7 @@ describe('Email Processor', () => {
           body: '<p>Test</p>',
           from: 'test@example.com',
           status: EmailStatus.PENDING,
+          sourceType: EmailSourceType.TRANSACTIONAL,
           attachments: [
             {filename: 'file.pdf', content: 'base64', contentType: 'application/pdf'},
           ] as unknown as Prisma.InputJsonValue,
