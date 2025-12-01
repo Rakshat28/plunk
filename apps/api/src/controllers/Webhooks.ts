@@ -30,6 +30,38 @@ export class Webhooks {
       const eventType = body.eventType as 'Bounce' | 'Delivery' | 'Open' | 'Complaint' | 'Click';
       const messageId = body.mail?.messageId;
 
+      // Handle SNS subscription confirmation
+      if (req.body.Type === 'SubscriptionConfirmation') {
+        signale.info('SNS Subscription Confirmation received');
+        signale.info('Subscribe URL:', req.body.SubscribeURL);
+
+        // Automatically confirm the subscription
+        try {
+          const confirmResponse = await fetch(req.body.SubscribeURL);
+          if (confirmResponse.ok) {
+            signale.success('SNS subscription confirmed successfully');
+            return res.status(200).json({
+              success: true,
+              message: 'Subscription confirmed',
+            });
+          } else {
+            signale.error('Failed to confirm SNS subscription:', confirmResponse.statusText);
+            return res.status(200).json({
+              success: false,
+              message: 'Failed to confirm subscription',
+              subscribeURL: req.body.SubscribeURL,
+            });
+          }
+        } catch (confirmError) {
+          signale.error('Error confirming SNS subscription:', confirmError);
+          return res.status(200).json({
+            success: false,
+            message: 'Error confirming subscription',
+            subscribeURL: req.body.SubscribeURL,
+          });
+        }
+      }
+
       if (!messageId) {
         signale.warn('[WEBHOOK] No messageId found in SNS notification');
         return res.status(400).json({success: false, error: 'No messageId found'});
