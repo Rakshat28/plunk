@@ -1,0 +1,394 @@
+---
+title: Docker Deployment
+description: Deploy Plunk with Docker Compose
+---
+
+## Prerequisites
+
+- Docker installed
+- Docker Compose installed
+- Git installed
+
+## Quick Start
+
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/useplunk/plunk.git
+cd plunk
+```
+
+### 2. Copy Environment File
+
+```bash
+cp .env.self-host.example .env
+```
+
+### 3. Configure Environment
+
+Edit `.env` and configure required variables:
+
+```bash
+# Database Password (PostgreSQL)
+DB_PASSWORD="changeme123"
+
+# JWT Secret (generate with: openssl rand -base64 32)
+JWT_SECRET="your-secret-here"
+
+# Domains (for subdomain-based routing)
+API_DOMAIN="api.localhost"
+DASHBOARD_DOMAIN="app.localhost"
+LANDING_DOMAIN="www.localhost"
+WIKI_DOMAIN="docs.localhost"
+
+# Set to 'true' for HTTPS in production
+USE_HTTPS="false"
+
+# AWS SES (for email sending)
+AWS_SES_REGION="us-east-1"
+AWS_SES_ACCESS_KEY_ID="your-access-key"
+AWS_SES_SECRET_ACCESS_KEY="your-secret-key"
+SES_CONFIGURATION_SET="plunk-configuration-set"
+
+# S3-compatible storage (Minio is included by default)
+# Leave defaults unless using external S3
+S3_ENDPOINT="http://minio:9000"
+S3_ACCESS_KEY_ID="plunk"
+S3_ACCESS_KEY_SECRET="plunkminiopass"
+S3_BUCKET="uploads"
+S3_PUBLIC_URL="http://localhost:9000/uploads"
+S3_FORCE_PATH_STYLE="true"
+```
+
+### 4. Start Services
+
+```bash
+docker compose up -d
+```
+
+This starts:
+- PostgreSQL database
+- Redis
+- Minio (S3-compatible storage)
+- Plunk application (all services in one container with nginx)
+  - API server
+  - Worker process
+  - Web dashboard
+  - Landing page
+  - Documentation
+
+### 5. Access Services
+
+The services are available at the configured domains:
+- **Dashboard**: `http://app.localhost` (or your configured domain)
+- **API**: `http://api.localhost`
+- **Landing**: `http://www.localhost`
+- **Docs**: `http://docs.localhost`
+- **Minio Console**: `http://localhost:9001`
+
+Create your first account and start sending emails!
+
+## Docker Compose Configuration
+
+The `docker-compose.yml` file uses the pre-built Plunk image from GitHub Container Registry:
+
+```yaml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: plunk-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: plunk
+      POSTGRES_USER: plunk
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - plunk
+
+  redis:
+    image: redis:7-alpine
+    container_name: plunk-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - plunk
+
+  minio:
+    image: minio/minio:latest
+    container_name: plunk-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-plunk}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-plunkminiopass}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"  # API
+      - "9001:9001"  # Console
+    networks:
+      - plunk
+
+  plunk:
+    image: ghcr.io/useplunk/plunk:latest
+    container_name: plunk
+    restart: unless-stopped
+    environment:
+      SERVICE: all  # Runs all services (API, Worker, Web, Landing, Wiki)
+      DATABASE_URL: postgresql://plunk:${DB_PASSWORD}@postgres:5432/plunk
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      # Domain configuration for subdomain routing
+      API_DOMAIN: ${API_DOMAIN:-api.localhost}
+      DASHBOARD_DOMAIN: ${DASHBOARD_DOMAIN:-app.localhost}
+      LANDING_DOMAIN: ${LANDING_DOMAIN:-www.localhost}
+      WIKI_DOMAIN: ${WIKI_DOMAIN:-docs.localhost}
+      USE_HTTPS: ${USE_HTTPS:-false}
+      # AWS SES
+      AWS_SES_REGION: ${AWS_SES_REGION}
+      AWS_SES_ACCESS_KEY_ID: ${AWS_SES_ACCESS_KEY_ID}
+      AWS_SES_SECRET_ACCESS_KEY: ${AWS_SES_SECRET_ACCESS_KEY}
+      # S3/Minio storage
+      S3_ENDPOINT: ${S3_ENDPOINT:-http://minio:9000}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-plunk}
+      S3_ACCESS_KEY_SECRET: ${S3_ACCESS_KEY_SECRET:-plunkminiopass}
+    ports:
+      - "465:465"   # SMTP (implicit TLS)
+      - "587:587"   # SMTP (STARTTLS)
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    networks:
+      - plunk
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  plunk_data:
+
+networks:
+  plunk:
+    driver: bridge
+```
+
+**Note**: The Plunk image contains all applications (API, Worker, Web, Landing, Wiki) and uses nginx for subdomain-based routing.
+
+## Production Deployment
+
+### Using Pre-built Image
+
+The easiest way to deploy is using the pre-built image from GitHub Container Registry:
+
+```bash
+docker pull ghcr.io/useplunk/plunk:latest
+docker compose up -d
+```
+
+### Building Your Own Image
+
+If you want to build from source:
+
+```bash
+docker build -t plunk:custom .
+```
+
+Then update `docker-compose.yml` to use your custom image:
+```yaml
+plunk:
+  image: plunk:custom
+  # ... rest of configuration
+```
+
+### Security Hardening
+
+1. **Use strong passwords**
+   ```bash
+   DB_PASSWORD=$(openssl rand -base64 32)
+   JWT_SECRET=$(openssl rand -base64 32)
+   ```
+
+2. **Use HTTPS**
+   - Set `USE_HTTPS=true` in your `.env`
+   - Set up reverse proxy (Traefik, Caddy, or nginx)
+   - Configure SSL certificates (Let's Encrypt)
+
+3. **Configure domains**
+   ```bash
+   API_DOMAIN=api.yourdomain.com
+   DASHBOARD_DOMAIN=app.yourdomain.com
+   LANDING_DOMAIN=www.yourdomain.com
+   WIKI_DOMAIN=docs.yourdomain.com
+   USE_HTTPS=true
+   ```
+
+4. **Restrict network access**
+   - Don't expose database and Redis ports publicly
+   - Use internal Docker networks
+   - Only expose port 80/443 (via reverse proxy) and SMTP ports
+
+5. **Regular backups**
+   - Database backups (automated via cron)
+   - Minio data backups
+
+### Scaling
+
+The Plunk image runs all services in a single container by default. For higher scale:
+
+#### Separate Services
+
+You can run services separately by setting the `SERVICE` environment variable:
+
+```yaml
+# API only
+plunk-api:
+  image: ghcr.io/useplunk/plunk:latest
+  environment:
+    SERVICE: api
+  # ... configuration
+
+# Worker only
+plunk-worker:
+  image: ghcr.io/useplunk/plunk:latest
+  environment:
+    SERVICE: worker
+  # ... configuration
+
+# Web only
+plunk-web:
+  image: ghcr.io/useplunk/plunk:latest
+  environment:
+    SERVICE: web
+  # ... configuration
+```
+
+#### Scale Workers
+
+For higher email throughput, run multiple worker containers:
+
+```bash
+docker compose up -d --scale plunk-worker=3
+```
+
+#### External Services
+
+For production at scale, use managed services:
+- Managed PostgreSQL (AWS RDS, DigitalOcean, Supabase)
+- Managed Redis (AWS ElastiCache, Redis Cloud, Upstash)
+- AWS S3 (instead of Minio)
+
+## Maintenance
+
+### View Logs
+
+```bash
+# All services
+docker compose logs -f
+
+# Specific service
+docker compose logs -f plunk
+docker compose logs -f postgres
+```
+
+### Restart Services
+
+```bash
+docker compose restart plunk
+```
+
+### Update Plunk
+
+Pull the latest image and restart:
+
+```bash
+docker compose pull plunk
+docker compose up -d plunk
+```
+
+If you built from source:
+```bash
+git pull
+docker build -t plunk:custom .
+docker compose up -d
+```
+
+### Backup Database
+
+```bash
+docker compose exec postgres pg_dump -U plunk plunk > backup-$(date +%Y%m%d).sql
+```
+
+### Restore Database
+
+```bash
+docker compose exec -T postgres psql -U plunk plunk < backup.sql
+```
+
+### Backup Minio Data
+
+```bash
+docker compose exec minio mc alias set local http://localhost:9000 plunk plunkminiopass
+docker compose exec minio mc mirror local/uploads /backups/minio
+```
+
+## Troubleshooting
+
+### Services won't start
+
+Check logs:
+```bash
+docker compose logs plunk
+```
+
+### Database connection errors
+
+Ensure DATABASE_URL is correct and database is running:
+```bash
+docker compose ps postgres
+docker compose exec postgres psql -U plunk -d plunk -c "SELECT 1;"
+```
+
+### Worker not processing jobs
+
+Check Plunk container logs for worker output:
+```bash
+docker compose logs plunk | grep worker
+```
+
+Verify Redis connection:
+```bash
+docker compose exec redis redis-cli PING
+```
+
+### Cannot access services
+
+Check that your domains resolve correctly:
+```bash
+# For local development with *.localhost domains, these should work automatically
+# For production domains, ensure DNS is configured correctly
+curl http://api.localhost
+curl http://app.localhost
+```
+
+### Minio not accessible
+
+Check Minio is running:
+```bash
+docker compose ps minio
+docker compose logs minio
+```
+
+Access Minio console at `http://localhost:9001` with credentials from `.env`.
+
+## Next Steps
+
+- [Configure environment variables](/self-hosting/environment-variables)
+- [Set up email delivery](/self-hosting/email-setup)
+- [Database setup and migrations](/self-hosting/database-setup)

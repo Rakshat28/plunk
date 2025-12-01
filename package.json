@@ -1,41 +1,56 @@
 {
-	"name": "plunk",
-	"version": "1.3.6",
-	"private": true,
-	"license": "agpl-3.0",
-	"workspaces": {
-		"packages": [
-			"packages/*"
-		]
-	},
-	"engines": {
-		"npm": ">=6.14.x",
-		"yarn": "4.3.x",
-		"node": ">=18.x"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^1.8.3",
-		"lerna": "^8.1.6",
-		"prisma": "^5.17.0",
-		"rimraf": "^5.0.9"
-	},
-	"dependencies": {
-		"@prisma/client": "^5.17.0"
-	},
-	"scripts": {
-		"dev:api": "yarn workspace @plunk/api dev",
-		"dev:dashboard": "yarn workspace @plunk/dashboard dev",
-		"dev:shared": "yarn workspace @plunk/shared dev",
-		"build:api": "yarn build:shared && yarn workspace @plunk/api build",
-		"build:dashboard": "yarn build:shared && yarn workspace @plunk/dashboard build",
-		"build:shared": "yarn generate && yarn workspace @plunk/shared build",
-		"clean": "rimraf node_modules yarn.lock && yarn add lerna -DW && lerna run clean",
-		"preinstall": "node tools/preinstall.js",
-		"migrate": "prisma migrate dev",
-		"migrate:deploy": "prisma migrate deploy",
-		"generate": "prisma generate",
-		"services:up": "docker compose -f docker-compose.dev.yml up -d",
-		"services:down": "docker compose -f docker-compose.dev.yml down"
-	},
-	"packageManager": "yarn@4.3.0"
+  "name": "plunk",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "start": "turbo start",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "clean": "turbo clean --concurrency 20 && rimraf node_modules .turbo",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "services:up": "docker compose -f docker/docker-compose.dev.yml up -d",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:run": "vitest run"
+  },
+  "resolutions": {
+    "fumadocs-core": "16.0.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@formatjs/cli": "^6.7.4",
+    "@types/supertest": "^6.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.32.1",
+    "@typescript-eslint/parser": "^8.32.1",
+    "@vitest/coverage-v8": "^4.0.14",
+    "@vitest/ui": "^4.0.14",
+    "dotenv": "^17.0.1",
+    "eslint": "^9.27.0",
+    "eslint-config-next": "^15.3.2",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "form-data": "^4.0.3",
+    "prettier": "^3.5.3",
+    "rimraf": "^6.1.2",
+    "supertest": "^7.1.4",
+    "turbo": "^2.6.0",
+    "typescript": "5.7.2",
+    "typescript-eslint": "^8.48.0",
+    "vitest": "^4.0.14",
+    "vitest-mock-extended": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "yarn@4.9.1",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }

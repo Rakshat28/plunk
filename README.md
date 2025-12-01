@@ -8,8 +8,7 @@
 
 <p align="center">
     <img src="https://img.shields.io/github/contributors/useplunk/plunk"/>
-    <img src="https://img.shields.io/github/actions/workflow/status/driaug/plunk-whitelabel/docker-build-prod.yml"/>
-    <img src="https://img.shields.io/docker/pulls/driaug/plunk"/>
+    <img src="https://img.shields.io/github/actions/workflow/status/useplunk/plunk/docker-publish.yml"/>
     <img src="https://img.shields.io/github/license/useplunk/plunk"/>
     <img src="https://img.shields.io/github/stars/useplunk/plunk"/>
 </p>
@@ -23,31 +22,25 @@ like [SendGrid](https://sendgrid.com/), [Resend](https://resend.com) or [Mailgun
 
 ## Features
 
-- **Transactional Emails**: Send emails straight from your API
-- **Automations**: Create automations based on user actions
-- **Broadcasts**: Send newsletters and product updates to big audiences
+- **Transactional Emails**: Send emails straight from your API with template support and variable substitution
+- **Campaigns**: Send newsletters and product updates to large audiences with segmentation
+- **Workflows**: Create advanced automations with triggers, delays, and conditional logic
+- **Contact Management**: Organize contacts with custom fields and dynamic segmentation
+- **Analytics**: Track opens, clicks, bounces, and engagement metrics in real-time
+- **Custom Domains**: Verify and send from your own domains with DKIM/SPF support
 
 ## Sponsors
-Plunk is made possible by the support of our sponsors. If you self-host Plunk, consider supporting via [GitHub Sponsors](https://github.com/sponsors/driaug).
 
-<div align="center">
-  <table>
-    <tr>
-      <td align="center" width="120">
-        <img src="https://avatars.githubusercontent.com/u/206509599?s=200&v=4" style="width:80px; height:80px; object-fit:contain;"/><br/>
-        <a href="https://every.news/?ref=useplunk.com">Everynews</a>
-      </td>
-    </tr>
-  </table>
-</div>
+Plunk is made possible by the support of our sponsors. If you self-host Plunk, consider supporting
+via [GitHub Sponsors](https://github.com/sponsors/driaug).
 
 ## Self-hosting Plunk
 
-The easiest way to self-host Plunk is by using the `driaug/plunk` Docker image.
-You can pull the latest image from [Docker Hub](https://hub.docker.com/r/driaug/plunk/).
+The easiest way to self-host Plunk is by using the `plunk` Docker image.
+You can pull the latest image from [Github](https://github.com/useplunk/plunk/pkgs/container/plunk).
 
 A complete guide on how to deploy Plunk can be found in
-the [documentation](https://docs.useplunk.com/getting-started/self-hosting).
+the [documentation](https://docs.useplunk.com/self-hosting/introduction).
 
 ## Contributing
 
@@ -56,3 +49,7 @@ You are welcome to contribute to Plunk. You can find a guide on how to contribut
 <a href="https://github.com/useplunk/plunk/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=useplunk/plunk" />
 </a>
+
+## License
+
+AGPL-3.0 License - see [LICENSE](LICENSE) for details.

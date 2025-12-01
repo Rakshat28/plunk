@@ -1,0 +1,340 @@
+---
+title: API Reference
+description: Complete Plunk API documentation
+---
+
+## Base URL
+
+```
+{{API_URL}}
+```
+
+All API requests use this base URL.
+
+## Authentication
+
+Include your API key in the `Authorization` header:
+
+```bash
+Authorization: Bearer YOUR_API_KEY
+```
+
+- **Secret Key (sk_*)** — Required for all endpoints except `/v1/track`
+- **Public Key (pk_*)** — Only works with `/v1/track` for client-side event tracking
+
+## Making requests
+
+### Send transactional email
+
+```bash
+curl -X POST {{API_URL}}/v1/send \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "user@example.com",
+    "subject": "Hello",
+    "body": "<p>Your message here</p>"
+  }'
+```
+
+### Track event
+
+```bash
+curl -X POST {{API_URL}}/v1/track \
+  -H "Authorization: Bearer pk_your_public_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "event": "signed_up"
+  }'
+```
+
+### Create contact
+
+```bash
+curl -X POST {{API_URL}}/contacts \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "subscribed": true,
+    "data": {
+      "firstName": "John",
+      "plan": "pro"
+    }
+  }'
+```
+
+## Response format
+
+All API responses follow a standardized format for easy parsing and error handling.
+
+### Success response
+
+Public API endpoints (`/v1/send`, `/v1/track`):
+
+```json
+{
+  "success": true,
+  "data": {
+    "contact": "cnt_abc123",
+    "event": "evt_xyz789",
+    "timestamp": "2025-11-30T10:30:00.000Z"
+  }
+}
+```
+
+Dashboard API endpoints (contacts, templates, campaigns):
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "cnt_abc123",
+    "email": "user@example.com",
+    "createdAt": "2025-11-30T10:30:00.000Z"
+  }
+}
+```
+
+List endpoints with pagination:
+
+```json
+{
+  "success": true,
+  "data": {
+    "items": [...],
+    "nextCursor": "abc123",
+    "hasMore": true,
+    "total": 1000
+  }
+}
+```
+
+### Error response
+
+All errors include detailed information to help you debug issues:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "statusCode": 422,
+    "requestId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "errors": [
+      {
+        "field": "email",
+        "message": "Invalid email",
+        "code": "invalid_string"
+      }
+    ],
+    "suggestion": "One or more fields have incorrect types. Check that strings are quoted, numbers are unquoted, and booleans are true/false."
+  },
+  "timestamp": "2025-11-30T10:30:00.000Z"
+}
+```
+
+**Error fields:**
+- `code` — Machine-readable error code for programmatic handling
+- `message` — Human-readable description
+- `statusCode` — HTTP status code
+- `requestId` — Unique ID for debugging (include when contacting support)
+- `errors` — Field-level validation details (when applicable)
+- `suggestion` — Helpful guidance for fixing the error
+
+See the [Error Codes documentation](/api-reference/errors) for complete details and examples.
+
+## Pagination
+
+List endpoints support cursor-based pagination:
+
+```bash
+GET /contacts?limit=100&cursor=abc123
+```
+
+**Parameters:**
+- `limit` — Number of items per page (default: 20, max: 100)
+- `cursor` — Pagination cursor from previous response
+
+**Response:**
+```json
+{
+  "items": [...],
+  "nextCursor": "def456",
+  "hasMore": true,
+  "total": 10000
+}
+```
+
+Use `nextCursor` for the next page. When `hasMore` is false, you've reached the end.
+
+## Rate limits
+
+Plunk enforces reasonable rate limits to ensure service quality:
+
+- **Email sending** — 14 emails/second (AWS SES default)
+- **API requests** — 1000 requests/minute per project
+- **Bulk operations** — Automatically queued for processing
+
+If you exceed limits, you'll receive a `429 Too Many Requests` response.
+
+## Error codes
+
+The API uses standard HTTP status codes along with machine-readable error codes:
+
+**400 Bad Request** — Invalid request parameters or malformed request body
+
+**401 Unauthorized** — Missing or invalid API key
+
+**403 Forbidden** — Not authorized to access this resource or project disabled
+
+**404 Not Found** — Resource doesn't exist
+
+**422 Unprocessable Entity** — Request validation failed (see `errors` array for details)
+
+**429 Too Many Requests** — Rate limit exceeded
+
+**500 Internal Server Error** — An unexpected error occurred (contact support with request ID)
+
+For a complete list of error codes and troubleshooting guidance, see the [Error Codes documentation](/api-reference/errors).
+
+## API endpoints
+
+### Public API (transactional)
+
+**POST /v1/send** — Send transactional email(s)
+- Accepts single or multiple recipients
+- Template or inline content
+- Variable substitution
+
+**POST /v1/track** — Track event for contact
+- Creates/updates contact
+- Tracks custom event
+- Can use public key
+
+### Contacts
+
+**GET /contacts** — List all contacts
+**POST /contacts** — Create new contact
+**GET /contacts/:id** — Get contact details
+**PATCH /contacts/:id** — Update contact
+**DELETE /contacts/:id** — Delete contact
+
+### Templates
+
+**GET /templates** — List all templates
+**POST /templates** — Create new template
+**GET /templates/:id** — Get template details
+**PATCH /templates/:id** — Update template
+**DELETE /templates/:id** — Delete template
+
+### Campaigns
+
+**GET /campaigns** — List all campaigns
+**POST /campaigns** — Create new campaign
+**GET /campaigns/:id** — Get campaign details
+**PATCH /campaigns/:id** — Update campaign
+**POST /campaigns/:id/send** — Send or schedule campaign
+**POST /campaigns/:id/cancel** — Cancel scheduled campaign
+**POST /campaigns/:id/test** — Send test email
+**GET /campaigns/:id/stats** — Get campaign analytics
+
+### Segments
+
+**GET /segments** — List all segments
+**POST /segments** — Create new segment
+**GET /segments/:id** — Get segment details
+**PATCH /segments/:id** — Update segment
+**DELETE /segments/:id** — Delete segment
+**GET /segments/:id/contacts** — List segment members
+
+### Workflows
+
+**GET /workflows** — List all workflows
+**POST /workflows** — Create new workflow
+**GET /workflows/:id** — Get workflow details
+**PATCH /workflows/:id** — Update workflow
+**DELETE /workflows/:id** — Delete workflow
+**GET /workflows/:id/executions** — List workflow executions
+
+### Events
+
+**GET /events** — List all events
+**GET /events/names** — List unique event names
+
+### Domains
+
+**GET /domains** — List verified domains
+**POST /domains** — Add domain for verification
+**DELETE /domains/:id** — Remove domain
+
+## Client libraries
+
+### Node.js
+
+```javascript
+const PLUNK_SECRET_KEY = process.env.PLUNK_SECRET_KEY;
+
+async function sendEmail(to, subject, body) {
+  const response = await fetch('{{API_URL}}/v1/send', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${PLUNK_SECRET_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ to, subject, body })
+  });
+
+  const data = await response.json();
+
+  if (!data.success) {
+    throw new Error(`[${data.error.code}] ${data.error.message}`);
+  }
+
+  return data.data;
+}
+```
+
+### Python
+
+```python
+import os
+import requests
+
+PLUNK_SECRET_KEY = os.environ['PLUNK_SECRET_KEY']
+
+def send_email(to, subject, body):
+    response = requests.post(
+        '{{API_URL}}/v1/send',
+        headers={
+            'Authorization': f'Bearer {PLUNK_SECRET_KEY}',
+            'Content-Type': 'application/json'
+        },
+        json={'to': to, 'subject': subject, 'body': body}
+    )
+
+    data = response.json()
+
+    if not data.get('success'):
+        error = data['error']
+        raise Exception(f"[{error['code']}] {error['message']}")
+
+    return data['data']
+```
+
+### cURL
+
+```bash
+curl -X POST {{API_URL}}/v1/send \
+  -H "Authorization: Bearer $PLUNK_SECRET_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"to": "user@example.com", "subject": "Hello", "body": "Message"}'
+```
+
+## What's next
+
+- [Send your first email](/getting-started/quick-start)
+- [View detailed endpoint docs](/api-reference/public-api)
+- [Check error codes](/api-reference/errors)

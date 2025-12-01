@@ -1,35 +1,282 @@
-# Base Stage
-FROM node:20-alpine3.20 AS base
+# Multi-stage Dockerfile for Plunk
+# Creates a single image containing all applications (API, Worker, Web, Landing, Wiki)
+# Use SERVICE environment variable to specify which service to run
+
+# ============================================
+# Stage 1: Dependencies
+# ============================================
+# Use build platform (AMD64) to install dependencies, avoiding QEMU issues
+FROM --platform=$BUILDPLATFORM node:20-slim AS deps
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+WORKDIR /app
+
+# Install curl for health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Enable Corepack and set Yarn version
+RUN corepack enable && corepack prepare yarn@4.9.1 --activate
+
+# Copy Yarn configuration and release
+COPY .yarnrc.yml ./
+COPY .yarn/releases ./.yarn/releases
+
+# Copy package files for dependency installation
+COPY package.json yarn.lock ./
+
+# Copy workspace package.json files
+COPY apps/api/package.json ./apps/api/
+COPY apps/smtp/package.json ./apps/smtp/
+COPY apps/web/package.json ./apps/web/
+COPY apps/landing/package.json ./apps/landing/
+COPY apps/wiki/package.json ./apps/wiki/
+COPY packages/db/package.json ./packages/db/
+COPY packages/ui/package.json ./packages/ui/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/types/package.json ./packages/types/
+COPY packages/email/package.json ./packages/email/
+COPY packages/typescript-config/package.json ./packages/typescript-config/
+COPY packages/eslint-config/package.json ./packages/eslint-config/
+
+# Copy wiki source files for postinstall script (fumadocs-mdx)
+COPY apps/wiki/content ./apps/wiki/content
+COPY apps/wiki/lib ./apps/wiki/lib
+COPY apps/wiki/source.config.ts ./apps/wiki/source.config.ts
+COPY apps/wiki/mdx-components.tsx ./apps/wiki/mdx-components.tsx
+COPY apps/wiki/next.config.mjs ./apps/wiki/next.config.mjs
+COPY apps/wiki/tsconfig.json ./apps/wiki/tsconfig.json
+
+# Install dependencies (runs on build platform, fetches binaries for target platform)
+# Use cache mounts for Yarn cache to speed up dependency installation
+RUN --mount=type=cache,target=/root/.yarn/berry/cache,sharing=locked \
+    --mount=type=cache,target=/root/.cache/yarn,sharing=locked \
+    echo "Building on $BUILDPLATFORM for $TARGETPLATFORM" && \
+    yarn install --immutable
+
+# ============================================
+# Stage 2: Builder
+# ============================================
+# Builder runs on target platform to generate platform-specific artifacts
+FROM node:20-slim AS builder
+ARG TARGETPLATFORM
+
+# Build-time arguments for URL configuration
+# These are only used during the build process (for wiki OpenAPI generation and static assets)
+# Runtime URLs are configured via *_DOMAIN and USE_HTTPS environment variables at container startup
+ARG API_URI=https://api.useplunk.com
+ARG DASHBOARD_URI=https://app.useplunk.com
+ARG LANDING_URI=https://www.useplunk.com
+ARG WIKI_URI=https://docs.useplunk.com
 
 WORKDIR /app
 
+# Install OpenSSL for Prisma
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
+# Enable Corepack and set Yarn version
+RUN corepack enable && corepack prepare yarn@4.9.1 --activate
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/.yarn ./.yarn
+COPY --from=deps /app/.yarnrc.yml ./
+COPY --from=deps /app/package.json ./
+COPY --from=deps /app/yarn.lock ./
+
+# ============================================
+# OPTIMIZATION: Copy and build in layers for better Docker cache utilization
+# Docker will only rebuild from the first changed layer, not everything
+# ============================================
+
+# Copy root config files needed for Turbo
+COPY turbo.json ./
+
+# Step 1: Copy and build shared packages (these change less frequently)
+# Shared packages are dependencies for apps, so build them first
+COPY packages ./packages
+RUN yarn workspace @plunk/db db:generate
+RUN --mount=type=cache,target=/app/.turbo,sharing=locked \
+    API_URI=${API_URI} \
+    DASHBOARD_URI=${DASHBOARD_URI} \
+    LANDING_URI=${LANDING_URI} \
+    WIKI_URI=${WIKI_URI} \
+    NEXT_PUBLIC_API_URI=${API_URI} \
+    NEXT_PUBLIC_DASHBOARD_URI=${DASHBOARD_URI} \
+    NEXT_PUBLIC_LANDING_URI=${LANDING_URI} \
+    NEXT_PUBLIC_WIKI_URI=${WIKI_URI} \
+    yarn turbo build --filter="@plunk/*"
+
+# Step 2: Copy and build API (backend services)
+COPY apps/api ./apps/api
+COPY apps/smtp ./apps/smtp
+RUN --mount=type=cache,target=/app/.turbo,sharing=locked \
+    API_URI=${API_URI} \
+    DASHBOARD_URI=${DASHBOARD_URI} \
+    LANDING_URI=${LANDING_URI} \
+    WIKI_URI=${WIKI_URI} \
+    NEXT_PUBLIC_API_URI=${API_URI} \
+    NEXT_PUBLIC_DASHBOARD_URI=${DASHBOARD_URI} \
+    NEXT_PUBLIC_LANDING_URI=${LANDING_URI} \
+    NEXT_PUBLIC_WIKI_URI=${WIKI_URI} \
+    yarn turbo build --filter=api --filter=smtp
+
+# Step 3: Copy and build Wiki (includes API doc generation)
+COPY apps/wiki ./apps/wiki
+# Generate OpenAPI spec and docs (URLs will be placeholder values for runtime replacement)
+RUN cd apps/wiki && \
+    node scripts/generate-openapi.js && \
+    npx tsx scripts/generate-docs.mts && \
+    npx fumadocs-mdx && \
+    cd ../..
+# Build wiki with placeholder URLs (replaced at container startup)
+RUN --mount=type=cache,target=/app/.turbo,sharing=locked \
+    API_URI=${API_URI} \
+    DASHBOARD_URI=${DASHBOARD_URI} \
+    LANDING_URI=${LANDING_URI} \
+    WIKI_URI=${WIKI_URI} \
+    NEXT_PUBLIC_API_URI=${API_URI} \
+    NEXT_PUBLIC_DASHBOARD_URI=${DASHBOARD_URI} \
+    NEXT_PUBLIC_LANDING_URI=${LANDING_URI} \
+    NEXT_PUBLIC_WIKI_URI=${WIKI_URI} \
+    yarn turbo build --filter=wiki
+
+# Step 4: Copy and build Web dashboard
+COPY apps/web ./apps/web
+RUN --mount=type=cache,target=/app/.turbo,sharing=locked \
+    API_URI=${API_URI} \
+    DASHBOARD_URI=${DASHBOARD_URI} \
+    LANDING_URI=${LANDING_URI} \
+    WIKI_URI=${WIKI_URI} \
+    NEXT_PUBLIC_API_URI=${API_URI} \
+    NEXT_PUBLIC_DASHBOARD_URI=${DASHBOARD_URI} \
+    NEXT_PUBLIC_LANDING_URI=${LANDING_URI} \
+    NEXT_PUBLIC_WIKI_URI=${WIKI_URI} \
+    yarn turbo build --filter=web
+
+# Step 5: Copy and build Landing page
+COPY apps/landing ./apps/landing
+RUN --mount=type=cache,target=/app/.turbo,sharing=locked \
+    API_URI=${API_URI} \
+    DASHBOARD_URI=${DASHBOARD_URI} \
+    LANDING_URI=${LANDING_URI} \
+    WIKI_URI=${WIKI_URI} \
+    NEXT_PUBLIC_API_URI=${API_URI} \
+    NEXT_PUBLIC_DASHBOARD_URI=${DASHBOARD_URI} \
+    NEXT_PUBLIC_LANDING_URI=${LANDING_URI} \
+    NEXT_PUBLIC_WIKI_URI=${WIKI_URI} \
+    yarn turbo build --filter=landing
+
+# Copy any remaining root files (if needed)
 COPY . .
 
-ARG NEXT_PUBLIC_API_URI=PLUNK_API_URI
+# Ensure directories exist (create empty ones if build didn't generate them)
+RUN mkdir -p \
+    apps/web/public \
+    apps/landing/public \
+    apps/wiki/public \
+    apps/web/.next/standalone \
+    apps/landing/.next/standalone \
+    apps/wiki/.next/standalone
 
-RUN yarn install --network-timeout 1000000
-RUN yarn build:shared
-RUN yarn workspace @plunk/api build
-RUN yarn workspace @plunk/dashboard build
-
-# Final Stage
-FROM node:20-alpine3.20
-
+# ============================================
+# Stage 3: Production Runtime
+# ============================================
+FROM node:20-alpine AS runner
 WORKDIR /app
 
-RUN apk add --no-cache bash nginx
+# Install OpenSSL for Prisma, curl for health checks, nginx, and gettext (for envsubst)
+RUN apk add --no-cache openssl curl nginx gettext
 
-COPY --from=base /app/packages/api/dist /app/packages/api/
-COPY --from=base /app/packages/dashboard/.next /app/packages/dashboard/.next
-COPY --from=base /app/packages/dashboard/public /app/packages/dashboard/public
-COPY --from=base /app/node_modules /app/node_modules
-COPY --from=base /app/packages/shared /app/packages/shared
-COPY --from=base /app/prisma /app/prisma
-COPY deployment/nginx.conf /etc/nginx/nginx.conf
-COPY deployment/entry.sh deployment/replace-variables.sh /app/
+# Enable Corepack and set Yarn version (must be before PM2 install)
+RUN corepack enable && corepack prepare yarn@4.9.1 --activate
 
-RUN chmod +x /app/entry.sh /app/replace-variables.sh
+# Install PM2 globally for process management
+# Use cache mount and specific version to prevent hangs
+RUN --mount=type=cache,target=/root/.npm \
+    npm install -g pm2@5.4.2 --prefer-offline --no-audit
 
-EXPOSE 3000 4000 5000
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 plunk
 
-CMD ["sh", "/app/entry.sh"]
+# Create nginx directories and set permissions
+RUN mkdir -p /var/log/nginx /var/lib/nginx /run/nginx && \
+    chown -R plunk:nodejs /var/log/nginx /var/lib/nginx /run/nginx /etc/nginx
+
+# Copy built artifacts from builder
+COPY --from=builder --chown=plunk:nodejs /app/apps/api/dist ./apps/api/dist
+COPY --from=builder --chown=plunk:nodejs /app/apps/smtp/dist ./apps/smtp/dist
+COPY --from=builder --chown=plunk:nodejs /app/apps/web/.next ./apps/web/.next
+COPY --from=builder --chown=plunk:nodejs /app/apps/landing/.next ./apps/landing/.next
+COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/.next ./apps/wiki/.next
+
+# Copy OpenAPI spec for wiki API documentation (required by fumadocs-openapi at runtime)
+COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/openapi.local.json ./apps/wiki/openapi.local.json
+
+# Copy package files
+COPY --from=builder --chown=plunk:nodejs /app/package.json ./
+COPY --from=builder --chown=plunk:nodejs /app/apps/api/package.json ./apps/api/
+COPY --from=builder --chown=plunk:nodejs /app/apps/smtp/package.json ./apps/smtp/
+COPY --from=builder --chown=plunk:nodejs /app/apps/web/package.json ./apps/web/
+COPY --from=builder --chown=plunk:nodejs /app/apps/landing/package.json ./apps/landing/
+COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/package.json ./apps/wiki/
+
+# Copy Next.js standalone builds (guaranteed to exist from builder stage)
+COPY --from=builder --chown=plunk:nodejs /app/apps/web/.next/standalone ./apps/web/.next/standalone
+COPY --from=builder --chown=plunk:nodejs /app/apps/landing/.next/standalone ./apps/landing/.next/standalone
+COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/.next/standalone ./apps/wiki/.next/standalone
+
+# Copy OpenAPI spec to wiki standalone directory (required at runtime)
+COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/openapi.local.json ./apps/wiki/.next/standalone/apps/wiki/openapi.local.json
+
+# Copy static files INTO the standalone directories (required for Next.js standalone to serve assets)
+# Web app
+COPY --from=builder --chown=plunk:nodejs /app/apps/web/public ./apps/web/.next/standalone/apps/web/public
+COPY --from=builder --chown=plunk:nodejs /app/apps/web/.next/static ./apps/web/.next/standalone/apps/web/.next/static
+# Landing app
+COPY --from=builder --chown=plunk:nodejs /app/apps/landing/public ./apps/landing/.next/standalone/apps/landing/public
+COPY --from=builder --chown=plunk:nodejs /app/apps/landing/.next/static ./apps/landing/.next/standalone/apps/landing/.next/static
+# Wiki app
+COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/public ./apps/wiki/.next/standalone/apps/wiki/public
+COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/.next/static ./apps/wiki/.next/standalone/apps/wiki/.next/static
+
+# Note: Wiki documentation is built at compile time with default URLs
+# The entrypoint script will do a find-and-replace to update URLs at runtime
+
+# Copy node_modules from deps stage (includes all dependencies)
+COPY --from=deps --chown=plunk:nodejs /app/node_modules ./node_modules
+
+# Copy Prisma client from builder stage (regenerated with correct ESM format)
+COPY --from=builder --chown=plunk:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=plunk:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+
+# Copy shared packages
+COPY --from=builder --chown=plunk:nodejs /app/packages ./packages
+
+# Copy Yarn configuration
+COPY --from=builder --chown=plunk:nodejs /app/.yarn ./.yarn
+COPY --from=builder --chown=plunk:nodejs /app/.yarnrc.yml ./
+COPY --from=builder --chown=plunk:nodejs /app/yarn.lock ./
+
+# Copy nginx configuration templates and setup script
+COPY --chown=plunk:nodejs docker/nginx/ /app/docker/nginx/
+RUN chmod +x /app/docker/nginx/setup-nginx.sh
+
+# Copy entrypoint script
+COPY --chown=plunk:nodejs docker-entrypoint-nginx.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint-nginx.sh
+
+USER plunk
+
+# Expose nginx port (default 80), SMTP ports (465, 587)
+# Port 80 is also used for ACME HTTP-01 challenges
+EXPOSE 80 465 587
+
+# Health check through nginx
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:80/ || exit 1
+
+# Default to running all services via entrypoint
+ENV SERVICE=all
+
+ENTRYPOINT ["docker-entrypoint-nginx.sh"]

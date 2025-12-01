@@ -1,0 +1,361 @@
+import {Badge, Collapsible, CollapsibleContent, CollapsibleTrigger} from '@plunk/ui';
+import type {Activity} from './ActivityFeed';
+import {
+  AlertCircle,
+  Calendar,
+  CheckCheck,
+  CheckCircle,
+  ChevronRight,
+  Eye,
+  MousePointerClick,
+  Send,
+  Workflow,
+  XCircle,
+  Zap,
+} from 'lucide-react';
+import Link from 'next/link';
+
+/**
+ * Simple relative time formatter for past events
+ */
+function getRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return 'just now';
+  }
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'} ago`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'} ago`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) {
+    return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
+  }
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  if (diffInMonths < 12) {
+    return `${diffInMonths} ${diffInMonths === 1 ? 'month' : 'months'} ago`;
+  }
+
+  const diffInYears = Math.floor(diffInMonths / 12);
+  return `${diffInYears} ${diffInYears === 1 ? 'year' : 'years'} ago`;
+}
+
+/**
+ * Format upcoming time (for future events)
+ */
+function getUpcomingTime(date: Date): string {
+  const now = new Date();
+  const diffInSeconds = Math.floor((date.getTime() - now.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return 'in a moment';
+  }
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `in ${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'}`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `in ${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'}`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays === 1) {
+    return `tomorrow at ${date.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true})}`;
+  }
+
+  if (diffInDays < 7) {
+    return `in ${diffInDays} days`;
+  }
+
+  if (diffInDays < 30) {
+    const weeks = Math.floor(diffInDays / 7);
+    return `in ${weeks} ${weeks === 1 ? 'week' : 'weeks'}`;
+  }
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  return `in ${diffInMonths} ${diffInMonths === 1 ? 'month' : 'months'}`;
+}
+
+interface ActivityItemProps {
+  activity: Activity;
+  isUpcoming?: boolean;
+}
+
+interface ActivityConfig {
+  icon: React.ComponentType<{className?: string}>;
+  color: string;
+  bgColor: string;
+  title: string;
+  description?: string;
+  badge?: {
+    label: string;
+    variant: 'default' | 'secondary' | 'destructive' | 'outline';
+  };
+  jsonData?: Record<string, unknown>;
+}
+
+function getActivityConfig(activity: Activity): ActivityConfig {
+  const {type, metadata} = activity;
+
+  switch (type) {
+    case 'event.triggered':
+      return {
+        icon: Zap,
+        color: 'text-blue-600',
+        bgColor: 'bg-blue-100',
+        title: (typeof metadata.eventName === 'string' ? metadata.eventName : undefined) || 'Event triggered',
+        description: undefined,
+        badge: {
+          label: 'Event',
+          variant: 'default',
+        },
+        jsonData:
+          metadata.eventData && typeof metadata.eventData === 'object' && !Array.isArray(metadata.eventData)
+            ? (metadata.eventData as Record<string, unknown>)
+            : undefined,
+      };
+
+    case 'email.sent':
+      return {
+        icon: Send,
+        color: 'text-green-600',
+        bgColor: 'bg-green-100',
+        title: (typeof metadata.subject === 'string' ? metadata.subject : undefined) || 'Email sent',
+        description: metadata.campaignName
+          ? `Campaign: ${String(metadata.campaignName)}`
+          : metadata.workflowName
+            ? `Workflow: ${String(metadata.workflowName)}`
+            : typeof metadata.sourceType === 'string'
+              ? metadata.sourceType
+              : undefined,
+        badge: {
+          label: 'Sent',
+          variant: 'default',
+        },
+      };
+
+    case 'email.delivered':
+      return {
+        icon: CheckCircle,
+        color: 'text-green-600',
+        bgColor: 'bg-green-100',
+        title: (typeof metadata.subject === 'string' ? metadata.subject : undefined) || 'Email delivered',
+        description: metadata.campaignName
+          ? `Campaign: ${String(metadata.campaignName)}`
+          : metadata.workflowName
+            ? `Workflow: ${String(metadata.workflowName)}`
+            : undefined,
+        badge: {
+          label: 'Delivered',
+          variant: 'default',
+        },
+      };
+
+    case 'email.opened':
+      return {
+        icon: Eye,
+        color: 'text-purple-600',
+        bgColor: 'bg-purple-100',
+        title: (typeof metadata.subject === 'string' ? metadata.subject : undefined) || 'Email opened',
+        description:
+          typeof metadata.totalOpens === 'number' && metadata.totalOpens > 1
+            ? `Opened ${metadata.totalOpens} times`
+            : metadata.campaignName
+              ? `Campaign: ${String(metadata.campaignName)}`
+              : metadata.workflowName
+                ? `Workflow: ${String(metadata.workflowName)}`
+                : undefined,
+        badge: {
+          label: 'Opened',
+          variant: 'secondary',
+        },
+      };
+
+    case 'email.clicked':
+      return {
+        icon: MousePointerClick,
+        color: 'text-orange-600',
+        bgColor: 'bg-orange-100',
+        title: (typeof metadata.subject === 'string' ? metadata.subject : undefined) || 'Email clicked',
+        description:
+          typeof metadata.totalClicks === 'number' && metadata.totalClicks > 1
+            ? `Clicked ${metadata.totalClicks} times`
+            : metadata.campaignName
+              ? `Campaign: ${String(metadata.campaignName)}`
+              : metadata.workflowName
+                ? `Workflow: ${String(metadata.workflowName)}`
+                : undefined,
+        badge: {
+          label: 'Clicked',
+          variant: 'default',
+        },
+      };
+
+    case 'email.bounced':
+      return {
+        icon: XCircle,
+        color: 'text-red-600',
+        bgColor: 'bg-red-100',
+        title: (typeof metadata.subject === 'string' ? metadata.subject : undefined) || 'Email bounced',
+        description: (typeof metadata.error === 'string' ? metadata.error : undefined) || 'Email failed to deliver',
+        badge: {
+          label: 'Bounced',
+          variant: 'destructive',
+        },
+      };
+
+    case 'workflow.started':
+      return {
+        icon: Workflow,
+        color: 'text-indigo-600',
+        bgColor: 'bg-indigo-100',
+        title: (typeof metadata.workflowName === 'string' ? metadata.workflowName : undefined) || 'Workflow started',
+        description: `Status: ${String(metadata.status || 'unknown')}`,
+        badge: {
+          label: 'Workflow',
+          variant: 'default',
+        },
+      };
+
+    case 'workflow.completed':
+      return {
+        icon: CheckCheck,
+        color: 'text-green-600',
+        bgColor: 'bg-green-100',
+        title: (typeof metadata.workflowName === 'string' ? metadata.workflowName : undefined) || 'Workflow completed',
+        description: metadata.exitReason
+          ? `Exit: ${String(metadata.exitReason)}`
+          : `Status: ${String(metadata.status || 'unknown')}`,
+        badge: {
+          label: 'Completed',
+          variant: 'default',
+        },
+      };
+
+    case 'campaign.scheduled':
+      return {
+        icon: Calendar,
+        color: 'text-blue-600',
+        bgColor: 'bg-blue-50',
+        title: (typeof metadata.campaignName === 'string' ? metadata.campaignName : undefined) || 'Campaign scheduled',
+        description: metadata.subject
+          ? `${String(metadata.subject)}${metadata.totalRecipients ? ` • ${metadata.totalRecipients} recipients` : ''}`
+          : metadata.totalRecipients
+            ? `${metadata.totalRecipients} recipients`
+            : undefined,
+        badge: {
+          label: 'Scheduled',
+          variant: 'outline',
+        },
+      };
+
+    case 'workflow.email.scheduled':
+      return {
+        icon: Calendar,
+        color: 'text-indigo-600',
+        bgColor: 'bg-indigo-50',
+        title: (typeof metadata.stepName === 'string' ? metadata.stepName : undefined) || 'Workflow email scheduled',
+        description: metadata.workflowName
+          ? `Workflow: ${String(metadata.workflowName)}${metadata.subject ? ` • ${String(metadata.subject)}` : ''}`
+          : typeof metadata.subject === 'string'
+            ? metadata.subject
+            : undefined,
+        badge: {
+          label: 'Scheduled',
+          variant: 'outline',
+        },
+      };
+
+    default:
+      return {
+        icon: AlertCircle,
+        color: 'text-neutral-600',
+        bgColor: 'bg-neutral-100',
+        title: 'Unknown activity',
+        badge: {
+          label: 'Unknown',
+          variant: 'outline',
+        },
+      };
+  }
+}
+
+export function ActivityItem({activity, isUpcoming = false}: ActivityItemProps) {
+  const config = getActivityConfig(activity);
+  const Icon = config.icon;
+  const timestamp = new Date(activity.timestamp);
+  const relativeTime = isUpcoming ? getUpcomingTime(timestamp) : getRelativeTime(timestamp);
+
+  return (
+    <div className={`flex items-start gap-4 ${isUpcoming ? 'opacity-80' : ''}`}>
+      {/* Icon */}
+      <div
+        className={`h-10 w-10 rounded-lg ${config.bgColor} flex items-center justify-center flex-shrink-0 ${isUpcoming ? 'ring-2 ring-offset-2 ring-blue-200' : ''}`}
+      >
+        <Icon className={`h-5 w-5 ${config.color}`} />
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between gap-2 flex-wrap">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <p className={`text-sm font-medium truncate ${isUpcoming ? 'text-neutral-700' : 'text-neutral-900'}`}>
+                {config.title}
+              </p>
+              {config.badge && <Badge variant={config.badge.variant}>{config.badge.label}</Badge>}
+            </div>
+            {config.description && <p className="text-sm text-neutral-500 line-clamp-2">{config.description}</p>}
+            {activity.contactEmail && (
+              <div className="flex items-center gap-2 mt-2">
+                {activity.contactId ? (
+                  <Link
+                    href={`/contacts/${activity.contactId}`}
+                    className="text-xs text-neutral-600 hover:text-neutral-900 hover:underline"
+                  >
+                    {activity.contactEmail}
+                  </Link>
+                ) : (
+                  <span className="text-xs text-neutral-600">{activity.contactEmail}</span>
+                )}
+              </div>
+            )}
+            {/* Collapsible JSON Data */}
+            {config.jsonData && (
+              <Collapsible className="mt-2">
+                <CollapsibleTrigger className="flex items-center gap-1 text-xs text-neutral-600 hover:text-neutral-900 transition-colors group">
+                  <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]:rotate-90" />
+                  <span className="font-medium">Event Data</span>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <pre className="mt-2 p-3 bg-neutral-50 rounded-md border border-neutral-200 text-xs overflow-x-auto">
+                    <code className="text-neutral-700">{JSON.stringify(config.jsonData, null, 2)}</code>
+                  </pre>
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+          </div>
+          <span
+            className={`text-xs flex-shrink-0 whitespace-nowrap ${isUpcoming ? 'text-blue-600 font-medium' : 'text-neutral-400'}`}
+            title={timestamp.toLocaleString()}
+          >
+            {relativeTime}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}

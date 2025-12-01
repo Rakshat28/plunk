@@ -1,0 +1,342 @@
+---
+title: Segments
+description: Create dynamic audience groups with filters
+---
+
+## What are segments
+
+Segments are dynamic groups of contacts based on filter conditions. Unlike static lists, segments automatically update as contact data changes.
+
+Use segments to:
+- Target specific audiences in campaigns
+- Trigger workflows when contacts enter/exit
+- Analyze cohorts and user behavior
+- Personalize communications
+
+## Creating segments
+
+### In the dashboard
+
+1. Go to **Segments**
+2. Click **Create Segment**
+3. Name your segment
+4. Add filter conditions
+5. Enable membership tracking (optional)
+6. Save
+
+### Via API
+
+```bash
+curl -X POST {{API_URL}}/segments \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Active Premium Users",
+    "filters": {
+      "operator": "AND",
+      "conditions": [
+        {
+          "field": "data.plan",
+          "operator": "equals",
+          "value": "premium"
+        },
+        {
+          "field": "subscribed",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    }
+  }'
+```
+
+## Filter conditions
+
+Combine conditions with `AND` or `OR` operators to build precise segments.
+
+### Available operators
+
+**Equality**
+- `equals` — Exact match
+- `notEquals` — Does not match
+
+**Text**
+- `contains` — String includes value
+- `notContains` — String excludes value
+
+**Numeric/Date**
+- `greaterThan` — Larger than value
+- `lessThan` — Smaller than value
+- `greaterThanOrEquals` — At least value
+- `lessThanOrEquals` — At most value
+
+**Arrays**
+- `in` — Value in array
+- `notIn` — Value not in array
+
+**Existence**
+- `exists` — Field has a value
+- `notExists` — Field is missing or null
+
+### Field paths
+
+Access contact fields with dot notation:
+
+- `email` — Contact email address
+- `subscribed` — Subscription status
+- `createdAt` — When contact was created
+- `data.firstName` — Custom field
+- `data.preferences.newsletter` — Nested field
+- `data.lastPurchaseDate` — Custom date field
+
+## Example segments
+
+### Premium subscribers
+
+All contacts on premium plan who are subscribed:
+
+```json
+{
+  "operator": "AND",
+  "conditions": [
+    { "field": "data.plan", "operator": "equals", "value": "premium" },
+    { "field": "subscribed", "operator": "equals", "value": true }
+  ]
+}
+```
+
+### Recent signups
+
+Contacts who joined in the last 7 days:
+
+```json
+{
+  "operator": "AND",
+  "conditions": [
+    {
+      "field": "createdAt",
+      "operator": "greaterThan",
+      "value": "{{now - 7 days}}"
+    }
+  ]
+}
+```
+
+### Inactive users
+
+Users who haven't logged in for 30+ days:
+
+```json
+{
+  "operator": "AND",
+  "conditions": [
+    {
+      "field": "data.lastLoginAt",
+      "operator": "lessThan",
+      "value": "{{now - 30 days}}"
+    },
+    {
+      "field": "data.lastLoginAt",
+      "operator": "exists",
+      "value": true
+    }
+  ]
+}
+```
+
+### High-value customers
+
+Total spending over $1000:
+
+```json
+{
+  "operator": "AND",
+  "conditions": [
+    {
+      "field": "data.totalSpent",
+      "operator": "greaterThanOrEquals",
+      "value": 1000
+    },
+    {
+      "field": "subscribed",
+      "operator": "equals",
+      "value": true
+    }
+  ]
+}
+```
+
+### Free tier churned users
+
+Users who downgraded from paid to free:
+
+```json
+{
+  "operator": "AND",
+  "conditions": [
+    { "field": "data.plan", "operator": "equals", "value": "free" },
+    { "field": "data.previousPlan", "operator": "in", "value": ["pro", "premium"] },
+    { "field": "data.downgradedAt", "operator": "exists", "value": true }
+  ]
+}
+```
+
+## Membership tracking
+
+When you enable `trackMembership`:
+
+**What happens:**
+- Plunk computes and stores segment membership
+- When contacts enter, sends `segment.entered` event
+- When contacts exit, sends `segment.exited` event
+- Provides historical membership data
+
+**Use when:**
+- You want to trigger workflows on entry/exit
+- You need to track cohort changes over time
+- Segment is relatively stable (not millions of changes per day)
+
+**Disable when:**
+- Segment changes very frequently
+- You only need current membership (not history)
+- You have millions of contacts and want to save storage
+
+### Using entry/exit events
+
+With membership tracking enabled, use segment events to trigger workflows:
+
+```json
+{
+  "triggerType": "SEGMENT_ENTRY",
+  "triggerConfig": {
+    "segmentId": "high-value-customers"
+  }
+}
+```
+
+Or use the generic event trigger:
+
+```json
+{
+  "triggerType": "EVENT",
+  "triggerConfig": {
+    "eventName": "segment.entered"
+  }
+}
+```
+
+Event data includes:
+```json
+{
+  "segmentId": "seg_abc123",
+  "segmentName": "High Value Customers"
+}
+```
+
+## Using segments
+
+### In campaigns
+
+Send a campaign to a segment:
+
+```bash
+curl -X POST {{API_URL}}/campaigns \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Premium Feature Announcement",
+    "audienceType": "SEGMENT",
+    "segmentId": "premium-users",
+    "templateId": "feature-announcement"
+  }'
+```
+
+### In workflows
+
+Trigger workflows when contacts enter a segment:
+
+```bash
+curl -X POST {{API_URL}}/workflows \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "VIP Welcome",
+    "triggerType": "SEGMENT_ENTRY",
+    "triggerConfig": {
+      "segmentId": "high-value-customers"
+    }
+  }'
+```
+
+## Managing segments
+
+### Get segment with count
+
+```bash
+curl -X GET {{API_URL}}/segments/segment_id \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+Returns member count:
+
+```json
+{
+  "id": "segment_id",
+  "name": "Premium Users",
+  "memberCount": 1542,
+  "filters": {...}
+}
+```
+
+### List segment members
+
+```bash
+curl -X GET "{{API_URL}}/segments/segment_id/contacts?limit=50" \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+### Update segment
+
+```bash
+curl -X PATCH {{API_URL}}/segments/segment_id \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated name",
+    "filters": {
+      "operator": "AND",
+      "conditions": [...]
+    }
+  }'
+```
+
+When you update filters, membership is recomputed automatically.
+
+### Delete segment
+
+```bash
+curl -X DELETE {{API_URL}}/segments/segment_id \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+Active campaigns and workflows using this segment will stop working.
+
+## Best practices
+
+**Start broad, then narrow** — Create general segments first, then add specific conditions.
+
+**Test your filters** — Preview segment size before using in campaigns to avoid sending to wrong audience.
+
+**Name clearly** — Use descriptive names: "Q4 2024 Premium Signups" not "Segment 3".
+
+**Avoid overlapping segments** — If using in workflows, ensure segments don't overlap to prevent duplicate emails.
+
+**Use for analysis** — Create segments to understand user cohorts, even if not used in campaigns.
+
+**Combine with events** — Track events and use them in segment conditions for behavior-based targeting.
+
+## What's next
+
+- [Build campaigns](/guides/campaigns) to send to segments
+- [Create workflows](/guides/workflows) triggered by segment entry
+- [Track events](/guides/events) to use in segment filters

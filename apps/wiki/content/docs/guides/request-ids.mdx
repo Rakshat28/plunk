@@ -1,0 +1,307 @@
+---
+title: Request IDs & Debugging
+description: How to use request IDs for debugging and tracing API requests
+---
+
+## Overview
+
+Every API request to Plunk receives a unique request ID that follows the request through the entire system. Request IDs are essential for debugging, support, and monitoring.
+
+## What are Request IDs?
+
+A request ID is a UUID (e.g., `f47ac10b-58cc-4372-a567-0e02b2c3d479`) that:
+- Is generated for every API request
+- Appears in all related log entries
+- Is included in both success and error responses
+- Can be used to trace requests across services
+
+## Where to Find Request IDs
+
+### In API Responses
+
+**Error responses** (in the `error.requestId` field):
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "requestId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    ...
+  }
+}
+```
+
+**Response headers** (always present, even on success):
+```bash
+X-Request-ID: f47ac10b-58cc-4372-a567-0e02b2c3d479
+```
+
+### In Your Application
+
+You can capture and log request IDs for correlation:
+
+```javascript
+const response = await fetch('https://api.useplunk.com/v1/send', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${apiKey}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ to, subject, body })
+});
+
+// Get request ID from response header
+const requestId = response.headers.get('X-Request-ID');
+
+// Log it for correlation
+console.log(`[${requestId}] Email send request initiated`);
+
+const data = await response.json();
+if (!data.success) {
+  // Request ID is also in error response
+  console.error(`[${data.error.requestId}] Error:`, data.error.message);
+}
+```
+
+## Database Request Logging
+
+In addition to console/file logs, Plunk stores all API requests in the database with their request IDs. This provides:
+
+- **Historical audit trail** - See all API calls made to your project
+- **Analytics** - Analyze API usage patterns, error rates, popular endpoints
+- **User-facing logs** - Display API request history in your dashboard
+- **Long-term debugging** - Investigate issues that occurred days or weeks ago
+- **Compliance** - Meet audit requirements for API access logs
+
+### Database Schema
+
+Each request is stored with:
+- Request ID (primary key)
+- HTTP method and path
+- Status code and response time
+- Project ID and user ID (if authenticated)
+- IP address and user agent
+- Error code and message (if failed)
+- Request/response sizes
+- Timestamp
+
+### Retention Policy
+
+API request logs are retained for **30 days** by default. A background job runs daily at 3 AM to delete older logs. This prevents unbounded table growth while maintaining recent history for debugging.
+
+You can query your request logs via SQL if self-hosting:
+
+```sql
+-- Find all failed requests in the last 24 hours
+SELECT * FROM api_requests
+WHERE "statusCode" >= 400
+AND "createdAt" > NOW() - INTERVAL '24 hours'
+ORDER BY "createdAt" DESC;
+
+-- Find all requests for a specific project
+SELECT * FROM api_requests
+WHERE "projectId" = 'prj_abc123'
+ORDER BY "createdAt" DESC
+LIMIT 100;
+
+-- Analyze error rates by endpoint
+SELECT
+  path,
+  COUNT(*) as total_requests,
+  COUNT(*) FILTER (WHERE "statusCode" >= 400) as errors,
+  ROUND(100.0 * COUNT(*) FILTER (WHERE "statusCode" >= 400) / COUNT(*), 2) as error_rate_pct
+FROM api_requests
+WHERE "createdAt" > NOW() - INTERVAL '7 days'
+GROUP BY path
+ORDER BY error_rate_pct DESC;
+```
+
+## How Request IDs Help with Debugging
+
+### Example Scenario
+
+You send an email via the API and receive an error. Here's how request IDs help:
+
+**1. Your application receives an error:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "TEMPLATE_NOT_FOUND",
+    "message": "Template with ID \"tpl_abc123\" was not found",
+    "requestId": "a1b2c3d4-e5f6-7890-gh12-i34567890jkl",
+    ...
+  }
+}
+```
+
+**2. You contact support with the request ID**
+
+**3. We search our logs for that request ID and see:**
+
+```
+[a1b2c3d4-e5f6-7890-gh12-i34567890jkl] POST /v1/send → Request received
+  └─ authType: apiKey
+  └─ projectId: prj_xyz789
+  └─ ip: 192.168.1.1
+
+[a1b2c3d4-e5f6-7890-gh12-i34567890jkl] Looking up template: tpl_abc123
+  └─ projectId: prj_xyz789
+
+[a1b2c3d4-e5f6-7890-gh12-i34567890jkl] Template not found
+  └─ errorCode: TEMPLATE_NOT_FOUND
+  └─ statusCode: 404
+
+[a1b2c3d4-e5f6-7890-gh12-i34567890jkl] POST /v1/send → 404 (45ms)
+```
+
+From this, we can immediately see:
+- You're authenticated correctly (authType: apiKey)
+- The template ID doesn't exist in your project
+- The request took 45ms to process
+- No database errors or system issues
+
+**Result:** We can quickly tell you "That template doesn't exist in your project" without back-and-forth debugging.
+
+## Using Request IDs in Self-Hosted Deployments
+
+If you're self-hosting Plunk, you can use request IDs to debug issues in your own logs.
+
+### Searching Logs
+
+**With Docker logs:**
+```bash
+# Find all logs for a specific request
+docker logs plunk-api 2>&1 | grep "a1b2c3d4-e5f6-7890-gh12-i34567890jkl"
+```
+
+**With standard logs:**
+```bash
+# Search application logs
+grep "a1b2c3d4-e5f6-7890-gh12-i34567890jkl" /var/log/plunk/api.log
+
+# Search with context (10 lines before and after)
+grep -C 10 "a1b2c3d4-e5f6-7890-gh12-i34567890jkl" /var/log/plunk/api.log
+```
+
+### Log Structure
+
+Every log entry includes the request ID in brackets:
+
+```
+[f47ac10b-58cc-4372-a567-0e02b2c3d479] POST /v1/track → Request received
+[f47ac10b-58cc-4372-a567-0e02b2c3d479] Contact created: cnt_abc123
+[f47ac10b-58cc-4372-a567-0e02b2c3d479] Event tracked: evt_xyz789
+[f47ac10b-58cc-4372-a567-0e02b2c3d479] POST /v1/track → 200 (127ms)
+```
+
+This makes it easy to trace a single request from start to finish.
+
+## Providing Request IDs with Load Balancers
+
+If you use a load balancer or API gateway, you can pass your own request IDs:
+
+```bash
+curl -X POST https://api.useplunk.com/v1/send \
+  -H "X-Request-ID: your-custom-request-id" \
+  -H "Authorization: Bearer sk_..." \
+  -H "Content-Type: application/json" \
+  -d '...'
+```
+
+Plunk will use your provided request ID instead of generating a new one. This allows you to:
+- Correlate requests across your entire system
+- Trace requests from your frontend → your backend → Plunk → email delivery
+- Maintain consistent request IDs in your monitoring tools
+
+## Best Practices
+
+### 1. Always Log Request IDs
+
+```javascript
+// ✅ Good: Log request ID for correlation
+const response = await plunk.send(email);
+const requestId = response.headers.get('X-Request-ID');
+logger.info(`Email sent to ${email.to}`, { requestId });
+```
+
+```javascript
+// ❌ Bad: Discard request ID
+await plunk.send(email);
+// No way to correlate this with Plunk's logs
+```
+
+### 2. Include in Error Reporting
+
+```javascript
+// ✅ Good: Include request ID in error reports
+try {
+  await plunk.send(email);
+} catch (error) {
+  Sentry.captureException(error, {
+    extra: {
+      requestId: error.requestId,
+      emailTo: email.to
+    }
+  });
+}
+```
+
+### 3. Store for Audit Trails
+
+```javascript
+// ✅ Good: Store request ID in your database
+await db.emailLog.create({
+  to: email.to,
+  subject: email.subject,
+  plunkRequestId: requestId,
+  sentAt: new Date()
+});
+```
+
+### 4. Return to End Users (Optional)
+
+For customer-facing applications, you can show request IDs to users:
+
+```
+❌ Error sending email. Please try again.
+```
+
+```
+❌ Error sending email. Please contact support and provide this reference: a1b2c3d4-e5f6
+```
+
+## Monitoring and Observability
+
+Request IDs are essential for:
+
+- **Distributed tracing** - Follow requests across services
+- **Error correlation** - Link errors to specific API calls
+- **Performance monitoring** - Identify slow requests
+- **Debugging production** - Reproduce issues without PII
+- **Rate limit tracking** - Monitor usage patterns per project
+
+## FAQ
+
+### Do request IDs expire?
+
+No, request IDs are logged indefinitely (subject to your log retention policy).
+
+### Can I reuse request IDs?
+
+No, each request should have a unique ID. If you send the same request ID twice, logs will be mixed.
+
+### Are request IDs sequential?
+
+No, they are random UUIDs. This prevents information leakage about request volume.
+
+### Can I search by request ID in the dashboard?
+
+This feature is planned but not yet available. For now, contact support with the request ID.
+
+## Related Documentation
+
+- [Error Codes](/api-reference/errors) - Understanding API errors
+- [API Reference](/api-reference/overview) - Complete API documentation
+- [Troubleshooting](/guides/troubleshooting) - Common issues and solutions

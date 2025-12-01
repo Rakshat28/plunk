@@ -1,0 +1,436 @@
+---
+title: Contacts
+description: Manage your audience at scale
+---
+
+## What are contacts
+
+Contacts are people in your audience. Each contact has an email address, subscription status, and custom data fields you define. Use contacts to personalize emails, build segments, and track engagement.
+
+## Creating contacts
+
+### Add a single contact
+
+```bash
+curl -X POST {{API_URL}}/contacts \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "subscribed": true,
+    "data": {
+      "firstName": "Sarah",
+      "plan": "pro",
+      "signupDate": "2024-03-15"
+    }
+  }'
+```
+
+### Automatic upsert
+
+If the email already exists, the contact is updated instead of creating a duplicate:
+
+```javascript
+// First call - creates contact
+POST /contacts { email: 'user@example.com', data: { plan: 'free' } }
+
+// Second call - updates same contact
+POST /contacts { email: 'user@example.com', data: { plan: 'pro' } }
+
+// Result: One contact with plan: 'pro'
+```
+
+This is useful when syncing user data from your application.
+
+## Contact data fields
+
+Store custom data in the `data` field. Use it for:
+
+- User profile (name, company, role)
+- Subscription info (plan, MRR, renewal date)
+- Behavior tracking (last login, feature usage)
+- Preferences (newsletter, notifications)
+
+**Example:**
+
+```json
+{
+  "email": "user@example.com",
+  "subscribed": true,
+  "data": {
+    "firstName": "Sarah",
+    "lastName": "Chen",
+    "company": "Acme Inc",
+    "plan": "premium",
+    "mrr": 99,
+    "lastLoginAt": "2024-03-15T10:30:00Z",
+    "preferences": {
+      "newsletter": true,
+      "productUpdates": false
+    }
+  }
+}
+```
+
+### Best practices
+
+**Use consistent naming** — Pick camelCase or snake_case and stick with it.
+
+**Store dates as ISO strings** — `"2024-03-15T10:30:00Z"` enables date range filtering in segments.
+
+**Keep it relatively flat** — Nested objects work, but flat structures are easier to query in segments.
+
+**Use numbers for numeric data** — Store `99` not `"99"` to enable greater than/less than comparisons.
+
+## Using contact data in emails
+
+### Template variables
+
+Access contact data in email templates using `{{variableName}}` syntax:
+
+```html
+<h1>Hello {{firstName}}!</h1>
+<p>Your {{plan}} plan renews on {{renewalDate}}.</p>
+<p>Total: ${{mrr}}</p>
+```
+
+When sending, contact data automatically populates variables:
+
+```bash
+curl -X POST {{API_URL}}/v1/send \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "user@example.com",
+    "subject": "Renewal reminder",
+    "body": "<p>Hi {{firstName}}, your {{plan}} plan renews soon.</p>"
+  }'
+```
+
+The `firstName` and `plan` values come from the contact's `data` field.
+
+### Fallback values
+
+Provide defaults when data might be missing:
+
+```html
+<p>Hello {{firstName ?? 'there'}}!</p>
+<p>Plan: {{plan ?? 'Free'}}</p>
+```
+
+If `firstName` is not set, displays "Hello there!" instead of blank.
+
+### Passing additional data
+
+Send extra data for a specific email without saving it to the contact:
+
+```bash
+curl -X POST {{API_URL}}/v1/send \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "user@example.com",
+    "subject": "Your verification code",
+    "body": "<p>Your code: {{verificationCode}}</p>",
+    "data": {
+      "verificationCode": "ABC123"
+    }
+  }'
+```
+
+The `verificationCode` is used in the email but not saved to the contact. This is useful for:
+- One-time codes (password reset, verification)
+- Session-specific data
+- Temporary discount codes
+- Order-specific details
+
+### Reserved variables
+
+These are always available in templates:
+
+- `{{email}}` — Contact email address
+- `{{id}}` — Contact ID
+
+Example:
+```html
+<p>Your account: {{email}}</p>
+<p><a href="https://app.example.com/contacts/{{id}}">Manage preferences</a></p>
+```
+
+## Listing contacts
+
+### Get all contacts
+
+```bash
+curl -X GET "{{API_URL}}/contacts?limit=50" \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+Returns:
+
+```json
+{
+  "success": true,
+  "data": {
+    "items": [...],
+    "nextCursor": "abc123",
+    "hasMore": true,
+    "total": 10000
+  }
+}
+```
+
+### Pagination
+
+For large lists, use cursor-based pagination:
+
+```javascript
+let allContacts = [];
+let cursor = null;
+
+do {
+  const params = new URLSearchParams({ limit: 100 });
+  if (cursor) params.append('cursor', cursor);
+
+  const response = await fetch(`{{API_URL}}/contacts?${params}`, {
+    headers: { 'Authorization': `Bearer ${PLUNK_SECRET_KEY}` }
+  });
+
+  const { data } = await response.json();
+  allContacts.push(...data.items);
+  cursor = data.nextCursor;
+} while (cursor);
+```
+
+### Filter by subscription
+
+```bash
+# Only subscribed
+curl -X GET "{{API_URL}}/contacts?subscribed=true" \
+  -H "Authorization: Bearer sk_your_secret_key"
+
+# Only unsubscribed
+curl -X GET "{{API_URL}}/contacts?subscribed=false" \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+### Search by email
+
+```bash
+curl -X GET "{{API_URL}}/contacts?search=sarah" \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+Searches for emails containing "sarah".
+
+## Getting a contact
+
+### By ID
+
+```bash
+curl -X GET {{API_URL}}/contacts/contact_id \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+## Updating contacts
+
+### Update contact data
+
+```bash
+curl -X PATCH {{API_URL}}/contacts/contact_id \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "subscribed": true,
+    "data": {
+      "plan": "premium",
+      "mrr": 99
+    }
+  }'
+```
+
+### Data merging
+
+Updates merge with existing data:
+
+```javascript
+// Current contact data
+{ "firstName": "Sarah", "company": "Acme" }
+
+// Update with
+{ "lastName": "Chen", "plan": "pro" }
+
+// Result
+{ "firstName": "Sarah", "company": "Acme", "lastName": "Chen", "plan": "pro" }
+```
+
+To remove a field, set it to `null`.
+
+### Change subscription status
+
+```bash
+curl -X PATCH {{API_URL}}/contacts/contact_id \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{"subscribed": false}'
+```
+
+**Marketing templates** only send to subscribed contacts. **Transactional templates** send to everyone, regardless of subscription status.
+
+## Deleting contacts
+
+```bash
+curl -X DELETE {{API_URL}}/contacts/contact_id \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+**Warning:** Deletion is permanent. Consider unsubscribing instead of deleting.
+
+## Bulk operations
+
+### Import from CSV
+
+Prepare a CSV file:
+
+```csv
+email,firstName,lastName,plan
+sarah@example.com,Sarah,Chen,pro
+john@example.com,John,Doe,free
+```
+
+Upload via dashboard:
+1. Go to **Contacts**
+2. Click **Import CSV**
+3. Upload file
+4. Map columns
+5. Set default subscription status
+6. Import
+
+The import runs in the background. You'll receive a summary when complete.
+
+## Available fields
+
+### Get all custom fields
+
+See what data fields your contacts have:
+
+```bash
+curl -X GET {{API_URL}}/contacts/fields \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+Returns unique field names across all contacts:
+
+```json
+{
+  "fields": [
+    "firstName",
+    "lastName",
+    "company",
+    "plan",
+    "mrr",
+    "signupDate"
+  ]
+}
+```
+
+### Get field values
+
+See all unique values for a specific field:
+
+```bash
+curl -X GET {{API_URL}}/contacts/fields/plan/values \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+Returns:
+
+```json
+{
+  "values": ["free", "pro", "premium", "enterprise"]
+}
+```
+
+Useful for building segment filters and understanding your data.
+
+## Syncing with your app
+
+Keep contacts in sync with your user database:
+
+```javascript
+// When user signs up
+async function onUserSignup(user) {
+  await fetch('{{API_URL}}/contacts', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${PLUNK_SECRET_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      email: user.email,
+      subscribed: true,
+      data: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        signupDate: new Date().toISOString()
+      }
+    })
+  });
+}
+
+// When user updates profile
+async function onUserUpdate(user) {
+  await fetch(`{{API_URL}}/contacts/${user.contactId}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${PLUNK_SECRET_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      data: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        company: user.company
+      }
+    })
+  });
+}
+
+// When user subscribes to plan
+async function onSubscriptionChange(user, plan, mrr) {
+  await fetch(`{{API_URL}}/contacts/${user.contactId}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${PLUNK_SECRET_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      data: {
+        plan,
+        mrr,
+        subscriptionDate: new Date().toISOString()
+      }
+    })
+  });
+}
+```
+
+## Best practices
+
+**Sync critical data only** — Don't sync every field. Focus on data used in segments, workflows, and personalization.
+
+**Use webhooks for real-time sync** — Update contacts immediately when user data changes.
+
+**Track subscription separately** — Use the `subscribed` field for email preferences, not app subscription status.
+
+**Clean your list regularly** — Remove or unsubscribe bounced and inactive contacts.
+
+**Respect opt-outs** — When users unsubscribe, update immediately. Don't re-subscribe them automatically.
+
+**Test with real emails** — Use your own email addresses to test the contact experience.
+
+## Next Steps
+
+- [Build segments](/guides/segments) to group contacts
+- [Send campaigns](/guides/campaigns) to your contacts
+- [Track events](/guides/events) to update contact data automatically

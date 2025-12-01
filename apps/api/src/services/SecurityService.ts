@@ -1,0 +1,340 @@
+import signale from 'signale';
+
+import {prisma} from '../database/prisma.js';
+import {redis} from '../database/redis.js';
+
+/**
+ * Security thresholds for bounce and complaint rates
+ * These limits protect AWS SES reputation and prevent account suspension
+ */
+const SECURITY_THRESHOLDS = {
+  // Minimum emails required before enforcing limits (prevents false positives)
+  MIN_EMAILS_FOR_ENFORCEMENT: 100,
+
+  // Bounce rate thresholds (hard bounces only)
+  BOUNCE_7DAY_WARNING: 3,
+  BOUNCE_7DAY_CRITICAL: 8,
+  BOUNCE_ALLTIME_WARNING: 2,
+  BOUNCE_ALLTIME_CRITICAL: 5,
+
+  // Complaint rate thresholds (spam reports)
+  COMPLAINT_7DAY_WARNING: 0.05,
+  COMPLAINT_7DAY_CRITICAL: 0.1,
+  COMPLAINT_ALLTIME_WARNING: 0.02,
+  COMPLAINT_ALLTIME_CRITICAL: 0.08,
+} as const;
+
+interface RateData {
+  total: number;
+  bounces: number;
+  complaints: number;
+  bounceRate: number;
+  complaintRate: number;
+}
+
+interface SecurityStatus {
+  projectId: string;
+  isHealthy: boolean;
+  shouldDisable: boolean;
+  sevenDay: RateData;
+  allTime: RateData;
+  violations: string[];
+  warnings: string[];
+}
+
+export class SecurityService {
+  private static readonly CACHE_PREFIX = 'security';
+  private static readonly CACHE_TTL = 300; // 5 minutes
+
+  /**
+   * Get security status for a project (with caching)
+   */
+  public static async getSecurityStatus(projectId: string): Promise<SecurityStatus> {
+    try {
+      // Try to get from cache first
+      const cacheKey = this.getCacheKey(projectId, 'rates');
+      const cached = await redis.get(cacheKey);
+
+      if (cached) {
+        return JSON.parse(cached);
+      }
+
+      // Calculate fresh data
+      const status = await this.calculateSecurityStatus(projectId);
+
+      // Cache the result
+      await redis.setex(cacheKey, this.CACHE_TTL, JSON.stringify(status));
+
+      return status;
+    } catch (error) {
+      signale.error('[SECURITY] Failed to get security status:', error);
+      // Return safe defaults on error
+      return {
+        projectId,
+        isHealthy: true,
+        shouldDisable: false,
+        sevenDay: {
+          total: 0,
+          bounces: 0,
+          complaints: 0,
+          bounceRate: 0,
+          complaintRate: 0,
+        },
+        allTime: {
+          total: 0,
+          bounces: 0,
+          complaints: 0,
+          bounceRate: 0,
+          complaintRate: 0,
+        },
+        violations: [],
+        warnings: [],
+      };
+    }
+  }
+
+  /**
+   * Check security status and auto-disable project if thresholds are exceeded
+   * This should be called after bounce/complaint events are processed
+   */
+  public static async checkAndEnforceSecurityLimits(projectId: string): Promise<void> {
+    try {
+      // Invalidate cache to get fresh data
+      await this.invalidateCache(projectId);
+
+      // Get current security status
+      const status = await this.getSecurityStatus(projectId);
+
+      // If project should be disabled, disable it
+      if (status.shouldDisable) {
+        await this.disableProject(projectId, status);
+      } else if (status.warnings.length > 0) {
+        // Log warnings for monitoring
+        signale.warn(`[SECURITY] Project ${projectId} has security warnings:`, status.warnings);
+      }
+    } catch (error) {
+      // Log error but don't throw - we don't want security checks to break the webhook
+      signale.error(`[SECURITY] Failed to check security limits for project ${projectId}:`, error);
+    }
+  }
+
+  /**
+   * Invalidate cached security data for a project
+   * Should be called after bounce/complaint events
+   */
+  public static async invalidateCache(projectId: string): Promise<void> {
+    try {
+      const cacheKey = this.getCacheKey(projectId, 'rates');
+      await redis.del(cacheKey);
+    } catch (error) {
+      signale.error(`[SECURITY] Failed to invalidate cache for project ${projectId}:`, error);
+    }
+  }
+
+  /**
+   * Get a project's security metrics (for admin/dashboard display)
+   */
+  public static async getProjectSecurityMetrics(projectId: string): Promise<{
+    status: SecurityStatus;
+    thresholds: typeof SECURITY_THRESHOLDS;
+    isDisabled: boolean;
+  }> {
+    const [status, project] = await Promise.all([
+      this.getSecurityStatus(projectId),
+      prisma.project.findUnique({
+        where: {id: projectId},
+        select: {disabled: true},
+      }),
+    ]);
+
+    return {
+      status,
+      thresholds: SECURITY_THRESHOLDS,
+      isDisabled: project?.disabled ?? false,
+    };
+  }
+
+  /**
+   * Get cache key for security metrics
+   */
+  private static getCacheKey(projectId: string, type: 'rates'): string {
+    return `${this.CACHE_PREFIX}:${projectId}:${type}`;
+  }
+
+  /**
+   * Calculate bounce and complaint rates for a project
+   */
+  private static async calculateRates(projectId: string, startDate?: Date): Promise<RateData> {
+    const where = {
+      projectId,
+      ...(startDate && {
+        createdAt: {
+          gte: startDate,
+        },
+      }),
+    };
+
+    // Get counts in parallel for performance
+    const [total, bounces, complaints] = await Promise.all([
+      prisma.email.count({where}),
+      prisma.email.count({
+        where: {
+          ...where,
+          bouncedAt: {not: null},
+        },
+      }),
+      prisma.email.count({
+        where: {
+          ...where,
+          complainedAt: {not: null},
+        },
+      }),
+    ]);
+
+    const bounceRate = total > 0 ? (bounces / total) * 100 : 0;
+    const complaintRate = total > 0 ? (complaints / total) * 100 : 0;
+
+    return {
+      total,
+      bounces,
+      complaints,
+      bounceRate,
+      complaintRate,
+    };
+  }
+
+  /**
+   * Calculate security status without caching
+   */
+  private static async calculateSecurityStatus(projectId: string): Promise<SecurityStatus> {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    // Get 7-day and all-time rates in parallel
+    const [sevenDay, allTime] = await Promise.all([
+      this.calculateRates(projectId, sevenDaysAgo),
+      this.calculateRates(projectId),
+    ]);
+
+    const violations: string[] = [];
+    const warnings: string[] = [];
+
+    // Only enforce if minimum emails threshold is met
+    const hasMinimumVolume = allTime.total >= SECURITY_THRESHOLDS.MIN_EMAILS_FOR_ENFORCEMENT;
+
+    if (hasMinimumVolume) {
+      // Check 7-day bounce rate
+      if (sevenDay.bounceRate >= SECURITY_THRESHOLDS.BOUNCE_7DAY_CRITICAL) {
+        violations.push(
+          `7-day bounce rate (${sevenDay.bounceRate.toFixed(2)}%) exceeds critical threshold (${SECURITY_THRESHOLDS.BOUNCE_7DAY_CRITICAL}%)`,
+        );
+      } else if (sevenDay.bounceRate >= SECURITY_THRESHOLDS.BOUNCE_7DAY_WARNING) {
+        warnings.push(
+          `7-day bounce rate (${sevenDay.bounceRate.toFixed(2)}%) exceeds warning threshold (${SECURITY_THRESHOLDS.BOUNCE_7DAY_WARNING}%)`,
+        );
+      }
+
+      // Check all-time bounce rate
+      if (allTime.bounceRate >= SECURITY_THRESHOLDS.BOUNCE_ALLTIME_CRITICAL) {
+        violations.push(
+          `All-time bounce rate (${allTime.bounceRate.toFixed(2)}%) exceeds critical threshold (${SECURITY_THRESHOLDS.BOUNCE_ALLTIME_CRITICAL}%)`,
+        );
+      } else if (allTime.bounceRate >= SECURITY_THRESHOLDS.BOUNCE_ALLTIME_WARNING) {
+        warnings.push(
+          `All-time bounce rate (${allTime.bounceRate.toFixed(2)}%) exceeds warning threshold (${SECURITY_THRESHOLDS.BOUNCE_ALLTIME_WARNING}%)`,
+        );
+      }
+
+      // Check 7-day complaint rate
+      if (sevenDay.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_7DAY_CRITICAL) {
+        violations.push(
+          `7-day complaint rate (${sevenDay.complaintRate.toFixed(3)}%) exceeds critical threshold (${SECURITY_THRESHOLDS.COMPLAINT_7DAY_CRITICAL}%)`,
+        );
+      } else if (sevenDay.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_7DAY_WARNING) {
+        warnings.push(
+          `7-day complaint rate (${sevenDay.complaintRate.toFixed(3)}%) exceeds warning threshold (${SECURITY_THRESHOLDS.COMPLAINT_7DAY_WARNING}%)`,
+        );
+      }
+
+      // Check all-time complaint rate
+      if (allTime.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_ALLTIME_CRITICAL) {
+        violations.push(
+          `All-time complaint rate (${allTime.complaintRate.toFixed(3)}%) exceeds critical threshold (${SECURITY_THRESHOLDS.COMPLAINT_ALLTIME_CRITICAL}%)`,
+        );
+      } else if (allTime.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_ALLTIME_WARNING) {
+        warnings.push(
+          `All-time complaint rate (${allTime.complaintRate.toFixed(3)}%) exceeds warning threshold (${SECURITY_THRESHOLDS.COMPLAINT_ALLTIME_WARNING}%)`,
+        );
+      }
+    }
+
+    return {
+      projectId,
+      isHealthy: violations.length === 0,
+      shouldDisable: violations.length > 0,
+      sevenDay,
+      allTime,
+      violations,
+      warnings,
+    };
+  }
+
+  /**
+   * Disable a project due to security violations
+   */
+  private static async disableProject(projectId: string, status: SecurityStatus): Promise<void> {
+    try {
+      // Check if already disabled to avoid duplicate logs
+      const project = await prisma.project.findUnique({
+        where: {id: projectId},
+        select: {id: true, disabled: true, name: true},
+      });
+
+      if (!project) {
+        signale.error(`[SECURITY] Project ${projectId} not found`);
+        return;
+      }
+
+      if (project.disabled) {
+        // Already disabled, just log the current violations
+        signale.warn(
+          `[SECURITY] Project ${projectId} (${project.name}) already disabled. Current violations:`,
+          status.violations,
+        );
+        return;
+      }
+
+      // Disable the project
+      await prisma.project.update({
+        where: {id: projectId},
+        data: {disabled: true},
+      });
+
+      // Log critical security event
+      signale.error(
+        `[SECURITY] Project ${projectId} (${project.name}) has been automatically disabled due to security violations:`,
+        status.violations,
+      );
+      signale.info(
+        `[SECURITY] 7-day stats: ${status.sevenDay.bounces} bounces, ${status.sevenDay.complaints} complaints out of ${status.sevenDay.total} emails`,
+      );
+      signale.info(
+        `[SECURITY] All-time stats: ${status.allTime.bounces} bounces, ${status.allTime.complaints} complaints out of ${status.allTime.total} emails`,
+      );
+
+      // Cancel all pending jobs for this project
+      try {
+        const {QueueService} = await import('./QueueService.js');
+        await QueueService.cancelAllProjectJobs(projectId);
+        signale.info(`[SECURITY] Cancelled all pending jobs for project ${projectId}`);
+      } catch (error) {
+        signale.error(`[SECURITY] Failed to cancel pending jobs for project ${projectId}:`, error);
+      }
+
+      // TODO: Send notification to project owners about the suspension
+      // This could be implemented using the notification service or email alert
+    } catch (error) {
+      signale.error(`[SECURITY] Failed to disable project ${projectId}:`, error);
+    }
+  }
+}

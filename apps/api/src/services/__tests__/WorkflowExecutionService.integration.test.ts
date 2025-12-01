@@ -1,0 +1,957 @@
+import {describe, it, expect, beforeEach, vi} from 'vitest';
+import {WorkflowStepType, StepExecutionStatus, WorkflowExecutionStatus, TemplateType, Prisma} from '@plunk/db';
+import {WorkflowExecutionService} from '../WorkflowExecutionService';
+import {factories, getPrismaClient} from '../../../../../test/helpers';
+
+/**
+ * Integration Tests: Workflow Execution Engine
+ *
+ * These tests verify the actual execution logic of workflows,
+ * testing real step processing, conditional branching, event handling,
+ * and complex multi-step scenarios.
+ */
+
+// Mock QueueService to prevent actual job queueing
+vi.mock('../QueueService', () => ({
+  QueueService: {
+    queueWorkflowStep: vi.fn(async () => ({id: 'mock-job-id'})),
+    queueEmail: vi.fn(async () => ({id: 'mock-email-job-id'})),
+    queueWorkflowTimeout: vi.fn(async () => ({id: 'mock-timeout-job-id'})),
+    cancelWorkflowTimeout: vi.fn(async () => true),
+  },
+}));
+
+// Mock SES for email sending
+vi.mock('../../services/ses', () => ({
+  ses: {
+    sendEmail: vi.fn(async () => ({MessageId: 'mock-message-id'})),
+  },
+}));
+
+describe('WorkflowExecutionService - Integration Tests', () => {
+  let projectId: string;
+  const prisma = getPrismaClient();
+
+  beforeEach(async () => {
+    const {project} = await factories.createUserWithProject();
+    projectId = project.id;
+  });
+
+  // ========================================
+  // CONDITIONAL BRANCHING (CONDITION STEPS)
+  // ========================================
+  describe('Conditional Branching', () => {
+    it('should follow YES branch when condition evaluates to true', async () => {
+      const contact = await factories.createContact({
+        projectId,
+        data: {isPremium: true},
+      });
+
+      const workflow = await factories.createWorkflow({projectId});
+      const triggerStep = await prisma.workflowStep.findFirstOrThrow({
+        where: {workflowId: workflow.id, type: WorkflowStepType.TRIGGER},
+      });
+
+      // Create condition step
+      const conditionStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.CONDITION,
+          name: 'Check Premium Status',
+          position: {x: 100, y: 0},
+          config: {
+            field: 'data.isPremium',
+            operator: 'equals',
+            value: true,
+          },
+        },
+      });
+
+      // Create YES and NO branches
+      const yesStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'Premium Path',
+          position: {x: 200, y: -50},
+          config: {reason: 'Premium customer'},
+        },
+      });
+
+      const noStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'Standard Path',
+          position: {x: 200, y: 50},
+          config: {reason: 'Standard customer'},
+        },
+      });
+
+      // Create transitions
+      await prisma.workflowTransition.create({
+        data: {fromStepId: triggerStep.id, toStepId: conditionStep.id},
+      });
+
+      await prisma.workflowTransition.create({
+        data: {
+          fromStepId: conditionStep.id,
+          toStepId: yesStep.id,
+          condition: {branch: 'yes'},
+          priority: 1,
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {
+          fromStepId: conditionStep.id,
+          toStepId: noStep.id,
+          condition: {branch: 'no'},
+          priority: 2,
+        },
+      });
+
+      // Create execution
+      const execution = await prisma.workflowExecution.create({
+        data: {
+          workflowId: workflow.id,
+          contactId: contact.id,
+          status: WorkflowExecutionStatus.RUNNING,
+          currentStepId: triggerStep.id,
+          context: {},
+        },
+      });
+
+      // Process trigger step
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+
+      // Process condition step
+      await WorkflowExecutionService.processStepExecution(execution.id, conditionStep.id);
+
+      // Verify YES branch was taken
+      const stepExecutions = await prisma.workflowStepExecution.findMany({
+        where: {executionId: execution.id},
+        include: {step: true},
+        orderBy: {createdAt: 'asc'},
+      });
+
+      // Should have: TRIGGER, CONDITION, and YES step
+      expect(stepExecutions.length).toBeGreaterThanOrEqual(2);
+      const conditionExec = stepExecutions.find(se => se.step.type === WorkflowStepType.CONDITION);
+      expect(conditionExec).toBeDefined();
+      expect(conditionExec?.status).toBe(StepExecutionStatus.COMPLETED);
+      expect((conditionExec?.output as any)?.branch).toBe('yes');
+    });
+
+    it('should follow NO branch when condition evaluates to false', async () => {
+      const contact = await factories.createContact({
+        projectId,
+        data: {isPremium: false},
+      });
+
+      const workflow = await factories.createWorkflow({projectId});
+      const triggerStep = await prisma.workflowStep.findFirstOrThrow({
+        where: {workflowId: workflow.id, type: WorkflowStepType.TRIGGER},
+      });
+
+      const conditionStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.CONDITION,
+          name: 'Check Premium',
+          position: {x: 100, y: 0},
+          config: {
+            field: 'data.isPremium',
+            operator: 'equals',
+            value: true,
+          },
+        },
+      });
+
+      const yesStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'Premium',
+          position: {x: 200, y: -50},
+          config: {},
+        },
+      });
+
+      const noStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'Standard',
+          position: {x: 200, y: 50},
+          config: {},
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {fromStepId: triggerStep.id, toStepId: conditionStep.id},
+      });
+
+      await prisma.workflowTransition.create({
+        data: {
+          fromStepId: conditionStep.id,
+          toStepId: yesStep.id,
+          condition: {branch: 'yes'},
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {
+          fromStepId: conditionStep.id,
+          toStepId: noStep.id,
+          condition: {branch: 'no'},
+        },
+      });
+
+      const execution = await prisma.workflowExecution.create({
+        data: {
+          workflowId: workflow.id,
+          contactId: contact.id,
+          status: WorkflowExecutionStatus.RUNNING,
+          currentStepId: triggerStep.id,
+          context: {},
+        },
+      });
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+      await WorkflowExecutionService.processStepExecution(execution.id, conditionStep.id);
+
+      const stepExecutions = await prisma.workflowStepExecution.findMany({
+        where: {executionId: execution.id},
+        include: {step: true},
+        orderBy: {createdAt: 'asc'},
+      });
+
+      const conditionExec = stepExecutions.find(se => se.step.type === WorkflowStepType.CONDITION);
+      expect(conditionExec).toBeDefined();
+      expect((conditionExec?.output as any)?.branch).toBe('no');
+    });
+
+    it('should handle complex nested conditions', async () => {
+      const contact = await factories.createContact({
+        projectId,
+        data: {country: 'US', isPremium: true},
+      });
+
+      const workflow = await factories.createWorkflow({projectId});
+      const triggerStep = await prisma.workflowStep.findFirstOrThrow({
+        where: {workflowId: workflow.id, type: WorkflowStepType.TRIGGER},
+      });
+
+      // First condition: Check country
+      const condition1 = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.CONDITION,
+          name: 'Check Country',
+          position: {x: 100, y: 0},
+          config: {field: 'data.country', operator: 'equals', value: 'US'},
+        },
+      });
+
+      // Second condition (nested): Check premium status (only for US)
+      const condition2 = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.CONDITION,
+          name: 'Check Premium (US)',
+          position: {x: 200, y: -50},
+          config: {field: 'data.isPremium', operator: 'equals', value: true},
+        },
+      });
+
+      const usPremiumExit = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'US Premium',
+          position: {x: 300, y: -75},
+          config: {},
+        },
+      });
+
+      const usStandardExit = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'US Standard',
+          position: {x: 300, y: -25},
+          config: {},
+        },
+      });
+
+      const nonUsExit = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'Non-US',
+          position: {x: 200, y: 50},
+          config: {},
+        },
+      });
+
+      // Create transitions
+      await prisma.workflowTransition.create({
+        data: {fromStepId: triggerStep.id, toStepId: condition1.id},
+      });
+
+      await prisma.workflowTransition.create({
+        data: {
+          fromStepId: condition1.id,
+          toStepId: condition2.id,
+          condition: {branch: 'yes'},
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {
+          fromStepId: condition1.id,
+          toStepId: nonUsExit.id,
+          condition: {branch: 'no'},
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {
+          fromStepId: condition2.id,
+          toStepId: usPremiumExit.id,
+          condition: {branch: 'yes'},
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {
+          fromStepId: condition2.id,
+          toStepId: usStandardExit.id,
+          condition: {branch: 'no'},
+        },
+      });
+
+      const execution = await prisma.workflowExecution.create({
+        data: {
+          workflowId: workflow.id,
+          contactId: contact.id,
+          status: WorkflowExecutionStatus.RUNNING,
+          currentStepId: triggerStep.id,
+          context: {},
+        },
+      });
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+      await WorkflowExecutionService.processStepExecution(execution.id, condition1.id);
+      await WorkflowExecutionService.processStepExecution(execution.id, condition2.id);
+
+      const stepExecutions = await prisma.workflowStepExecution.findMany({
+        where: {executionId: execution.id},
+        include: {step: true},
+        orderBy: {createdAt: 'asc'},
+      });
+
+      // Should have executed: TRIGGER → CONDITION (US) → CONDITION (Premium) → EXIT (US Premium)
+      expect(stepExecutions.length).toBeGreaterThanOrEqual(3);
+      const conditions = stepExecutions.filter(se => se.step.type === WorkflowStepType.CONDITION);
+      expect(conditions).toHaveLength(2);
+      expect((conditions[0].output as any)?.branch).toBe('yes'); // US = yes
+      expect((conditions[1].output as any)?.branch).toBe('yes'); // Premium = yes
+    });
+  });
+
+  // ========================================
+  // WAIT_FOR_EVENT STEPS
+  // ========================================
+  describe('Wait for Event', () => {
+    it('should pause workflow execution when waiting for event', async () => {
+      const contact = await factories.createContact({projectId});
+      const workflow = await factories.createWorkflow({projectId});
+      const triggerStep = await prisma.workflowStep.findFirstOrThrow({
+        where: {workflowId: workflow.id, type: WorkflowStepType.TRIGGER},
+      });
+
+      const waitStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.WAIT_FOR_EVENT,
+          name: 'Wait for Purchase',
+          position: {x: 100, y: 0},
+          config: {
+            eventName: 'purchase.completed',
+            timeout: 3600, // 1 hour
+          },
+        },
+      });
+
+      const exitStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'Complete',
+          position: {x: 200, y: 0},
+          config: {},
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {fromStepId: triggerStep.id, toStepId: waitStep.id},
+      });
+
+      await prisma.workflowTransition.create({
+        data: {fromStepId: waitStep.id, toStepId: exitStep.id},
+      });
+
+      const execution = await prisma.workflowExecution.create({
+        data: {
+          workflowId: workflow.id,
+          contactId: contact.id,
+          status: WorkflowExecutionStatus.RUNNING,
+          currentStepId: triggerStep.id,
+          context: {},
+        },
+      });
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+      await WorkflowExecutionService.processStepExecution(execution.id, waitStep.id);
+
+      // Verify step is in WAITING status
+      const waitStepExecution = await prisma.workflowStepExecution.findFirst({
+        where: {
+          executionId: execution.id,
+          stepId: waitStep.id,
+        },
+      });
+
+      expect(waitStepExecution?.status).toBe(StepExecutionStatus.WAITING);
+
+      // Verify workflow execution is in WAITING status
+      const updatedExecution = await prisma.workflowExecution.findUnique({
+        where: {id: execution.id},
+      });
+
+      expect(updatedExecution?.status).toBe(WorkflowExecutionStatus.WAITING);
+    });
+
+    it('should resume workflow when expected event arrives', async () => {
+      const contact = await factories.createContact({projectId});
+      const workflow = await factories.createWorkflow({projectId});
+      const triggerStep = await prisma.workflowStep.findFirstOrThrow({
+        where: {workflowId: workflow.id, type: WorkflowStepType.TRIGGER},
+      });
+
+      const waitStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.WAIT_FOR_EVENT,
+          name: 'Wait for Event',
+          position: {x: 100, y: 0},
+          config: {
+            eventName: 'user.verified',
+            timeout: 3600,
+          },
+        },
+      });
+
+      const exitStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'Done',
+          position: {x: 200, y: 0},
+          config: {},
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {fromStepId: triggerStep.id, toStepId: waitStep.id},
+      });
+
+      await prisma.workflowTransition.create({
+        data: {fromStepId: waitStep.id, toStepId: exitStep.id},
+      });
+
+      const execution = await prisma.workflowExecution.create({
+        data: {
+          workflowId: workflow.id,
+          contactId: contact.id,
+          status: WorkflowExecutionStatus.RUNNING,
+          currentStepId: triggerStep.id,
+          context: {},
+        },
+      });
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+      await WorkflowExecutionService.processStepExecution(execution.id, waitStep.id);
+
+      // Verify waiting state
+      const waitingExecution = await prisma.workflowExecution.findUnique({
+        where: {id: execution.id},
+      });
+      expect(waitingExecution?.status).toBe(WorkflowExecutionStatus.WAITING);
+
+      // Simulate event arrival by calling handleEvent
+      await WorkflowExecutionService.handleEvent(projectId, 'user.verified', contact.id, {verified: true});
+
+      // Verify step execution was resumed
+      const waitStepExecution = await prisma.workflowStepExecution.findFirst({
+        where: {
+          executionId: execution.id,
+          stepId: waitStep.id,
+        },
+      });
+
+      // Step should be completed after event arrives
+      expect(waitStepExecution?.status).toBe(StepExecutionStatus.COMPLETED);
+    });
+  });
+
+  // ========================================
+  // COMPLEX MULTI-STEP WORKFLOWS
+  // ========================================
+  describe('Complex Multi-Step Workflows', () => {
+    it('should execute linear workflow end-to-end', async () => {
+      const contact = await factories.createContact({projectId});
+
+      const workflow = await factories.createWorkflow({projectId});
+      const triggerStep = await prisma.workflowStep.findFirstOrThrow({
+        where: {workflowId: workflow.id, type: WorkflowStepType.TRIGGER},
+      });
+
+      // Build: TRIGGER → DELAY → CONDITION → EXIT
+      const delay = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.DELAY,
+          name: 'Wait 1 day',
+          position: {x: 100, y: 0},
+          config: {amount: 1, unit: 'days'},
+        },
+      });
+
+      const condition = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.CONDITION,
+          name: 'Check Status',
+          position: {x: 200, y: 0},
+          config: {field: 'contact.subscribed', operator: 'equals', value: true},
+        },
+      });
+
+      const exit = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'Complete',
+          position: {x: 300, y: 0},
+          config: {},
+        },
+      });
+
+      // Create transitions
+      await prisma.workflowTransition.create({
+        data: {fromStepId: triggerStep.id, toStepId: delay.id},
+      });
+      await prisma.workflowTransition.create({
+        data: {fromStepId: delay.id, toStepId: condition.id},
+      });
+      await prisma.workflowTransition.create({
+        data: {
+          fromStepId: condition.id,
+          toStepId: exit.id,
+          condition: {branch: 'yes'},
+        },
+      });
+
+      const execution = await prisma.workflowExecution.create({
+        data: {
+          workflowId: workflow.id,
+          contactId: contact.id,
+          status: WorkflowExecutionStatus.RUNNING,
+          currentStepId: triggerStep.id,
+          context: {},
+        },
+      });
+
+      // Execute through workflow
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+
+      // Verify step executions were created
+      const stepExecutions = await prisma.workflowStepExecution.findMany({
+        where: {executionId: execution.id},
+        include: {step: true},
+        orderBy: {createdAt: 'asc'},
+      });
+
+      // Should have at least TRIGGER step
+      expect(stepExecutions.length).toBeGreaterThanOrEqual(1);
+
+      // Verify trigger step completed
+      const triggerExec = stepExecutions.find(se => se.step.type === WorkflowStepType.TRIGGER);
+      expect(triggerExec?.status).toBe(StepExecutionStatus.COMPLETED);
+    });
+
+    it('should handle workflows with multiple branches that converge', async () => {
+      const contact = await factories.createContact({
+        projectId,
+        data: {segment: 'A'},
+      });
+
+      const workflow = await factories.createWorkflow({projectId});
+      const triggerStep = await prisma.workflowStep.findFirstOrThrow({
+        where: {workflowId: workflow.id, type: WorkflowStepType.TRIGGER},
+      });
+
+      // Split into A/B paths, then merge
+      const condition = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.CONDITION,
+          name: 'A/B Split',
+          position: {x: 100, y: 0},
+          config: {field: 'data.segment', operator: 'equals', value: 'A'},
+        },
+      });
+
+      const pathA = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.DELAY,
+          name: 'Path A Delay',
+          position: {x: 200, y: -50},
+          config: {amount: 1, unit: 'hours'},
+        },
+      });
+
+      const pathB = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.DELAY,
+          name: 'Path B Delay',
+          position: {x: 200, y: 50},
+          config: {amount: 2, unit: 'hours'},
+        },
+      });
+
+      const merge = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'Merge Point',
+          position: {x: 300, y: 0},
+          config: {},
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {fromStepId: triggerStep.id, toStepId: condition.id},
+      });
+
+      await prisma.workflowTransition.create({
+        data: {
+          fromStepId: condition.id,
+          toStepId: pathA.id,
+          condition: {branch: 'yes'},
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {
+          fromStepId: condition.id,
+          toStepId: pathB.id,
+          condition: {branch: 'no'},
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {fromStepId: pathA.id, toStepId: merge.id},
+      });
+
+      await prisma.workflowTransition.create({
+        data: {fromStepId: pathB.id, toStepId: merge.id},
+      });
+
+      const execution = await prisma.workflowExecution.create({
+        data: {
+          workflowId: workflow.id,
+          contactId: contact.id,
+          status: WorkflowExecutionStatus.RUNNING,
+          currentStepId: triggerStep.id,
+          context: {},
+        },
+      });
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+      await WorkflowExecutionService.processStepExecution(execution.id, condition.id);
+
+      const stepExecutions = await prisma.workflowStepExecution.findMany({
+        where: {executionId: execution.id},
+        include: {step: true},
+        orderBy: {createdAt: 'asc'},
+      });
+
+      // Should have: TRIGGER, CONDITION, and Path A (since segment = 'A')
+      expect(stepExecutions.length).toBeGreaterThanOrEqual(2);
+      const conditionExec = stepExecutions.find(se => se.step.type === WorkflowStepType.CONDITION);
+      expect((conditionExec?.output as any)?.branch).toBe('yes');
+    });
+  });
+
+  // ========================================
+  // ERROR HANDLING
+  // ========================================
+  describe('Error Handling', () => {
+    it('should mark workflow as FAILED when step execution fails', async () => {
+      const contact = await factories.createContact({projectId});
+      const workflow = await factories.createWorkflow({projectId});
+      const triggerStep = await prisma.workflowStep.findFirstOrThrow({
+        where: {workflowId: workflow.id, type: WorkflowStepType.TRIGGER},
+      });
+
+      // Create a CONDITION step with invalid config (will fail)
+      const badStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.CONDITION,
+          name: 'Bad Condition',
+          position: {x: 100, y: 0},
+          config: {}, // Invalid - missing required fields
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {fromStepId: triggerStep.id, toStepId: badStep.id},
+      });
+
+      const execution = await prisma.workflowExecution.create({
+        data: {
+          workflowId: workflow.id,
+          contactId: contact.id,
+          status: WorkflowExecutionStatus.RUNNING,
+          currentStepId: triggerStep.id,
+          context: {},
+        },
+      });
+
+      // Processing the trigger step will automatically try to process the bad step
+      // due to the transition, which will throw an error
+      await expect(WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id)).rejects.toThrow();
+
+      // Verify workflow execution is marked as FAILED
+      const failedExecution = await prisma.workflowExecution.findUnique({
+        where: {id: execution.id},
+      });
+
+      expect(failedExecution?.status).toBe(WorkflowExecutionStatus.FAILED);
+    });
+
+    it('should handle missing contact data gracefully in CONDITION steps', async () => {
+      const contact = await factories.createContact({
+        projectId,
+        data: {}, // No fields
+      });
+
+      const workflow = await factories.createWorkflow({projectId});
+      const triggerStep = await prisma.workflowStep.findFirstOrThrow({
+        where: {workflowId: workflow.id, type: WorkflowStepType.TRIGGER},
+      });
+
+      const condition = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.CONDITION,
+          name: 'Check Missing Field',
+          position: {x: 100, y: 0},
+          config: {
+            field: 'data.nonExistentField',
+            operator: 'equals',
+            value: 'something',
+          },
+        },
+      });
+
+      const noStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'Exit',
+          position: {x: 200, y: 0},
+          config: {},
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {fromStepId: triggerStep.id, toStepId: condition.id},
+      });
+
+      await prisma.workflowTransition.create({
+        data: {
+          fromStepId: condition.id,
+          toStepId: noStep.id,
+          condition: {branch: 'no'},
+        },
+      });
+
+      const execution = await prisma.workflowExecution.create({
+        data: {
+          workflowId: workflow.id,
+          contactId: contact.id,
+          status: WorkflowExecutionStatus.RUNNING,
+          currentStepId: triggerStep.id,
+          context: {},
+        },
+      });
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+      await WorkflowExecutionService.processStepExecution(execution.id, condition.id);
+
+      // Verify condition evaluated to 'no' when field doesn't exist
+      const conditionExec = await prisma.workflowStepExecution.findFirst({
+        where: {executionId: execution.id, stepId: condition.id},
+      });
+
+      expect(conditionExec?.status).toBe(StepExecutionStatus.COMPLETED);
+      expect((conditionExec?.output as any)?.branch).toBe('no');
+    });
+  });
+
+  // ========================================
+  // EXIT STEPS
+  // ========================================
+  describe('Exit Steps', () => {
+    it('should complete workflow when EXIT step is reached', async () => {
+      const contact = await factories.createContact({projectId});
+      const workflow = await factories.createWorkflow({projectId});
+      const triggerStep = await prisma.workflowStep.findFirstOrThrow({
+        where: {workflowId: workflow.id, type: WorkflowStepType.TRIGGER},
+      });
+
+      const exitStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'Early Exit',
+          position: {x: 100, y: 0},
+          config: {reason: 'User already converted'},
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {fromStepId: triggerStep.id, toStepId: exitStep.id},
+      });
+
+      const execution = await prisma.workflowExecution.create({
+        data: {
+          workflowId: workflow.id,
+          contactId: contact.id,
+          status: WorkflowExecutionStatus.RUNNING,
+          currentStepId: triggerStep.id,
+          context: {},
+        },
+      });
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+      await WorkflowExecutionService.processStepExecution(execution.id, exitStep.id);
+
+      // Verify workflow completed
+      const completedExecution = await prisma.workflowExecution.findUnique({
+        where: {id: execution.id},
+      });
+
+      expect(completedExecution?.status).toBe(WorkflowExecutionStatus.COMPLETED);
+      expect(completedExecution?.completedAt).toBeDefined();
+    });
+  });
+
+  describe('Non-Persistent Data in Workflow Context', () => {
+    it('should make non-persistent event data available throughout entire workflow execution', async () => {
+      const contact = await factories.createContact({
+        projectId,
+        data: {
+          firstName: 'Alice',
+          plan: 'enterprise',
+        },
+      });
+
+      const workflow = await factories.createWorkflow({projectId});
+
+      const triggerStep = await factories.createWorkflowStep({
+        workflowId: workflow.id,
+        type: WorkflowStepType.TRIGGER,
+        name: 'Start',
+        position: {x: 0, y: 0},
+        config: {},
+      });
+
+      const exitStep = await factories.createWorkflowStep({
+        workflowId: workflow.id,
+        type: WorkflowStepType.EXIT,
+        name: 'End',
+        position: {x: 100, y: 0},
+        config: {},
+      });
+
+      await prisma.workflowTransition.create({
+        data: {fromStepId: triggerStep.id, toStepId: exitStep.id},
+      });
+
+      // Create execution with context containing both persistent and non-persistent data
+      const contextData = {
+        totalSpent: 999.99, // Persistent
+        orderId: {value: 'ORD-789', persistent: false}, // Non-persistent
+        trackingUrl: {value: 'https://track.example.com/ORD-789', persistent: false}, // Non-persistent
+      };
+
+      const execution = await prisma.workflowExecution.create({
+        data: {
+          workflowId: workflow.id,
+          contactId: contact.id,
+          status: WorkflowExecutionStatus.RUNNING,
+          currentStepId: triggerStep.id,
+          context: contextData as Prisma.InputJsonValue,
+        },
+      });
+
+      // Verify context persists in execution record
+      const savedExecution = await prisma.workflowExecution.findUnique({
+        where: {id: execution.id},
+      });
+
+      expect(savedExecution?.context).toMatchObject({
+        totalSpent: 999.99,
+        orderId: {value: 'ORD-789', persistent: false},
+        trackingUrl: {value: 'https://track.example.com/ORD-789', persistent: false},
+      });
+
+      // Process workflow steps
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+      await WorkflowExecutionService.processStepExecution(execution.id, exitStep.id);
+
+      // Verify context still available after workflow completes
+      const completedExecution = await prisma.workflowExecution.findUnique({
+        where: {id: execution.id},
+      });
+
+      expect(completedExecution?.status).toBe(WorkflowExecutionStatus.COMPLETED);
+      expect(completedExecution?.context).toMatchObject({
+        totalSpent: 999.99,
+        orderId: {value: 'ORD-789', persistent: false},
+        trackingUrl: {value: 'https://track.example.com/ORD-789', persistent: false},
+      });
+
+      // Verify contact data was NOT polluted with non-persistent data
+      const savedContact = await prisma.contact.findUnique({
+        where: {id: contact.id},
+      });
+
+      expect(savedContact?.data).toMatchObject({
+        firstName: 'Alice',
+        plan: 'enterprise',
+      });
+      expect(savedContact?.data).not.toHaveProperty('orderId');
+      expect(savedContact?.data).not.toHaveProperty('trackingUrl');
+    });
+  });
+});

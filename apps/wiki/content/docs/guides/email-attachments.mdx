@@ -1,0 +1,385 @@
+---
+title: Email Attachments
+description: Send emails with file attachments via API or SMTP
+---
+
+## Overview
+
+Plunk supports sending emails with file attachments through both the HTTP API and SMTP relay. You can attach documents, images, PDFs, and other files to your transactional emails.
+
+## Limits
+
+- **Maximum attachments**: 10 per email
+- **Total size limit**: 10MB (combined size of all attachments)
+- **Supported formats**: Any file type (PDF, images, documents, etc.)
+
+## API Usage
+
+### Basic Example
+
+Send an email with a single PDF attachment:
+
+```bash
+curl -X POST https://api.useplunk.com/v1/send \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "user@example.com",
+    "subject": "Your Invoice",
+    "body": "<h1>Invoice Attached</h1><p>Please find your invoice attached.</p>",
+    "attachments": [
+      {
+        "filename": "invoice.pdf",
+        "content": "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PC9UeXBlL...",
+        "contentType": "application/pdf"
+      }
+    ]
+  }'
+```
+
+### Multiple Attachments
+
+Send multiple files in a single email:
+
+```json
+{
+  "to": "user@example.com",
+  "subject": "Monthly Reports",
+  "body": "<p>Please find this month's reports attached.</p>",
+  "attachments": [
+    {
+      "filename": "sales-report.pdf",
+      "content": "JVBERi0xLjQK...",
+      "contentType": "application/pdf"
+    },
+    {
+      "filename": "logo.png",
+      "content": "iVBORw0KGgo...",
+      "contentType": "image/png"
+    },
+    {
+      "filename": "data.csv",
+      "content": "TmFtZSxFbWFp...",
+      "contentType": "text/csv"
+    }
+  ]
+}
+```
+
+## Attachment Format
+
+Each attachment object requires three fields:
+
+### filename
+
+- **Type**: String
+- **Max length**: 255 characters
+- **Description**: The name of the file as it will appear to recipients
+- **Example**: `"invoice-2024.pdf"`
+
+### content
+
+- **Type**: String (Base64 encoded)
+- **Description**: The file content encoded in Base64 format
+- **Example**: `"JVBERi0xLjQKJeLjz9MK..."`
+
+### contentType
+
+- **Type**: String (MIME type)
+- **Max length**: 255 characters
+- **Description**: The MIME type of the file
+- **Examples**:
+  - PDF: `application/pdf`
+  - PNG image: `image/png`
+  - JPEG image: `image/jpeg`
+  - Word document: `application/vnd.openxmlformats-officedocument.wordprocessingml.document`
+  - Excel: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+  - CSV: `text/csv`
+  - ZIP: `application/zip`
+
+## Base64 Encoding
+
+Attachments must be Base64 encoded before sending. Here are examples in different languages:
+
+### JavaScript/Node.js
+
+```javascript
+import fs from 'fs';
+
+// Read file and convert to Base64
+const fileBuffer = fs.readFileSync('invoice.pdf');
+const base64Content = fileBuffer.toString('base64');
+
+// Send email with attachment
+await fetch('https://api.useplunk.com/v1/send', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer sk_your_secret_key',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    to: 'user@example.com',
+    subject: 'Invoice',
+    body: '<p>Your invoice is attached.</p>',
+    attachments: [{
+      filename: 'invoice.pdf',
+      content: base64Content,
+      contentType: 'application/pdf'
+    }]
+  })
+});
+```
+
+### Python
+
+```python
+import base64
+import requests
+
+# Read and encode file
+with open('invoice.pdf', 'rb') as file:
+    base64_content = base64.b64encode(file.read()).decode('utf-8')
+
+# Send email
+response = requests.post(
+    'https://api.useplunk.com/v1/send',
+    headers={
+        'Authorization': 'Bearer sk_your_secret_key',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'to': 'user@example.com',
+        'subject': 'Invoice',
+        'body': '<p>Your invoice is attached.</p>',
+        'attachments': [{
+            'filename': 'invoice.pdf',
+            'content': base64_content,
+            'contentType': 'application/pdf'
+        }]
+    }
+)
+```
+
+### PHP
+
+```php
+<?php
+
+// Read and encode file
+$fileContent = file_get_contents('invoice.pdf');
+$base64Content = base64_encode($fileContent);
+
+// Send email
+$ch = curl_init('https://api.useplunk.com/v1/send');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Authorization: Bearer sk_your_secret_key',
+    'Content-Type: application/json'
+]);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+    'to' => 'user@example.com',
+    'subject' => 'Invoice',
+    'body' => '<p>Your invoice is attached.</p>',
+    'attachments' => [[
+        'filename' => 'invoice.pdf',
+        'content' => $base64Content,
+        'contentType' => 'application/pdf'
+    ]]
+]));
+
+$response = curl_exec($ch);
+curl_close($ch);
+```
+
+## SMTP Usage
+
+When using the SMTP relay, attachments are automatically parsed from the MIME multipart message and forwarded to the API.
+
+### Standard Email Clients
+
+Configure your email client with Plunk SMTP settings and attach files normally:
+
+- **SMTP Server**: `smtp.yourdomain.com`
+- **Port**: 587 (STARTTLS) or 465 (SSL/TLS)
+- **Username**: `plunk`
+- **Password**: Your Plunk API secret key
+
+Attachments added through your email client will be automatically included.
+
+### Programmatic SMTP
+
+Using nodemailer (Node.js):
+
+```javascript
+import nodemailer from 'nodemailer';
+
+const transporter = nodemailer.createTransport({
+  host: 'smtp.yourdomain.com',
+  port: 587,
+  secure: false, // Use STARTTLS
+  auth: {
+    user: 'plunk',
+    pass: 'sk_your_secret_key'
+  }
+});
+
+await transporter.sendMail({
+  from: 'sender@yourdomain.com',
+  to: 'recipient@example.com',
+  subject: 'Invoice',
+  html: '<p>Your invoice is attached.</p>',
+  attachments: [
+    {
+      filename: 'invoice.pdf',
+      path: '/path/to/invoice.pdf'
+    }
+  ]
+});
+```
+
+## Common MIME Types
+
+| File Type | MIME Type |
+|-----------|-----------|
+| PDF | `application/pdf` |
+| PNG | `image/png` |
+| JPEG | `image/jpeg` |
+| GIF | `image/gif` |
+| Word (.docx) | `application/vnd.openxmlformats-officedocument.wordprocessingml.document` |
+| Word (.doc) | `application/msword` |
+| Excel (.xlsx) | `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` |
+| Excel (.xls) | `application/vnd.ms-excel` |
+| CSV | `text/csv` |
+| Plain text | `text/plain` |
+| HTML | `text/html` |
+| ZIP | `application/zip` |
+| JSON | `application/json` |
+| XML | `application/xml` |
+
+## Best Practices
+
+### Size Optimization
+
+- **Compress files**: Use ZIP compression for large files
+- **Optimize images**: Reduce image dimensions and quality before attaching
+- **Use links for large files**: For files >5MB, consider uploading to cloud storage and sending a download link instead
+
+### Security
+
+- **Scan for malware**: Ensure files are virus-free before sending
+- **Avoid executable files**: Don't attach .exe, .bat, .sh files (often blocked by email providers)
+- **Use password protection**: For sensitive documents, password-protect files and send password separately
+
+### Deliverability
+
+- **Mind the size**: Smaller emails have better deliverability
+- **Avoid spam triggers**: Don't attach executable files or suspicious content
+- **Test first**: Send test emails to verify attachments arrive correctly
+
+## Troubleshooting
+
+### Attachment Too Large
+
+**Error**: `Total attachment size must not exceed 10MB`
+
+**Solution**:
+- Reduce file sizes
+- Compress files
+- Split into multiple emails
+- Use cloud storage links instead
+
+### Invalid Base64
+
+**Error**: `Invalid attachment content - must be base64 encoded`
+
+**Solution**:
+- Ensure file is properly base64 encoded
+- Don't include line breaks in base64 string (or use standard base64 encoding)
+- Verify encoding matches content (binary files need binary encoding)
+
+### Wrong Content Type
+
+**Issue**: Attachments don't open correctly
+
+**Solution**:
+- Use correct MIME type for file format
+- Verify file extension matches content type
+- Test with common email clients
+
+### Missing Attachment
+
+**Issue**: Email sends but attachment missing
+
+**Solution**:
+- Check attachment array is properly formatted
+- Verify all required fields (filename, content, contentType)
+- Check email provider limits (some block certain types)
+- Review AWS SES sending logs
+
+## Examples by Use Case
+
+### Invoice Email
+
+```json
+{
+  "to": "customer@example.com",
+  "subject": "Invoice #12345",
+  "body": "<h1>Thank you for your purchase!</h1><p>Your invoice is attached.</p>",
+  "attachments": [{
+    "filename": "invoice-12345.pdf",
+    "content": "JVBERi0xLjQK...",
+    "contentType": "application/pdf"
+  }]
+}
+```
+
+### Report with Charts
+
+```json
+{
+  "to": "manager@company.com",
+  "subject": "Weekly Analytics Report",
+  "body": "<h1>Weekly Report</h1><p>See attached for details.</p>",
+  "attachments": [
+    {
+      "filename": "analytics-report.pdf",
+      "content": "JVBERi0xLjQK...",
+      "contentType": "application/pdf"
+    },
+    {
+      "filename": "sales-chart.png",
+      "content": "iVBORw0KGgo...",
+      "contentType": "image/png"
+    }
+  ]
+}
+```
+
+### Welcome Kit
+
+```json
+{
+  "to": "newuser@example.com",
+  "subject": "Welcome to Our Service!",
+  "body": "<h1>Welcome!</h1><p>Here's everything you need to get started.</p>",
+  "attachments": [
+    {
+      "filename": "getting-started-guide.pdf",
+      "content": "JVBERi0xLjQK...",
+      "contentType": "application/pdf"
+    },
+    {
+      "filename": "sample-data.csv",
+      "content": "TmFtZSxFbWFp...",
+      "contentType": "text/csv"
+    }
+  ]
+}
+```
+
+## Next Steps
+
+- [Send your first email](/getting-started/quick-start)
+- [SMTP relay setup](/self-hosting/introduction)
+- [Email templates](/guides/templates)

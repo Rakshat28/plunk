@@ -1,0 +1,181 @@
+---
+title: Analytics
+description: Track and analyze email performance
+---
+
+## What you can track
+
+Plunk tracks comprehensive email metrics across all campaigns, workflows, and transactional emails:
+
+**Delivery metrics:**
+- Sent, delivered, bounced
+
+**Engagement metrics:**
+- Opens, clicks, unsubscribes
+
+**Quality metrics:**
+- Open rate, click rate, bounce rate
+
+## Campaign analytics
+
+View detailed performance for specific campaigns:
+
+```bash
+curl -X GET {{API_URL}}/campaigns/campaign_id/stats \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+Response:
+
+```json
+{
+  "totalRecipients": 5000,
+  "sentCount": 5000,
+  "deliveredCount": 4980,
+  "openedCount": 2100,
+  "clickedCount": 450,
+  "bouncedCount": 20,
+  "unsubscribedCount": 8,
+  "openRate": 0.422,
+  "clickRate": 0.090,
+  "bounceRate": 0.004
+}
+```
+
+**Metrics update in real-time** as recipients engage.
+
+View detailed analytics in your dashboard to:
+- Monitor daily performance trends
+- Identify engagement patterns
+- Spot deliverability issues
+- Compare time periods
+
+## Understanding metrics
+
+### Open rate
+
+**Formula:** (Unique opens / Delivered) × 100
+
+**Industry benchmarks:**
+- B2B: 15-25%
+- B2C: 20-30%
+- E-commerce: 15-20%
+
+**What affects it:**
+- Subject line quality
+- Sender reputation
+- Send timing
+- Audience engagement
+
+### Click rate
+
+**Formula:** (Unique clicks / Delivered) × 100
+
+**Industry benchmarks:**
+- B2B: 2-5%
+- B2C: 3-7%
+- E-commerce: 2-4%
+
+**What affects it:**
+- Content relevance
+- Call-to-action clarity
+- Email design
+- Link placement
+
+### Bounce rate
+
+**Formula:** (Bounces / Sent) × 100
+
+**Target:** < 2%
+
+**Types:**
+- **Hard bounce** — Invalid email, never retry
+- **Soft bounce** — Temporary issue, retry later
+
+**High bounce rate causes:**
+- Outdated email list
+- Invalid addresses
+- Domain issues
+
+### Unsubscribe rate
+
+**Formula:** (Unsubscribes / Delivered) × 100
+
+**Target:** < 0.5%
+
+**High unsubscribe causes:**
+- Too frequent emails
+- Irrelevant content
+- Misleading subject lines
+- No segmentation
+
+## Improving performance
+
+### Boost open rates
+
+**Write compelling subject lines:**
+- Keep under 50 characters
+- Create urgency or curiosity
+- Personalize with `{{firstName}}`
+- A/B test different approaches
+
+**Optimize send timing:**
+- Test different days/times
+- Segment by timezone
+- Avoid weekends (for B2B)
+- Consider user behavior
+
+**Build sender reputation:**
+- Use custom domain
+- Maintain consistent volume
+- Keep bounce rate low
+- Avoid spam triggers
+
+### Increase click rates
+
+**Clear call-to-action:**
+- One primary CTA
+- Use buttons, not just links
+- Action-oriented text ("Get Started" not "Click Here")
+- Make it prominent
+
+**Relevant content:**
+- Segment audience
+- Personalize messaging
+- Match subject line promise
+- Keep it focused
+
+**Mobile-responsive:**
+- Test on mobile devices
+- Use large tap targets
+- Single column layout
+- Readable font sizes
+
+### Reduce bounce rate
+
+**Clean your list:**
+```javascript
+// Remove hard bounces immediately
+const bounced = await fetch('{{API_URL}}/events?name=email.bounced&limit=1000');
+
+for (const event of bounced.data.events) {
+  if (event.data.bounceType === 'hard') {
+    await fetch(`{{API_URL}}/contacts/${event.contactId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${apiKey}` }
+    });
+  }
+}
+```
+
+**Verify emails:**
+- Use email verification service
+- Double opt-in for signups
+- Remove invalid formats
+- Re-engage inactive users before removing
+
+## Next Steps
+
+- [Set up custom domains](/guides/custom-domains) for better deliverability
+- [Build segments](/guides/segments) for targeted campaigns
+- [Scale your email](/guides/scaling-email) with best practices

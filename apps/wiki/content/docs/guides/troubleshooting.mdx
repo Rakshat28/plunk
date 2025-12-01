@@ -1,0 +1,427 @@
+---
+title: Troubleshooting
+description: Common issues and solutions
+---
+
+## Authentication issues
+
+### Invalid API key error
+
+**Error:**
+```json
+{
+  "code": 401,
+  "error": "Unauthorized",
+  "message": "Invalid API key"
+}
+```
+
+**Solutions:**
+
+1. **Verify key format** — Secret keys start with `sk_`, public keys start with `pk_`
+2. **Check Authorization header** — Must use `Bearer` format: `Authorization: Bearer sk_your_secret_key`
+3. **Ensure key hasn't been regenerated** — If you regenerated keys in dashboard, update your application
+4. **Verify project access** — Key must belong to the project you're accessing
+
+**Test your key:**
+```bash
+curl -X GET {{API_URL}}/contacts?limit=1 \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+### Wrong key type for endpoint
+
+**Error:**
+```json
+{
+  "code": 401,
+  "error": "Unauthorized",
+  "message": "This endpoint requires a secret key (sk_*)"
+}
+```
+
+**Solution:**
+
+You're using a public key (`pk_*`) for an endpoint that requires a secret key.
+
+- **Public keys** — Only work with `/v1/track` endpoint
+- **Secret keys** — Required for all other endpoints
+
+Use your secret key from **Settings > API Keys** in the dashboard.
+
+## Email sending issues
+
+### Emails not sending
+
+**Check these common causes:**
+
+1. **Billing limit reached** - Check your billing limits in Settings → Billing. If you hit your monthly limit, increase it or wait for monthly reset.
+
+2. **Template not found**
+```json
+{
+  "code": 404,
+  "error": "Not Found",
+  "message": "Template not found"
+}
+```
+
+Verify template ID exists and belongs to your project.
+
+3. **Contact unsubscribed**
+
+Marketing templates skip unsubscribed contacts. Check contact subscription status:
+```bash
+curl -X GET {{API_URL}}/contacts/contact_id \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+If `subscribed: false`, use a transactional template for critical emails.
+
+4. **Project disabled**
+
+If your project is disabled, all email sends will fail. Contact support.
+
+### Emails going to spam
+
+**Common causes:**
+
+1. **No custom domain** — Emails from default domain may have lower trust
+2. **Low engagement** — Recipients not opening/clicking emails
+3. **High bounce rate** — Too many invalid email addresses
+4. **Spam complaints** — Recipients marking as spam
+
+**Solutions:**
+
+1. **Set up custom domain** — [Add your domain](/guides/custom-domains) for better deliverability
+2. **Clean your list** — Remove bounced and inactive contacts
+3. **Improve content** — Avoid spam trigger words, include clear unsubscribe link
+4. **Warm up your domain** — Start with small volumes, gradually increase
+5. **Segment your audience** — Only send relevant content to engaged users
+
+### Tracking not working
+
+**Open tracking:**
+
+Requires:
+- `trackingEnabled: true` on project
+- Recipient email client loads images
+- HTML email (not plain text)
+
+Some email clients block tracking pixels. Open rates are estimates, not exact.
+
+**Click tracking:**
+
+Requires:
+- Tracking enabled on project (check your project settings in dashboard)
+- Links in email body (not subject)
+- HTML email format
+
+## Campaign issues
+
+### Campaign won't send
+
+**Error:**
+```json
+{
+  "code": 400,
+  "error": "Bad Request",
+  "message": "Campaign must be in DRAFT or SCHEDULED status"
+}
+```
+
+**Solution:**
+
+Can only send campaigns with status `DRAFT`. If campaign is `SENT` or `CANCELLED`, duplicate it:
+
+```bash
+curl -X POST {{API_URL}}/campaigns/campaign_id/duplicate \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+### No recipients for campaign
+
+**Cause:**
+
+Campaign targets a segment or filter with zero matching contacts.
+
+**Solutions:**
+
+1. **Check segment size**
+```bash
+curl -X GET {{API_URL}}/segments/segment_id \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+Look at `memberCount` field.
+
+2. **Verify filters** — Test filters on segments page to see matches
+
+3. **Check subscription status** — Marketing templates only send to subscribed contacts
+
+### Scheduled campaign didn't send
+
+**Check:**
+
+1. **Verify schedule time** — Must be in future when scheduled
+2. **Campaign status** — Should be `SCHEDULED`, not `CANCELLED`
+3. **Project limits** — Billing limits may block sends
+
+View campaign details:
+```bash
+curl -X GET {{API_URL}}/campaigns/campaign_id \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+## Workflow issues
+
+### Workflow not triggering
+
+**Common causes:**
+
+1. **Workflow not enabled**
+
+Check `enabled: true`:
+```bash
+curl -X GET {{API_URL}}/workflows/workflow_id \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+2. **Wrong event name**
+
+Event names are case-sensitive. `user_signed_up` ≠ `User_Signed_Up`
+
+Verify event name exactly matches workflow trigger.
+
+3. **Contact already entered (allowReentry: false)**
+
+If `allowReentry: false`, contact can only enter once. Check execution history:
+```bash
+curl -X GET {{API_URL}}/workflows/workflow_id/executions?contactId=contact_id \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+4. **Segment membership not tracked**
+
+For `SEGMENT_ENTRY` triggers, segment must have `trackMembership: true`.
+
+### Workflow emails not sending
+
+**Check each email step execution:**
+
+```bash
+curl -X GET {{API_URL}}/workflows/workflow_id/executions/execution_id \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+Look for step failures in response.
+
+**Common causes:**
+
+1. **Template not found** — Template was deleted
+2. **Contact unsubscribed** — Marketing templates skip unsubscribed contacts
+3. **Billing limit reached** — Monthly workflow email limit exceeded
+4. **Workflow execution stopped** — Contact was deleted or execution was cancelled
+
+### Workflow stuck on delay step
+
+Delays are processed by background jobs. Check:
+
+1. **scheduledFor** time — When should it execute?
+2. **Current time** — Has the scheduled time passed?
+
+Delays process every minute. Wait a few minutes and check again.
+
+## Contact issues
+
+### Contact not found
+
+**Error:**
+```json
+{
+  "code": 404,
+  "error": "Not Found",
+  "message": "Contact not found"
+}
+```
+
+**Solutions:**
+
+1. **Verify contact ID** — Check for typos in the ID
+2. **Check project** — Contact may belong to different project
+3. **Contact deleted** — Contact may have been deleted
+
+Search by email instead:
+```bash
+curl -X GET "{{API_URL}}/contacts?search=user@example.com" \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+### Duplicate contacts
+
+Plunk automatically prevents duplicates. Creating a contact with existing email updates that contact instead of creating a new one.
+
+If you see duplicates:
+1. Check email addresses carefully (they may differ slightly)
+2. Verify you're viewing the same project
+
+### Contact data not updating
+
+**Verify data format:**
+
+```bash
+curl -X PATCH {{API_URL}}/contacts/contact_id \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": {
+      "plan": "premium"
+    }
+  }'
+```
+
+**Common issues:**
+
+1. **Missing `data` wrapper** — Custom fields must be inside `data` object
+2. **Wrong data types** — Numbers should be `99`, not `"99"`
+3. **Nested too deeply** — Keep data relatively flat
+
+## Segment issues
+
+### Segment shows wrong count
+
+Segment counts update every 5 minutes. Wait a few minutes and refresh.
+
+For real-time count, query members directly:
+```bash
+curl -X GET "{{API_URL}}/segments/segment_id/contacts?limit=1" \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+Check `total` field in response.
+
+### Segment filter not working
+
+**Test your filter:**
+
+1. **Check field names** — Use `data.fieldName` for custom fields
+2. **Verify operators** — `equals` for strings, `greaterThan` for numbers
+3. **Match data types** — Don't compare string `"99"` with number `99`
+
+**Example filters:**
+
+```javascript
+// ❌ Wrong
+{ "field": "plan", "operator": "equals", "value": "pro" }
+
+// ✓ Correct
+{ "field": "data.plan", "operator": "equals", "value": "pro" }
+```
+
+### Segment entry/exit events not firing
+
+Requires `trackMembership: true` on segment:
+
+```bash
+curl -X PATCH {{API_URL}}/segments/segment_id \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{"trackMembership": true}'
+```
+
+Membership is computed every 5 minutes. Events fire on the next computation cycle after a contact's segment membership changes.
+
+## Domain verification issues
+
+### Domain won't verify
+
+**Common causes:**
+
+1. **DNS not propagated** — Can take up to 48 hours
+2. **Wrong DNS records** — Double-check DKIM tokens
+3. **Conflicting records** — Remove old DKIM records from other email services
+
+**Check DNS propagation:**
+```bash
+dig TXT _domainkey.yourdomain.com
+```
+
+Records should match the DKIM tokens provided by Plunk.
+
+**Force verification check:**
+```bash
+curl -X POST {{API_URL}}/domains/domain_id/verify \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+### Emails not sending from custom domain
+
+1. **Verify domain is verified** — Check `verified: true` in domain settings
+2. **Use correct `from` address** — Must be `@yourdomain.com`
+3. **Check SPF and DKIM** — Ensure DNS records are correct
+
+## Rate limiting
+
+### 429 Too Many Requests
+
+**Error:**
+```json
+{
+  "code": 429,
+  "error": "Too Many Requests",
+  "message": "Rate limit exceeded"
+}
+```
+
+**Solutions:**
+
+1. **Implement exponential backoff** — Wait and retry with increasing delays
+2. **Batch operations** — Group multiple operations when possible
+3. **Spread requests** — Distribute load over time instead of bursts
+
+**Example retry logic:**
+```javascript
+async function sendWithRetry(data, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const response = await fetch('{{API_URL}}/v1/send', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (response.status === 429) {
+        const waitTime = Math.pow(2, i) * 1000; // Exponential backoff
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        continue;
+      }
+
+      return response;
+    } catch (error) {
+      if (i === maxRetries - 1) throw error;
+    }
+  }
+}
+```
+
+## Getting help
+
+If you're still experiencing issues:
+
+1. **Check API status** — Is there a known outage?
+2. **Review error message** — Error messages usually indicate the problem
+3. **Search documentation** — Look for specific error codes or messages
+4. **Check GitHub issues** — Similar issues may already be reported
+5. **Join Discord community** — Ask for help from other users
+6. **Contact support** — Provide error details, request IDs, and steps to reproduce
+
+**Include in support requests:**
+- Error message and status code
+- API endpoint and method
+- Request body (remove sensitive data)
+- Timestamp of the issue
+- Project ID (if applicable)
+

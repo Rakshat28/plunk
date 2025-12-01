@@ -1,0 +1,277 @@
+---
+title: Scaling Email Delivery
+description: Best practices for high-volume email sending
+---
+
+## Email delivery at scale
+
+Plunk is built on AWS SES and handles millions of emails. Follow these practices to maintain high deliverability and performance at scale.
+
+## Deliverability best practices
+
+### Use custom domains
+
+Emails from custom domains have higher trust and better deliverability than shared domains.
+
+**Setup:**
+1. Go to **Settings > Domains**
+2. Add your domain
+3. Configure DNS records (DKIM, SPF)
+4. Wait for verification
+
+[Learn more about custom domains →](/guides/custom-domains)
+
+### Warm up new domains
+
+Start small and gradually increase volume.
+
+This builds sender reputation with email providers.
+
+### Clean your list regularly
+
+Remove bounced and inactive contacts:
+
+```javascript
+// Get bounced contacts
+const bounced = await fetch('{{API_URL}}/events?name=email.bounced&limit=1000', {
+  headers: { 'Authorization': `Bearer ${apiKey}` }
+});
+
+// Unsubscribe them
+for (const event of bounced.data.events) {
+  await fetch(`{{API_URL}}/contacts/${event.contactId}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ subscribed: false })
+  });
+}
+```
+
+**When to clean:**
+- Hard bounces: Immediately unsubscribe
+- Soft bounces: After 3 attempts
+- No engagement: After 6-12 months
+
+### Segment your audience
+
+Send relevant content to engaged users:
+
+```javascript
+// Create engaged users segment
+{
+  "name": "Engaged Users",
+  "filters": {
+    "operator": "OR",
+    "conditions": [
+      { "field": "data.lastOpenedAt", "operator": "greaterThan", "value": "{{90 days ago}}" },
+      { "field": "data.lastClickedAt", "operator": "greaterThan", "value": "{{90 days ago}}" }
+    ]
+  }
+}
+```
+
+Send campaigns to engaged segments for better rates.
+
+## Tracking control
+
+You can disable tracking in your project settings for privacy-focused audiences or to reduce email size.
+
+**When tracking is disabled:**
+- No tracking pixel (no open tracking)
+- Links not rewritten (no click tracking)
+- Smaller email size
+- May improve deliverability for privacy-conscious audiences
+
+**When to disable:**
+- Regulated industries (healthcare, finance)
+- Privacy-focused users
+- Transactional emails where tracking isn't needed
+- High-volume sends where analytics aren't critical
+
+## Rate limits
+
+### AWS SES limits
+
+Plunk automatically queues emails to stay within limits. Large sends process in background.
+
+### Increase limits
+
+For higher throughput:
+1. Maintain good sender reputation
+2. Consistent sending volume
+3. Low bounce/complaint rates
+4. Request limit increase from AWS
+
+### Batch operations
+
+For bulk operations, use appropriate endpoints:
+
+```javascript
+// ✓ Good: Single request for multiple recipients
+fetch('{{API_URL}}/v1/send', {
+  method: 'POST',
+  body: JSON.stringify({
+    to: ['user1@example.com', 'user2@example.com', 'user3@example.com'],
+    subject: 'Update',
+    body: 'Message'
+  })
+});
+
+// ✗ Avoid: Multiple requests
+for (const email of emails) {
+  await fetch('{{API_URL}}/v1/send', {...}); // Sequential, slow
+}
+```
+
+## Campaign targeting
+
+### Dynamic filtering
+
+Target audiences without creating segments:
+
+```javascript
+{
+  "name": "Premium Launch",
+  "audienceType": "FILTERED",
+  "audienceFilter": {
+    "operator": "AND",
+    "conditions": [
+      { "field": "data.plan", "operator": "equals", "value": "premium" },
+      { "field": "data.signupDate", "operator": "greaterThan", "value": "2025-01-01" },
+      { "field": "subscribed", "operator": "equals", "value": true }
+    ]
+  },
+  "templateId": "template_id"
+}
+```
+
+**Use FILTERED for:**
+- One-time sends
+- Testing targeting
+- Very specific criteria
+
+**Use SEGMENT for:**
+- Repeated targeting
+- Workflow triggers
+- Segment analytics
+
+## Segment membership tracking
+
+For segments used in workflows, enable membership tracking:
+
+```bash
+curl -X POST {{API_URL}}/segments \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Active Premium Users",
+    "filters": {...},
+    "trackMembership": true
+  }'
+```
+
+**Enable for:**
+- Workflow trigger segments
+- Lifecycle stage tracking
+- Cohort analysis
+
+**Disable for:**
+- Large segments (100k+ contacts)
+- Campaign-only segments
+- Frequently changing segments
+
+Membership updates run every 5 minutes in background.
+
+## Performance optimization
+
+### Cache contact data
+
+For high-volume API sends, cache contact lookups:
+
+```javascript
+// Cache contact IDs locally
+const contactCache = new Map();
+
+async function getContactId(email) {
+  if (contactCache.has(email)) {
+    return contactCache.get(email);
+  }
+
+  const contact = await fetch(`{{API_URL}}/contacts?search=${email}`);
+  contactCache.set(email, contact.id);
+  return contact.id;
+}
+```
+
+### Use webhooks for async processing
+
+Instead of waiting for email sends:
+
+```javascript
+// Workflow with webhook for confirmation
+{
+  "steps": [
+    { "type": "SEND_EMAIL", "config": {...} },
+    {
+      "type": "WEBHOOK",
+      "config": {
+        "url": "https://your-api.com/email-sent",
+        "method": "POST",
+        "body": {
+          "contactId": "{{id}}",
+          "emailId": "{{emailId}}"
+        }
+      }
+    }
+  ]
+}
+```
+
+### Batch workflow triggers
+
+Trigger workflows in batches instead of one at a time:
+
+```javascript
+// Batch event tracking
+const events = users.map(user => ({
+  email: user.email,
+  event: 'welcome_campaign',
+  data: { userId: user.id }
+}));
+
+// Send in parallel (respecting rate limits)
+await Promise.all(
+  events.map(event =>
+    fetch('{{API_URL}}/v1/track', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(event)
+    })
+  )
+);
+```
+
+## Monitoring
+
+### Track key metrics
+
+Monitor these regularly:
+
+- **Bounce rate** — Should be < 2%
+- **Complaint rate** — Should be < 0.1%
+- **Open rate** — Industry average 15-25%
+- **Click rate** — Industry average 2-5%
+
+Monitor these metrics in your dashboard analytics page to track deliverability and engagement over time.
+
+## Next Steps
+
+- [Set billing limits](/guides/billing-limits) to control costs
+- [Monitor analytics](/guides/analytics) for deliverability
+- [Troubleshoot issues](/guides/troubleshooting) if problems arise

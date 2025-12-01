@@ -1,0 +1,73 @@
+import {Controller, Middleware, Post} from '@overnightjs/core';
+import type {Request, Response} from 'express';
+import multer from 'multer';
+
+import type {AuthResponse} from '../middleware/auth.js';
+import {requireAuth} from '../middleware/auth.js';
+import * as S3Service from '../services/S3Service.js';
+
+// Configure multer for file uploads (memory storage)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB max file size
+  },
+  fileFilter: (_req, file, cb) => {
+    // Only accept image files
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+
+    if (allowedMimeTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed (JPEG, PNG, GIF, WebP, SVG)'));
+    }
+  },
+});
+
+@Controller('uploads')
+export class Uploads {
+  /**
+   * POST /uploads/image
+   * Upload an image file to S3/Minio
+   */
+  @Post('image')
+  @Middleware([requireAuth, upload.single('image')])
+  public async uploadImage(req: Request, res: Response) {
+    const auth = res.locals.auth as AuthResponse;
+
+    try {
+      if (!S3Service.isS3Enabled()) {
+        return res.status(503).json({
+          error: 'File uploads are not enabled. Please configure S3 storage.',
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({
+          error: 'No image file provided',
+        });
+      }
+
+      // Upload file to S3/Minio
+      const result = await S3Service.uploadFile({
+        file: req.file.buffer,
+        filename: req.file.originalname,
+        contentType: req.file.mimetype,
+        projectId: auth.projectId!,
+      });
+
+      return res.status(200).json({
+        url: result.url,
+        key: result.key,
+        filename: req.file.originalname,
+        contentType: req.file.mimetype,
+        size: req.file.size,
+      });
+    } catch (error) {
+      console.error('[UPLOADS] Failed to upload image:', error);
+      return res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to upload image',
+      });
+    }
+  }
+}

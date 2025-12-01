@@ -1,0 +1,129 @@
+---
+title: Quick Start
+description: Send your first email in 5 minutes
+---
+
+## Send your first email
+
+### 1. Get your API key
+
+1. Sign up at [Plunk dashboard]({{DASHBOARD_URL}})
+2. Create or select a project
+3. Go to **Settings > API Keys**
+4. Copy your **Secret Key** (starts with `sk_`)
+
+### 2. Send an email
+
+```bash
+curl -X POST {{API_URL}}/v1/send \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "recipient@example.com",
+    "subject": "Hello from Plunk",
+    "body": "<h1>It works!</h1><p>Your first email via Plunk.</p>"
+  }'
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "emails": [{
+    "contact": {
+      "id": "contact_abc123",
+      "email": "recipient@example.com"
+    },
+    "email": "email_xyz789"
+  }],
+  "timestamp": "2024-03-15T10:30:00.000Z"
+}
+```
+
+The email is queued and delivers within seconds.
+
+## Use variables
+
+Make emails dynamic with template variables:
+
+```bash
+curl -X POST {{API_URL}}/v1/send \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "user@example.com",
+    "subject": "Welcome {{firstName}}!",
+    "body": "<h1>Hello {{firstName}}</h1><p>Welcome to {{companyName}}.</p>",
+    "data": {
+      "firstName": "Sarah",
+      "companyName": "Acme Inc"
+    }
+  }'
+```
+
+Variables use `{{variableName}}` syntax and pull from the `data` object.
+
+## Send to multiple recipients
+
+Pass an array to send the same email to multiple people:
+
+```javascript
+{
+  "to": ["user1@example.com", "user2@example.com", "user3@example.com"],
+  "subject": "Team update",
+  "body": "<p>Check out our new features!</p>"
+}
+```
+
+Each recipient gets their own email with personalized data if provided.
+
+## Use saved templates
+
+Create reusable templates in the dashboard, then reference them by ID:
+
+```bash
+curl -X POST {{API_URL}}/v1/send \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "user@example.com",
+    "template": "welcome-email-template-id",
+    "data": {
+      "firstName": "Sarah",
+      "verificationUrl": "https://example.com/verify/abc123"
+    }
+  }'
+```
+
+The template's subject, body, and sender settings are used automatically. Your `data` fills in the template variables.
+
+## Track events
+
+Track user actions to trigger workflows and build segments:
+
+```bash
+curl -X POST {{API_URL}}/v1/track \
+  -H "Authorization: Bearer pk_your_public_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "event": "signed_up",
+    "data": {
+      "plan": "pro",
+      "source": "landing_page"
+    }
+  }'
+```
+
+This creates or updates the contact and tracks the event. Use events to trigger automated workflows.
+
+## What's next
+
+**Set up workflows** — Build automated email sequences with [workflows](/guides/workflows)
+
+**Manage contacts** — Import and segment your audience with [contacts](/guides/contacts)
+
+**Send campaigns** — Broadcast to your entire list with [campaigns](/guides/campaigns)
+
+**Track engagement** — Monitor opens and clicks with [analytics](/guides/analytics)

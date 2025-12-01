@@ -1,20 +1,22 @@
 {
-	"name": "@plunk/shared",
-	"version": "1.0.0",
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
-	"private": true,
-	"dependencies": {
-		"dayjs": "^1.11.12",
-		"zod": "^3.23.8"
-	},
-	"devDependencies": {
-		"typescript": "^5.5.3"
-	},
-	"scripts": {
-		"watch": "tsc && tsc -w",
-		"build": "tsc",
-		"dev": "yarn watch",
-		"clean": "rimraf node_modules dist .turbo"
-	}
+  "name": "@plunk/shared",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "clean": "rimraf node_modules .turbo dist",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@plunk/db": "*",
+    "@plunk/typescript-config": "*",
+    "@types/node": "24.10.0",
+    "typescript": "5.7.2"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  }
 }

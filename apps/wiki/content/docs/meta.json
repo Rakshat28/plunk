@@ -1,0 +1,13 @@
+{
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "getting-started",
+    "---Guides---",
+    "guides",
+    "---API Reference---",
+    "api-reference",
+    "---Self-Hosting---",
+    "self-hosting"
+  ]
+}

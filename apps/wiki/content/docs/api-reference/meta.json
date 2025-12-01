@@ -1,0 +1,16 @@
+{
+  "title": "API Reference",
+  "pages": [
+    "overview",
+    "---Public API---",
+    "public-api/sendEmail",
+    "public-api/trackEvent",
+    "---Resources---",
+    "contacts",
+    "templates",
+    "campaigns",
+    "segments",
+    "---Reference---",
+    "errors"
+  ]
+}
