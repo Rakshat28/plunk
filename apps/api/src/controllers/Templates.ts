@@ -1,11 +1,12 @@
 import {Controller, Delete, Get, Middleware, Patch, Post} from '@overnightjs/core';
 import {TemplateType} from '@plunk/db';
-import type {Request, Response} from 'express';
+import type {NextFunction, Request, Response} from 'express';
 
 import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth} from '../middleware/auth.js';
 import {DomainService} from '../services/DomainService.js';
 import {TemplateService} from '../services/TemplateService.js';
+import {CatchAsync} from '../utils/asyncHandler.js';
 
 @Controller('templates')
 export class Templates {
@@ -15,7 +16,8 @@ export class Templates {
    */
   @Get('')
   @Middleware([requireAuth])
-  public async list(req: Request, res: Response) {
+  @CatchAsync
+  public async list(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const page = parseInt(req.query.page as string) || 1;
     const pageSize = Math.min(parseInt(req.query.pageSize as string) || 20, 100);
@@ -33,7 +35,8 @@ export class Templates {
    */
   @Get(':id')
   @Middleware([requireAuth])
-  public async get(req: Request, res: Response) {
+  @CatchAsync
+  public async get(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const templateId = req.params.id;
 
@@ -52,7 +55,8 @@ export class Templates {
    */
   @Post('')
   @Middleware([requireAuth])
-  public async create(req: Request, res: Response) {
+  @CatchAsync
+  public async create(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {name, description, subject, body, from, fromName, replyTo, type} = req.body;
 
@@ -95,7 +99,8 @@ export class Templates {
    */
   @Patch(':id')
   @Middleware([requireAuth])
-  public async update(req: Request, res: Response) {
+  @CatchAsync
+  public async update(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const templateId = req.params.id;
     const {name, description, subject, body, from, fromName, replyTo, type} = req.body;
@@ -129,7 +134,8 @@ export class Templates {
    */
   @Delete(':id')
   @Middleware([requireAuth])
-  public async delete(req: Request, res: Response) {
+  @CatchAsync
+  public async delete(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const templateId = req.params.id;
 
@@ -148,7 +154,8 @@ export class Templates {
    */
   @Post(':id/duplicate')
   @Middleware([requireAuth])
-  public async duplicate(req: Request, res: Response) {
+  @CatchAsync
+  public async duplicate(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const templateId = req.params.id;
 
@@ -167,7 +174,8 @@ export class Templates {
    */
   @Get(':id/usage')
   @Middleware([requireAuth])
-  public async getUsage(req: Request, res: Response) {
+  @CatchAsync
+  public async getUsage(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const templateId = req.params.id;
 

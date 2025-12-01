@@ -1,9 +1,10 @@
 import {Controller, Get, Middleware} from '@overnightjs/core';
-import type {Request, Response} from 'express';
+import type {NextFunction, Request, Response} from 'express';
 
 import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth} from '../middleware/auth.js';
 import {ActivityService, ActivityType} from '../services/ActivityService.js';
+import {CatchAsync} from '../utils/asyncHandler.js';
 
 @Controller('activity')
 export class Activity {
@@ -21,7 +22,8 @@ export class Activity {
    */
   @Get('')
   @Middleware([requireAuth])
-  public async getActivities(req: Request, res: Response) {
+  @CatchAsync
+  public async getActivities(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
     const cursor = req.query.cursor as string | undefined;
@@ -61,7 +63,8 @@ export class Activity {
    */
   @Get('stats')
   @Middleware([requireAuth])
-  public async getStats(req: Request, res: Response) {
+  @CatchAsync
+  public async getStats(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
@@ -80,7 +83,8 @@ export class Activity {
    */
   @Get('recent-count')
   @Middleware([requireAuth])
-  public async getRecentCount(req: Request, res: Response) {
+  @CatchAsync
+  public async getRecentCount(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const minutes = Math.min(parseInt(req.query.minutes as string) || 5, 60); // Max 60 minutes
 
@@ -95,7 +99,8 @@ export class Activity {
    */
   @Get('types')
   @Middleware([requireAuth])
-  public async getTypes(_req: Request, res: Response) {
+  @CatchAsync
+  public async getTypes(_req: Request, res: Response, next: NextFunction) {
     const types = Object.values(ActivityType);
     return res.status(200).json({types});
   }
@@ -110,7 +115,8 @@ export class Activity {
    */
   @Get('upcoming')
   @Middleware([requireAuth])
-  public async getUpcoming(req: Request, res: Response) {
+  @CatchAsync
+  public async getUpcoming(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
     const daysAhead = Math.min(parseInt(req.query.daysAhead as string) || 30, 90);

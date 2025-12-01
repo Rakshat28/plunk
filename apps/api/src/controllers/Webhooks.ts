@@ -1,7 +1,7 @@
 import {Controller, Post} from '@overnightjs/core';
 import type {Prisma} from '@plunk/db';
 import {EmailStatus} from '@plunk/db';
-import type {Request, Response} from 'express';
+import type {NextFunction, Request, Response} from 'express';
 import signale from 'signale';
 import type Stripe from 'stripe';
 
@@ -9,6 +9,7 @@ import {STRIPE_ENABLED, STRIPE_WEBHOOK_SECRET} from '../app/constants.js';
 import {stripe} from '../app/stripe.js';
 import {prisma} from '../database/prisma.js';
 import {SecurityService} from '../services/SecurityService.js';
+import {CatchAsync} from '../utils/asyncHandler.js';
 
 /**
  * Webhooks Controller
@@ -21,7 +22,8 @@ export class Webhooks {
    * Handles email events: delivery, open, click, bounce, complaint
    */
   @Post('sns')
-  public async receiveSNSWebhook(req: Request, res: Response) {
+  @CatchAsync
+  public async receiveSNSWebhook(req: Request, res: Response, next: NextFunction) {
     try {
       // Parse the SNS message body
       const body = JSON.parse(req.body.Message);
@@ -147,7 +149,8 @@ export class Webhooks {
    * Handles subscription and payment events: checkout.session.completed, invoice.paid, etc.
    */
   @Post('incoming/stripe')
-  public async receiveStripeWebhook(req: Request, res: Response) {
+  @CatchAsync
+  public async receiveStripeWebhook(req: Request, res: Response, next: NextFunction) {
     // Return 404 if billing is disabled
     if (!STRIPE_ENABLED || !stripe) {
       signale.warn('[WEBHOOK] Stripe webhook received but billing is disabled');

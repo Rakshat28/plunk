@@ -1,7 +1,7 @@
 import {Controller, Delete, Get, Middleware, Post, Put} from '@overnightjs/core';
 import {CampaignAudienceType, CampaignStatus} from '@plunk/db';
 import {CampaignSchemas} from '@plunk/shared';
-import type {Request, Response} from 'express';
+import type {NextFunction, Request, Response} from 'express';
 
 import {HttpException} from '../exceptions/index.js';
 import type {AuthResponse} from '../middleware/auth.js';
@@ -9,6 +9,7 @@ import {requireAuth} from '../middleware/auth.js';
 import {CampaignService} from '../services/CampaignService.js';
 import {DomainService} from '../services/DomainService.js';
 import {type SegmentFilter} from '../services/SegmentService.js';
+import {CatchAsync} from '../utils/asyncHandler.js';
 
 @Controller('campaigns')
 export class Campaigns {
@@ -18,7 +19,8 @@ export class Campaigns {
    */
   @Post('')
   @Middleware([requireAuth])
-  private async create(req: Request, res: Response) {
+  @CatchAsync
+  private async create(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {name, description, subject, body, from, fromName, replyTo, audienceType, audienceFilter, segmentId} =
       CampaignSchemas.create.parse(req.body);
@@ -60,7 +62,8 @@ export class Campaigns {
    */
   @Get('')
   @Middleware([requireAuth])
-  private async list(req: Request, res: Response) {
+  @CatchAsync
+  private async list(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const status = req.query.status as CampaignStatus | undefined;
     const page = parseInt(req.query.page as string) || 1;
@@ -92,7 +95,8 @@ export class Campaigns {
    */
   @Get(':id')
   @Middleware([requireAuth])
-  private async get(req: Request, res: Response) {
+  @CatchAsync
+  private async get(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
 
@@ -110,7 +114,8 @@ export class Campaigns {
    */
   @Put(':id')
   @Middleware([requireAuth])
-  private async update(req: Request, res: Response) {
+  @CatchAsync
+  private async update(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
     const {name, description, subject, body, from, fromName, replyTo, audienceType, audienceFilter, segmentId} =
@@ -155,7 +160,8 @@ export class Campaigns {
    */
   @Delete(':id')
   @Middleware([requireAuth])
-  private async delete(req: Request, res: Response) {
+  @CatchAsync
+  private async delete(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
 
@@ -173,7 +179,8 @@ export class Campaigns {
    */
   @Post(':id/duplicate')
   @Middleware([requireAuth])
-  private async duplicate(req: Request, res: Response) {
+  @CatchAsync
+  private async duplicate(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
 
@@ -192,7 +199,8 @@ export class Campaigns {
    */
   @Post(':id/send')
   @Middleware([requireAuth])
-  private async send(req: Request, res: Response) {
+  @CatchAsync
+  private async send(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
     const scheduledFor = req.body?.scheduledFor;
@@ -222,7 +230,8 @@ export class Campaigns {
    */
   @Post(':id/cancel')
   @Middleware([requireAuth])
-  private async cancel(req: Request, res: Response) {
+  @CatchAsync
+  private async cancel(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
 
@@ -241,7 +250,8 @@ export class Campaigns {
    */
   @Get(':id/stats')
   @Middleware([requireAuth])
-  private async stats(req: Request, res: Response) {
+  @CatchAsync
+  private async stats(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
 
@@ -259,7 +269,8 @@ export class Campaigns {
    */
   @Post(':id/test')
   @Middleware([requireAuth])
-  private async sendTest(req: Request, res: Response) {
+  @CatchAsync
+  private async sendTest(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
     const {email} = CampaignSchemas.sendTest.parse(req.body);

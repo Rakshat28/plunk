@@ -1,10 +1,11 @@
 import {Controller, Get, Middleware} from '@overnightjs/core';
-import type {Request, Response} from 'express';
+import type {NextFunction, Request, Response} from 'express';
 
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
 import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth} from '../middleware/auth.js';
+import {CatchAsync} from '../utils/asyncHandler.js';
 
 @Controller('projects')
 export class Projects {
@@ -14,7 +15,8 @@ export class Projects {
    */
   @Get(':id/setup-state')
   @Middleware([requireAuth])
-  private async getSetupState(req: Request, res: Response) {
+  @CatchAsync
+  private async getSetupState(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
 
@@ -86,7 +88,8 @@ export class Projects {
    */
   @Get(':id/members')
   @Middleware([requireAuth])
-  private async getMembers(req: Request, res: Response) {
+  @CatchAsync
+  private async getMembers(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
 

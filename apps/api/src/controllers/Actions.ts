@@ -1,6 +1,6 @@
 import {Controller, Middleware, Post} from '@overnightjs/core';
 import {ActionSchemas} from '@plunk/shared';
-import type {Request, Response} from 'express';
+import type {NextFunction, Request, Response} from 'express';
 
 import type {AuthResponse} from '../middleware/auth.js';
 import {requirePublicKey, requireSecretKey} from '../middleware/auth.js';
@@ -10,6 +10,7 @@ import {DomainService} from '../services/DomainService.js';
 import {EmailService} from '../services/EmailService.js';
 import {EventService} from '../services/EventService.js';
 import {NotFound} from '../exceptions/index.js';
+import {CatchAsync} from '../utils/asyncHandler.js';
 
 /**
  * Public API Actions Controller
@@ -47,7 +48,8 @@ export class Actions {
    */
   @Post('track')
   @Middleware([requirePublicKey])
-  public async track(req: Request, res: Response) {
+  @CatchAsync
+  public async track(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
 
     // Zod validation - errors automatically handled by global error handler
@@ -152,7 +154,8 @@ export class Actions {
    */
   @Post('send')
   @Middleware([requireSecretKey])
-  public async send(req: Request, res: Response) {
+  @CatchAsync
+  public async send(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
 
     // Zod validation - errors automatically handled by global error handler

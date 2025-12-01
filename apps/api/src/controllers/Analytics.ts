@@ -1,9 +1,10 @@
 import {Controller, Get, Middleware} from '@overnightjs/core';
-import type {Request, Response} from 'express';
+import type {NextFunction, Request, Response} from 'express';
 
 import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth} from '../middleware/auth.js';
 import {AnalyticsService} from '../services/AnalyticsService.js';
+import {CatchAsync} from '../utils/asyncHandler.js';
 
 @Controller('analytics')
 export class Analytics {
@@ -19,7 +20,8 @@ export class Analytics {
    */
   @Get('timeseries')
   @Middleware([requireAuth])
-  public async getTimeSeries(req: Request, res: Response) {
+  @CatchAsync
+  public async getTimeSeries(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
@@ -40,7 +42,8 @@ export class Analytics {
    */
   @Get('top-campaigns')
   @Middleware([requireAuth])
-  public async getTopCampaigns(req: Request, res: Response) {
+  @CatchAsync
+  public async getTopCampaigns(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
     const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;

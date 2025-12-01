@@ -1,10 +1,11 @@
 import {Controller, Middleware, Post} from '@overnightjs/core';
-import type {Request, Response} from 'express';
+import type {NextFunction, Request, Response} from 'express';
 import multer from 'multer';
 
 import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth} from '../middleware/auth.js';
 import * as S3Service from '../services/S3Service.js';
+import {CatchAsync} from '../utils/asyncHandler.js';
 
 // Configure multer for file uploads (memory storage)
 const upload = multer({
@@ -32,7 +33,8 @@ export class Uploads {
    */
   @Post('image')
   @Middleware([requireAuth, upload.single('image')])
-  public async uploadImage(req: Request, res: Response) {
+  @CatchAsync
+  public async uploadImage(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
 
     try {

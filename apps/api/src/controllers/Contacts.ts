@@ -1,11 +1,12 @@
 import {Controller, Delete, Get, Middleware, Patch, Post} from '@overnightjs/core';
-import type {Request, Response} from 'express';
+import type {NextFunction, Request, Response} from 'express';
 import multer from 'multer';
 
 import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth} from '../middleware/auth.js';
 import {ContactService} from '../services/ContactService.js';
 import {QueueService} from '../services/QueueService.js';
+import {CatchAsync} from '../utils/asyncHandler.js';
 
 // Configure multer for file uploads (memory storage)
 const upload = multer({
@@ -31,7 +32,8 @@ export class Contacts {
    */
   @Get('')
   @Middleware([requireAuth])
-  public async list(req: Request, res: Response) {
+  @CatchAsync
+  public async list(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
     const cursor = req.query.cursor as string | undefined;
@@ -48,7 +50,8 @@ export class Contacts {
    */
   @Get('fields')
   @Middleware([requireAuth])
-  public async getAvailableFields(req: Request, res: Response) {
+  @CatchAsync
+  public async getAvailableFields(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
 
     try {
@@ -73,7 +76,8 @@ export class Contacts {
    */
   @Get('fields/:field/values')
   @Middleware([requireAuth])
-  public async getFieldValues(req: Request, res: Response) {
+  @CatchAsync
+  public async getFieldValues(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const field = req.params.field;
     const limit = Math.min(parseInt(req.query.limit as string) || 100, 200);
@@ -105,7 +109,8 @@ export class Contacts {
    */
   @Get(':id')
   @Middleware([requireAuth])
-  public async get(req: Request, res: Response) {
+  @CatchAsync
+  public async get(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const contactId = req.params.id;
 
@@ -124,7 +129,8 @@ export class Contacts {
    */
   @Post('')
   @Middleware([requireAuth])
-  public async create(req: Request, res: Response) {
+  @CatchAsync
+  public async create(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {email, data, subscribed} = req.body;
 
@@ -153,7 +159,8 @@ export class Contacts {
    */
   @Patch(':id')
   @Middleware([requireAuth])
-  public async update(req: Request, res: Response) {
+  @CatchAsync
+  public async update(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const contactId = req.params.id;
     const {email, data, subscribed} = req.body;
@@ -173,7 +180,8 @@ export class Contacts {
    */
   @Delete(':id')
   @Middleware([requireAuth])
-  public async delete(req: Request, res: Response) {
+  @CatchAsync
+  public async delete(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const contactId = req.params.id;
 
@@ -191,7 +199,8 @@ export class Contacts {
    * PUBLIC: Get contact information (no auth required)
    */
   @Get('public/:id')
-  public async getPublic(req: Request, res: Response) {
+  @CatchAsync
+  public async getPublic(req: Request, res: Response, next: NextFunction) {
     const contactId = req.params.id;
 
     if (!contactId) {
@@ -212,7 +221,8 @@ export class Contacts {
    * PUBLIC: Subscribe a contact (no auth required)
    */
   @Post('public/:id/subscribe')
-  public async subscribePublic(req: Request, res: Response) {
+  @CatchAsync
+  public async subscribePublic(req: Request, res: Response, next: NextFunction) {
     const contactId = req.params.id;
 
     if (!contactId) {
@@ -233,7 +243,8 @@ export class Contacts {
    * PUBLIC: Unsubscribe a contact (no auth required)
    */
   @Post('public/:id/unsubscribe')
-  public async unsubscribePublic(req: Request, res: Response) {
+  @CatchAsync
+  public async unsubscribePublic(req: Request, res: Response, next: NextFunction) {
     const contactId = req.params.id;
 
     if (!contactId) {
@@ -255,7 +266,8 @@ export class Contacts {
    */
   @Post('import')
   @Middleware([requireAuth, upload.single('file')])
-  public async importCsv(req: Request, res: Response) {
+  @CatchAsync
+  public async importCsv(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
 
     if (!req.file) {
@@ -288,7 +300,8 @@ export class Contacts {
    */
   @Get('import/:jobId')
   @Middleware([requireAuth])
-  public async getImportStatus(req: Request, res: Response) {
+  @CatchAsync
+  public async getImportStatus(req: Request, res: Response, next: NextFunction) {
     const jobId = req.params.jobId;
 
     if (!jobId) {

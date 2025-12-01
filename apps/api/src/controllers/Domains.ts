@@ -1,6 +1,6 @@
 import {Controller, Delete, Get, Middleware, Post} from '@overnightjs/core';
 import {DomainSchemas, UtilitySchemas} from '@plunk/shared';
-import type {Request, Response} from 'express';
+import type {NextFunction, Request, Response} from 'express';
 
 import {redis} from '../database/redis.js';
 import {NotFound} from '../exceptions/index.js';
@@ -9,6 +9,7 @@ import {isAuthenticated} from '../middleware/auth.js';
 import {DomainService} from '../services/DomainService.js';
 import {Keys} from '../services/keys.js';
 import {prisma} from '../database/prisma.js';
+import {CatchAsync} from '../utils/asyncHandler.js';
 
 @Controller('domains')
 export class Domains {
@@ -17,7 +18,8 @@ export class Domains {
    */
   @Get('project/:projectId')
   @Middleware([isAuthenticated])
-  public async getProjectDomains(req: Request, res: Response) {
+  @CatchAsync
+  public async getProjectDomains(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {projectId} = DomainSchemas.projectId.parse(req.params);
 
@@ -43,7 +45,8 @@ export class Domains {
    */
   @Post('')
   @Middleware([isAuthenticated])
-  public async addDomain(req: Request, res: Response) {
+  @CatchAsync
+  public async addDomain(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {projectId, domain} = DomainSchemas.create.parse(req.body);
 
@@ -102,7 +105,8 @@ export class Domains {
    */
   @Get(':id/verify')
   @Middleware([isAuthenticated])
-  public async checkVerification(req: Request, res: Response) {
+  @CatchAsync
+  public async checkVerification(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = UtilitySchemas.id.parse(req.params);
 
@@ -138,7 +142,8 @@ export class Domains {
    */
   @Delete(':id')
   @Middleware([isAuthenticated])
-  public async removeDomain(req: Request, res: Response) {
+  @CatchAsync
+  public async removeDomain(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = UtilitySchemas.id.parse(req.params);
 

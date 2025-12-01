@@ -1,10 +1,11 @@
 import {Controller, Delete, Get, Middleware, Patch, Post} from '@overnightjs/core';
 import {WorkflowExecutionStatus} from '@plunk/db';
-import type {Request, Response} from 'express';
+import type {NextFunction, Request, Response} from 'express';
 
 import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth} from '../middleware/auth.js';
 import {WorkflowService} from '../services/WorkflowService.js';
+import {CatchAsync} from '../utils/asyncHandler.js';
 
 @Controller('workflows')
 export class Workflows {
@@ -14,7 +15,8 @@ export class Workflows {
    */
   @Get('')
   @Middleware([requireAuth])
-  public async list(req: Request, res: Response) {
+  @CatchAsync
+  public async list(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const page = parseInt(req.query.page as string) || 1;
     const pageSize = Math.min(parseInt(req.query.pageSize as string) || 20, 100);
@@ -31,7 +33,8 @@ export class Workflows {
    */
   @Get(':id')
   @Middleware([requireAuth])
-  public async get(req: Request, res: Response) {
+  @CatchAsync
+  public async get(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
 
@@ -50,7 +53,8 @@ export class Workflows {
    */
   @Post('')
   @Middleware([requireAuth])
-  public async create(req: Request, res: Response) {
+  @CatchAsync
+  public async create(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {name, description, eventName, enabled, allowReentry} = req.body;
 
@@ -79,7 +83,8 @@ export class Workflows {
    */
   @Patch(':id')
   @Middleware([requireAuth])
-  public async update(req: Request, res: Response) {
+  @CatchAsync
+  public async update(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const {name, description, triggerType, triggerConfig, enabled, allowReentry} = req.body;
@@ -106,7 +111,8 @@ export class Workflows {
    */
   @Delete(':id')
   @Middleware([requireAuth])
-  public async delete(req: Request, res: Response) {
+  @CatchAsync
+  public async delete(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
 
@@ -125,7 +131,8 @@ export class Workflows {
    */
   @Post(':id/steps')
   @Middleware([requireAuth])
-  public async addStep(req: Request, res: Response) {
+  @CatchAsync
+  public async addStep(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const {type, name, position, config, templateId, autoConnect} = req.body;
@@ -156,7 +163,8 @@ export class Workflows {
    */
   @Patch(':id/steps/:stepId')
   @Middleware([requireAuth])
-  public async updateStep(req: Request, res: Response) {
+  @CatchAsync
+  public async updateStep(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const stepId = req.params.stepId;
@@ -182,7 +190,8 @@ export class Workflows {
    */
   @Delete(':id/steps/:stepId')
   @Middleware([requireAuth])
-  public async deleteStep(req: Request, res: Response) {
+  @CatchAsync
+  public async deleteStep(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const stepId = req.params.stepId;
@@ -202,7 +211,8 @@ export class Workflows {
    */
   @Post(':id/transitions')
   @Middleware([requireAuth])
-  public async createTransition(req: Request, res: Response) {
+  @CatchAsync
+  public async createTransition(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const {fromStepId, toStepId, condition, priority} = req.body;
@@ -231,7 +241,8 @@ export class Workflows {
    */
   @Delete(':id/transitions/:transitionId')
   @Middleware([requireAuth])
-  public async deleteTransition(req: Request, res: Response) {
+  @CatchAsync
+  public async deleteTransition(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const transitionId = req.params.transitionId;
@@ -251,7 +262,8 @@ export class Workflows {
    */
   @Post(':id/executions')
   @Middleware([requireAuth])
-  public async startExecution(req: Request, res: Response) {
+  @CatchAsync
+  public async startExecution(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const {contactId, context} = req.body;
@@ -275,7 +287,8 @@ export class Workflows {
    */
   @Get(':id/executions')
   @Middleware([requireAuth])
-  public async listExecutions(req: Request, res: Response) {
+  @CatchAsync
+  public async listExecutions(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const page = parseInt(req.query.page as string) || 1;
@@ -297,7 +310,8 @@ export class Workflows {
    */
   @Get(':id/executions/:executionId')
   @Middleware([requireAuth])
-  public async getExecution(req: Request, res: Response) {
+  @CatchAsync
+  public async getExecution(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const executionId = req.params.executionId;
@@ -317,7 +331,8 @@ export class Workflows {
    */
   @Delete(':id/executions/:executionId')
   @Middleware([requireAuth])
-  public async cancelExecution(req: Request, res: Response) {
+  @CatchAsync
+  public async cancelExecution(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const executionId = req.params.executionId;

@@ -2,7 +2,7 @@ import {randomBytes} from 'node:crypto';
 
 import {Controller, Get, Middleware, Patch, Post, Put} from '@overnightjs/core';
 import {BillingLimitSchemas, ProjectSchemas} from '@plunk/shared';
-import type {Request, Response} from 'express';
+import type {NextFunction, Request, Response} from 'express';
 
 import {
   DASHBOARD_URI,
@@ -23,12 +23,14 @@ import {isAuthenticated} from '../middleware/auth.js';
 import {BillingLimitService} from '../services/BillingLimitService.js';
 import {SecurityService} from '../services/SecurityService.js';
 import {UserService} from '../services/UserService.js';
+import {CatchAsync} from '../utils/asyncHandler.js';
 
 @Controller('users')
 export class Users {
   @Get('@me')
   @Middleware([isAuthenticated])
-  public async me(req: Request, res: Response) {
+  @CatchAsync
+  public async me(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
 
     if (!auth.userId) {
@@ -46,7 +48,8 @@ export class Users {
 
   @Get('@me/projects')
   @Middleware([isAuthenticated])
-  public async meProjects(req: Request, res: Response) {
+  @CatchAsync
+  public async meProjects(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
 
     if (!auth.userId) {
@@ -60,7 +63,8 @@ export class Users {
 
   @Post('@me/projects')
   @Middleware([isAuthenticated])
-  public async createProject(req: Request, res: Response) {
+  @CatchAsync
+  public async createProject(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
 
     if (!auth.userId) {
@@ -93,7 +97,8 @@ export class Users {
 
   @Patch('@me/projects/:id')
   @Middleware([isAuthenticated])
-  public async updateProject(req: Request, res: Response) {
+  @CatchAsync
+  public async updateProject(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
     const data = ProjectSchemas.update.parse(req.body);
@@ -124,7 +129,8 @@ export class Users {
 
   @Post('@me/projects/:id/regenerate-keys')
   @Middleware([isAuthenticated])
-  public async regenerateProjectKeys(req: Request, res: Response) {
+  @CatchAsync
+  public async regenerateProjectKeys(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
 
@@ -161,7 +167,8 @@ export class Users {
 
   @Post('@me/projects/:id/checkout')
   @Middleware([isAuthenticated])
-  public async createCheckoutSession(req: Request, res: Response) {
+  @CatchAsync
+  public async createCheckoutSession(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
 
@@ -239,7 +246,8 @@ export class Users {
 
   @Post('@me/projects/:id/billing-portal')
   @Middleware([isAuthenticated])
-  public async createBillingPortalSession(req: Request, res: Response) {
+  @CatchAsync
+  public async createBillingPortalSession(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
 
@@ -288,7 +296,8 @@ export class Users {
 
   @Get('@me/projects/:id/billing-limits')
   @Middleware([isAuthenticated])
-  public async getBillingLimits(req: Request, res: Response) {
+  @CatchAsync
+  public async getBillingLimits(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
 
@@ -320,7 +329,8 @@ export class Users {
 
   @Put('@me/projects/:id/billing-limits')
   @Middleware([isAuthenticated])
-  public async updateBillingLimits(req: Request, res: Response) {
+  @CatchAsync
+  public async updateBillingLimits(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
 
@@ -386,7 +396,8 @@ export class Users {
 
   @Get('@me/projects/:id/billing-consumption')
   @Middleware([isAuthenticated])
-  public async getBillingConsumption(req: Request, res: Response) {
+  @CatchAsync
+  public async getBillingConsumption(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
 
@@ -485,7 +496,8 @@ export class Users {
 
   @Get('@me/projects/:id/billing-invoices')
   @Middleware([isAuthenticated])
-  public async getBillingInvoices(req: Request, res: Response) {
+  @CatchAsync
+  public async getBillingInvoices(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
 
@@ -572,7 +584,8 @@ export class Users {
 
   @Get('@me/projects/:id/security')
   @Middleware([isAuthenticated])
-  public async getSecurityHealth(req: Request, res: Response) {
+  @CatchAsync
+  public async getSecurityHealth(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
 

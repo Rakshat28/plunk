@@ -1,6 +1,6 @@
 import {Controller, Get, Post} from '@overnightjs/core';
 import {AuthenticationSchemas} from '@plunk/shared';
-import type {Request, Response} from 'express';
+import type {NextFunction, Request, Response} from 'express';
 
 import {GITHUB_OAUTH_ENABLED, GOOGLE_OAUTH_ENABLED} from '../app/constants.js';
 import {prisma} from '../database/prisma.js';
@@ -9,11 +9,13 @@ import {jwt} from '../middleware/auth.js';
 import {AuthService} from '../services/AuthService.js';
 import {UserService} from '../services/UserService.js';
 import {Keys} from '../services/keys.js';
+import {CatchAsync} from '../utils/asyncHandler.js';
 
 @Controller('auth')
 export class Auth {
   @Post('login')
-  public async login(req: Request, res: Response) {
+  @CatchAsync
+  public async login(req: Request, res: Response, next: NextFunction) {
     const {email, password} = AuthenticationSchemas.login.parse(req.body);
 
     const user = await UserService.email(email);
@@ -43,7 +45,8 @@ export class Auth {
   }
 
   @Post('signup')
-  public async signup(req: Request, res: Response) {
+  @CatchAsync
+  public async signup(req: Request, res: Response, next: NextFunction) {
     const {email, password} = AuthenticationSchemas.login.parse(req.body);
 
     const user = await UserService.email(email);

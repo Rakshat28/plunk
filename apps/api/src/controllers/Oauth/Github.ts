@@ -1,5 +1,5 @@
 import {Controller, Get} from '@overnightjs/core';
-import type {Request, Response} from 'express';
+import type {NextFunction, Request, Response} from 'express';
 
 import {
   API_URI,
@@ -11,6 +11,7 @@ import {
 import {prisma} from '../../database/prisma.js';
 import {jwt} from '../../middleware/auth.js';
 import {UserService} from '../../services/UserService.js';
+import {CatchAsync} from '../../utils/asyncHandler.js';
 
 @Controller('github')
 export class Github {
@@ -31,7 +32,8 @@ export class Github {
   }
 
   @Get('callback')
-  public async callback(req: Request, res: Response) {
+  @CatchAsync
+  public async callback(req: Request, res: Response, next: NextFunction) {
     if (!GITHUB_OAUTH_ENABLED) {
       return res.status(404).json({error: 'GitHub OAuth is not configured'});
     }
