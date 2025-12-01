@@ -5,6 +5,7 @@ import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
 import {buildEmailFieldsUpdate} from '../utils/modelUpdate.js';
 
+import {DomainService} from './DomainService.js';
 import {EmailService} from './EmailService.js';
 import {QueueService} from './QueueService.js';
 import {type SegmentFilter, SegmentService} from './SegmentService.js';
@@ -649,6 +650,9 @@ export class CampaignService {
     if (!membership) {
       throw new HttpException(403, 'Test emails can only be sent to project members');
     }
+
+    // Verify domain is registered and verified before sending
+    await DomainService.verifyEmailDomain(campaign.from, projectId);
 
     // Get project to validate from address
     const project = await prisma.project.findUnique({

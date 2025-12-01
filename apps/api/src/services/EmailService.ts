@@ -7,6 +7,7 @@ import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
 
 import {BillingLimitService} from './BillingLimitService.js';
+import {DomainService} from './DomainService.js';
 import {QueueService} from './QueueService.js';
 import {sendRawEmail} from './SESService.js';
 
@@ -310,6 +311,10 @@ export class EmailService {
     }
 
     try {
+      // Verify domain is registered and verified before sending
+      // This ensures all emails (transactional, campaign, workflow) use verified domains
+      await DomainService.verifyEmailDomain(email.from, email.projectId);
+
       // Update status to sending
       await prisma.email.update({
         where: {id: emailId},
