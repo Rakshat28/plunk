@@ -86,6 +86,13 @@ export interface WorkflowStepFactoryOptions {
   templateId?: string | null;
 }
 
+export interface DomainFactoryOptions {
+  projectId: string;
+  domain?: string;
+  verified?: boolean;
+  dkimTokens?: unknown;
+}
+
 export class TestFactories {
   private prisma: PrismaClient;
 
@@ -542,6 +549,20 @@ export class TestFactories {
         contactId,
         event: overrides.event || 'test.event',
         data: overrides.data || {},
+      },
+    });
+  }
+
+  /**
+   * Create a domain
+   */
+  async createDomain(options: DomainFactoryOptions) {
+    return this.prisma.domain.create({
+      data: {
+        projectId: options.projectId,
+        domain: options.domain || 'example.com',
+        verified: options.verified ?? true,
+        dkimTokens: options.dkimTokens || null,
       },
     });
   }

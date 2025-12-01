@@ -22,6 +22,13 @@ describe('EmailService', () => {
     const contact = await factories.createContact({projectId});
     contactId = contact.id;
 
+    // Create a verified domain for the project (required for sending emails)
+    await factories.createDomain({
+      projectId,
+      domain: 'example.com',
+      verified: true,
+    });
+
     // Mock successful SES send by default
     vi.mocked(sendRawEmail).mockResolvedValue({
       messageId: 'ses-message-123',
