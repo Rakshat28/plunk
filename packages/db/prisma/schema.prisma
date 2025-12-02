@@ -193,14 +193,29 @@ model Segment {
   name        String
   description String?
 
-  // Filter conditions (evaluated dynamically)
-  filters Json
-  // Array of conditions with AND/OR logic:
-  // [
-  //   { field: "data.plan", operator: "equals", value: "FREE" },
-  //   { field: "subscribed", operator: "equals", value: true },
-  //   { field: "emails.openedAt", operator: "within", value: 30, unit: "days" }
-  // ]
+  // Filter condition (evaluated dynamically)
+  condition Json
+  // Nested filter structure with AND/OR logic:
+  // {
+  //   logic: "OR",
+  //   groups: [
+  //     {
+  //       filters: [
+  //         { field: "data.plan", operator: "equals", value: "VIP" },
+  //         { field: "subscribed", operator: "equals", value: true }
+  //       ]
+  //     },
+  //     {
+  //       filters: [
+  //         { field: "createdAt", operator: "within", value: 30, unit: "days" }
+  //       ],
+  //       conditions: {
+  //         logic: "AND",
+  //         groups: [...]
+  //       }
+  //     }
+  //   ]
+  // }
   // Operators: equals, notEquals, contains, greaterThan, lessThan, within, exists, etc.
 
   // Track membership changes (enables segment entry/exit events)
@@ -267,8 +282,8 @@ model Campaign {
   replyTo  String?
 
   // Audience selection
-  audienceType   CampaignAudienceType @default(ALL)
-  audienceFilter Json? // For FILTERED: manual filter conditions
+  audienceType      CampaignAudienceType @default(ALL)
+  audienceCondition Json? // For FILTERED: manual filter condition with AND/OR logic (same structure as Segment.condition)
 
   segment   Segment? @relation(fields: [segmentId], references: [id])
   segmentId String? // For SEGMENT: reference to saved segment
@@ -556,6 +571,10 @@ model Email {
   @@index([status])
   @@index([createdAt])
   @@index([projectId, sourceType, createdAt]) // For billing limit queries
+  @@index([contactId, openedAt]) // For email activity segment queries
+  @@index([contactId, clickedAt]) // For email activity segment queries
+  @@index([contactId, bouncedAt]) // For email activity segment queries
+  @@index([contactId, complainedAt]) // For email activity segment queries
   @@map("emails")
 }
 
@@ -587,6 +606,8 @@ model Event {
   @@index([contactId])
   @@index([emailId])
   @@index([createdAt])
+  @@index([projectId, contactId, name, createdAt]) // For event-based segment queries (fast!)
+  @@index([contactId, name, createdAt]) // For per-contact event lookups
   @@map("events")
 }
 

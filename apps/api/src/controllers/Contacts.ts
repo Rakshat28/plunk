@@ -47,6 +47,7 @@ export class Contacts {
   /**
    * GET /contacts/fields
    * Get all available contact fields (both standard and custom fields from data JSON)
+   * Returns field names with inferred types (string, number, boolean, date)
    */
   @Get('fields')
   @Middleware([requireAuth])
@@ -55,11 +56,11 @@ export class Contacts {
     const auth = res.locals.auth as AuthResponse;
 
     try {
-      const fields = await ContactService.getAvailableFields(auth.projectId!);
+      const fieldsWithTypes = await ContactService.getAvailableFields(auth.projectId!);
 
       return res.status(200).json({
-        fields,
-        count: fields.length,
+        fields: fieldsWithTypes,
+        count: fieldsWithTypes.length,
       });
     } catch (error) {
       console.error('[CONTACTS] Failed to get available fields:', error);

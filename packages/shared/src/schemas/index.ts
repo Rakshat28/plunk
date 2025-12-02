@@ -71,75 +71,66 @@ export const ContactSchemas = {
   }),
 };
 
-export const SegmentSchemas = {
-  filter: z.object({
-    field: z.string().min(1),
-    operator: z.enum([
-      'equals',
-      'notEquals',
-      'contains',
-      'notContains',
-      'greaterThan',
-      'lessThan',
-      'greaterThanOrEqual',
-      'lessThanOrEqual',
-      'exists',
-      'notExists',
-      'within',
-    ]),
-    value: z.any().optional(),
-    unit: z.enum(['days', 'hours', 'minutes']).optional(),
+const segmentFilterSchema = z.object({
+  field: z.string().min(1),
+  operator: z.enum([
+    'equals',
+    'notEquals',
+    'contains',
+    'notContains',
+    'greaterThan',
+    'lessThan',
+    'greaterThanOrEqual',
+    'lessThanOrEqual',
+    'exists',
+    'notExists',
+    'within',
+    'triggered',
+    'triggeredWithin',
+    'notTriggered',
+  ]),
+  value: z.any().optional(),
+  unit: z.enum(['days', 'hours', 'minutes']).optional(),
+});
+
+type FilterGroup = {
+  filters: z.infer<typeof segmentFilterSchema>[];
+  conditions?: FilterCondition;
+};
+
+type FilterCondition = {
+  logic: 'AND' | 'OR';
+  groups: FilterGroup[];
+};
+
+const filterGroupSchema: z.ZodType<FilterGroup> = z.lazy(() =>
+  z.object({
+    filters: z.array(segmentFilterSchema),
+    conditions: filterConditionSchema.optional(),
   }),
+);
+
+const filterConditionSchema: z.ZodType<FilterCondition> = z.lazy(() =>
+  z.object({
+    logic: z.enum(['AND', 'OR']),
+    groups: z.array(filterGroupSchema).min(1),
+  }),
+);
+
+export const SegmentSchemas = {
+  filter: segmentFilterSchema,
+  filterGroup: filterGroupSchema,
+  filterCondition: filterConditionSchema,
   create: z.object({
     name: z.string().min(1).max(100),
     description: z.string().max(500).optional(),
-    filters: z.array(
-      z.object({
-        field: z.string().min(1),
-        operator: z.enum([
-          'equals',
-          'notEquals',
-          'contains',
-          'notContains',
-          'greaterThan',
-          'lessThan',
-          'greaterThanOrEqual',
-          'lessThanOrEqual',
-          'exists',
-          'notExists',
-          'within',
-        ]),
-        value: z.any().optional(),
-        unit: z.enum(['days', 'hours', 'minutes']).optional(),
-      }),
-    ),
+    condition: filterConditionSchema,
     trackMembership: z.boolean().default(false),
   }),
   update: z.object({
     name: z.string().min(1).max(100).optional(),
     description: z.string().max(500).optional(),
-    filters: z
-      .array(
-        z.object({
-          field: z.string().min(1),
-          operator: z.enum([
-            'equals',
-            'notEquals',
-            'contains',
-            'notContains',
-            'greaterThan',
-            'lessThan',
-            'greaterThanOrEqual',
-            'lessThanOrEqual',
-            'exists',
-            'notExists',
-            'within',
-          ]),
-          value: z.any().optional(),
-          unit: z.enum(['days', 'hours', 'minutes']).optional(),
-        }),
-      )
-      .optional(),
+    condition: filterConditionSchema.optional(),
     trackMembership: z.boolean().optional(),
   }),
 };
@@ -188,6 +179,7 @@ export const WorkflowSchemas = {
     position: jsonSchema,
     config: jsonSchema,
     templateId: uuid.optional(),
+    autoConnect: z.boolean().optional(),
   }),
   updateStep: z.object({
     name: z.string().min(1).max(100).optional(),
@@ -276,7 +268,7 @@ export const CampaignSchemas = {
     fromName: z.string().max(100).optional(),
     replyTo: email.optional(),
     audienceType: z.nativeEnum(CampaignAudienceType),
-    audienceFilter: jsonSchema.optional(),
+    audienceCondition: filterConditionSchema.optional(),
     segmentId: uuid.optional(),
   }),
   schedule: z.object({
@@ -291,6 +283,7 @@ export const CampaignSchemas = {
     fromName: z.string().max(100).optional(),
     replyTo: z.string().optional(),
     audienceType: z.nativeEnum(CampaignAudienceType).optional(),
+    audienceCondition: filterConditionSchema.optional(),
     segmentId: z.string().optional(),
   }),
   sendTest: z.object({

@@ -5,6 +5,7 @@ export * from './Card';
 export * from './Chart';
 export * from './Checkbox';
 export * from './Collapsible';
+export * from './Command';
 export * from './Dialog';
 export * from './DropdownMenu';
 export * from './Form';

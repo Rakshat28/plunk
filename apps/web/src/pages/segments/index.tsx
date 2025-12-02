@@ -10,6 +10,7 @@ import {
   ConfirmDialog,
 } from '@plunk/ui';
 import type {Segment} from '@plunk/db';
+import type {FilterCondition} from '@plunk/types';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {network} from '../../lib/network';
 import {AlertTriangle, Edit, Filter, Plus, Trash2, Users} from 'lucide-react';
@@ -18,6 +19,23 @@ import Link from 'next/link';
 import {useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
+
+// Helper function to count total filters in a condition
+function countFiltersInCondition(condition: unknown): number {
+  if (!condition || typeof condition !== 'object') return 0;
+
+  const cond = condition as FilterCondition;
+  if (!cond.groups || !Array.isArray(cond.groups)) return 0;
+
+  return cond.groups.reduce((total, group) => {
+    let count = group.filters?.length || 0;
+    // Recursively count nested conditions
+    if (group.conditions) {
+      count += countFiltersInCondition(group.conditions);
+    }
+    return total + count;
+  }, 0);
+}
 
 export default function SegmentsPage() {
   // Limit to 50 segments to avoid loading thousands into the browser
@@ -147,7 +165,7 @@ export default function SegmentsPage() {
                         <span className="text-sm text-neutral-600">Filters</span>
                       </div>
                       <span className="text-sm font-medium text-neutral-900">
-                        {Array.isArray(segment.filters) ? segment.filters.length : 0}
+                        {countFiltersInCondition(segment.condition)}
                       </span>
                     </div>
 

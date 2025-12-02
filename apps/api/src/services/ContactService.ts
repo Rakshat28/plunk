@@ -330,29 +330,80 @@ export class ContactService {
   /**
    * Get all available contact fields for a project
    * Returns both standard fields and custom fields from the data JSON column
+   * Now includes type information inferred from actual data
    *
    * @param projectId - The project ID to filter contacts
-   * @returns Array of field names (e.g., ["subscribed", "data.plan", "data.firstName"])
+   * @returns Array of field objects with name and type
    */
-  public static async getAvailableFields(projectId: string): Promise<string[]> {
-    // Standard fields
-    const standardFields = ['subscribed'];
+  public static async getAvailableFields(
+    projectId: string,
+  ): Promise<Array<{field: string; type: 'string' | 'number' | 'boolean' | 'date'}>> {
+    // Standard fields with known types
+    const standardFields = [
+      {field: 'email', type: 'string' as const},
+      {field: 'subscribed', type: 'boolean' as const},
+      {field: 'createdAt', type: 'date' as const},
+      {field: 'updatedAt', type: 'date' as const},
+    ];
 
-    // Get custom fields from the data JSON column
-    // Use raw SQL to extract all keys from the JSON data column
-    const result = await prisma.$queryRaw<Array<{key: string}>>`
-      SELECT DISTINCT jsonb_object_keys(data) as key
-      FROM contacts
-      WHERE
-        "projectId" = ${projectId}
-        AND data IS NOT NULL
-        AND jsonb_typeof(data) = 'object'
+    // Get custom fields from the data JSON column with type inference
+    // Use raw SQL to extract all keys and sample values from the JSON data column
+    const result = await prisma.$queryRaw<Array<{key: string; sample_value: string; json_type: string}>>`
+      WITH field_keys AS (
+        SELECT DISTINCT jsonb_object_keys(data) as key
+        FROM contacts
+        WHERE
+          "projectId" = ${projectId}
+          AND data IS NOT NULL
+          AND jsonb_typeof(data) = 'object'
+      ),
+      field_samples AS (
+        SELECT
+          fk.key,
+          jsonb_typeof(c.data->fk.key) as json_type,
+          (c.data->>fk.key) as sample_value
+        FROM field_keys fk
+        CROSS JOIN LATERAL (
+          SELECT data
+          FROM contacts
+          WHERE
+            "projectId" = ${projectId}
+            AND data ? fk.key
+            AND data->fk.key IS NOT NULL
+          LIMIT 1
+        ) c
+      )
+      SELECT
+        key,
+        sample_value,
+        json_type
+      FROM field_samples
     `;
 
-    // Combine standard fields with custom fields (prefixed with "data.")
-    const customFields = result.map(row => `data.${row.key}`);
+    // Infer types from JSON types and sample values
+    const customFields = result.map(row => {
+      let type: 'string' | 'number' | 'boolean' | 'date' = 'string';
 
-    return [...standardFields, ...customFields].sort();
+      // PostgreSQL jsonb_typeof returns: "object", "array", "string", "number", "boolean", "null"
+      if (row.json_type === 'boolean') {
+        type = 'boolean';
+      } else if (row.json_type === 'number') {
+        type = 'number';
+      } else if (row.json_type === 'string' && row.sample_value) {
+        // Try to detect dates (ISO 8601 format)
+        const dateRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/;
+        if (dateRegex.test(row.sample_value)) {
+          type = 'date';
+        }
+      }
+
+      return {
+        field: `data.${row.key}`,
+        type,
+      };
+    });
+
+    return [...standardFields, ...customFields].sort((a, b) => a.field.localeCompare(b.field));
   }
 
   /**

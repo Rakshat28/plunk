@@ -87,6 +87,17 @@ export class WorkflowExecutionService {
       return;
     }
 
+    // Check if workflow is disabled
+    // Note: We allow running executions to complete even if workflow is disabled
+    // This prevents disruption to contacts who are already in the workflow
+    // Only NEW executions are prevented when workflow is disabled (see startExecution in WorkflowService)
+    if (!execution.workflow.enabled) {
+      console.info(
+        `[WORKFLOW] Workflow ${execution.workflow.id} (${execution.workflow.name}) is disabled, but allowing execution ${executionId} to continue`,
+      );
+      // Allow execution to continue - no action needed
+    }
+
     const step = execution.workflow.steps.find(s => s.id === stepId);
     if (!step) {
       throw new HttpException(404, 'Step not found in workflow');
@@ -132,6 +143,17 @@ export class WorkflowExecutionService {
 
       if (updatedStepExecution?.status === StepExecutionStatus.WAITING) {
         // Don't mark as completed or process next steps - the step will be resumed later
+        return;
+      }
+
+      // Check if the workflow execution is now in WAITING state (DELAY steps do this)
+      // If so, the step has already been handled and queued - don't process next steps
+      const updatedExecution = await prisma.workflowExecution.findUnique({
+        where: {id: execution.id},
+      });
+
+      if (updatedExecution?.status === WorkflowExecutionStatus.WAITING) {
+        // Workflow is waiting (DELAY step has queued the next step) - don't process next steps now
         return;
       }
 

@@ -8,7 +8,6 @@ import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth} from '../middleware/auth.js';
 import {CampaignService} from '../services/CampaignService.js';
 import {DomainService} from '../services/DomainService.js';
-import {type SegmentFilter} from '../services/SegmentService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
 
 @Controller('campaigns')
@@ -22,7 +21,7 @@ export class Campaigns {
   @CatchAsync
   private async create(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {name, description, subject, body, from, fromName, replyTo, audienceType, audienceFilter, segmentId} =
+    const {name, description, subject, body, from, fromName, replyTo, audienceType, audienceCondition, segmentId} =
       CampaignSchemas.create.parse(req.body);
 
     // Validate audience-specific fields
@@ -30,8 +29,8 @@ export class Campaigns {
       throw new HttpException(400, 'Segment ID is required for SEGMENT audience type');
     }
 
-    if (audienceType === CampaignAudienceType.FILTERED && !audienceFilter) {
-      throw new HttpException(400, 'Audience filter is required for FILTERED audience type');
+    if (audienceType === CampaignAudienceType.FILTERED && !audienceCondition) {
+      throw new HttpException(400, 'Audience condition is required for FILTERED audience type');
     }
 
     // Verify domain ownership and verification
@@ -46,7 +45,7 @@ export class Campaigns {
       fromName,
       replyTo,
       audienceType,
-      audienceFilter: audienceFilter as SegmentFilter[] | undefined,
+      audienceCondition,
       segmentId,
     });
 
@@ -118,7 +117,7 @@ export class Campaigns {
   private async update(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
-    const {name, description, subject, body, from, fromName, replyTo, audienceType, audienceFilter, segmentId} =
+    const {name, description, subject, body, from, fromName, replyTo, audienceType, audienceCondition, segmentId} =
       req.body;
 
     // Validate audience-specific fields if audienceType is being updated
@@ -126,8 +125,8 @@ export class Campaigns {
       throw new HttpException(400, 'Segment ID is required for SEGMENT audience type');
     }
 
-    if (audienceType === CampaignAudienceType.FILTERED && audienceFilter === undefined) {
-      throw new HttpException(400, 'Audience filter is required for FILTERED audience type');
+    if (audienceType === CampaignAudienceType.FILTERED && audienceCondition === undefined) {
+      throw new HttpException(400, 'Audience condition is required for FILTERED audience type');
     }
 
     // Verify domain ownership and verification if 'from' is being updated
@@ -144,7 +143,7 @@ export class Campaigns {
       fromName,
       replyTo,
       audienceType,
-      audienceFilter,
+      audienceCondition,
       segmentId,
     });
 

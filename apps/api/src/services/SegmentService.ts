@@ -1,27 +1,13 @@
 import {type Contact, Prisma, type Segment} from '@plunk/db';
+import type {FilterCondition, FilterGroup, SegmentFilter} from '@plunk/types';
 
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
 
 import {EventService} from './EventService.js';
 
-export interface SegmentFilter {
-  field: string; // e.g., "email", "data.plan", "subscribed"
-  operator:
-    | 'equals'
-    | 'notEquals'
-    | 'contains'
-    | 'notContains'
-    | 'greaterThan'
-    | 'lessThan'
-    | 'greaterThanOrEqual'
-    | 'lessThanOrEqual'
-    | 'exists'
-    | 'notExists'
-    | 'within'; // For date ranges
-  value?: unknown;
-  unit?: 'days' | 'hours' | 'minutes'; // For 'within' operator
-}
+// Re-export types for use in other services
+export type {FilterCondition, FilterGroup, SegmentFilter} from '@plunk/types';
 
 export interface PaginatedContacts {
   contacts: Contact[];
@@ -77,7 +63,7 @@ export class SegmentService {
   }
 
   /**
-   * Get contacts that match a segment's filters
+   * Get contacts that match a segment's condition
    */
   public static async getContacts(
     projectId: string,
@@ -86,9 +72,9 @@ export class SegmentService {
     pageSize = 20,
   ): Promise<PaginatedContacts> {
     const segment = await this.get(projectId, segmentId);
-    const filters = segment.filters as unknown as SegmentFilter[];
+    const condition = segment.condition as unknown as FilterCondition;
 
-    const where = this.buildWhereClause(projectId, filters);
+    const where = this.buildWhereClause(projectId, condition);
     const skip = (page - 1) * pageSize;
 
     const [contacts, total] = await Promise.all([
@@ -118,15 +104,15 @@ export class SegmentService {
     data: {
       name: string;
       description?: string;
-      filters: SegmentFilter[];
+      condition: FilterCondition;
       trackMembership?: boolean;
     },
   ): Promise<Segment> {
-    // Validate filters
-    this.validateFilters(data.filters);
+    // Validate condition
+    this.validateCondition(data.condition);
 
     // Compute initial member count
-    const where = this.buildWhereClause(projectId, data.filters);
+    const where = this.buildWhereClause(projectId, data.condition);
     const memberCount = await prisma.contact.count({where});
 
     return prisma.segment.create({
@@ -134,7 +120,7 @@ export class SegmentService {
         projectId,
         name: data.name,
         description: data.description,
-        filters: data.filters as unknown as Prisma.JsonArray,
+        condition: data.condition as unknown as Prisma.InputJsonValue,
         trackMembership: data.trackMembership ?? false,
         memberCount,
       },
@@ -150,16 +136,16 @@ export class SegmentService {
     data: {
       name?: string;
       description?: string;
-      filters?: SegmentFilter[];
+      condition?: FilterCondition;
       trackMembership?: boolean;
     },
   ): Promise<Segment> {
     // First verify segment exists and belongs to project
     await this.get(projectId, segmentId);
 
-    // Validate filters if provided
-    if (data.filters) {
-      this.validateFilters(data.filters);
+    // Validate condition if provided
+    if (data.condition) {
+      this.validateCondition(data.condition);
     }
 
     const updateData: Prisma.SegmentUpdateInput = {};
@@ -170,11 +156,11 @@ export class SegmentService {
     if (data.description !== undefined) {
       updateData.description = data.description;
     }
-    if (data.filters !== undefined) {
-      updateData.filters = data.filters as unknown as Prisma.JsonArray;
+    if (data.condition !== undefined) {
+      updateData.condition = data.condition as unknown as Prisma.InputJsonValue;
 
-      // Recompute member count when filters change
-      const where = this.buildWhereClause(projectId, data.filters);
+      // Recompute member count when condition changes
+      const where = this.buildWhereClause(projectId, data.condition);
       updateData.memberCount = await prisma.contact.count({where});
     }
     if (data.trackMembership !== undefined) {
@@ -222,8 +208,8 @@ export class SegmentService {
    */
   public static async refreshMemberCount(projectId: string, segmentId: string): Promise<number> {
     const segment = await this.get(projectId, segmentId);
-    const filters = segment.filters as unknown as SegmentFilter[];
-    const where = this.buildWhereClause(projectId, filters);
+    const condition = segment.condition as unknown as FilterCondition;
+    const where = this.buildWhereClause(projectId, condition);
 
     const memberCount = await prisma.contact.count({where});
 
@@ -242,7 +228,7 @@ export class SegmentService {
   public static async refreshAllMemberCounts(projectId: string): Promise<void> {
     const segments = await prisma.segment.findMany({
       where: {projectId},
-      select: {id: true, filters: true},
+      select: {id: true, condition: true},
     });
 
     // Process in batches to avoid overwhelming the database
@@ -253,8 +239,8 @@ export class SegmentService {
       await Promise.all(
         batch.map(async segment => {
           try {
-            const filters = segment.filters as unknown as SegmentFilter[];
-            const where = this.buildWhereClause(projectId, filters);
+            const condition = segment.condition as unknown as FilterCondition;
+            const where = this.buildWhereClause(projectId, condition);
             const memberCount = await prisma.contact.count({where});
 
             await prisma.segment.update({
@@ -283,8 +269,8 @@ export class SegmentService {
       throw new HttpException(400, 'Segment does not have membership tracking enabled');
     }
 
-    const filters = segment.filters as unknown as SegmentFilter[];
-    const where = this.buildWhereClause(projectId, filters);
+    const condition = segment.condition as unknown as FilterCondition;
+    const where = this.buildWhereClause(projectId, condition);
 
     // Get all matching contacts using cursor-based pagination to avoid memory issues
     const BATCH_SIZE = 1000;
@@ -428,6 +414,18 @@ export class SegmentService {
   public static buildFilterCondition(filter: SegmentFilter): Prisma.ContactWhereInput {
     const {field, operator, value, unit} = filter;
 
+    // Handle event-based filters (e.g., "event.upgrade", "event.purchase")
+    if (field.startsWith('event.')) {
+      const eventName = field.substring(6); // Remove "event." prefix
+      return this.buildEventCondition(eventName, operator, value, unit);
+    }
+
+    // Handle email activity filters (e.g., "email.opened", "email.clicked")
+    if (field.startsWith('email.')) {
+      const activity = field.substring(6); // Remove "email." prefix
+      return this.buildEmailActivityCondition(activity, operator, value, unit);
+    }
+
     // Handle JSON field paths (e.g., "data.plan")
     if (field.startsWith('data.')) {
       const jsonPath = field.substring(5); // Remove "data." prefix
@@ -449,78 +447,163 @@ export class SegmentService {
   }
 
   /**
-   * Validate segment filters
+   * Validate segment condition (recursive)
    */
-  public static validateFilters(filters: SegmentFilter[]): void {
-    if (!Array.isArray(filters)) {
-      throw new HttpException(400, 'Filters must be an array');
+  public static validateCondition(condition: FilterCondition): void {
+    if (!condition || typeof condition !== 'object') {
+      throw new HttpException(400, 'Condition must be an object');
     }
 
-    if (filters.length === 0) {
-      throw new HttpException(400, 'At least one filter is required');
+    if (!condition.logic || !['AND', 'OR'].includes(condition.logic)) {
+      throw new HttpException(400, 'Condition logic must be either "AND" or "OR"');
     }
 
-    for (const filter of filters) {
-      if (!filter.field) {
-        throw new HttpException(400, 'Filter field is required');
-      }
+    if (!Array.isArray(condition.groups) || condition.groups.length === 0) {
+      throw new HttpException(400, 'Condition must have at least one group');
+    }
 
-      if (!filter.operator) {
-        throw new HttpException(400, 'Filter operator is required');
-      }
-
-      const validOperators = [
-        'equals',
-        'notEquals',
-        'contains',
-        'notContains',
-        'greaterThan',
-        'lessThan',
-        'greaterThanOrEqual',
-        'lessThanOrEqual',
-        'exists',
-        'notExists',
-        'within',
-      ];
-
-      if (!validOperators.includes(filter.operator)) {
-        throw new HttpException(400, `Invalid operator: ${filter.operator}`);
-      }
-
-      // Validate that operators that need a value have one
-      const operatorsNeedingValue = [
-        'equals',
-        'notEquals',
-        'contains',
-        'notContains',
-        'greaterThan',
-        'lessThan',
-        'greaterThanOrEqual',
-        'lessThanOrEqual',
-        'within',
-      ];
-
-      if (operatorsNeedingValue.includes(filter.operator) && filter.value === undefined) {
-        throw new HttpException(400, `Operator "${filter.operator}" requires a value`);
-      }
-
-      // Validate unit for "within" operator
-      if (filter.operator === 'within' && !filter.unit) {
-        throw new HttpException(400, '"within" operator requires a unit (days, hours, or minutes)');
-      }
+    for (const group of condition.groups) {
+      this.validateGroup(group);
     }
   }
 
   /**
-   * Build Prisma where clause from segment filters
+   * Validate filter group (recursive)
    */
-  private static buildWhereClause(projectId: string, filters: SegmentFilter[]): Prisma.ContactWhereInput {
-    const where: Prisma.ContactWhereInput = {
-      projectId,
-      AND: filters.map(filter => this.buildFilterCondition(filter)),
-    };
+  private static validateGroup(group: FilterGroup): void {
+    if (!group || typeof group !== 'object') {
+      throw new HttpException(400, 'Group must be an object');
+    }
 
-    return where;
+    if (!Array.isArray(group.filters)) {
+      throw new HttpException(400, 'Group filters must be an array');
+    }
+
+    // Groups can have filters, nested conditions, or both
+    const hasFilters = group.filters.length > 0;
+    const hasConditions = group.conditions !== undefined;
+
+    if (!hasFilters && !hasConditions) {
+      throw new HttpException(400, 'Group must have at least one filter or nested condition');
+    }
+
+    // Validate all filters in the group
+    for (const filter of group.filters) {
+      this.validateFilter(filter);
+    }
+
+    // Recursively validate nested conditions
+    if (group.conditions) {
+      this.validateCondition(group.conditions);
+    }
+  }
+
+  /**
+   * Validate individual filter
+   */
+  private static validateFilter(filter: SegmentFilter): void {
+    if (!filter.field) {
+      throw new HttpException(400, 'Filter field is required');
+    }
+
+    if (!filter.operator) {
+      throw new HttpException(400, 'Filter operator is required');
+    }
+
+    const validOperators = [
+      'equals',
+      'notEquals',
+      'contains',
+      'notContains',
+      'greaterThan',
+      'lessThan',
+      'greaterThanOrEqual',
+      'lessThanOrEqual',
+      'exists',
+      'notExists',
+      'within',
+      'triggered',
+      'triggeredWithin',
+      'notTriggered',
+    ];
+
+    if (!validOperators.includes(filter.operator)) {
+      throw new HttpException(400, `Invalid operator: ${filter.operator}`);
+    }
+
+    // Validate that operators that need a value have one
+    const operatorsNeedingValue = [
+      'equals',
+      'notEquals',
+      'contains',
+      'notContains',
+      'greaterThan',
+      'lessThan',
+      'greaterThanOrEqual',
+      'lessThanOrEqual',
+      'within',
+      'triggeredWithin',
+    ];
+
+    if (operatorsNeedingValue.includes(filter.operator) && filter.value === undefined) {
+      throw new HttpException(400, `Operator "${filter.operator}" requires a value`);
+    }
+
+    // Validate unit for time-based operators
+    if (['within', 'triggeredWithin'].includes(filter.operator) && !filter.unit) {
+      throw new HttpException(400, `"${filter.operator}" operator requires a unit (days, hours, or minutes)`);
+    }
+  }
+
+  /**
+   * Build Prisma where clause from filter condition (entry point)
+   */
+  private static buildWhereClause(projectId: string, condition: FilterCondition): Prisma.ContactWhereInput {
+    return {
+      projectId,
+      ...this.buildConditionClause(condition),
+    };
+  }
+
+  /**
+   * Build Prisma clause from filter condition (recursive)
+   */
+  public static buildConditionClause(condition: FilterCondition): Prisma.ContactWhereInput {
+    const groupClauses = condition.groups.map(group => this.buildGroupClause(group));
+
+    if (condition.logic === 'AND') {
+      return {AND: groupClauses};
+    } else {
+      return {OR: groupClauses};
+    }
+  }
+
+  /**
+   * Build Prisma clause from filter group (recursive)
+   */
+  private static buildGroupClause(group: FilterGroup): Prisma.ContactWhereInput {
+    const clauses: Prisma.ContactWhereInput[] = [];
+
+    // Add filter conditions from this group
+    if (group.filters.length > 0) {
+      clauses.push(...group.filters.map(filter => this.buildFilterCondition(filter)));
+    }
+
+    // Add nested condition if present
+    if (group.conditions) {
+      clauses.push(this.buildConditionClause(group.conditions));
+    }
+
+    // All conditions within a group are combined with AND
+    if (clauses.length === 0) {
+      return {}; // Empty group returns empty where clause
+    }
+
+    if (clauses.length === 1) {
+      return clauses[0]!; // Safe to use non-null assertion since we checked length
+    }
+
+    return {AND: clauses};
   }
 
   /**
@@ -647,6 +730,140 @@ export class SegmentService {
         return value * 60 * 1000;
       default:
         throw new HttpException(400, `Unsupported time unit: ${unit}`);
+    }
+  }
+
+  /**
+   * Build condition for event-based filters
+   * Uses Prisma relations to efficiently query contacts who triggered specific events
+   */
+  private static buildEventCondition(
+    eventName: string,
+    operator: string,
+    value: unknown,
+    unit?: 'days' | 'hours' | 'minutes',
+  ): Prisma.ContactWhereInput {
+    switch (operator) {
+      case 'triggered':
+        // Contact has triggered this event at any time
+        return {
+          events: {
+            some: {
+              name: eventName,
+            },
+          },
+        };
+
+      case 'triggeredWithin': {
+        // Contact has triggered this event within the specified timeframe
+        if (!unit) {
+          throw new HttpException(400, 'Unit is required for "triggeredWithin" operator');
+        }
+
+        const now = new Date();
+        const milliseconds = this.getMilliseconds(value as number, unit);
+        const since = new Date(now.getTime() - milliseconds);
+
+        return {
+          events: {
+            some: {
+              name: eventName,
+              createdAt: {
+                gte: since,
+              },
+            },
+          },
+        };
+      }
+
+      case 'notTriggered':
+        // Contact has never triggered this event
+        return {
+          events: {
+            none: {
+              name: eventName,
+            },
+          },
+        };
+
+      default:
+        throw new HttpException(400, `Unsupported operator for event field: ${operator}`);
+    }
+  }
+
+  /**
+   * Build condition for email activity filters
+   * Uses Prisma relations to efficiently query contacts based on email engagement
+   */
+  private static buildEmailActivityCondition(
+    activity: string,
+    operator: string,
+    value: unknown,
+    unit?: 'days' | 'hours' | 'minutes',
+  ): Prisma.ContactWhereInput {
+    // Map activity names to Email model fields
+    const fieldMap: Record<string, string> = {
+      opened: 'openedAt',
+      clicked: 'clickedAt',
+      bounced: 'bouncedAt',
+      complained: 'complainedAt',
+      sent: 'sentAt',
+      delivered: 'deliveredAt',
+    };
+
+    const field = fieldMap[activity];
+    if (!field) {
+      throw new HttpException(400, `Unsupported email activity: ${activity}`);
+    }
+
+    switch (operator) {
+      case 'triggered':
+        // Contact has this email activity at any time
+        return {
+          emails: {
+            some: {
+              [field]: {
+                not: null,
+              },
+            },
+          },
+        };
+
+      case 'triggeredWithin': {
+        // Contact has this email activity within the specified timeframe
+        if (!unit) {
+          throw new HttpException(400, 'Unit is required for "triggeredWithin" operator');
+        }
+
+        const now = new Date();
+        const milliseconds = this.getMilliseconds(value as number, unit);
+        const since = new Date(now.getTime() - milliseconds);
+
+        return {
+          emails: {
+            some: {
+              [field]: {
+                gte: since,
+              },
+            },
+          },
+        };
+      }
+
+      case 'notTriggered':
+        // Contact has never had this email activity
+        return {
+          emails: {
+            none: {
+              [field]: {
+                not: null,
+              },
+            },
+          },
+        };
+
+      default:
+        throw new HttpException(400, `Unsupported operator for email activity field: ${operator}`);
     }
   }
 }

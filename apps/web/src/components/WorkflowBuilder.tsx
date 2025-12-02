@@ -261,7 +261,12 @@ function CustomNode({
             <div className="text-xs text-neutral-600">
               <div className="flex items-center gap-1 mb-1">
                 <span className="font-medium">🔀</span>
-                <span className="font-mono text-[10px] truncate">{data.config.field}</span>
+                <span className="font-mono text-[10px] truncate">
+                  {/* Handle both legacy format {field, type} and new format (string) */}
+                  {typeof data.config.field === 'object' && data.config.field !== null && 'field' in data.config.field
+                    ? String(data.config.field.field)
+                    : String(data.config.field)}
+                </span>
               </div>
               <div className="text-[10px] text-neutral-500 ml-4">
                 {data.config.operator} &quot;{String(data.config.value)}&quot;
@@ -582,6 +587,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
             name: `New ${stepType.toLowerCase().replace('_', ' ')}`,
             position: {x: 0, y: 0}, // Will be auto-positioned by dagre layout
             config: {},
+            autoConnect: false, // We manually create transitions to preserve branch information
           },
         );
 
@@ -625,12 +631,45 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
     window.dispatchEvent(event);
   };
 
+  // Get all steps that will be affected by deleting a step (the step itself + all downstream steps)
+  const getAffectedSteps = useCallback(
+    (stepId: string): typeof steps => {
+      const affected = new Set<string>();
+      const queue = [stepId];
+
+      // BFS to find all downstream steps
+      while (queue.length > 0) {
+        const currentId = queue.shift()!;
+        if (affected.has(currentId)) continue;
+
+        affected.add(currentId);
+
+        const currentStep = steps.find(s => s.id === currentId);
+        if (currentStep?.outgoingTransitions) {
+          for (const transition of currentStep.outgoingTransitions) {
+            if (!affected.has(transition.toStepId)) {
+              queue.push(transition.toStepId);
+            }
+          }
+        }
+      }
+
+      return steps.filter(s => affected.has(s.id));
+    },
+    [steps],
+  );
+
   const handleDeleteStep = async () => {
     if (!stepToDelete) return;
 
     try {
       await network.fetch('DELETE', `/workflows/${workflowId}/steps/${stepToDelete}`);
-      toast.success('Step deleted');
+      const affectedSteps = getAffectedSteps(stepToDelete);
+      if (affectedSteps.length > 1) {
+        toast.success(`Deleted ${affectedSteps.length} steps`);
+      } else {
+        toast.success('Step deleted');
+      }
       onUpdate();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to delete step');
@@ -782,15 +821,42 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
         </DialogContent>
       </Dialog>
 
-      <ConfirmDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        onConfirm={handleDeleteStep}
-        title="Delete Step"
-        description="Are you sure you want to delete this step?"
-        confirmText="Delete"
-        variant="destructive"
-      />
+      {stepToDelete && (() => {
+        const affectedSteps = getAffectedSteps(stepToDelete);
+        const stepToDeleteData = steps.find(s => s.id === stepToDelete);
+        const downstreamSteps = affectedSteps.filter(s => s.id !== stepToDelete);
+
+        return (
+          <ConfirmDialog
+            open={showDeleteDialog}
+            onOpenChange={setShowDeleteDialog}
+            onConfirm={handleDeleteStep}
+            title="Delete Step"
+            description={
+              downstreamSteps.length > 0 ? (
+                <div className="space-y-3">
+                  <p>
+                    Deleting &quot;{stepToDeleteData?.name}&quot; will also delete {downstreamSteps.length} downstream{' '}
+                    {downstreamSteps.length === 1 ? 'step' : 'steps'}:
+                  </p>
+                  <ul className="list-disc list-inside text-sm text-neutral-600 max-h-32 overflow-y-auto bg-neutral-50 p-3 rounded border border-neutral-200">
+                    {downstreamSteps.map(step => (
+                      <li key={step.id}>
+                        {step.name} ({step.type})
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-sm font-medium text-red-600">This action cannot be undone.</p>
+                </div>
+              ) : (
+                `Are you sure you want to delete "${stepToDeleteData?.name}"? This action cannot be undone.`
+              )
+            }
+            confirmText={downstreamSteps.length > 0 ? `Delete ${affectedSteps.length} Steps` : 'Delete'}
+            variant="destructive"
+          />
+        );
+      })()}
     </>
   );
 }

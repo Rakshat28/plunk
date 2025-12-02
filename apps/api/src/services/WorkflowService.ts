@@ -32,6 +32,20 @@ export interface WorkflowExecutionWithDetails extends WorkflowExecution {
 
 export class WorkflowService {
   /**
+   * Check if a workflow has active executions
+   */
+  private static async hasActiveExecutions(workflowId: string): Promise<number> {
+    return prisma.workflowExecution.count({
+      where: {
+        workflowId,
+        status: {
+          in: [WorkflowExecutionStatus.RUNNING, WorkflowExecutionStatus.WAITING],
+        },
+      },
+    });
+  }
+
+  /**
    * Get all workflows for a project with pagination
    */
   public static async list(projectId: string, page = 1, pageSize = 20, search?: string): Promise<PaginatedWorkflows> {
@@ -175,7 +189,26 @@ export class WorkflowService {
     },
   ): Promise<Workflow> {
     // Verify workflow exists and belongs to project
-    await this.get(projectId, workflowId);
+    const workflow = await this.get(projectId, workflowId);
+
+    // Check if workflow is enabled and has active executions
+    if (workflow.enabled) {
+      const activeExecutions = await this.hasActiveExecutions(workflowId);
+
+      if (activeExecutions > 0) {
+        // Block changes to trigger configuration while executions are running
+        const hasCriticalChanges = data.triggerType !== undefined || data.triggerConfig !== undefined;
+
+        if (hasCriticalChanges) {
+          throw new HttpException(
+            409,
+            `Cannot modify workflow trigger while workflow has ${activeExecutions} active execution(s). ` +
+              'Please disable the workflow first or wait for executions to complete. ' +
+              'You can still update name, description, and re-entry settings.',
+          );
+        }
+      }
+    }
 
     const updateData: Prisma.WorkflowUpdateInput = {};
 
@@ -299,7 +332,7 @@ export class WorkflowService {
     },
   ): Promise<WorkflowStep> {
     // First verify workflow belongs to project
-    await this.get(projectId, workflowId);
+    const workflow = await this.get(projectId, workflowId);
 
     // Then verify step exists and belongs to workflow
     const step = await prisma.workflowStep.findUnique({
@@ -308,6 +341,26 @@ export class WorkflowService {
 
     if (step?.workflowId !== workflowId) {
       throw new HttpException(404, 'Workflow step not found');
+    }
+
+    // Check if workflow is enabled and has active executions
+    if (workflow.enabled) {
+      const activeExecutions = await this.hasActiveExecutions(workflowId);
+
+      if (activeExecutions > 0) {
+        // Only allow safe changes: name and position updates
+        const hasCriticalChanges =
+          data.config !== undefined || data.templateId !== undefined;
+
+        if (hasCriticalChanges) {
+          throw new HttpException(
+            409,
+            `Cannot modify step configuration while workflow has ${activeExecutions} active execution(s). ` +
+              'Please disable the workflow first or wait for executions to complete. ' +
+              'You can still update the step name and position.',
+          );
+        }
+      }
     }
 
     const updateData: Prisma.WorkflowStepUpdateInput = {};
@@ -333,10 +386,13 @@ export class WorkflowService {
    * Delete a workflow step
    */
   public static async deleteStep(projectId: string, workflowId: string, stepId: string): Promise<void> {
-    await this.get(projectId, workflowId);
+    const workflow = await this.get(projectId, workflowId);
 
     const step = await prisma.workflowStep.findUnique({
       where: {id: stepId},
+      include: {
+        outgoingTransitions: true,
+      },
     });
 
     if (step?.workflowId !== workflowId) {
@@ -348,8 +404,117 @@ export class WorkflowService {
       throw new HttpException(400, 'Cannot delete the trigger step. Every workflow must have a trigger.');
     }
 
-    await prisma.workflowStep.delete({
-      where: {id: stepId},
+    // Check if workflow is enabled and has active executions on this step or downstream
+    if (workflow.enabled) {
+      // Check if any active executions are currently on this step
+      const executionsOnStep = await prisma.workflowExecution.count({
+        where: {
+          workflowId,
+          currentStepId: stepId,
+          status: {
+            in: [WorkflowExecutionStatus.RUNNING, WorkflowExecutionStatus.WAITING],
+          },
+        },
+      });
+
+      if (executionsOnStep > 0) {
+        throw new HttpException(
+          409,
+          `Cannot delete step "${step.name}" while ${executionsOnStep} execution(s) are currently on this step. ` +
+            'Please disable the workflow first or wait for executions to complete.',
+        );
+      }
+
+      // Also check downstream steps for active executions
+      const allSteps = await prisma.workflowStep.findMany({
+        where: {workflowId},
+        include: {outgoingTransitions: true},
+      });
+
+      // Build adjacency map
+      const adjacencyMap = new Map<string, string[]>();
+      for (const s of allSteps) {
+        adjacencyMap.set(
+          s.id,
+          s.outgoingTransitions.map(t => t.toStepId),
+        );
+      }
+
+      // Find all downstream steps
+      const downstreamSteps = new Set<string>([stepId]);
+      const queue = [stepId];
+
+      while (queue.length > 0) {
+        const currentStepId = queue.shift()!;
+        const outgoingStepIds = adjacencyMap.get(currentStepId) || [];
+
+        for (const nextStepId of outgoingStepIds) {
+          if (!downstreamSteps.has(nextStepId)) {
+            downstreamSteps.add(nextStepId);
+            queue.push(nextStepId);
+          }
+        }
+      }
+
+      // Check if any active executions are on downstream steps
+      const executionsOnDownstream = await prisma.workflowExecution.count({
+        where: {
+          workflowId,
+          currentStepId: {in: Array.from(downstreamSteps)},
+          status: {
+            in: [WorkflowExecutionStatus.RUNNING, WorkflowExecutionStatus.WAITING],
+          },
+        },
+      });
+
+      if (executionsOnDownstream > 0) {
+        throw new HttpException(
+          409,
+          `Cannot delete step "${step.name}" while ${executionsOnDownstream} execution(s) are on downstream steps. ` +
+            'Deleting this step would orphan those executions. ' +
+            'Please disable the workflow first or wait for executions to complete.',
+        );
+      }
+    }
+
+    // Find all downstream steps that need to be deleted (cascade)
+    // First, get all steps and transitions for this workflow to build a graph
+    const allSteps = await prisma.workflowStep.findMany({
+      where: {workflowId},
+      include: {outgoingTransitions: true},
+    });
+
+    // Build adjacency map for efficient traversal
+    const adjacencyMap = new Map<string, string[]>();
+    for (const s of allSteps) {
+      adjacencyMap.set(
+        s.id,
+        s.outgoingTransitions.map(t => t.toStepId),
+      );
+    }
+
+    // Use BFS to traverse the workflow graph and find all downstream steps
+    const stepsToDelete = new Set<string>([stepId]);
+    const queue = [stepId];
+
+    while (queue.length > 0) {
+      const currentStepId = queue.shift()!;
+      const outgoingStepIds = adjacencyMap.get(currentStepId) || [];
+
+      for (const nextStepId of outgoingStepIds) {
+        if (!stepsToDelete.has(nextStepId)) {
+          stepsToDelete.add(nextStepId);
+          queue.push(nextStepId);
+        }
+      }
+    }
+
+    // Delete all affected steps (Prisma will cascade delete the transitions)
+    await prisma.workflowStep.deleteMany({
+      where: {
+        id: {in: Array.from(stepsToDelete)},
+        workflowId, // Safety check to ensure we only delete steps from this workflow
+      },
     });
   }
 
@@ -424,6 +589,9 @@ export class WorkflowService {
    * Delete a transition
    */
   public static async deleteTransition(projectId: string, workflowId: string, transitionId: string): Promise<void> {
+    // Get workflow to check if it's enabled
+    const workflow = await this.get(projectId, workflowId);
+
     // Verify transition exists and belongs to workflow
     const transition = await prisma.workflowTransition.findFirst({
       where: {
@@ -433,10 +601,68 @@ export class WorkflowService {
           workflow: {projectId},
         },
       },
+      include: {
+        fromStep: true,
+        toStep: true,
+      },
     });
 
     if (!transition) {
       throw new HttpException(404, 'Transition not found');
+    }
+
+    // Check if workflow is enabled and has active executions that could be affected
+    if (workflow.enabled) {
+      // Get all steps that would become orphaned by removing this transition
+      const allSteps = await prisma.workflowStep.findMany({
+        where: {workflowId},
+        include: {outgoingTransitions: true, incomingTransitions: true},
+      });
+
+      // Build adjacency map without this transition
+      const adjacencyMap = new Map<string, string[]>();
+      for (const s of allSteps) {
+        adjacencyMap.set(
+          s.id,
+          s.outgoingTransitions.filter(t => t.id !== transitionId).map(t => t.toStepId),
+        );
+      }
+
+      // Find all steps reachable from the toStep (downstream)
+      const downstreamSteps = new Set<string>([transition.toStepId]);
+      const queue = [transition.toStepId];
+
+      while (queue.length > 0) {
+        const currentStepId = queue.shift()!;
+        const outgoingStepIds = adjacencyMap.get(currentStepId) || [];
+
+        for (const nextStepId of outgoingStepIds) {
+          if (!downstreamSteps.has(nextStepId)) {
+            downstreamSteps.add(nextStepId);
+            queue.push(nextStepId);
+          }
+        }
+      }
+
+      // Check if any active executions are on the toStep or downstream steps
+      const executionsAffected = await prisma.workflowExecution.count({
+        where: {
+          workflowId,
+          currentStepId: {in: Array.from(downstreamSteps)},
+          status: {
+            in: [WorkflowExecutionStatus.RUNNING, WorkflowExecutionStatus.WAITING],
+          },
+        },
+      });
+
+      if (executionsAffected > 0) {
+        throw new HttpException(
+          409,
+          `Cannot delete transition from "${transition.fromStep.name}" to "${transition.toStep.name}" ` +
+            `while ${executionsAffected} execution(s) are on affected steps. ` +
+            'Please disable the workflow first or wait for executions to complete.',
+        );
+      }
     }
 
     await prisma.workflowTransition.delete({
@@ -646,8 +872,37 @@ export class WorkflowService {
       data: {
         status: WorkflowExecutionStatus.CANCELLED,
         completedAt: new Date(),
+        exitReason: 'Cancelled by user',
       },
     });
+  }
+
+  /**
+   * Cancel all active executions for a workflow
+   */
+  public static async cancelAllExecutions(
+    projectId: string,
+    workflowId: string,
+  ): Promise<{cancelled: number}> {
+    // Verify workflow exists and belongs to project
+    await this.get(projectId, workflowId);
+
+    // Cancel all running and waiting executions
+    const result = await prisma.workflowExecution.updateMany({
+      where: {
+        workflowId,
+        status: {
+          in: [WorkflowExecutionStatus.RUNNING, WorkflowExecutionStatus.WAITING],
+        },
+      },
+      data: {
+        status: WorkflowExecutionStatus.CANCELLED,
+        completedAt: new Date(),
+        exitReason: 'Cancelled by user (bulk cancel)',
+      },
+    });
+
+    return {cancelled: result.count};
   }
 
   /**
@@ -655,17 +910,17 @@ export class WorkflowService {
    */
   public static async getAvailableFields(projectId: string, eventName?: string) {
     // Get contact fields (standard + custom data fields)
-    const contactFields = await ContactService.getAvailableFields(projectId);
+    const contactFieldsWithTypes = await ContactService.getAvailableFields(projectId);
 
-    // Add standard contact fields
-    const standardContactFields = ['contact.email', 'contact.subscribed'];
+    // Extract just the field names and prefix with 'contact.'
+    const contactFields = contactFieldsWithTypes.map(f => `contact.${f.field}`);
 
     // Get event fields by analyzing actual event data
     // This will only show fields that have been seen in actual events
     const eventFields = await EventService.getAvailableEventFields(projectId, eventName);
 
     // Combine all fields
-    const allFields = [...standardContactFields, ...contactFields, ...eventFields].sort();
+    const allFields = [...contactFields, ...eventFields].sort();
 
     return {
       fields: allFields,

@@ -35,38 +35,9 @@ import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
-import type {SegmentFilter} from '@plunk/types';
+import type {FilterCondition} from '@plunk/types';
 import {SegmentSchemas} from '@plunk/shared';
-
-const FILTER_OPERATORS = [
-  {value: 'equals', label: 'Equals'},
-  {value: 'notEquals', label: 'Not equals'},
-  {value: 'contains', label: 'Contains'},
-  {value: 'notContains', label: 'Does not contain'},
-  {value: 'greaterThan', label: 'Greater than'},
-  {value: 'lessThan', label: 'Less than'},
-  {value: 'greaterThanOrEqual', label: 'Greater than or equal to'},
-  {value: 'lessThanOrEqual', label: 'Less than or equal to'},
-  {value: 'exists', label: 'Exists'},
-  {value: 'notExists', label: 'Does not exist'},
-  {value: 'within', label: 'Within (time)'},
-] as const;
-
-const TIME_UNITS = [
-  {value: 'minutes', label: 'Minutes'},
-  {value: 'hours', label: 'Hours'},
-  {value: 'days', label: 'Days'},
-] as const;
-
-const FIELD_PRESETS = [
-  {value: 'email', label: 'Email', type: 'string'},
-  {value: 'subscribed', label: 'Subscribed', type: 'boolean'},
-  {value: 'createdAt', label: 'Created At', type: 'date'},
-  {value: 'updatedAt', label: 'Updated At', type: 'date'},
-  {value: 'data.firstName', label: 'First Name (custom)', type: 'string'},
-  {value: 'data.lastName', label: 'Last Name (custom)', type: 'string'},
-  {value: 'data.plan', label: 'Plan (custom)', type: 'string'},
-] as const;
+import {SegmentFilterBuilder} from '../../components/SegmentFilterBuilder';
 
 interface PaginatedContacts {
   contacts: Contact[];
@@ -74,6 +45,18 @@ interface PaginatedContacts {
   page: number;
   pageSize: number;
   totalPages: number;
+}
+
+// Count total filters in a condition (recursive)
+function countFilters(condition: FilterCondition): number {
+  let count = 0;
+  for (const group of condition.groups) {
+    count += group.filters.length;
+    if (group.conditions) {
+      count += countFilters(group.conditions);
+    }
+  }
+  return count;
 }
 
 export default function SegmentDetailPage() {
@@ -89,7 +72,10 @@ export default function SegmentDetailPage() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [trackMembership, setTrackMembership] = useState(false);
-  const [filters, setFilters] = useState<SegmentFilter[]>([]);
+  const [condition, setCondition] = useState<FilterCondition>({
+    logic: 'AND',
+    groups: [{filters: [{field: 'subscribed', operator: 'equals', value: true}]}],
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComputing, setIsComputing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -100,21 +86,12 @@ export default function SegmentDetailPage() {
       setName(segment.name);
       setDescription(segment.description || '');
       setTrackMembership(segment.trackMembership);
-      setFilters((segment.filters as unknown as SegmentFilter[]) || []);
+      setCondition((segment.condition as unknown as FilterCondition) || {
+        logic: 'AND',
+        groups: [{filters: [{field: 'subscribed', operator: 'equals', value: true}]}],
+      });
     }
   }, [segment]);
-
-  const addFilter = () => {
-    setFilters([...filters, {field: 'email', operator: 'contains', value: ''}]);
-  };
-
-  const removeFilter = (index: number) => {
-    setFilters(filters.filter((_, i) => i !== index));
-  };
-
-  const updateFilter = (index: number, updates: Partial<SegmentFilter>) => {
-    setFilters(filters.map((filter, i) => (i === index ? {...filter, ...updates} : filter)));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,7 +101,7 @@ export default function SegmentDetailPage() {
       await network.fetch<Segment, typeof SegmentSchemas.update>('PATCH', `/segments/${id}`, {
         name,
         description: description || undefined,
-        filters,
+        condition,
         trackMembership,
       });
       toast.success('Segment updated successfully');
@@ -167,13 +144,6 @@ export default function SegmentDetailPage() {
     }
   };
 
-  const needsValue = (operator: string) => {
-    return !['exists', 'notExists'].includes(operator);
-  };
-
-  const needsUnit = (operator: string) => {
-    return operator === 'within';
-  };
 
   if (isLoading) {
     return (
@@ -297,139 +267,17 @@ export default function SegmentDetailPage() {
                 </CardContent>
               </Card>
 
-              {/* Filters */}
+              {/* Filter Builder */}
               <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>Filters</CardTitle>
-                      <CardDescription>Define conditions to match contacts</CardDescription>
-                    </div>
-                    <Button type="button" variant="outline" size="sm" onClick={addFilter}>
-                      <Plus className="h-4 w-4" />
-                      Add Filter
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {filters.map((filter, index) => (
-                    <div key={index} className="flex items-start gap-2 p-4 border border-neutral-200 rounded-lg">
-                      <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-3">
-                        {/* Field */}
-                        <div>
-                          <Label className="text-xs">Field</Label>
-                          <Select value={filter.field} onValueChange={value => updateFilter(index, {field: value})}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {FIELD_PRESETS.map(preset => (
-                                <SelectItem key={preset.value} value={preset.value}>
-                                  {preset.label}
-                                </SelectItem>
-                              ))}
-                              <SelectItem value="custom">Custom field...</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          {filter.field === 'custom' && (
-                            <Input
-                              type="text"
-                              placeholder="e.g., data.customField"
-                              className="mt-2"
-                              onChange={e => updateFilter(index, {field: e.target.value})}
-                            />
-                          )}
-                        </div>
-
-                        {/* Operator */}
-                        <div>
-                          <Label className="text-xs">Operator</Label>
-                          <Select
-                            value={filter.operator}
-                            onValueChange={value => updateFilter(index, {operator: value as SegmentFilter['operator']})}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {FILTER_OPERATORS.map(op => (
-                                <SelectItem key={op.value} value={op.value}>
-                                  {op.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {/* Value */}
-                        {needsValue(filter.operator) && (
-                          <div>
-                            <Label className="text-xs">Value</Label>
-                            {filter.field === 'subscribed' ? (
-                              <Select
-                                value={filter.value?.toString()}
-                                onValueChange={value => updateFilter(index, {value: value === 'true'})}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="true">True</SelectItem>
-                                  <SelectItem value="false">False</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            ) : (
-                              <Input
-                                type="text"
-                                value={filter.value ?? ''}
-                                onChange={e => updateFilter(index, {value: e.target.value})}
-                                placeholder="Enter value"
-                              />
-                            )}
-                          </div>
-                        )}
-
-                        {/* Unit */}
-                        {needsUnit(filter.operator) && (
-                          <div>
-                            <Label className="text-xs">Unit</Label>
-                            <Select
-                              value={filter.unit ?? 'days'}
-                              onValueChange={value => updateFilter(index, {unit: value as SegmentFilter['unit']})}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {TIME_UNITS.map(unit => (
-                                  <SelectItem key={unit.value} value={unit.value}>
-                                    {unit.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        )}
-                      </div>
-
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFilter(index)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 mt-6"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
+                <CardContent className="pt-6">
+                  <SegmentFilterBuilder condition={condition} onChange={setCondition} />
                 </CardContent>
               </Card>
 
               {/* Actions */}
               <div className="flex items-center justify-end">
-                <Button type="submit" disabled={isSubmitting || filters.length === 0}>
-                  <Save className="h-4 w-4" />
+                <Button type="submit" disabled={isSubmitting}>
+                  <Save className="h-4 w-4 mr-2" />
                   {isSubmitting ? 'Saving...' : 'Save Changes'}
                 </Button>
               </div>
@@ -536,7 +384,16 @@ export default function SegmentDetailPage() {
                     <span className="text-sm text-neutral-600">Filters</span>
                   </div>
                   <span className="text-lg font-semibold text-neutral-900">
-                    {Array.isArray(segment.filters) ? segment.filters.length : 0}
+                    {countFilters(segment.condition as unknown as FilterCondition)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4 text-neutral-500" />
+                    <span className="text-sm text-neutral-600">Groups</span>
+                  </div>
+                  <span className="text-lg font-semibold text-neutral-900">
+                    {(segment.condition as unknown as FilterCondition)?.groups?.length || 0}
                   </span>
                 </div>
               </CardContent>

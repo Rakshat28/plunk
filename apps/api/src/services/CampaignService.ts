@@ -1,5 +1,6 @@
 import type {Campaign, Contact, Prisma} from '@plunk/db';
 import {CampaignAudienceType, CampaignStatus} from '@plunk/db';
+import type {FilterCondition} from '@plunk/types';
 
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
@@ -8,7 +9,7 @@ import {buildEmailFieldsUpdate} from '../utils/modelUpdate.js';
 import {DomainService} from './DomainService.js';
 import {EmailService} from './EmailService.js';
 import {QueueService} from './QueueService.js';
-import {type SegmentFilter, SegmentService} from './SegmentService.js';
+import {SegmentService} from './SegmentService.js';
 
 const BATCH_SIZE = 500; // Number of emails to process per batch (increased for better performance)
 
@@ -21,7 +22,7 @@ export interface CreateCampaignData {
   fromName?: string;
   replyTo?: string;
   audienceType: CampaignAudienceType;
-  audienceFilter?: SegmentFilter[];
+  audienceCondition?: FilterCondition;
   segmentId?: string;
 }
 
@@ -34,7 +35,7 @@ export interface UpdateCampaignData {
   fromName?: string;
   replyTo?: string;
   audienceType?: CampaignAudienceType;
-  audienceFilter?: SegmentFilter[];
+  audienceCondition?: FilterCondition;
   segmentId?: string;
 }
 
@@ -61,10 +62,10 @@ export class CampaignService {
       }
     }
 
-    // Validate filters if provided
-    if (data.audienceType === CampaignAudienceType.FILTERED && data.audienceFilter) {
-      // This will throw if filters are invalid
-      SegmentService.validateFilters(data.audienceFilter);
+    // Validate condition if provided
+    if (data.audienceType === CampaignAudienceType.FILTERED && data.audienceCondition) {
+      // This will throw if condition is invalid
+      SegmentService.validateCondition(data.audienceCondition);
     }
 
     // Create campaign
@@ -79,7 +80,7 @@ export class CampaignService {
         fromName: data.fromName,
         replyTo: data.replyTo,
         audienceType: data.audienceType,
-        audienceFilter: (data.audienceFilter || null) as unknown as Prisma.InputJsonValue,
+        audienceCondition: (data.audienceCondition || null) as unknown as Prisma.InputJsonValue,
         segmentId: data.segmentId,
         status: CampaignStatus.DRAFT,
       },
@@ -105,11 +106,11 @@ export class CampaignService {
       updateData.audienceType = data.audienceType;
     }
 
-    if (data.audienceFilter !== undefined) {
-      if (data.audienceFilter) {
-        SegmentService.validateFilters(data.audienceFilter);
+    if (data.audienceCondition !== undefined) {
+      if (data.audienceCondition) {
+        SegmentService.validateCondition(data.audienceCondition);
       }
-      updateData.audienceFilter = (data.audienceFilter || null) as unknown as Prisma.InputJsonValue;
+      updateData.audienceCondition = (data.audienceCondition || null) as unknown as Prisma.InputJsonValue;
     }
 
     if (data.segmentId !== undefined) {
@@ -230,7 +231,7 @@ export class CampaignService {
         fromName: campaign.fromName,
         replyTo: campaign.replyTo,
         audienceType: campaign.audienceType,
-        audienceFilter: campaign.audienceFilter as Prisma.InputJsonValue,
+        audienceCondition: campaign.audienceCondition as Prisma.InputJsonValue,
         segmentId: campaign.segmentId,
         status: CampaignStatus.DRAFT,
         totalRecipients: 0,
@@ -587,14 +588,17 @@ export class CampaignService {
         return this.buildSegmentWhereAsync(projectId, campaign.segmentId, baseWhere);
 
       case CampaignAudienceType.FILTERED: {
-        const filters = campaign.audienceFilter as unknown as SegmentFilter[];
-        if (!filters || filters.length === 0) {
-          throw new HttpException(400, 'Audience filters are required for FILTERED audience type');
+        const condition = campaign.audienceCondition as unknown as FilterCondition;
+        if (!condition) {
+          throw new HttpException(400, 'Audience condition is required for FILTERED audience type');
         }
+
+        // Use the SegmentService to build the where clause from the condition
+        const segmentWhere = SegmentService.buildConditionClause(condition);
 
         return {
           ...baseWhere,
-          AND: filters.map(filter => SegmentService.buildFilterCondition(filter)),
+          ...segmentWhere,
         };
       }
 
@@ -611,7 +615,7 @@ export class CampaignService {
     segmentId: string,
     baseWhere: Prisma.ContactWhereInput,
   ): Promise<Prisma.ContactWhereInput> {
-    // Fetch the segment to get its filters
+    // Fetch the segment to get its condition
     const segment = await prisma.segment.findUnique({
       where: {id: segmentId},
     });
@@ -620,11 +624,12 @@ export class CampaignService {
       throw new HttpException(404, 'Segment not found');
     }
 
-    const filters = segment.filters as unknown as SegmentFilter[];
+    const condition = segment.condition as unknown as FilterCondition;
+    const segmentWhere = SegmentService.buildConditionClause(condition);
 
     return {
       ...baseWhere,
-      AND: filters.map(filter => SegmentService.buildFilterCondition(filter)),
+      ...segmentWhere,
     };
   }
 

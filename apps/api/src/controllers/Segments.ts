@@ -74,20 +74,20 @@ export class Segments {
   @CatchAsync
   public async create(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {name, description, filters, trackMembership} = req.body;
+    const {name, description, condition, trackMembership} = req.body;
 
     if (!name) {
       return res.status(400).json({error: 'Name is required'});
     }
 
-    if (!filters || !Array.isArray(filters)) {
-      return res.status(400).json({error: 'Filters must be an array'});
+    if (!condition || typeof condition !== 'object') {
+      return res.status(400).json({error: 'Condition is required and must be an object'});
     }
 
     const segment = await SegmentService.create(auth.projectId!, {
       name,
       description,
-      filters,
+      condition,
       trackMembership,
     });
 
@@ -104,20 +104,20 @@ export class Segments {
   public async update(req: Request, res: Response, next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const segmentId = req.params.id;
-    const {name, description, filters, trackMembership} = req.body;
+    const {name, description, condition, trackMembership} = req.body;
 
     if (!segmentId) {
       return res.status(400).json({error: 'Segment ID is required'});
     }
 
-    if (filters !== undefined && !Array.isArray(filters)) {
-      return res.status(400).json({error: 'Filters must be an array'});
+    if (condition !== undefined && typeof condition !== 'object') {
+      return res.status(400).json({error: 'Condition must be an object'});
     }
 
     const segment = await SegmentService.update(auth.projectId!, segmentId, {
       name,
       description,
-      filters,
+      condition,
       trackMembership,
     });
 

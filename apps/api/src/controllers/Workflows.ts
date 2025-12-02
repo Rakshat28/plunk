@@ -370,4 +370,24 @@ export class Workflows {
 
     return res.status(200).json(execution);
   }
+
+  /**
+   * POST /workflows/:id/executions/cancel-all
+   * Cancel all active executions for a workflow
+   */
+  @Post(':id/executions/cancel-all')
+  @Middleware([requireAuth])
+  @CatchAsync
+  public async cancelAllExecutions(req: Request, res: Response, next: NextFunction) {
+    const auth = res.locals.auth as AuthResponse;
+    const workflowId = req.params.id;
+
+    if (!workflowId) {
+      return res.status(400).json({error: 'Workflow ID is required'});
+    }
+
+    const result = await WorkflowService.cancelAllExecutions(auth.projectId!, workflowId);
+
+    return res.status(200).json(result);
+  }
 }

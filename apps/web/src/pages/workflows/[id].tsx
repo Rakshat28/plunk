@@ -6,6 +6,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  ConfirmDialog,
   Dialog,
   DialogContent,
   DialogFooter,
@@ -55,10 +56,13 @@ interface PaginatedExecutions {
 export default function WorkflowEditorPage() {
   const router = useRouter();
   const {id} = router.query;
-  const [activeTab, setActiveTab] = useState<'builder' | 'executions' | 'debug'>('builder');
+  const [activeTab, setActiveTab] = useState<'builder' | 'executions'>('builder');
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showTestDialog, setShowTestDialog] = useState(false);
   const [editingStep, setEditingStep] = useState<WorkflowStep | null>(null);
+  const [showCancelAllDialog, setShowCancelAllDialog] = useState(false);
+  const [executionToCancel, setExecutionToCancel] = useState<string | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const {data: workflow, mutate} = useSWR<WorkflowWithDetails>(id ? `/workflows/${id}` : null, {
     revalidateOnFocus: false,
@@ -69,8 +73,180 @@ export default function WorkflowEditorPage() {
     {revalidateOnFocus: false},
   );
 
+  // Always fetch a summary of active executions to show warnings (regardless of enabled status)
+  const {data: activeExecutionsData} = useSWR<PaginatedExecutions>(
+    id ? `/workflows/${id}/executions?page=1&pageSize=1&status=RUNNING` : null,
+    {revalidateOnFocus: false, refreshInterval: 10000},
+  );
+
+  const {data: waitingExecutionsData} = useSWR<PaginatedExecutions>(
+    id ? `/workflows/${id}/executions?page=1&pageSize=1&status=WAITING` : null,
+    {revalidateOnFocus: false, refreshInterval: 10000},
+  );
+
+  // Check for active executions
+  const activeExecutionsCount = (activeExecutionsData?.total || 0) + (waitingExecutionsData?.total || 0);
+
+  // Handler for cancelling a single execution
+  const handleCancelExecution = async (executionId: string) => {
+    setIsCancelling(true);
+    try {
+      await network.fetch('DELETE', `/workflows/${id}/executions/${executionId}`);
+      toast.success('Execution cancelled successfully');
+      void mutate();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to cancel execution');
+    } finally {
+      setIsCancelling(false);
+      setExecutionToCancel(null);
+    }
+  };
+
+  // Handler for cancelling all executions
+  const handleCancelAllExecutions = async () => {
+    setIsCancelling(true);
+    try {
+      const result = await network.fetch<{cancelled: number}>('POST', `/workflows/${id}/executions/cancel-all`);
+      toast.success(`Successfully cancelled ${result.cancelled} execution(s)`);
+      void mutate();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to cancel executions');
+    } finally {
+      setIsCancelling(false);
+      setShowCancelAllDialog(false);
+    }
+  };
+
+  // Validate workflow configuration
+  const validateWorkflow = (workflow: WorkflowWithDetails): {valid: boolean; errors: string[]} => {
+    const errors: string[] = [];
+
+    // Check if there are any steps
+    if (workflow.steps.length === 0) {
+      errors.push('Workflow must have at least one step');
+      return {valid: false, errors};
+    }
+
+    // Validate each step
+    workflow.steps.forEach(step => {
+      const config = step.config && typeof step.config === 'object' && !Array.isArray(step.config) ? step.config : {};
+
+      switch (step.type) {
+        case 'SEND_EMAIL':
+          if (!step.templateId) {
+            errors.push(`"${step.name}" step is missing an email template`);
+          }
+          break;
+
+        case 'DELAY':
+          if (!config.amount || !config.unit) {
+            errors.push(`"${step.name}" step is missing delay configuration (amount or unit)`);
+          }
+          break;
+
+        case 'CONDITION':
+          // Extract field name from both legacy format (object) and new format (string)
+          let fieldValue = '';
+          if (config.field) {
+            if (typeof config.field === 'object' && config.field !== null && 'field' in config.field) {
+              fieldValue = String(config.field.field || '');
+            } else {
+              fieldValue = String(config.field);
+            }
+          }
+
+          if (!fieldValue || !config.operator) {
+            errors.push(`"${step.name}" step is missing condition configuration (field or operator)`);
+          }
+          // Check if value is required for this operator
+          const operatorNeedsValue = !['exists', 'notExists'].includes(String(config.operator || ''));
+          if (operatorNeedsValue && (config.value === undefined || config.value === null || config.value === '')) {
+            errors.push(`"${step.name}" step is missing a value for the condition`);
+          }
+          break;
+
+        case 'WAIT_FOR_EVENT':
+          if (!config.eventName) {
+            errors.push(`"${step.name}" step is missing event name`);
+          }
+          break;
+
+        case 'WEBHOOK':
+          if (!config.url) {
+            errors.push(`"${step.name}" step is missing webhook URL`);
+          }
+          break;
+
+        case 'UPDATE_CONTACT':
+          if (!config.updates || (typeof config.updates === 'object' && Object.keys(config.updates).length === 0)) {
+            errors.push(`"${step.name}" step is missing contact updates`);
+          }
+          break;
+      }
+    });
+
+    // Check for orphaned steps (steps with no incoming or outgoing transitions, except TRIGGER and EXIT)
+    const triggerSteps = workflow.steps.filter(s => s.type === 'TRIGGER');
+    const exitSteps = workflow.steps.filter(s => s.type === 'EXIT');
+
+    workflow.steps.forEach(step => {
+      if (step.type !== 'TRIGGER' && step.type !== 'EXIT') {
+        const hasIncoming = step.incomingTransitions && step.incomingTransitions.length > 0;
+        const hasOutgoing = step.outgoingTransitions && step.outgoingTransitions.length > 0;
+
+        if (!hasIncoming && !hasOutgoing) {
+          errors.push(`"${step.name}" step is not connected to the workflow`);
+        }
+      }
+    });
+
+    // Check if there's a TRIGGER step
+    if (triggerSteps.length === 0) {
+      errors.push('Workflow must have a trigger step');
+    }
+
+    // Check for CONDITION steps that don't have both yes and no branches
+    workflow.steps.forEach(step => {
+      if (step.type === 'CONDITION' && step.outgoingTransitions) {
+        const hasYesBranch = step.outgoingTransitions.some(t => {
+          const condition = t.condition;
+          return condition && typeof condition === 'object' && 'branch' in condition && condition.branch === 'yes';
+        });
+        const hasNoBranch = step.outgoingTransitions.some(t => {
+          const condition = t.condition;
+          return condition && typeof condition === 'object' && 'branch' in condition && condition.branch === 'no';
+        });
+
+        if (!hasYesBranch || !hasNoBranch) {
+          errors.push(`"${step.name}" condition step must have both YES and NO branches connected`);
+        }
+      }
+    });
+
+    return {valid: errors.length === 0, errors};
+  };
+
   const handleToggleEnabled = async () => {
     if (!workflow) return;
+
+    // If trying to enable, validate first
+    if (!workflow.enabled) {
+      const validation = validateWorkflow(workflow);
+      if (!validation.valid) {
+        toast.error(
+          <div>
+            <div className="font-semibold mb-1">Cannot enable workflow</div>
+            <ul className="list-disc list-inside text-sm">
+              {validation.errors.map((error, i) => (
+                <li key={i}>{error}</li>
+              ))}
+            </ul>
+          </div>,
+          {duration: 8000},
+        );
+        return;
+      }
+    }
 
     try {
       await network.fetch<Workflow, typeof WorkflowSchemas.update>('PATCH', `/workflows/${id}`, {
@@ -198,6 +374,79 @@ export default function WorkflowEditorPage() {
           </div>
         </div>
 
+        {/* Active Executions Warning Banner */}
+        {activeExecutionsCount > 0 && (
+          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="ml-3 flex-1">
+                <h3 className="text-sm font-medium text-blue-800">
+                  {workflow.enabled ? 'Workflow is active with running executions' : 'Workflow has active executions'}
+                </h3>
+                <div className="mt-2 text-sm text-blue-700">
+                  <p>
+                    This workflow has <strong>{activeExecutionsCount}</strong> active execution
+                    {activeExecutionsCount !== 1 ? 's' : ''}.{' '}
+                    {!workflow.enabled && 'Even though the workflow is disabled, existing executions will continue. '}
+                    To protect running workflows, you cannot:
+                  </p>
+                  <ul className="list-disc list-inside space-y-1 mt-2">
+                    <li>Delete steps or transitions</li>
+                    <li>Modify step configurations (email templates, conditions, etc.)</li>
+                    <li>Change the workflow trigger</li>
+                  </ul>
+                  <p className="mt-2">
+                    You can still rename steps and adjust their position. To make configuration changes, wait for
+                    executions to complete or cancel them from the Executions tab.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Validation Warning Banner */}
+        {!workflow.enabled && (() => {
+          const validation = validateWorkflow(workflow);
+          if (!validation.valid) {
+            return (
+              <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path
+                        fillRule="evenodd"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="ml-3 flex-1">
+                    <h3 className="text-sm font-medium text-amber-800">Workflow has validation errors</h3>
+                    <div className="mt-2 text-sm text-amber-700">
+                      <p className="mb-2">Fix the following issues before enabling this workflow:</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        {validation.errors.map((error, i) => (
+                          <li key={i}>{error}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })()}
+
         {/* Tabs */}
         <div className="border-b border-neutral-200">
           <nav className="-mb-px flex space-x-8">
@@ -221,18 +470,6 @@ export default function WorkflowEditorPage() {
             >
               Executions
             </button>
-            {process.env.NODE_ENV === 'development' && (
-              <button
-                onClick={() => setActiveTab('debug')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'debug'
-                    ? 'border-neutral-900 text-neutral-900'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300'
-                }`}
-              >
-                Debug
-              </button>
-            )}
           </nav>
         </div>
 
@@ -254,8 +491,17 @@ export default function WorkflowEditorPage() {
         ) : activeTab === 'executions' ? (
           <Card>
             <CardHeader>
-              <CardTitle>Workflow Executions</CardTitle>
-              <CardDescription>View all executions of this workflow</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Workflow Executions</CardTitle>
+                  <CardDescription>View and manage all executions of this workflow</CardDescription>
+                </div>
+                {activeExecutionsCount > 0 && (
+                  <Button variant="outline" onClick={() => setShowCancelAllDialog(true)}>
+                    Cancel All Active ({activeExecutionsCount})
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               {!executionsData?.executions.length ? (
@@ -283,6 +529,9 @@ export default function WorkflowEditorPage() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                           Started
                         </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-neutral-200">
@@ -298,9 +547,13 @@ export default function WorkflowEditorPage() {
                                   ? 'bg-green-100 text-green-800'
                                   : execution.status === 'RUNNING'
                                     ? 'bg-blue-100 text-blue-800'
-                                    : execution.status === 'FAILED'
-                                      ? 'bg-red-100 text-red-800'
-                                      : 'bg-gray-100 text-gray-800'
+                                    : execution.status === 'WAITING'
+                                      ? 'bg-yellow-100 text-yellow-800'
+                                      : execution.status === 'FAILED'
+                                        ? 'bg-red-100 text-red-800'
+                                        : execution.status === 'CANCELLED'
+                                          ? 'bg-gray-100 text-gray-800'
+                                          : 'bg-gray-100 text-gray-800'
                               }`}
                             >
                               {execution.status}
@@ -312,6 +565,17 @@ export default function WorkflowEditorPage() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
                             {new Date(execution.startedAt).toLocaleString()}
                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            {(execution.status === 'RUNNING' || execution.status === 'WAITING') && (
+                              <button
+                                onClick={() => setExecutionToCancel(execution.id)}
+                                className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                                disabled={isCancelling}
+                              >
+                                Cancel
+                              </button>
+                            )}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -320,105 +584,6 @@ export default function WorkflowEditorPage() {
               )}
             </CardContent>
           </Card>
-        ) : activeTab === 'debug' ? (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Debug Information</CardTitle>
-                <CardDescription>Raw workflow data for debugging</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Workflow Steps */}
-                <div>
-                  <h3 className="text-sm font-semibold text-neutral-900 mb-3">Steps</h3>
-                  <pre className="bg-neutral-50 p-4 rounded-lg text-xs overflow-x-auto">
-                    {JSON.stringify(
-                      workflow.steps.map(s => ({
-                        id: s.id,
-                        type: s.type,
-                        name: s.name,
-                        position: s.position,
-                        config: s.config,
-                        templateId: s.templateId,
-                      })),
-                      null,
-                      2,
-                    )}
-                  </pre>
-                </div>
-
-                {/* All Transitions */}
-                <div>
-                  <h3 className="text-sm font-semibold text-neutral-900 mb-3">All Transitions</h3>
-                  <pre className="bg-neutral-50 p-4 rounded-lg text-xs overflow-x-auto">
-                    {JSON.stringify(
-                      workflow.steps.flatMap(step =>
-                        step.outgoingTransitions.map(t => ({
-                          id: t.id,
-                          fromStepId: t.fromStepId,
-                          fromStepName: step.name,
-                          toStepId: t.toStepId,
-                          toStepName: workflow.steps.find(s => s.id === t.toStepId)?.name,
-                          condition: t.condition,
-                          priority: t.priority,
-                        })),
-                      ),
-                      null,
-                      2,
-                    )}
-                  </pre>
-                </div>
-
-                {/* Transition Analysis */}
-                <div>
-                  <h3 className="text-sm font-semibold text-neutral-900 mb-3">Transition Analysis</h3>
-                  <div className="space-y-3">
-                    {workflow.steps.map(step => {
-                      if (step.outgoingTransitions.length === 0) return null;
-                      return (
-                        <div key={step.id} className="border border-neutral-200 rounded-lg p-3">
-                          <div className="font-medium text-sm text-neutral-900 mb-2">
-                            {step.name} ({step.type})
-                          </div>
-                          <div className="space-y-1 text-xs">
-                            {step.outgoingTransitions.map(t => {
-                              const toStep = workflow.steps.find(s => s.id === t.toStepId);
-                              const branch =
-                                t.condition && typeof t.condition === 'object' && 'branch' in t.condition
-                                  ? t.condition.branch
-                                  : undefined;
-                              return (
-                                <div
-                                  key={t.id}
-                                  className={`flex items-start gap-2 ${
-                                    branch === 'yes'
-                                      ? 'text-green-700 bg-green-50'
-                                      : branch === 'no'
-                                        ? 'text-red-700 bg-red-50'
-                                        : 'text-neutral-700 bg-neutral-50'
-                                  } p-2 rounded`}
-                                >
-                                  <span className="font-mono flex-shrink-0">
-                                    {branch === 'yes' ? '✓ YES' : branch === 'no' ? '✗ NO' : '→'}
-                                  </span>
-                                  <div className="flex-1">
-                                    <div>→ {toStep?.name || 'Unknown'}</div>
-                                    <div className="text-neutral-500 mt-1">
-                                      Priority: {t.priority} | ID: {t.id}
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         ) : null}
       </div>
 
@@ -441,6 +606,65 @@ export default function WorkflowEditorPage() {
               onSuccess={() => mutate()}
             />
           )}
+
+          {/* Cancel Single Execution Confirmation */}
+          <ConfirmDialog
+            open={!!executionToCancel}
+            onOpenChange={open => !open && setExecutionToCancel(null)}
+            onConfirm={() => {
+              if (executionToCancel) {
+                return handleCancelExecution(executionToCancel);
+              }
+            }}
+            title="Cancel Execution"
+            description={
+              executionToCancel && executionsData?.executions ? (
+                <div className="space-y-2">
+                  <p>
+                    Are you sure you want to cancel the workflow execution for{' '}
+                    <strong>
+                      {executionsData.executions.find(e => e.id === executionToCancel)?.contact.email || 'this contact'}
+                    </strong>
+                    ?
+                  </p>
+                  <p className="text-sm text-neutral-600">
+                    The contact will not receive any remaining emails or actions from this workflow. This action cannot
+                    be undone.
+                  </p>
+                </div>
+              ) : (
+                'Are you sure you want to cancel this execution?'
+              )
+            }
+            confirmText="Cancel Execution"
+            cancelText="Keep Running"
+            variant="destructive"
+            isLoading={isCancelling}
+          />
+
+          {/* Cancel All Executions Confirmation */}
+          <ConfirmDialog
+            open={showCancelAllDialog}
+            onOpenChange={setShowCancelAllDialog}
+            onConfirm={handleCancelAllExecutions}
+            title="Cancel All Active Executions"
+            description={
+              <div className="space-y-2">
+                <p>
+                  Are you sure you want to cancel all <strong>{activeExecutionsCount}</strong> active execution
+                  {activeExecutionsCount !== 1 ? 's' : ''}?
+                </p>
+                <p className="text-sm text-neutral-600">
+                  All contacts currently in this workflow will be stopped and won&apos;t receive any remaining emails or
+                  actions. This action cannot be undone.
+                </p>
+              </div>
+            }
+            confirmText={`Cancel ${activeExecutionsCount} Execution${activeExecutionsCount !== 1 ? 's' : ''}`}
+            cancelText="Keep Running"
+            variant="destructive"
+            isLoading={isCancelling}
+          />
         </>
       )}
     </DashboardLayout>
@@ -1146,8 +1370,16 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
       | 'minutes',
   );
 
-  // CONDITION fields
-  const [conditionField, setConditionField] = useState(String(config?.field || ''));
+  // CONDITION fields - handle both old format (object) and new format (string)
+  const [conditionField, setConditionField] = useState(() => {
+    if (!config?.field) return '';
+    // Handle case where field is an object like {field: 'email', type: 'string'} (legacy format)
+    if (typeof config.field === 'object' && config.field !== null && 'field' in config.field) {
+      return String(config.field.field || '');
+    }
+    // Handle new format where field is just a string
+    return String(config.field);
+  });
   const [conditionOperator, setConditionOperator] = useState(String(config?.operator || 'equals'));
   const [conditionValue, setConditionValue] = useState(String(config?.value ?? ''));
   const [availableFields, setAvailableFields] = useState<string[]>([]);
