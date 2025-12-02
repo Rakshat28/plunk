@@ -150,7 +150,7 @@ export function createEmailWorker() {
       connection: emailQueue.opts.connection,
       concurrency: 10, // Process up to 10 emails concurrently
       limiter: {
-        max: 14, // Max 14 emails per second (AWS SES limit is typically 14/sec)
+        max: 25, // Max 25 emails per second
         duration: 1000,
       },
     },
