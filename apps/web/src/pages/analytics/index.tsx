@@ -15,35 +15,47 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from '@plunk/ui';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {useAnalytics} from '../../lib/hooks/useAnalytics';
-import {AlertCircle, BarChart3, CheckCircle2, Eye, Mail, MousePointerClick, Send, TrendingUp, Zap} from 'lucide-react';
+import useSWR from 'swr';
+import {
+  Activity,
+  AlertCircle,
+  BarChart3,
+  CheckCircle2,
+  Eye,
+  Mail,
+  Megaphone,
+  MousePointerClick,
+  Send,
+  Zap
+} from 'lucide-react';
 import {NextSeo} from 'next-seo';
 import {useMemo, useState} from 'react';
-import {Area, AreaChart, CartesianGrid, Line, LineChart, XAxis, YAxis} from 'recharts';
+import {Area, AreaChart, CartesianGrid, Line, LineChart, XAxis, YAxis} from 'recharts'; // Chart configurations with sleek blue theme
 
-// Chart configurations
+// Chart configurations with sleek blue theme
 const volumeChartConfig = {
   emails: {
     label: 'Emails Sent',
-    color: 'hsl(var(--chart-1))',
+    color: 'hsl(221.2 83.2% 53.3%)', // Vibrant blue
   },
   opens: {
     label: 'Opens',
-    color: 'hsl(var(--chart-2))',
+    color: 'hsl(142.1 76.2% 36.3%)', // Green
   },
   clicks: {
     label: 'Clicks',
-    color: 'hsl(var(--chart-3))',
+    color: 'hsl(262.1 83.3% 57.8%)', // Purple
   },
 } satisfies ChartConfig;
 
 const engagementChartConfig = {
   openRate: {
     label: 'Open Rate',
-    color: 'hsl(var(--chart-2))',
+    color: 'hsl(221.2 83.2% 53.3%)', // Vibrant blue to match
   },
 } satisfies ChartConfig;
 
@@ -53,12 +65,55 @@ export default function AnalyticsPage() {
 
   const {stats, timeSeries, isLoading, error} = useAnalytics({days});
 
-  // Calculate engagement rate
-  const engagementRate = useMemo(() => {
-    if (!stats?.totalEmailsSent) return 0;
-    const engaged = stats.totalEmailsOpened + stats.totalEmailsClicked;
-    return (engaged / stats.totalEmailsSent) * 100;
-  }, [stats]);
+  // Calculate start and end dates for additional API calls
+  const {startDate, endDate} = useMemo(() => {
+    const end = new Date();
+    const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
+    return {startDate: start.toISOString(), endDate: end.toISOString()};
+  }, [days]);
+
+  // Fetch campaign stats from API
+  const {data: campaignStats} = useSWR<{
+    total: number;
+    active: number;
+    completed: number;
+    averageOpenRate: number;
+    averageClickRate: number;
+  }>(`/analytics/campaign-stats?startDate=${startDate}&endDate=${endDate}`, {
+    revalidateOnFocus: false,
+    refreshInterval: 300000,
+    dedupingInterval: 10000,
+  });
+
+  // Fetch top events from API
+  const {data: topEvents} = useSWR<
+    {
+      name: string;
+      count: number;
+      trend: number;
+    }[]
+  >(`/analytics/top-events?limit=5&startDate=${startDate}&endDate=${endDate}`, {
+    revalidateOnFocus: false,
+    refreshInterval: 300000,
+    dedupingInterval: 10000,
+  });
+
+  // Fetch top campaigns from API
+  const {data: topCampaigns} = useSWR<
+    {
+      id: string;
+      subject: string;
+      sentCount: number;
+      openedCount: number;
+      clickedCount: number;
+      openRate: number;
+      clickRate: number;
+    }[]
+  >(`/analytics/top-campaigns?limit=10&startDate=${startDate}&endDate=${endDate}`, {
+    revalidateOnFocus: false,
+    refreshInterval: 300000,
+    dedupingInterval: 10000,
+  });
 
   // Process time series data for charts
   const chartData = useMemo(() => {
@@ -122,13 +177,31 @@ export default function AnalyticsPage() {
       trend: stats?.clickRate && stats.clickRate > 3 ? 'positive' : 'neutral',
     },
     {
-      name: 'Engagement',
-      value: `${engagementRate.toFixed(1)}%`,
-      icon: TrendingUp,
-      description: 'Opens + Clicks',
+      name: 'Active Campaigns',
+      value: campaignStats?.active?.toLocaleString() || '0',
+      icon: Megaphone,
+      description: `${campaignStats?.total || 0} total campaigns`,
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-100',
+      trend: campaignStats?.active ? 'positive' : 'neutral',
+    },
+    {
+      name: 'Workflows',
+      value: stats?.totalWorkflowsStarted?.toLocaleString() || '0',
+      icon: Activity,
+      description: 'Automations triggered',
+      color: 'text-cyan-600',
+      bgColor: 'bg-cyan-100',
+      trend: stats?.totalWorkflowsStarted && stats.totalWorkflowsStarted > 0 ? 'positive' : 'neutral',
+    },
+    {
+      name: 'Total Events',
+      value: stats?.totalEvents?.toLocaleString() || '0',
+      icon: Zap,
+      description: 'Custom events tracked',
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
-      trend: engagementRate > 20 ? 'positive' : 'neutral',
+      trend: stats?.totalEvents && stats.totalEvents > 0 ? 'positive' : 'neutral',
     },
   ];
 
@@ -137,252 +210,441 @@ export default function AnalyticsPage() {
       <NextSeo title="Analytics" />
       <DashboardLayout>
         <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-neutral-900">Analytics</h1>
-            <p className="text-neutral-500 mt-2">
-              Comprehensive insights into your email performance, engagement metrics, and delivery statistics.
-            </p>
+          {/* Header */}
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-neutral-900">Analytics</h1>
+              <p className="text-neutral-500 mt-2">
+                Comprehensive insights into your email performance, engagement metrics, and delivery statistics.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Select value={dateRange} onValueChange={setDateRange}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select period" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7">Last 7 days</SelectItem>
+                  <SelectItem value="30">Last 30 days</SelectItem>
+                  <SelectItem value="90">Last 90 days</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="flex gap-3">
-            <Select value={dateRange} onValueChange={setDateRange}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select period" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7">Last 7 days</SelectItem>
-                <SelectItem value="30">Last 30 days</SelectItem>
-                <SelectItem value="90">Last 90 days</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
 
-        {/* Error State */}
-        {error && (
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3 text-red-700">
-                <AlertCircle className="h-5 w-5" />
-                <span>Failed to load analytics data. Please try again.</span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+          {/* Error State */}
+          {error && (
+            <Card className="border-red-200 bg-red-50">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3 text-red-700">
+                  <AlertCircle className="h-5 w-5" />
+                  <span>Failed to load analytics data. Please try again.</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statsCards.map(stat => {
-            const Icon = stat.icon;
-            return (
-              <Card key={stat.name}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardDescription>{stat.name}</CardDescription>
-                    <div className={`h-10 w-10 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
-                      <Icon className={`h-5 w-5 ${stat.color}`} />
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {statsCards.map(stat => {
+              const Icon = stat.icon;
+              return (
+                <Card key={stat.name}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardDescription>{stat.name}</CardDescription>
+                      <div className={`h-10 w-10 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
+                        <Icon className={`h-5 w-5 ${stat.color}`} />
+                      </div>
                     </div>
+                    <CardTitle className="text-2xl">{isLoading ? '-' : stat.value}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-xs text-neutral-500">{stat.description}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Email Volume Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Email Volume Trends</CardTitle>
+              <CardDescription>Daily email sends, opens, and clicks over the selected period</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {!hasData ? (
+                <div className="flex h-[400px] w-full items-center justify-center">
+                  <div className="text-center">
+                    <Mail className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                    <h3 className="mt-4 text-sm font-semibold text-neutral-900">No email data yet</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">Send your first email to see analytics here</p>
                   </div>
-                  <CardTitle className="text-2xl">{isLoading ? '-' : stat.value}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xs text-neutral-500">{stat.description}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* Email Volume Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Email Volume Trends</CardTitle>
-            <CardDescription>Daily email sends, opens, and clicks over the selected period</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {!hasData ? (
-              <div className="flex h-[400px] w-full items-center justify-center">
-                <div className="text-center">
-                  <Mail className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-sm font-semibold text-neutral-900">No email data yet</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">Send your first email to see analytics here</p>
                 </div>
-              </div>
-            ) : (
-              <ChartContainer config={volumeChartConfig} className="h-[400px] w-full">
-                <AreaChart data={chartData} margin={{top: 10, right: 10, left: 10, bottom: 0}}>
-                  <defs>
-                    <linearGradient id="fillEmails" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--color-emails)" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="var(--color-emails)" stopOpacity={0.1} />
-                    </linearGradient>
-                    <linearGradient id="fillOpens" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--color-opens)" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="var(--color-opens)" stopOpacity={0.1} />
-                    </linearGradient>
-                    <linearGradient id="fillClicks" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--color-clicks)" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="var(--color-clicks)" stopOpacity={0.1} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid vertical={false} />
-                  <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} minTickGap={32} />
-                  <YAxis tickLine={false} axisLine={false} tickMargin={8} />
-                  <ChartTooltip content={<ChartTooltipContent className="w-[150px]" />} />
-                  <Area
-                    dataKey="emails"
-                    type="monotone"
-                    fill="url(#fillEmails)"
-                    stroke="var(--color-emails)"
-                    stackId="a"
-                  />
-                  <Area
-                    dataKey="opens"
-                    type="monotone"
-                    fill="url(#fillOpens)"
-                    stroke="var(--color-opens)"
-                    stackId="a"
-                  />
-                  <Area
-                    dataKey="clicks"
-                    type="monotone"
-                    fill="url(#fillClicks)"
-                    stroke="var(--color-clicks)"
-                    stackId="a"
-                  />
-                  <ChartLegend content={ChartLegendContent as any} />
-                </AreaChart>
-              </ChartContainer>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Engagement Rate Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Engagement Rate Trends</CardTitle>
-            <CardDescription>Open rate percentage over time</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {!hasData ? (
-              <div className="flex h-[300px] w-full items-center justify-center">
-                <div className="text-center">
-                  <Eye className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-sm font-semibold text-neutral-900">No engagement data</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Engagement metrics will appear once emails are opened
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <ChartContainer config={engagementChartConfig} className="h-[300px] w-full">
-                <LineChart data={chartData} margin={{top: 10, right: 10, left: 10, bottom: 0}}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} minTickGap={32} />
-                  <YAxis
-                    domain={[0, 100]}
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tickFormatter={value => `${value}%`}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent className="w-[150px]" hideLabel />} cursor={false} />
-                  <Line
-                    dataKey="openRate"
-                    type="monotone"
-                    stroke="var(--color-openRate)"
-                    strokeWidth={2}
-                    dot={{
-                      fill: 'var(--color-openRate)',
-                      r: 4,
-                    }}
-                    activeDot={{
-                      r: 6,
-                    }}
-                  />
-                </LineChart>
-              </ChartContainer>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Key Insights */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Performance Insights</CardTitle>
-              <CardDescription>Key metrics and recommendations</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="h-8 w-8 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-neutral-900">Open Rate</p>
-                  <p className="text-sm text-neutral-500">
-                    {stats?.openRate && stats.openRate > 20
-                      ? 'Your open rate is above industry average!'
-                      : 'Consider improving subject lines to increase open rates.'}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <BarChart3 className="h-4 w-4 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-neutral-900">Click Rate</p>
-                  <p className="text-sm text-neutral-500">
-                    {stats?.clickRate && stats.clickRate > 3
-                      ? 'Great click-through performance!'
-                      : 'Add more compelling calls-to-action to boost clicks.'}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="h-8 w-8 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                  <Zap className="h-4 w-4 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-neutral-900">Engagement</p>
-                  <p className="text-sm text-neutral-500">
-                    {stats?.totalWorkflowsStarted
-                      ? `${stats.totalWorkflowsStarted.toLocaleString()} workflows started`
-                      : 'Set up workflows to automate your email campaigns.'}
-                  </p>
-                </div>
-              </div>
+              ) : (
+                <ChartContainer config={volumeChartConfig} className="h-[400px] w-full">
+                  <AreaChart data={chartData} margin={{top: 10, right: 30, left: 0, bottom: 0}}>
+                    <defs>
+                      <linearGradient id="fillEmails" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--color-emails)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="var(--color-emails)" stopOpacity={0.05} />
+                      </linearGradient>
+                      <linearGradient id="fillOpens" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--color-opens)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="var(--color-opens)" stopOpacity={0.05} />
+                      </linearGradient>
+                      <linearGradient id="fillClicks" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--color-clicks)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="var(--color-clicks)" stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis
+                      dataKey="date"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      minTickGap={32}
+                      tick={{fontSize: 12}}
+                      className="text-muted-foreground"
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      tick={{fontSize: 12}}
+                      className="text-muted-foreground"
+                      domain={[0, 'auto']}
+                    />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          className="w-[180px]"
+                          labelFormatter={(value: any) => {
+                            return value;
+                          }}
+                        />
+                      }
+                    />
+                    <Area
+                      dataKey="emails"
+                      type="monotone"
+                      fill="url(#fillEmails)"
+                      stroke="var(--color-emails)"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{
+                        r: 4,
+                        fill: 'var(--color-emails)',
+                        stroke: 'white',
+                        strokeWidth: 2,
+                      }}
+                    />
+                    <Area
+                      dataKey="opens"
+                      type="monotone"
+                      fill="url(#fillOpens)"
+                      stroke="var(--color-opens)"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{
+                        r: 4,
+                        fill: 'var(--color-opens)',
+                        stroke: 'white',
+                        strokeWidth: 2,
+                      }}
+                    />
+                    <Area
+                      dataKey="clicks"
+                      type="monotone"
+                      fill="url(#fillClicks)"
+                      stroke="var(--color-clicks)"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{
+                        r: 4,
+                        fill: 'var(--color-clicks)',
+                        stroke: 'white',
+                        strokeWidth: 2,
+                      }}
+                    />
+                    <ChartLegend content={<ChartLegendContent />} verticalAlign="top" height={36} />
+                  </AreaChart>
+                </ChartContainer>
+              )}
             </CardContent>
           </Card>
 
+          {/* Engagement Rate Chart */}
           <Card>
             <CardHeader>
-              <CardTitle>Event Activity</CardTitle>
-              <CardDescription>Custom events and triggers</CardDescription>
+              <CardTitle>Engagement Rate Trends</CardTitle>
+              <CardDescription>Open rate percentage over time</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold text-neutral-900">{stats?.totalEvents?.toLocaleString() || '0'}</p>
-                  <p className="text-sm text-neutral-500">Total Events</p>
+            <CardContent>
+              {!hasData ? (
+                <div className="flex h-[300px] w-full items-center justify-center">
+                  <div className="text-center">
+                    <Eye className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                    <h3 className="mt-4 text-sm font-semibold text-neutral-900">No engagement data</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Engagement metrics will appear once emails are opened
+                    </p>
+                  </div>
                 </div>
-                <div className="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center">
-                  <Zap className="h-6 w-6 text-orange-600" />
-                </div>
-              </div>
-              <div className="pt-4 border-t">
-                <p className="text-sm text-neutral-500">
-                  Events triggered by your contacts over the last {days} days. These can trigger workflows and
-                  automations.
-                </p>
-              </div>
+              ) : (
+                <ChartContainer config={engagementChartConfig} className="h-[300px] w-full">
+                  <LineChart data={chartData} margin={{top: 20, right: 30, left: 0, bottom: 0}}>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis
+                      dataKey="date"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      minTickGap={32}
+                      tick={{fontSize: 12}}
+                      className="text-muted-foreground"
+                    />
+                    <YAxis
+                      domain={[0, 100]}
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      tick={{fontSize: 12}}
+                      tickFormatter={value => `${value}%`}
+                      className="text-muted-foreground"
+                    />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          className="w-[150px]"
+                          labelFormatter={(value: any) => value}
+                          formatter={(value: any) => [`${value}%`, 'Open Rate']}
+                        />
+                      }
+                      cursor={{
+                        stroke: 'hsl(var(--border))',
+                        strokeWidth: 1,
+                        strokeDasharray: '3 3',
+                      }}
+                    />
+                    <Line
+                      dataKey="openRate"
+                      type="monotone"
+                      stroke="var(--color-openRate)"
+                      strokeWidth={2.5}
+                      dot={{
+                        fill: 'var(--color-openRate)',
+                        stroke: 'white',
+                        strokeWidth: 2,
+                        r: 4,
+                      }}
+                      activeDot={{
+                        r: 6,
+                        fill: 'var(--color-openRate)',
+                        stroke: 'white',
+                        strokeWidth: 2,
+                      }}
+                    />
+                  </LineChart>
+                </ChartContainer>
+              )}
             </CardContent>
           </Card>
+
+          {/* Key Insights */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Performance Insights</CardTitle>
+                <CardDescription>Key metrics and recommendations</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-neutral-900">Open Rate</p>
+                    <p className="text-sm text-neutral-500">
+                      {stats?.openRate && stats.openRate > 20
+                        ? 'Your open rate is above industry average!'
+                        : 'Consider improving subject lines to increase open rates.'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <BarChart3 className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-neutral-900">Click Rate</p>
+                    <p className="text-sm text-neutral-500">
+                      {stats?.clickRate && stats.clickRate > 3
+                        ? 'Great click-through performance!'
+                        : 'Add more compelling calls-to-action to boost clicks.'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                    <Zap className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-neutral-900">Engagement</p>
+                    <p className="text-sm text-neutral-500">
+                      {stats?.totalWorkflowsStarted
+                        ? `${stats.totalWorkflowsStarted.toLocaleString()} workflows started`
+                        : 'Set up workflows to automate your email campaigns.'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Event Activity</CardTitle>
+                <CardDescription>Custom events and triggers</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-2xl font-bold text-neutral-900">{stats?.totalEvents?.toLocaleString() || '0'}</p>
+                    <p className="text-sm text-neutral-500">Total Events</p>
+                  </div>
+                  <div className="h-12 w-12 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <Zap className="h-6 w-6 text-orange-600" />
+                  </div>
+                </div>
+                <div className="pt-4 border-t">
+                  <p className="text-sm text-neutral-500">
+                    Events triggered by your contacts over the last {days} days. These can trigger workflows and
+                    automations.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Campaign Performance */}
+          {topCampaigns && topCampaigns.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Campaign Performance</CardTitle>
+                <CardDescription>Top performing campaigns in the last {days} days</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Campaign</th>
+                        <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Sent</th>
+                        <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Opened</th>
+                        <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Clicked</th>
+                        <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Open Rate</th>
+                        <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Click Rate</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {topCampaigns.map((campaign, idx) => (
+                        <tr key={campaign.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center justify-center w-6 h-6 rounded bg-neutral-100 text-neutral-600 font-semibold text-xs">
+                                {idx + 1}
+                              </div>
+                              <span className="text-sm font-medium text-neutral-900">{campaign.subject}</span>
+                            </div>
+                          </td>
+                          <td className="text-right py-3 px-4 text-sm text-neutral-600">
+                            {campaign.sentCount.toLocaleString()}
+                          </td>
+                          <td className="text-right py-3 px-4 text-sm text-neutral-600">
+                            {campaign.openedCount.toLocaleString()}
+                          </td>
+                          <td className="text-right py-3 px-4 text-sm text-neutral-600">
+                            {campaign.clickedCount.toLocaleString()}
+                          </td>
+                          <td className="text-right py-3 px-4">
+                            <span
+                              className={`text-sm font-medium ${
+                                campaign.openRate > 30
+                                  ? 'text-green-600'
+                                  : campaign.openRate > 20
+                                    ? 'text-blue-600'
+                                    : 'text-neutral-600'
+                              }`}
+                            >
+                              {campaign.openRate.toFixed(1)}%
+                            </span>
+                          </td>
+                          <td className="text-right py-3 px-4">
+                            <span
+                              className={`text-sm font-medium ${
+                                campaign.clickRate > 5
+                                  ? 'text-green-600'
+                                  : campaign.clickRate > 3
+                                    ? 'text-blue-600'
+                                    : 'text-neutral-600'
+                              }`}
+                            >
+                              {campaign.clickRate.toFixed(1)}%
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Top Events */}
+          {topEvents && topEvents.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Events</CardTitle>
+                <CardDescription>Most frequently triggered events in the last {days} days</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {topEvents.map((event, index) => (
+                    <div key={event.name} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-neutral-100 text-neutral-600 font-semibold text-sm">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-neutral-900">{event.name}</p>
+                          <p className="text-xs text-muted-foreground">{event.count.toLocaleString()} occurrences</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`text-xs font-medium px-2 py-1 rounded-full ${
+                            event.trend > 0
+                              ? 'bg-green-100 text-green-700'
+                              : event.trend < 0
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-neutral-100 text-neutral-700'
+                          }`}
+                        >
+                          {event.trend > 0 ? '+' : ''}
+                          {event.trend}%
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
-      </div>
-    </DashboardLayout>
+      </DashboardLayout>
     </>
   );
 }

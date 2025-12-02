@@ -83,13 +83,16 @@ const ChartStyle = ({id, config}: {id: string; config: ChartConfig}) => {
   return (
     <style
       dangerouslySetInnerHTML={{
-        __html: Object.entries(config)
-          .filter(([_, config]) => config.theme || config.color)
-          .map(([key, itemConfig]) => {
-            const color = typeof itemConfig.color === 'string' ? itemConfig.color : itemConfig.color;
-            return color ? `--color-${key}: ${color};` : null;
-          })
-          .join('\n'),
+        __html: `[data-chart="${id}"] {
+${Object.entries(config)
+  .filter(([_, config]) => config.theme || config.color)
+  .map(([key, itemConfig]) => {
+    const color = typeof itemConfig.color === 'string' ? itemConfig.color : itemConfig.color;
+    return color ? `  --color-${key}: ${color};` : null;
+  })
+  .filter(Boolean)
+  .join('\n')}
+}`,
       }}
     />
   );
@@ -260,7 +263,7 @@ const ChartLegendContent = React.forwardRef<HTMLDivElement, ChartLegendContentPr
     return (
       <div
         ref={ref}
-        className={cn('flex items-center justify-center gap-4', verticalAlign === 'top' ? 'pb-3' : 'pt-3', className)}
+        className={cn('flex items-center justify-center gap-6', verticalAlign === 'top' ? 'pb-4' : 'pt-4', className)}
       >
         {payload.map((item: any) => {
           const key = `${nameKey || item.dataKey || 'value'}`;
@@ -269,19 +272,19 @@ const ChartLegendContent = React.forwardRef<HTMLDivElement, ChartLegendContentPr
           return (
             <div
               key={item.value}
-              className={cn('flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground')}
+              className={cn('flex items-center gap-2 [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:text-muted-foreground')}
             >
               {itemConfig?.icon && !hideIcon ? (
                 <itemConfig.icon />
               ) : (
                 <div
-                  className="h-2 w-2 shrink-0 rounded-[2px]"
+                  className="h-2.5 w-2.5 shrink-0 rounded-sm"
                   style={{
                     backgroundColor: item.color,
                   }}
                 />
               )}
-              <span className="text-muted-foreground">{itemConfig?.label || item.value}</span>
+              <span className="text-xs font-medium text-muted-foreground">{itemConfig?.label || item.value}</span>
             </div>
           );
         })}

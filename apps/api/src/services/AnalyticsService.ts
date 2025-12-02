@@ -166,6 +166,214 @@ export class AnalyticsService {
   }
 
   /**
+   * Get campaign statistics overview
+   * Returns aggregate stats for all campaigns in date range
+   *
+   * Performance: O(1) with indexed queries
+   * - Uses aggregation on indexed fields
+   * - Cached in Redis for 15 minutes
+   */
+  public static async getCampaignStats(
+    projectId: string,
+    startDate?: Date,
+    endDate?: Date,
+  ): Promise<{
+    total: number;
+    active: number;
+    completed: number;
+    averageOpenRate: number;
+    averageClickRate: number;
+  }> {
+    const now = new Date();
+    const defaultStartDate = new Date(now.getTime() - this.DEFAULT_DAYS_BACK * 24 * 60 * 60 * 1000);
+    const effectiveStartDate = startDate || defaultStartDate;
+    const effectiveEndDate = endDate || now;
+
+    // Check cache
+    const cacheKey = `analytics:campaignStats:${projectId}:${effectiveStartDate.toISOString()}:${effectiveEndDate.toISOString()}`;
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+
+    // Get all campaigns in date range
+    const [totalCampaigns, activeCampaigns, sentCampaigns] = await Promise.all([
+      // Total campaigns created in date range
+      prisma.campaign.count({
+        where: {
+          projectId,
+          createdAt: {
+            gte: effectiveStartDate,
+            lte: effectiveEndDate,
+          },
+        },
+      }),
+      // Active campaigns (not sent yet)
+      prisma.campaign.count({
+        where: {
+          projectId,
+          createdAt: {
+            gte: effectiveStartDate,
+            lte: effectiveEndDate,
+          },
+          status: {
+            in: ['DRAFT', 'SCHEDULED'],
+          },
+        },
+      }),
+      // Sent campaigns with stats
+      prisma.campaign.findMany({
+        where: {
+          projectId,
+          sentAt: {
+            gte: effectiveStartDate,
+            lte: effectiveEndDate,
+          },
+          status: 'SENT',
+        },
+        select: {
+          sentCount: true,
+          openedCount: true,
+          clickedCount: true,
+        },
+      }),
+    ]);
+
+    // Calculate averages
+    let totalSent = 0;
+    let totalOpened = 0;
+    let totalClicked = 0;
+
+    sentCampaigns.forEach(campaign => {
+      totalSent += campaign.sentCount || 0;
+      totalOpened += campaign.openedCount || 0;
+      totalClicked += campaign.clickedCount || 0;
+    });
+
+    const completed = sentCampaigns.length;
+    const averageOpenRate = totalSent > 0 ? (totalOpened / totalSent) * 100 : 0;
+    const averageClickRate = totalSent > 0 ? (totalClicked / totalSent) * 100 : 0;
+
+    const stats = {
+      total: totalCampaigns,
+      active: activeCampaigns,
+      completed,
+      averageOpenRate: Math.round(averageOpenRate * 10) / 10, // Round to 1 decimal
+      averageClickRate: Math.round(averageClickRate * 10) / 10,
+    };
+
+    // Cache for 15 minutes
+    await redis.setex(cacheKey, this.TIMESERIES_CACHE_TTL, JSON.stringify(stats));
+
+    return stats;
+  }
+
+  /**
+   * Get top events by frequency with trend data
+   *
+   * Performance: O(n log n) where n = number of unique events
+   * - Groups events and counts occurrences
+   * - Compares with previous period for trend calculation
+   * - Cached in Redis for 15 minutes
+   */
+  public static async getTopEvents(
+    projectId: string,
+    limit = 5,
+    startDate?: Date,
+    endDate?: Date,
+  ): Promise<
+    {
+      name: string;
+      count: number;
+      trend: number;
+    }[]
+  > {
+    const now = new Date();
+    const defaultStartDate = new Date(now.getTime() - this.DEFAULT_DAYS_BACK * 24 * 60 * 60 * 1000);
+    const effectiveStartDate = startDate || defaultStartDate;
+    const effectiveEndDate = endDate || now;
+
+    // Check cache
+    const cacheKey = `analytics:topEvents:${projectId}:${limit}:${effectiveStartDate.toISOString()}:${effectiveEndDate.toISOString()}`;
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+
+    // Calculate previous period for trend comparison
+    const periodLength = effectiveEndDate.getTime() - effectiveStartDate.getTime();
+    const previousStartDate = new Date(effectiveStartDate.getTime() - periodLength);
+    const previousEndDate = new Date(effectiveStartDate.getTime());
+
+    // Get current period events
+    const currentEvents = await prisma.event.groupBy({
+      by: ['name'],
+      where: {
+        projectId,
+        createdAt: {
+          gte: effectiveStartDate,
+          lte: effectiveEndDate,
+        },
+      },
+      _count: {
+        id: true,
+      },
+      orderBy: {
+        _count: {
+          id: 'desc',
+        },
+      },
+      take: limit,
+    });
+
+    // Get previous period events for trend calculation
+    const previousEvents = await prisma.event.groupBy({
+      by: ['name'],
+      where: {
+        projectId,
+        name: {
+          in: currentEvents.map(e => e.name),
+        },
+        createdAt: {
+          gte: previousStartDate,
+          lte: previousEndDate,
+        },
+      },
+      _count: {
+        id: true,
+      },
+    });
+
+    // Create map of previous counts
+    const previousCountMap = new Map(previousEvents.map(e => [e.name, e._count.id]));
+
+    // Calculate trends
+    const topEvents = currentEvents.map(event => {
+      const currentCount = event._count.id;
+      const previousCount = previousCountMap.get(event.name) || 0;
+
+      // Calculate percentage change
+      let trend = 0;
+      if (previousCount > 0) {
+        trend = Math.round(((currentCount - previousCount) / previousCount) * 100);
+      } else if (currentCount > 0) {
+        trend = 100; // New event, 100% increase
+      }
+
+      return {
+        name: event.name,
+        count: currentCount,
+        trend,
+      };
+    });
+
+    // Cache for 15 minutes
+    await redis.setex(cacheKey, this.TIMESERIES_CACHE_TTL, JSON.stringify(topEvents));
+
+    return topEvents;
+  }
+
+  /**
    * Fill in missing dates in time series with zero values
    * Ensures consistent daily data points even when no emails were sent
    */
