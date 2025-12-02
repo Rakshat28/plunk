@@ -320,4 +320,186 @@ export class EventService {
       console.error(`[EVENT] Error starting workflow ${workflowId}:`, error);
     }
   }
+
+  /**
+   * Check if an event is used in any segments or workflows
+   * Returns usage information including which segments/workflows use the event
+   *
+   * @param projectId - The project ID
+   * @param eventName - The event name to check (e.g., "purchase.completed", "user.signup")
+   * @returns Usage information
+   */
+  public static async getEventUsage(
+    projectId: string,
+    eventName: string,
+  ): Promise<{
+    usedInSegments: Array<{id: string; name: string}>;
+    usedInWorkflows: Array<{id: string; name: string}>;
+    totalCount: number;
+    uniqueContacts: number;
+    canDelete: boolean;
+  }> {
+    // Get all segments for the project
+    const segments = await prisma.segment.findMany({
+      where: {projectId},
+      select: {id: true, name: true, condition: true},
+    });
+
+    // Check which segments use this event
+    const usedInSegments = segments.filter(segment => {
+      const condition = segment.condition as any;
+      return this.eventUsedInCondition(eventName, condition);
+    });
+
+    // Get workflows that use this event as a trigger or wait condition
+    const workflows = await prisma.workflow.findMany({
+      where: {
+        projectId,
+        OR: [
+          // Event as trigger
+          {
+            triggerType: 'EVENT',
+            triggerConfig: {
+              path: ['eventName'],
+              equals: eventName,
+            },
+          },
+        ],
+      },
+      select: {id: true, name: true},
+    });
+
+    // Also check workflow steps that wait for events
+    const workflowStepsWithEvent = await prisma.workflowStep.findMany({
+      where: {
+        workflow: {projectId},
+        type: 'WAIT_FOR_EVENT',
+        config: {
+          path: ['eventName'],
+          equals: eventName,
+        },
+      },
+      include: {
+        workflow: {
+          select: {id: true, name: true},
+        },
+      },
+    });
+
+    const usedInWorkflows = [
+      ...workflows,
+      ...workflowStepsWithEvent.map(step => step.workflow),
+    ].reduce(
+      (acc, workflow) => {
+        // Deduplicate by id
+        if (!acc.find((w: {id: string; name: string}) => w.id === workflow.id)) {
+          acc.push(workflow);
+        }
+        return acc;
+      },
+      [] as Array<{id: string; name: string}>,
+    );
+
+    // Get event statistics
+    const [totalCount, uniqueContacts] = await Promise.all([
+      prisma.event.count({
+        where: {projectId, name: eventName},
+      }),
+      prisma.event
+        .groupBy({
+          by: ['contactId'],
+          where: {projectId, name: eventName, contactId: {not: null}},
+        })
+        .then(results => results.length),
+    ]);
+
+    const canDelete = usedInSegments.length === 0 && usedInWorkflows.length === 0;
+
+    return {
+      usedInSegments,
+      usedInWorkflows,
+      totalCount,
+      uniqueContacts,
+      canDelete,
+    };
+  }
+
+  /**
+   * Helper: Check if an event is used in a filter condition (recursive)
+   */
+  private static eventUsedInCondition(eventName: string, condition: any): boolean {
+    if (!condition || typeof condition !== 'object') {
+      return false;
+    }
+
+    // Check groups in the condition
+    if (Array.isArray(condition.groups)) {
+      for (const group of condition.groups) {
+        if (this.eventUsedInGroup(eventName, group)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Helper: Check if an event is used in a filter group (recursive)
+   */
+  private static eventUsedInGroup(eventName: string, group: any): boolean {
+    if (!group || typeof group !== 'object') {
+      return false;
+    }
+
+    // Check filters in the group
+    if (Array.isArray(group.filters)) {
+      for (const filter of group.filters) {
+        // Event filters use field name like "event.eventName"
+        if (filter.field === `event.${eventName}`) {
+          return true;
+        }
+      }
+    }
+
+    // Check nested conditions
+    if (group.conditions) {
+      return this.eventUsedInCondition(eventName, group.conditions);
+    }
+
+    return false;
+  }
+
+  /**
+   * Delete all events with a specific name
+   * WARNING: This is destructive and cannot be undone
+   * Should only be called after verifying the event is not in use
+   *
+   * @param projectId - The project ID
+   * @param eventName - The event name to delete
+   */
+  public static async deleteEvent(projectId: string, eventName: string): Promise<{deletedCount: number}> {
+    // Prevent deletion of system events
+    if (eventName.startsWith('email.') || eventName.startsWith('segment.')) {
+      throw new Error('Cannot delete system events (email.* or segment.*)');
+    }
+
+    // Check if event is in use
+    const usage = await this.getEventUsage(projectId, eventName);
+    if (!usage.canDelete) {
+      throw new Error(
+        `Cannot delete event: used in ${usage.usedInSegments.length} segment(s) and ${usage.usedInWorkflows.length} workflow(s)`,
+      );
+    }
+
+    // Delete all events with this name
+    const result = await prisma.event.deleteMany({
+      where: {
+        projectId,
+        name: eventName,
+      },
+    });
+
+    return {deletedCount: result.count};
+  }
 }

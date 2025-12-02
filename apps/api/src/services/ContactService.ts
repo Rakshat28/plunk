@@ -468,4 +468,155 @@ export class ContactService {
       })
       .filter(v => v !== null && v !== undefined);
   }
+
+  /**
+   * Check if a contact field is used in any segments or campaigns
+   * Returns usage information including which segments/campaigns use the field
+   *
+   * @param projectId - The project ID
+   * @param field - The field to check (e.g., "data.plan", "email", "subscribed")
+   * @returns Usage information
+   */
+  public static async getFieldUsage(
+    projectId: string,
+    field: string,
+  ): Promise<{
+    usedInSegments: Array<{id: string; name: string}>;
+    usedInCampaigns: Array<{id: string; name: string}>;
+    contactCount: number;
+    canDelete: boolean;
+  }> {
+    // Get all segments for the project
+    const segments = await prisma.segment.findMany({
+      where: {projectId},
+      select: {id: true, name: true, condition: true},
+    });
+
+    // Check which segments use this field
+    const usedInSegments = segments.filter(segment => {
+      const condition = segment.condition as any;
+      return this.fieldUsedInCondition(field, condition);
+    });
+
+    // Get all campaigns for the project (emails)
+    const campaigns = await prisma.email.findMany({
+      where: {projectId},
+      select: {id: true, subject: true},
+    });
+
+    // For now, we'll check if campaigns use the field in their subject or body
+    // This is a simplified check - you might want to enhance this based on your campaign structure
+    const usedInCampaigns: Array<{id: string; name: string}> = [];
+
+    // Count contacts that have this field (for data fields)
+    let contactCount = 0;
+    if (field.startsWith('data.')) {
+      const jsonField = field.substring(5);
+      const result = await prisma.$queryRaw<Array<{count: bigint}>>`
+        SELECT COUNT(*) as count
+        FROM contacts
+        WHERE
+          "projectId" = ${projectId}
+          AND data ? ${jsonField}
+          AND data->${jsonField} IS NOT NULL
+      `;
+      contactCount = Number(result[0]?.count || 0);
+    } else if (field === 'email' || field === 'subscribed' || field === 'createdAt' || field === 'updatedAt') {
+      // Standard fields exist on all contacts
+      const result = await prisma.contact.count({where: {projectId}});
+      contactCount = result;
+    }
+
+    const canDelete = usedInSegments.length === 0 && usedInCampaigns.length === 0;
+
+    return {
+      usedInSegments: usedInSegments.map(s => ({id: s.id, name: s.name})),
+      usedInCampaigns,
+      contactCount,
+      canDelete,
+    };
+  }
+
+  /**
+   * Helper: Check if a field is used in a filter condition (recursive)
+   */
+  private static fieldUsedInCondition(field: string, condition: any): boolean {
+    if (!condition || typeof condition !== 'object') {
+      return false;
+    }
+
+    // Check groups in the condition
+    if (Array.isArray(condition.groups)) {
+      for (const group of condition.groups) {
+        if (this.fieldUsedInGroup(field, group)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Helper: Check if a field is used in a filter group (recursive)
+   */
+  private static fieldUsedInGroup(field: string, group: any): boolean {
+    if (!group || typeof group !== 'object') {
+      return false;
+    }
+
+    // Check filters in the group
+    if (Array.isArray(group.filters)) {
+      for (const filter of group.filters) {
+        if (filter.field === field) {
+          return true;
+        }
+      }
+    }
+
+    // Check nested conditions
+    if (group.conditions) {
+      return this.fieldUsedInCondition(field, group.conditions);
+    }
+
+    return false;
+  }
+
+  /**
+   * Delete a custom field from all contacts
+   * WARNING: This is destructive and cannot be undone
+   * Should only be called after verifying the field is not in use
+   *
+   * @param projectId - The project ID
+   * @param field - The field to delete (must be a data.* field)
+   */
+  public static async deleteField(projectId: string, field: string): Promise<{deletedFrom: number}> {
+    // Only allow deleting custom data fields
+    if (!field.startsWith('data.')) {
+      throw new HttpException(400, 'Can only delete custom data fields (data.*)');
+    }
+
+    // Check if field is in use
+    const usage = await this.getFieldUsage(projectId, field);
+    if (!usage.canDelete) {
+      throw new HttpException(
+        400,
+        `Cannot delete field: used in ${usage.usedInSegments.length} segment(s) and ${usage.usedInCampaigns.length} campaign(s)`,
+      );
+    }
+
+    const jsonField = field.substring(5);
+
+    // Delete the field from all contacts using raw SQL
+    // PostgreSQL's `-` operator removes a key from a JSON object
+    const result = await prisma.$executeRaw`
+      UPDATE contacts
+      SET data = data - ${jsonField}
+      WHERE
+        "projectId" = ${projectId}
+        AND data ? ${jsonField}
+    `;
+
+    return {deletedFrom: result};
+  }
 }

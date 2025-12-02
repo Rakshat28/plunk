@@ -32,7 +32,7 @@ import {
 } from '@plunk/ui';
 import {AnimatePresence, motion} from 'framer-motion';
 import {NextSeo} from 'next-seo';
-import {AlertTriangle, CreditCard, Globe, Mail, Settings as SettingsIcon} from 'lucide-react';
+import {AlertTriangle, CreditCard, Database, Globe, Mail, Settings as SettingsIcon} from 'lucide-react';
 import type {z} from 'zod';
 import {useRouter} from 'next/router';
 import {DashboardLayout} from '../../components/DashboardLayout';
@@ -43,12 +43,13 @@ import {BillingInvoices} from '../../components/BillingInvoices';
 import {UnpaidInvoiceBanner} from '../../components/UnpaidInvoiceBanner';
 import {ApiKeyDisplay} from '../../components/ApiKeyDisplay';
 import {SmtpSettings} from '../../components/SmtpSettings';
+import {DataManagementSettings} from '../../components/DataManagementSettings';
 import {useActiveProject} from '../../lib/contexts/ActiveProjectProvider';
 import {network} from '../../lib/network';
 import {useProjects} from '../../lib/hooks/useProject';
 import {useConfig} from '../../lib/hooks/useConfig';
 
-type TabId = 'general' | 'billing' | 'domains' | 'smtp';
+type TabId = 'general' | 'billing' | 'domains' | 'smtp' | 'data';
 
 interface Tab {
   id: TabId;
@@ -64,6 +65,7 @@ const buildTabs = (options: {billingEnabled: boolean; smtpEnabled: boolean}): Ta
     {id: 'billing', label: 'Billing', icon: CreditCard, condition: billingEnabled},
     {id: 'domains', label: 'Domains', icon: Globe},
     {id: 'smtp', label: 'SMTP', icon: Mail, condition: smtpEnabled},
+    {id: 'data', label: 'Data', icon: Database},
   ];
   return allTabs.filter(tab => tab.condition !== false);
 };
@@ -512,6 +514,11 @@ export default function Settings() {
           {/* SMTP Tab */}
           <TabsContent value="smtp">
             <SmtpSettings smtpConfig={smtpConfig} />
+          </TabsContent>
+
+          {/* Data Management Tab */}
+          <TabsContent value="data">
+            <DataManagementSettings />
           </TabsContent>
         </Tabs>
       </div>

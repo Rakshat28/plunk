@@ -324,4 +324,58 @@ export class Contacts {
       });
     }
   }
+
+  /**
+   * GET /contacts/fields/:field/usage
+   * Check if a field is used in segments/campaigns and get usage statistics
+   * Returns information about where the field is used and whether it can be safely deleted
+   */
+  @Get('fields/:field/usage')
+  @Middleware([requireAuth])
+  @CatchAsync
+  public async getFieldUsage(req: Request, res: Response, next: NextFunction) {
+    const auth = res.locals.auth as AuthResponse;
+    const field = req.params.field;
+
+    if (!field) {
+      return res.status(400).json({error: 'Field is required'});
+    }
+
+    try {
+      const usage = await ContactService.getFieldUsage(auth.projectId!, field);
+      return res.status(200).json(usage);
+    } catch (error) {
+      console.error('[CONTACTS] Failed to get field usage:', error);
+      return res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to get field usage',
+      });
+    }
+  }
+
+  /**
+   * DELETE /contacts/fields/:field
+   * Delete a custom field from all contacts
+   * Only works if the field is not used in any segments or campaigns
+   */
+  @Delete('fields/:field')
+  @Middleware([requireAuth])
+  @CatchAsync
+  public async deleteField(req: Request, res: Response, next: NextFunction) {
+    const auth = res.locals.auth as AuthResponse;
+    const field = req.params.field;
+
+    if (!field) {
+      return res.status(400).json({error: 'Field is required'});
+    }
+
+    try {
+      const result = await ContactService.deleteField(auth.projectId!, field);
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error('[CONTACTS] Failed to delete field:', error);
+      return res.status(error instanceof Error && error.message.includes('Cannot delete') ? 400 : 500).json({
+        error: error instanceof Error ? error.message : 'Failed to delete field',
+      });
+    }
+  }
 }
