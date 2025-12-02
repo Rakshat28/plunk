@@ -401,10 +401,14 @@ describe('EmailService', () => {
         expect(clicked?.clicks).toBe(1);
       });
 
-      it('should transition to BOUNCED on bounce webhook', async () => {
+      it('should transition to BOUNCED on bounce webhook and unsubscribe contact', async () => {
+        const contact = await factories.createContact({
+          projectId,
+          subscribed: true,
+        });
         const email = await factories.createEmail({
           projectId,
-          contactId,
+          contactId: contact.id,
           status: EmailStatus.SENT,
         });
 
@@ -416,6 +420,23 @@ describe('EmailService', () => {
 
         expect(bounced?.status).toBe(EmailStatus.BOUNCED);
         expect(bounced?.bouncedAt).not.toBeNull();
+
+        // Verify contact was unsubscribed
+        const unsubscribedContact = await prisma.contact.findUnique({
+          where: {id: contact.id},
+        });
+        expect(unsubscribedContact?.subscribed).toBe(false);
+
+        // Verify unsubscription event was tracked
+        const event = await prisma.event.findFirst({
+          where: {
+            projectId,
+            contactId: contact.id,
+            name: 'contact.unsubscribed',
+          },
+        });
+        expect(event).not.toBeNull();
+        expect(event?.data).toMatchObject({reason: 'bounce'});
       });
     });
   });

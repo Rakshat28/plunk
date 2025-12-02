@@ -459,16 +459,33 @@ export class EmailService {
       case 'bounced':
         updateData.status = EmailStatus.BOUNCED;
         updateData.bouncedAt = now;
+        // Unsubscribe contact on bounce and track event
+        if (email.contactId) {
+          await prisma.contact.update({
+            where: {id: email.contactId},
+            data: {subscribed: false},
+          });
+          // Track unsubscription event
+          const {EventService} = await import('./EventService.js');
+          await EventService.trackEvent(email.projectId, 'contact.unsubscribed', email.contactId, email.id, {
+            reason: 'bounce',
+          });
+        }
         break;
 
       case 'complained':
         updateData.status = EmailStatus.COMPLAINED;
         updateData.complainedAt = now;
-        // Unsubscribe contact
+        // Unsubscribe contact and track event
         if (email.contactId) {
           await prisma.contact.update({
             where: {id: email.contactId},
             data: {subscribed: false},
+          });
+          // Track unsubscription event
+          const {EventService} = await import('./EventService.js');
+          await EventService.trackEvent(email.projectId, 'contact.unsubscribed', email.contactId, email.id, {
+            reason: 'complaint',
           });
         }
         break;

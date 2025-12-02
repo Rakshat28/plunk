@@ -128,7 +128,7 @@ export class ContactService {
     data: {email?: string; data?: Prisma.JsonValue; subscribed?: boolean},
   ): Promise<Contact> {
     // First verify contact exists and belongs to project
-    await this.get(projectId, contactId);
+    const existing = await this.get(projectId, contactId);
 
     const updateData: Prisma.ContactUpdateInput = {};
 
@@ -142,11 +142,28 @@ export class ContactService {
       updateData.subscribed = data.subscribed;
     }
 
+    // Track subscription status change
+    const isSubscriptionChanging =
+      data.subscribed !== undefined && existing.subscribed !== data.subscribed;
+    const wasSubscribed = existing.subscribed;
+
     try {
-      return await prisma.contact.update({
+      const updated = await prisma.contact.update({
         where: {id: contactId},
         data: updateData,
       });
+
+      // Track subscription event if status changed
+      if (isSubscriptionChanging) {
+        const {EventService} = await import('./EventService.js');
+        if (data.subscribed && !wasSubscribed) {
+          await EventService.trackEvent(projectId, 'contact.subscribed', contactId);
+        } else if (!data.subscribed && wasSubscribed) {
+          await EventService.trackEvent(projectId, 'contact.unsubscribed', contactId);
+        }
+      }
+
+      return updated;
     } catch (error) {
       // Check if this is a unique constraint violation (P2002)
       if (error instanceof Error && 'code' in error && error.code === 'P2002') {
@@ -231,13 +248,30 @@ export class ContactService {
     }
 
     if (existing) {
-      return prisma.contact.update({
+      // Track subscription status change
+      const isSubscriptionChanging =
+        subscribed !== undefined && existing.subscribed !== subscribed;
+      const wasSubscribed = existing.subscribed;
+
+      const updated = await prisma.contact.update({
         where: {id: existing.id},
         data: {
           data: Object.keys(mergedData).length > 0 ? (mergedData as Prisma.InputJsonValue) : Prisma.JsonNull,
           ...(subscribed !== undefined ? {subscribed} : {}),
         },
       });
+
+      // Track subscription event if status changed
+      if (isSubscriptionChanging) {
+        const {EventService} = await import('./EventService.js');
+        if (subscribed && !wasSubscribed) {
+          await EventService.trackEvent(projectId, 'contact.subscribed', updated.id);
+        } else if (!subscribed && wasSubscribed) {
+          await EventService.trackEvent(projectId, 'contact.unsubscribed', updated.id);
+        }
+      }
+
+      return updated;
     } else {
       return prisma.contact.create({
         data: {
@@ -311,20 +345,32 @@ export class ContactService {
    * PUBLIC: Subscribe a contact
    */
   public static async subscribe(contactId: string): Promise<Contact> {
-    return prisma.contact.update({
+    const contact = await prisma.contact.update({
       where: {id: contactId},
       data: {subscribed: true},
     });
+
+    // Track subscription event
+    const {EventService} = await import('./EventService.js');
+    await EventService.trackEvent(contact.projectId, 'contact.subscribed', contactId);
+
+    return contact;
   }
 
   /**
    * PUBLIC: Unsubscribe a contact
    */
   public static async unsubscribe(contactId: string): Promise<Contact> {
-    return prisma.contact.update({
+    const contact = await prisma.contact.update({
       where: {id: contactId},
       data: {subscribed: false},
     });
+
+    // Track unsubscription event
+    const {EventService} = await import('./EventService.js');
+    await EventService.trackEvent(contact.projectId, 'contact.unsubscribed', contactId);
+
+    return contact;
   }
 
   /**
