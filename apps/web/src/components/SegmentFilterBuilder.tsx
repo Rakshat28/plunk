@@ -161,7 +161,7 @@ function FilterRow({filter, onChange, onRemove, availableFields}: FilterRowProps
 
     // Determine default operator and value based on new field type
     let newOperator = filter.operator;
-    let newValue: any = undefined;
+    let newValue: string | number | boolean | undefined = undefined;
     let newUnit: 'days' | 'hours' | 'minutes' | undefined = undefined;
 
     if (isEvent && !currentOperatorIsEvent) {
@@ -361,7 +361,7 @@ function FilterRow({filter, onChange, onRemove, availableFields}: FilterRowProps
               const oldNeedsUnit = ['within', 'triggeredWithin'].includes(oldOperator);
               const newNeedsUnit = ['within', 'triggeredWithin'].includes(newOperator);
 
-              let updatedFilter: SegmentFilter = {...filter, operator: newOperator};
+              const updatedFilter: SegmentFilter = {...filter, operator: newOperator};
 
               // Clear value if new operator doesn't need one
               if (!newNeedsValue && oldNeedsValue) {
