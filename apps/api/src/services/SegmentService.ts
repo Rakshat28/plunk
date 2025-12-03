@@ -180,12 +180,12 @@ export class SegmentService {
     // First verify segment exists and belongs to project
     await this.get(projectId, segmentId);
 
-    // Check if segment is used in any campaigns
+    // Check if segment is used in any active campaigns
     const campaignsUsingSegment = await prisma.campaign.count({
       where: {
         segmentId,
         status: {
-          not: 'SENT', // Allow deletion if all campaigns using it are completed
+          in: ['DRAFT', 'SCHEDULED', 'SENDING'],
         },
       },
     });

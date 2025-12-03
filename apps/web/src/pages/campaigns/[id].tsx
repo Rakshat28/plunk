@@ -14,6 +14,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   Input,
   Label,
   Select,
@@ -32,7 +36,7 @@ import {EmailEditor} from '../../components/EmailEditor';
 import {network} from '../../lib/network';
 import {formatFullDateTime, formatUTCDateTime, getUserTimezone, schedulePresets} from '../../lib/dateUtils';
 import {useChangeTracking} from '../../lib/hooks/useChangeTracking';
-import {ArrowLeft, Calendar, Mail, MousePointer, Save, Send, TestTube, TrendingUp, Users, XCircle} from 'lucide-react';
+import {ArrowLeft, Calendar, ChevronDown, Mail, MousePointer, Save, Send, TestTube, Trash2, TrendingUp, Users, XCircle} from 'lucide-react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
@@ -91,6 +95,7 @@ export default function CampaignDetailsPage() {
   const [sendingTestEmail, setSendingTestEmail] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showSendDialog, setShowSendDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // Automatically initialize edit fields when campaign is loaded and is a draft
   const isEditMode = campaign?.data.status === CampaignStatus.DRAFT;
@@ -102,6 +107,16 @@ export default function CampaignDetailsPage() {
       void mutate();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to cancel campaign');
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await network.fetch('DELETE', `/campaigns/${id}`);
+      toast.success('Campaign deleted successfully');
+      void router.push('/campaigns');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete campaign');
     }
   };
 
@@ -322,22 +337,37 @@ export default function CampaignDetailsPage() {
               {!hasChanges && !isSubmitting && <span className="text-sm text-neutral-500">All changes saved</span>}
               {hasChanges && !isSubmitting && <span className="text-sm text-amber-600">Unsaved changes</span>}
               <div className="flex gap-2">
+                <Button type="button" variant="destructive" onClick={() => setShowDeleteDialog(true)}>
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </Button>
                 <Button type="submit" disabled={!hasChanges || isSubmitting} variant="outline">
                   <Save className="h-4 w-4" />
                   {isSubmitting ? 'Saving...' : 'Save'}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setIsTestEmailDialogOpen(true)}>
-                  <TestTube className="h-4 w-4" />
-                  Send Test
-                </Button>
-                <Button type="button" onClick={() => setShowSendDialog(true)}>
-                  <Send className="h-4 w-4" />
-                  Send Now
-                </Button>
-                <Button type="button" variant="outline" onClick={() => setIsScheduleDialogOpen(true)}>
-                  <Calendar className="h-4 w-4" />
-                  Schedule
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button type="button">
+                      <Send className="h-4 w-4" />
+                      Send
+                      <ChevronDown className="h-4 w-4 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setIsTestEmailDialogOpen(true)}>
+                      <TestTube className="h-4 w-4 mr-2" />
+                      Send Test Email
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowSendDialog(true)}>
+                      <Send className="h-4 w-4 mr-2" />
+                      Send Now
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsScheduleDialogOpen(true)}>
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Schedule for Later
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </div>
@@ -679,6 +709,16 @@ export default function CampaignDetailsPage() {
           description="Are you sure you want to send this campaign now? This action cannot be undone."
           confirmText="Send Now"
           variant="default"
+        />
+
+        <ConfirmDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          onConfirm={handleDelete}
+          title="Delete Campaign"
+          description="Are you sure you want to delete this draft campaign? This action cannot be undone."
+          confirmText="Delete Campaign"
+          variant="destructive"
         />
       </DashboardLayout>
     );

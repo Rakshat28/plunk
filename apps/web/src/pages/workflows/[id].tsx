@@ -38,7 +38,6 @@ import {
   Info,
   LogOut,
   Mail,
-  Play,
   Plus,
   Power,
   PowerOff,
@@ -115,11 +114,11 @@ export default function WorkflowEditorPage() {
   const {id} = router.query;
   const [activeTab, setActiveTab] = useState<'builder' | 'executions'>('builder');
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
-  const [showTestDialog, setShowTestDialog] = useState(false);
   const [editingStep, setEditingStep] = useState<WorkflowStep | null>(null);
   const [showCancelAllDialog, setShowCancelAllDialog] = useState(false);
   const [executionToCancel, setExecutionToCancel] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const {data: workflow, mutate} = useSWR<WorkflowWithDetails>(id ? `/workflows/${id}` : null, {
     revalidateOnFocus: false,
@@ -326,6 +325,16 @@ export default function WorkflowEditorPage() {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      await network.fetch('DELETE', `/workflows/${id}`);
+      toast.success('Workflow deleted successfully');
+      void router.push('/workflows');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete workflow');
+    }
+  };
+
   // Listen for edit step events from the WorkflowBuilder
   useEffect(() => {
     const handleEditStepEvent = (event: Event) => {
@@ -406,13 +415,13 @@ export default function WorkflowEditorPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => setShowTestDialog(true)}>
-              <Play className="h-4 w-4" />
-              Test
-            </Button>
             <Button variant="outline" onClick={() => setShowSettingsDialog(true)}>
               <Settings className="h-4 w-4" />
               Settings
+            </Button>
+            <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
+              <Trash2 className="h-4 w-4" />
+              Delete
             </Button>
             <Button onClick={handleToggleEnabled}>
               {workflow.enabled ? (
@@ -653,7 +662,6 @@ export default function WorkflowEditorPage() {
             onOpenChange={setShowSettingsDialog}
             onSave={handleUpdateSettings}
           />
-          <TestWorkflowDialog open={showTestDialog} onOpenChange={setShowTestDialog} workflowId={id as string} />
           {editingStep && (
             <EditStepDialog
               step={editingStep}
@@ -721,6 +729,17 @@ export default function WorkflowEditorPage() {
             cancelText="Keep Running"
             variant="destructive"
             isLoading={isCancelling}
+          />
+
+          {/* Delete Workflow Confirmation */}
+          <ConfirmDialog
+            open={showDeleteDialog}
+            onOpenChange={setShowDeleteDialog}
+            onConfirm={handleDelete}
+            title="Delete Workflow"
+            description="Are you sure you want to delete this workflow? This action cannot be undone."
+            confirmText="Delete Workflow"
+            variant="destructive"
           />
         </>
       )}
@@ -795,93 +814,6 @@ function SettingsDialog({workflow, open, onOpenChange, onSave}: SettingsDialogPr
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// Test Workflow Dialog Component
-interface TestWorkflowDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  workflowId: string;
-}
-
-function TestWorkflowDialog({open, onOpenChange, workflowId}: TestWorkflowDialogProps) {
-  const [email, setEmail] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      // First, find or create the contact
-      const contacts = await network.fetch<{contacts: {id: string; email: string}[]}>(
-        'GET',
-        `/contacts?search=${email}`,
-      );
-      let contactId = contacts.contacts.find(c => c.email === email)?.id;
-
-      if (!contactId) {
-        const newContact = await network.fetch<{id: string}, typeof ContactSchemas.create>('POST', '/contacts', {
-          email,
-          subscribed: true,
-        });
-        contactId = newContact.id;
-      }
-
-      // Start workflow execution
-      await network.fetch<WorkflowExecution, typeof WorkflowSchemas.startExecution>(
-        'POST',
-        `/workflows/${workflowId}/executions`,
-        {
-          contactId,
-        },
-      );
-
-      toast.success('Workflow test started successfully');
-      setEmail('');
-      onOpenChange(false);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to start workflow test');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Test Workflow</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="email">Test Email Address *</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-              placeholder="test@example.com"
-            />
-            <p className="text-xs text-neutral-500 mt-1">
-              The workflow will be executed for this email address. If the contact doesn&apos;t exist, it will be
-              created.
-            </p>
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Starting...' : 'Start Test'}
             </Button>
           </DialogFooter>
         </form>

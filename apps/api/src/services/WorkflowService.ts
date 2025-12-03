@@ -242,6 +242,16 @@ export class WorkflowService {
     // Verify workflow exists and belongs to project
     const workflow = await this.get(projectId, workflowId);
 
+    // Check if workflow has active executions
+    const activeExecutions = await this.hasActiveExecutions(workflowId);
+
+    if (activeExecutions > 0) {
+      throw new HttpException(
+        409,
+        `Cannot delete workflow: it has ${activeExecutions} active execution(s). Please wait for them to complete or cancel them first.`,
+      );
+    }
+
     await prisma.workflow.delete({
       where: {id: workflowId},
     });

@@ -14,6 +14,11 @@ interface TypedSchema extends ZodSchema {
 
 interface ApiResponse {
   message?: string;
+  error?: {
+    message?: string;
+    code?: string;
+    [key: string]: unknown;
+  };
 
   [key: string]: unknown;
 }
@@ -52,7 +57,9 @@ export class network {
     const res = (await response.json()) as ApiResponse;
 
     if (response.status >= 400) {
-      throw new Error(res.message ?? 'Something went wrong!');
+      // Extract error message from standardized error response or fall back to direct message property
+      const errorMessage = res.error?.message ?? res.message ?? 'Something went wrong!';
+      throw new Error(errorMessage);
     }
 
     return res as T;
@@ -84,7 +91,9 @@ export class network {
     const res = (await response.json()) as ApiResponse;
 
     if (response.status >= 400) {
-      throw new Error(res.message ?? 'Something went wrong!');
+      // Extract error message from standardized error response or fall back to direct message property
+      const errorMessage = res.error?.message ?? res.message ?? 'Something went wrong!';
+      throw new Error(errorMessage);
     }
 
     return res as T;

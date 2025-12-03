@@ -11,6 +11,17 @@ interface TypedSchema extends ZodSchema {
   _type: unknown;
 }
 
+interface ApiResponse {
+  message?: string;
+  error?: {
+    message?: string;
+    code?: string;
+    [key: string]: unknown;
+  };
+
+  [key: string]: unknown;
+}
+
 export class network {
   /**
    * Fetcher function that includes toast support
@@ -31,13 +42,14 @@ export class network {
       credentials: 'include',
     });
 
-    const res = await response.json();
+    const res = (await response.json()) as ApiResponse;
 
     if (response.status >= 400) {
-       
-      throw new Error(res?.message ?? 'Something went wrong!');
+      // Extract error message from standardized error response or fall back to direct message property
+      const errorMessage = res.error?.message ?? res.message ?? 'Something went wrong!';
+      throw new Error(errorMessage);
     }
 
-    return res;
+    return res as T;
   }
 }

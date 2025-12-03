@@ -116,6 +116,11 @@ export class CampaignService {
     }
 
     if (data.segmentId !== undefined) {
+      // Prevent changing segment on scheduled campaigns
+      if (campaign.status === CampaignStatus.SCHEDULED) {
+        throw new HttpException(400, 'Cannot change segment for scheduled campaigns');
+      }
+
       if (data.segmentId) {
         const segment = await prisma.segment.findFirst({
           where: {id: data.segmentId, projectId},

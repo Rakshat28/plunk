@@ -109,7 +109,28 @@ export class DomainService {
       );
     }
 
-    // Check if domain is used in any campaigns
+    // Check if domain is used in any workflow steps (via templates)
+    const workflowStepsUsingDomain = await prisma.workflowStep.count({
+      where: {
+        workflow: {
+          projectId: domain.projectId,
+        },
+        template: {
+          from: {
+            contains: `@${domainName}`,
+          },
+        },
+      },
+    });
+
+    if (workflowStepsUsingDomain > 0) {
+      throw new HttpException(
+        409,
+        `Cannot delete domain: it is currently used in ${workflowStepsUsingDomain} workflow step(s). Update the workflow templates first.`,
+      );
+    }
+
+    // Check if domain is used in any active campaigns
     const campaignsUsingDomain = await prisma.campaign.count({
       where: {
         projectId: domain.projectId,
@@ -117,7 +138,7 @@ export class DomainService {
           contains: `@${domainName}`,
         },
         status: {
-          not: 'SENT', // Allow deletion if all campaigns using it are completed
+          in: ['DRAFT', 'SCHEDULED', 'SENDING'],
         },
       },
     });

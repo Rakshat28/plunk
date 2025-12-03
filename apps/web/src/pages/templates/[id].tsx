@@ -5,6 +5,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  ConfirmDialog,
   Input,
   Label,
   Select,
@@ -20,7 +21,7 @@ import {EmailSettings} from '../../components/EmailSettings';
 import {EmailEditor} from '../../components/EmailEditor';
 import {network} from '../../lib/network';
 import {useChangeTracking} from '../../lib/hooks/useChangeTracking';
-import {ArrowLeft, Save} from 'lucide-react';
+import {ArrowLeft, Save, Trash2} from 'lucide-react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
@@ -38,67 +39,63 @@ export default function TemplateEditorPage() {
     revalidateOnFocus: false,
   });
 
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [subject, setSubject] = useState('');
-  const [from, setFrom] = useState('');
-  const [fromName, setFromName] = useState('');
-  const [replyTo, setReplyTo] = useState('');
-  const [body, setBody] = useState('');
-  const [type, setType] = useState<'MARKETING' | 'TRANSACTIONAL'>('MARKETING');
+  const [editedTemplate, setEditedTemplate] = useState<Partial<Template>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  // Load template data into form
+  // Initialize edit fields when template loads
   useEffect(() => {
-    if (template) {
-      setName(template.name);
-      setDescription(template.description ?? '');
-      setSubject(template.subject);
-      setFrom(template.from);
-      setFromName(template.fromName ?? '');
-      setReplyTo(template.replyTo ?? '');
-      setBody(template.body);
-      setType(template.type);
+    if (template && Object.keys(editedTemplate).length === 0) {
+      setEditedTemplate({
+        name: template.name,
+        description: template.description || '',
+        subject: template.subject,
+        body: template.body,
+        from: template.from,
+        fromName: template.fromName || '',
+        replyTo: template.replyTo || '',
+        type: template.type,
+      });
       // Reset hasChanges when loading fresh data
       setHasChanges(false);
     }
-  }, [template]);
+  }, [template, editedTemplate]);
 
   // Track changes
   useEffect(() => {
-    if (!template) return;
+    if (!template || Object.keys(editedTemplate).length === 0) return;
 
     const changed =
-      name !== template.name ||
-      description !== (template.description ?? '') ||
-      subject !== template.subject ||
-      from !== template.from ||
-      fromName !== (template.fromName ?? '') ||
-      replyTo !== (template.replyTo ?? '') ||
-      body !== template.body ||
-      type !== template.type;
+      editedTemplate.name !== template.name ||
+      (editedTemplate.description || '') !== (template.description || '') ||
+      editedTemplate.subject !== template.subject ||
+      editedTemplate.body !== template.body ||
+      editedTemplate.from !== template.from ||
+      (editedTemplate.fromName || '') !== (template.fromName || '') ||
+      (editedTemplate.replyTo || '') !== (template.replyTo || '') ||
+      editedTemplate.type !== template.type;
 
     setHasChanges(changed);
-  }, [name, description, subject, from, fromName, replyTo, body, type, template]);
+  }, [editedTemplate, template]);
 
   // Warn before leaving page with unsaved changes
   useChangeTracking(hasChanges);
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setIsSubmitting(true);
 
     try {
       await network.fetch<Template, typeof TemplateSchemas.update>('PATCH', `/templates/${id}`, {
-        name,
-        description: description || undefined,
-        subject,
-        body,
-        from,
-        fromName: fromName || undefined,
-        replyTo: replyTo || undefined,
-        type,
+        name: editedTemplate.name,
+        description: editedTemplate.description || undefined,
+        subject: editedTemplate.subject,
+        body: editedTemplate.body,
+        from: editedTemplate.from,
+        fromName: editedTemplate.fromName || undefined,
+        replyTo: editedTemplate.replyTo || undefined,
+        type: editedTemplate.type,
       });
 
       // Silent save - no toast notification
@@ -108,6 +105,16 @@ export default function TemplateEditorPage() {
       toast.error(error instanceof Error ? error.message : 'Failed to save template');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await network.fetch('DELETE', `/templates/${id}`);
+      toast.success('Template deleted successfully');
+      void router.push('/templates');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete template');
     }
   };
 
@@ -155,6 +162,10 @@ export default function TemplateEditorPage() {
           <div className="flex items-center gap-3">
             {!hasChanges && !isSubmitting && <span className="text-sm text-neutral-500">All changes saved</span>}
             {hasChanges && !isSubmitting && <span className="text-sm text-amber-600">Unsaved changes</span>}
+            <Button type="button" variant="destructive" onClick={() => setShowDeleteDialog(true)}>
+              <Trash2 className="h-4 w-4" />
+              Delete
+            </Button>
             <Button type="submit" disabled={!hasChanges || isSubmitting}>
               <Save className="h-4 w-4" />
               {isSubmitting ? 'Saving...' : 'Save Changes'}
@@ -177,8 +188,8 @@ export default function TemplateEditorPage() {
                   <Input
                     id="name"
                     type="text"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
+                    value={editedTemplate.name || ''}
+                    onChange={e => setEditedTemplate({...editedTemplate, name: e.target.value})}
                     required
                     placeholder="Welcome Email"
                   />
@@ -189,15 +200,18 @@ export default function TemplateEditorPage() {
                   <Input
                     id="description"
                     type="text"
-                    value={description}
-                    onChange={e => setDescription(e.target.value)}
+                    value={editedTemplate.description || ''}
+                    onChange={e => setEditedTemplate({...editedTemplate, description: e.target.value})}
                     placeholder="Sent to new subscribers"
                   />
                 </div>
 
                 <div>
                   <Label htmlFor="type">Type *</Label>
-                  <Select value={type} onValueChange={value => setType(value as 'MARKETING' | 'TRANSACTIONAL')}>
+                  <Select
+                    value={editedTemplate.type}
+                    onValueChange={value => setEditedTemplate({...editedTemplate, type: value as 'MARKETING' | 'TRANSACTIONAL'})}
+                  >
                     <SelectTrigger id="type">
                       <SelectValue />
                     </SelectTrigger>
@@ -216,8 +230,8 @@ export default function TemplateEditorPage() {
                   <Input
                     id="subject"
                     type="text"
-                    value={subject}
-                    onChange={e => setSubject(e.target.value)}
+                    value={editedTemplate.subject || ''}
+                    onChange={e => setEditedTemplate({...editedTemplate, subject: e.target.value})}
                     required
                     placeholder="Welcome to our platform!"
                   />
@@ -225,12 +239,12 @@ export default function TemplateEditorPage() {
                 </div>
 
                 <EmailSettings
-                  from={from}
-                  fromName={fromName}
-                  replyTo={replyTo}
-                  onFromChange={setFrom}
-                  onFromNameChange={setFromName}
-                  onReplyToChange={setReplyTo}
+                  from={editedTemplate.from || ''}
+                  fromName={editedTemplate.fromName || ''}
+                  replyTo={editedTemplate.replyTo || ''}
+                  onFromChange={value => setEditedTemplate({...editedTemplate, from: value})}
+                  onFromNameChange={value => setEditedTemplate({...editedTemplate, fromName: value})}
+                  onReplyToChange={value => setEditedTemplate({...editedTemplate, replyTo: value})}
                   fromNamePlaceholder={activeProject?.name || 'Your Company'}
                   showFromNameHelpText
                   layout="vertical"
@@ -248,16 +262,13 @@ export default function TemplateEditorPage() {
               </CardHeader>
               <CardContent>
                 <EmailEditor
-                  value={body}
-                  onChange={newBody => {
-                    setBody(newBody);
-                    setHasChanges(true);
-                  }}
+                  value={editedTemplate.body || ''}
+                  onChange={body => setEditedTemplate({...editedTemplate, body})}
                   placeholder="<h1>Welcome!</h1><p>Thanks for subscribing to our newsletter.</p>"
                   canUploadImages={true}
-                  subject={subject}
-                  from={from}
-                  replyTo={replyTo}
+                  subject={editedTemplate.subject}
+                  from={editedTemplate.from}
+                  replyTo={editedTemplate.replyTo || undefined}
                 />
               </CardContent>
             </Card>
@@ -267,6 +278,17 @@ export default function TemplateEditorPage() {
 
       {/* Sticky Save Bar */}
       <StickySaveBar hasChanges={hasChanges} isSubmitting={isSubmitting} onSave={handleSave} />
+
+      {/* Delete Template Confirmation */}
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={handleDelete}
+        title="Delete Template"
+        description="Are you sure you want to delete this template? This action cannot be undone."
+        confirmText="Delete Template"
+        variant="destructive"
+      />
     </DashboardLayout>
   );
 }

@@ -1,5 +1,6 @@
 import {useActiveProject} from '../lib/contexts/ActiveProjectProvider';
 import {useUser} from '../lib/hooks/useUser';
+import {network} from '../lib/network';
 import {
   Activity,
   BarChart3,
@@ -60,7 +61,7 @@ const navigation: NavSection[] = [
 
 export function DashboardLayout({children}: DashboardLayoutProps) {
   const router = useRouter();
-  const {data: user} = useUser();
+  const {data: user, mutate: mutateUser} = useUser();
   const {activeProject, availableProjects, setActiveProject} = useActiveProject();
   const [showProjectMenu, setShowProjectMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -86,10 +87,31 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
     }
   }, [showProjectMenu, showUserMenu]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('activeProjectId');
-    void router.push('/auth/login');
+  const handleLogout = async () => {
+    try {
+      // Call the logout endpoint to clear the cookie
+      await network.fetch('GET', '/auth/logout');
+
+      // Clear local storage
+      localStorage.removeItem('token');
+      localStorage.removeItem('activeProjectId');
+
+      // Clear SWR cache for user data
+      await mutateUser(null, false);
+
+      // Close the menu
+      setShowUserMenu(false);
+
+      // Redirect to login
+      await router.push('/auth/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Even if the API call fails, try to redirect to login
+      localStorage.removeItem('token');
+      localStorage.removeItem('activeProjectId');
+      await mutateUser(null, false);
+      await router.push('/auth/login');
+    }
   };
 
   return (
@@ -209,7 +231,11 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
             {showUserMenu && (
               <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-neutral-200 rounded-lg shadow-lg z-50 py-1">
                 <button
-                  onClick={handleLogout}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    void handleLogout();
+                  }}
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 transition-colors text-red-600"
                 >
                   <LogOut className="h-4 w-4" />

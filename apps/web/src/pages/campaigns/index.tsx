@@ -17,7 +17,7 @@ import type {Campaign} from '@plunk/db';
 import {CampaignStatus} from '@plunk/db';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {network} from '../../lib/network';
-import {Calendar, Copy, Mail, Plus, Users} from 'lucide-react';
+import {Calendar, Copy, Mail, Plus, Trash2, Users} from 'lucide-react';
 import {NextSeo} from 'next-seo';
 import Link from 'next/link';
 import {useState} from 'react';
@@ -37,6 +37,8 @@ export default function CampaignsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [campaignToCancel, setCampaignToCancel] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
 
   const {data, mutate, isLoading} = useSWR<PaginatedCampaigns>(
     `/campaigns?page=${page}&pageSize=20${statusFilter !== 'ALL' ? `&status=${statusFilter}` : ''}`,
@@ -84,6 +86,20 @@ export default function CampaignsPage() {
       void mutate();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to duplicate campaign');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!campaignToDelete) return;
+
+    try {
+      await network.fetch('DELETE', `/campaigns/${campaignToDelete}`);
+      toast.success('Campaign deleted successfully');
+      void mutate();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete campaign');
+    } finally {
+      setCampaignToDelete(null);
     }
   };
 
@@ -266,6 +282,19 @@ export default function CampaignsPage() {
                       <Copy className="h-4 w-4" />
                     </Button>
 
+                    {campaign.status === 'DRAFT' && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          setCampaignToDelete(campaign.id);
+                          setShowDeleteDialog(true);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+
                     {(campaign.status === 'SCHEDULED' || campaign.status === 'SENDING') && (
                       <Button
                         variant="destructive"
@@ -312,6 +341,16 @@ export default function CampaignsPage() {
         title="Cancel Campaign"
         description="Are you sure you want to cancel this campaign?"
         confirmText="Cancel Campaign"
+        variant="destructive"
+      />
+
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={handleDelete}
+        title="Delete Campaign"
+        description="Are you sure you want to delete this draft campaign? This action cannot be undone."
+        confirmText="Delete Campaign"
         variant="destructive"
       />
     </DashboardLayout>
