@@ -12,6 +12,7 @@ import {
 import type {Contact} from '@plunk/db';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {KeyValueEditor} from '../../components/KeyValueEditor';
+import {ActivityFeed} from '../../components/ActivityFeed';
 import {network} from '../../lib/network';
 import {ArrowLeft, Calendar, Copy, Database, ExternalLink, Mail, Save, Settings, Trash2} from 'lucide-react';
 import Link from 'next/link';
@@ -216,6 +217,17 @@ export default function ContactDetailPage() {
                     {isSubmitting ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </form>
+              </CardContent>
+            </Card>
+
+            {/* Activity Feed */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Activity Feed</CardTitle>
+                <CardDescription>Recent activity for this contact</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ActivityFeed contactId={id as string} />
               </CardContent>
             </Card>
           </div>
