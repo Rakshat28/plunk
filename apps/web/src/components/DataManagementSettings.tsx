@@ -30,6 +30,7 @@ import {network} from '../lib/network';
 interface FieldData {
   field: string;
   type: 'string' | 'number' | 'boolean' | 'date';
+  coverage: number;
 }
 
 interface FieldUsage {
@@ -158,6 +159,7 @@ export function DataManagementSettings() {
                 <TableRow>
                   <TableHead>Field Name</TableHead>
                   <TableHead>Type</TableHead>
+                  <TableHead>Coverage</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -169,6 +171,9 @@ export function DataManagementSettings() {
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary">{field.type}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-muted-foreground">{field.coverage}%</span>
                     </TableCell>
                     <TableCell className="text-right">
                       <Button

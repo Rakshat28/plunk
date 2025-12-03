@@ -383,18 +383,25 @@ export class ContactService {
    */
   public static async getAvailableFields(
     projectId: string,
-  ): Promise<Array<{field: string; type: 'string' | 'number' | 'boolean' | 'date'}>> {
-    // Standard fields with known types
+  ): Promise<Array<{field: string; type: 'string' | 'number' | 'boolean' | 'date'; coverage: number}>> {
+    // Get total contact count for coverage calculation
+    const totalContacts = await prisma.contact.count({
+      where: {projectId},
+    });
+
+    // Standard fields with known types (always 100% coverage)
     const standardFields = [
-      {field: 'email', type: 'string' as const},
-      {field: 'subscribed', type: 'boolean' as const},
-      {field: 'createdAt', type: 'date' as const},
-      {field: 'updatedAt', type: 'date' as const},
+      {field: 'email', type: 'string' as const, coverage: 100},
+      {field: 'subscribed', type: 'boolean' as const, coverage: 100},
+      {field: 'createdAt', type: 'date' as const, coverage: 100},
+      {field: 'updatedAt', type: 'date' as const, coverage: 100},
     ];
 
-    // Get custom fields from the data JSON column with type inference
-    // Use raw SQL to extract all keys and sample values from the JSON data column
-    const result = await prisma.$queryRaw<Array<{key: string; sample_value: string; json_type: string}>>`
+    // Get custom fields from the data JSON column with type inference and coverage
+    // Use raw SQL to extract all keys, sample values, and contact counts from the JSON data column
+    const result = await prisma.$queryRaw<
+      Array<{key: string; sample_value: string; json_type: string; contact_count: bigint}>
+    >`
       WITH field_keys AS (
         SELECT DISTINCT jsonb_object_keys(data) as key
         FROM contacts
@@ -418,15 +425,27 @@ export class ContactService {
             AND data->fk.key IS NOT NULL
           LIMIT 1
         ) c
+      ),
+      field_counts AS (
+        SELECT
+          fk.key,
+          COUNT(*) as contact_count
+        FROM field_keys fk
+        JOIN contacts c ON c."projectId" = ${projectId}
+          AND c.data ? fk.key
+          AND c.data->fk.key IS NOT NULL
+        GROUP BY fk.key
       )
       SELECT
-        key,
-        sample_value,
-        json_type
-      FROM field_samples
+        fs.key,
+        fs.sample_value,
+        fs.json_type,
+        fc.contact_count
+      FROM field_samples fs
+      JOIN field_counts fc ON fc.key = fs.key
     `;
 
-    // Infer types from JSON types and sample values
+    // Infer types from JSON types and sample values, calculate coverage
     const customFields = result.map(row => {
       let type: 'string' | 'number' | 'boolean' | 'date' = 'string';
 
@@ -443,9 +462,14 @@ export class ContactService {
         }
       }
 
+      // Calculate coverage percentage
+      const contactCount = Number(row.contact_count);
+      const coverage = totalContacts > 0 ? Math.round((contactCount / totalContacts) * 100) : 0;
+
       return {
         field: `data.${row.key}`,
         type,
+        coverage,
       };
     });
 
