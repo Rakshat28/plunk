@@ -200,13 +200,34 @@ export const WorkflowSchemas = {
 };
 
 export const WorkflowStepConfigSchemas = {
-  delay: z.object({
-    amount: z.number().positive(),
-    unit: z.enum(['minutes', 'hours', 'days']),
-  }),
+  delay: z
+    .object({
+      amount: z.number().positive(),
+      unit: z.enum(['minutes', 'hours', 'days']),
+    })
+    .refine(
+      data => {
+        // Max 365 days
+        const maxMinutes = 365 * 24 * 60;
+        const maxHours = 365 * 24;
+        const maxDays = 365;
+
+        if (data.unit === 'minutes') return data.amount <= maxMinutes;
+        if (data.unit === 'hours') return data.amount <= maxHours;
+        if (data.unit === 'days') return data.amount <= maxDays;
+        return true;
+      },
+      {
+        message: 'Delay cannot exceed 365 days',
+      },
+    ),
   waitForEvent: z.object({
     eventName: z.string().min(1),
-    timeout: z.number().positive().optional(),
+    timeout: z
+      .number()
+      .positive()
+      .max(31536000, 'Timeout cannot exceed 365 days (31,536,000 seconds)')
+      .optional(),
   }),
   condition: z.object({
     field: z.string().min(1),

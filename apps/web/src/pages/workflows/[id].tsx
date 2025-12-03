@@ -1,11 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
   Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
   ConfirmDialog,
   Dialog,
   DialogContent,
@@ -19,12 +25,29 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Switch,
+  Switch
 } from '@plunk/ui';
 import type {Template, Workflow, WorkflowExecution, WorkflowStep, WorkflowTransition} from '@plunk/db';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {network} from '../../lib/network';
-import {ArrowLeft, Play, Power, PowerOff, Settings, Users} from 'lucide-react';
+import {
+  ArrowLeft,
+  ChevronDown,
+  Clock,
+  GitBranch,
+  Info,
+  LogOut,
+  Mail,
+  Play,
+  Plus,
+  Power,
+  PowerOff,
+  Settings,
+  Trash2,
+  UserCog,
+  Users,
+  Webhook
+} from 'lucide-react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
@@ -52,6 +75,40 @@ interface PaginatedExecutions {
   pageSize: number;
   totalPages: number;
 }
+
+// Step type styling (matching WorkflowBuilder)
+const STEP_TYPE_ICONS = {
+  TRIGGER: GitBranch,
+  SEND_EMAIL: Mail,
+  DELAY: Clock,
+  WAIT_FOR_EVENT: Clock,
+  CONDITION: GitBranch,
+  EXIT: LogOut,
+  WEBHOOK: Webhook,
+  UPDATE_CONTACT: UserCog,
+};
+
+const STEP_TYPE_COLORS = {
+  TRIGGER: '#9333ea',
+  SEND_EMAIL: '#2563eb',
+  DELAY: '#ea580c',
+  WAIT_FOR_EVENT: '#ca8a04',
+  CONDITION: '#9333ea',
+  EXIT: '#dc2626',
+  WEBHOOK: '#16a34a',
+  UPDATE_CONTACT: '#4f46e5',
+};
+
+const STEP_TYPE_BG = {
+  TRIGGER: '#f3e8ff',
+  SEND_EMAIL: '#dbeafe',
+  DELAY: '#ffedd5',
+  WAIT_FOR_EVENT: '#fef3c7',
+  CONDITION: '#f3e8ff',
+  EXIT: '#fee2e2',
+  WEBHOOK: '#dcfce7',
+  UPDATE_CONTACT: '#e0e7ff',
+};
 
 export default function WorkflowEditorPage() {
   const router = useRouter();
@@ -187,7 +244,6 @@ export default function WorkflowEditorPage() {
 
     // Check for orphaned steps (steps with no incoming or outgoing transitions, except TRIGGER and EXIT)
     const triggerSteps = workflow.steps.filter(s => s.type === 'TRIGGER');
-    const exitSteps = workflow.steps.filter(s => s.type === 'EXIT');
 
     workflow.steps.forEach(step => {
       if (step.type !== 'TRIGGER' && step.type !== 'EXIT') {
@@ -414,38 +470,39 @@ export default function WorkflowEditorPage() {
         )}
 
         {/* Validation Warning Banner */}
-        {!workflow.enabled && (() => {
-          const validation = validateWorkflow(workflow);
-          if (!validation.valid) {
-            return (
-              <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path
-                        fillRule="evenodd"
-                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div className="ml-3 flex-1">
-                    <h3 className="text-sm font-medium text-amber-800">Workflow has validation errors</h3>
-                    <div className="mt-2 text-sm text-amber-700">
-                      <p className="mb-2">Fix the following issues before enabling this workflow:</p>
-                      <ul className="list-disc list-inside space-y-1">
-                        {validation.errors.map((error, i) => (
-                          <li key={i}>{error}</li>
-                        ))}
-                      </ul>
+        {!workflow.enabled &&
+          (() => {
+            const validation = validateWorkflow(workflow);
+            if (!validation.valid) {
+              return (
+                <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path
+                          fillRule="evenodd"
+                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <h3 className="text-sm font-medium text-amber-800">Workflow has validation errors</h3>
+                      <div className="mt-2 text-sm text-amber-700">
+                        <p className="mb-2">Fix the following issues before enabling this workflow:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                          {validation.errors.map((error, i) => (
+                            <li key={i}>{error}</li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          }
-          return null;
-        })()}
+              );
+            }
+            return null;
+          })()}
 
         {/* Tabs */}
         <div className="border-b border-neutral-200">
@@ -862,7 +919,8 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
 
   // WAIT_FOR_EVENT fields
   const [eventName, setEventName] = useState('');
-  const [eventTimeout, setEventTimeout] = useState('86400');
+  const [eventTimeoutAmount, setEventTimeoutAmount] = useState('1');
+  const [eventTimeoutUnit, setEventTimeoutUnit] = useState<'minutes' | 'hours' | 'days'>('days');
 
   // WEBHOOK fields
   const [webhookUrl, setWebhookUrl] = useState('');
@@ -879,6 +937,11 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
 
   const {data: templatesData} = useSWR<{templates: Template[]}>('/templates?pageSize=100');
   const {data: workflow} = useSWR<WorkflowWithDetails>(workflowId ? `/workflows/${workflowId}` : null);
+
+  // Fetch available event names when dialog opens
+  const {data: eventNamesData} = useSWR<{eventNames: string[]}>(open ? '/events/names' : null, {
+    revalidateOnFocus: false,
+  });
 
   // Fetch available fields when dialog opens and type is CONDITION
   useEffect(() => {
@@ -928,7 +991,15 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
         }
         config = {templateId};
       } else if (type === 'DELAY') {
-        config = {amount: parseInt(delayAmount), unit: delayUnit};
+        const amount = parseInt(delayAmount);
+        // Validate max 365 days
+        const maxValues = {minutes: 525600, hours: 8760, days: 365};
+        if (amount > maxValues[delayUnit]) {
+          toast.error(`Delay cannot exceed 365 days (${maxValues[delayUnit]} ${delayUnit})`);
+          setIsSubmitting(false);
+          return;
+        }
+        config = {amount, unit: delayUnit};
       } else if (type === 'CONDITION') {
         // Parse the value based on type
         let parsedValue: string | number | boolean = conditionValue;
@@ -987,9 +1058,32 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
           setIsSubmitting(false);
           return;
         }
+        // Convert amount + unit to seconds
+        const amount = parseInt(eventTimeoutAmount);
+        // Validate max 365 days
+        const maxValues = {minutes: 525600, hours: 8760, days: 365};
+        if (amount > maxValues[eventTimeoutUnit]) {
+          toast.error(`Timeout cannot exceed 365 days (${maxValues[eventTimeoutUnit]} ${eventTimeoutUnit})`);
+          setIsSubmitting(false);
+          return;
+        }
+        let timeoutSeconds = 0;
+        if (amount > 0) {
+          switch (eventTimeoutUnit) {
+            case 'minutes':
+              timeoutSeconds = amount * 60;
+              break;
+            case 'hours':
+              timeoutSeconds = amount * 60 * 60;
+              break;
+            case 'days':
+              timeoutSeconds = amount * 60 * 60 * 24;
+              break;
+          }
+        }
         config = {
           eventName,
-          timeout: parseInt(eventTimeout),
+          timeout: timeoutSeconds,
         };
       }
 
@@ -1015,7 +1109,8 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
       setConditionValue('');
       setAvailableFields([]);
       setEventName('');
-      setEventTimeout('86400');
+      setEventTimeoutAmount('1');
+      setEventTimeoutUnit('days');
       setWebhookUrl('');
       setWebhookMethod('POST');
       setWebhookHeaders('');
@@ -1092,30 +1187,44 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
 
           {/* DELAY Configuration */}
           {type === 'DELAY' && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="delayAmount">Amount *</Label>
-                <Input
-                  id="delayAmount"
-                  type="number"
-                  value={delayAmount}
-                  onChange={e => setDelayAmount(e.target.value)}
-                  required
-                  min="1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="delayUnit">Unit *</Label>
-                <Select value={delayUnit} onValueChange={value => setDelayUnit(value as 'hours' | 'days' | 'minutes')}>
-                  <SelectTrigger id="delayUnit">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="minutes">Minutes</SelectItem>
-                    <SelectItem value="hours">Hours</SelectItem>
-                    <SelectItem value="days">Days</SelectItem>
-                  </SelectContent>
-                </Select>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="delayAmount">Amount *</Label>
+                  <Input
+                    id="delayAmount"
+                    type="number"
+                    value={delayAmount}
+                    onChange={e => setDelayAmount(e.target.value)}
+                    required
+                    min="1"
+                    max={
+                      delayUnit === 'minutes'
+                        ? 525600
+                        : delayUnit === 'hours'
+                          ? 8760
+                          : delayUnit === 'days'
+                            ? 365
+                            : undefined
+                    }
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="delayUnit">Unit *</Label>
+                  <Select
+                    value={delayUnit}
+                    onValueChange={value => setDelayUnit(value as 'hours' | 'days' | 'minutes')}
+                  >
+                    <SelectTrigger id="delayUnit">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="minutes">Minutes</SelectItem>
+                      <SelectItem value="hours">Hours</SelectItem>
+                      <SelectItem value="days">Days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           )}
@@ -1223,30 +1332,71 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
             <div className="space-y-4">
               <div>
                 <Label htmlFor="eventName">Event Name *</Label>
-                <Input
-                  id="eventName"
-                  type="text"
-                  value={eventName}
-                  onChange={e => setEventName(e.target.value)}
-                  required
-                  placeholder="e.g., email.clicked, user.upgraded"
-                />
-                <p className="text-xs text-neutral-500 mt-1">The event name to wait for</p>
+                {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0 ? (
+                  <Select value={eventName} onValueChange={setEventName} required>
+                    <SelectTrigger id="eventName">
+                      <SelectValue placeholder="Select an event..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {eventNamesData.eventNames.map(name => (
+                        <SelectItem key={name} value={name}>
+                          {name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    id="eventName"
+                    type="text"
+                    value={eventName}
+                    onChange={e => setEventName(e.target.value)}
+                    required
+                    placeholder="e.g., email.clicked, user.upgraded"
+                  />
+                )}
+                <p className="text-xs text-neutral-500 mt-1">
+                  {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0
+                    ? 'Select from previously tracked events'
+                    : 'The event name to wait for'}
+                </p>
               </div>
 
               <div>
-                <Label htmlFor="eventTimeout">Timeout (seconds)</Label>
-                <Input
-                  id="eventTimeout"
-                  type="number"
-                  value={eventTimeout}
-                  onChange={e => setEventTimeout(e.target.value)}
-                  placeholder="86400"
-                  min="0"
-                />
-                <p className="text-xs text-neutral-500 mt-1">
-                  How long to wait before continuing (0 = wait forever). Default: 86400 (24 hours)
-                </p>
+                <Label htmlFor="eventTimeoutAmount">Timeout</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="eventTimeoutAmount"
+                    type="number"
+                    value={eventTimeoutAmount}
+                    onChange={e => setEventTimeoutAmount(e.target.value)}
+                    placeholder="1"
+                    min="0"
+                    max={
+                      eventTimeoutUnit === 'minutes'
+                        ? 525600
+                        : eventTimeoutUnit === 'hours'
+                          ? 8760
+                          : eventTimeoutUnit === 'days'
+                            ? 365
+                            : undefined
+                    }
+                    className="flex-1"
+                  />
+                  <Select
+                    value={eventTimeoutUnit}
+                    onValueChange={value => setEventTimeoutUnit(value as 'minutes' | 'hours' | 'days')}
+                  >
+                    <SelectTrigger className="w-[120px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="minutes">Minutes</SelectItem>
+                      <SelectItem value="hours">Hours</SelectItem>
+                      <SelectItem value="days">Days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           )}
@@ -1318,14 +1468,21 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
           {type === 'EXIT' && (
             <div>
               <Label htmlFor="exitReason">Exit Reason</Label>
-              <Input
-                id="exitReason"
-                type="text"
-                value={exitReason}
-                onChange={e => setExitReason(e.target.value)}
-                placeholder="e.g., unsubscribed, completed, not_eligible"
-              />
-              <p className="text-xs text-neutral-500 mt-1">Optional reason for exiting (for tracking/analytics)</p>
+              <Select value={exitReason} onValueChange={setExitReason}>
+                <SelectTrigger id="exitReason">
+                  <SelectValue placeholder="Select exit reason..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="completed">Completed - Contact completed the workflow successfully</SelectItem>
+                  <SelectItem value="unsubscribed">Unsubscribed - Contact unsubscribed</SelectItem>
+                  <SelectItem value="not_eligible">Not Eligible - Contact doesn&apos;t meet criteria</SelectItem>
+                  <SelectItem value="opted_out">Opted Out - Contact opted out of this workflow</SelectItem>
+                  <SelectItem value="goal_achieved">Goal Achieved - Workflow goal was met early</SelectItem>
+                  <SelectItem value="duplicate">Duplicate - Contact already in workflow</SelectItem>
+                  <SelectItem value="error">Error - Technical issue occurred</SelectItem>
+                  <SelectItem value="other">Other - Custom reason</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           )}
 
@@ -1358,6 +1515,11 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
   const [name, setName] = useState(step.name);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Get icon and colors for this step type
+  const Icon = STEP_TYPE_ICONS[step.type as keyof typeof STEP_TYPE_ICONS] || GitBranch;
+  const color = STEP_TYPE_COLORS[step.type as keyof typeof STEP_TYPE_COLORS] || '#6b7280';
+  const bgColor = STEP_TYPE_BG[step.type as keyof typeof STEP_TYPE_BG] || '#f3f4f6';
+
   // SEND_EMAIL fields
   const [templateId, setTemplateId] = useState(step.template?.id || '');
 
@@ -1387,12 +1549,34 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
 
   // WAIT_FOR_EVENT fields
   const [eventName, setEventName] = useState(String(config?.eventName || ''));
-  const [eventTimeout, setEventTimeout] = useState(String(config?.timeout || '86400'));
+  const [eventTimeoutAmount, setEventTimeoutAmount] = useState<string>(() => {
+    const timeoutSeconds = Number(config?.timeout) || 86400;
+    // Convert seconds to most appropriate unit
+    if (timeoutSeconds === 0) return '0';
+    if (timeoutSeconds % (60 * 60 * 24) === 0) return String(timeoutSeconds / (60 * 60 * 24));
+    if (timeoutSeconds % (60 * 60) === 0) return String(timeoutSeconds / (60 * 60));
+    if (timeoutSeconds % 60 === 0) return String(timeoutSeconds / 60);
+    // Default to hours if not evenly divisible
+    return String(Math.round(timeoutSeconds / (60 * 60)));
+  });
+  const [eventTimeoutUnit, setEventTimeoutUnit] = useState<'minutes' | 'hours' | 'days'>(() => {
+    const timeoutSeconds = Number(config?.timeout) || 86400;
+    if (timeoutSeconds === 0) return 'days';
+    if (timeoutSeconds % (60 * 60 * 24) === 0) return 'days';
+    if (timeoutSeconds % (60 * 60) === 0) return 'hours';
+    return 'minutes';
+  });
 
   // WEBHOOK fields
   const [webhookUrl, setWebhookUrl] = useState(String(config?.url || ''));
   const [webhookMethod, setWebhookMethod] = useState(String(config?.method || 'POST'));
-  const [webhookHeaders, setWebhookHeaders] = useState(config?.headers ? JSON.stringify(config.headers, null, 2) : '');
+  const [webhookHeaders, setWebhookHeaders] = useState<{key: string; value: string}[]>(() => {
+    if (config?.headers && typeof config.headers === 'object') {
+      return Object.entries(config.headers).map(([key, value]) => ({key, value: String(value)}));
+    }
+    return [];
+  });
+  const [showWebhookInfo, setShowWebhookInfo] = useState(false);
 
   // UPDATE_CONTACT fields
   const [contactUpdates, setContactUpdates] = useState(config?.updates ? JSON.stringify(config.updates, null, 2) : '');
@@ -1402,6 +1586,11 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
 
   const {data: templatesData} = useSWR<{templates: Template[]}>('/templates?pageSize=100');
   const {data: workflow} = useSWR<WorkflowWithDetails>(workflowId ? `/workflows/${workflowId}` : null);
+
+  // Fetch available event names when dialog opens
+  const {data: eventNamesData} = useSWR<{eventNames: string[]}>(open ? '/events/names' : null, {
+    revalidateOnFocus: false,
+  });
 
   // Fetch available contact fields when dialog opens and type is CONDITION
   useEffect(() => {
@@ -1445,7 +1634,15 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
         }
         newConfig = {templateId};
       } else if (step.type === 'DELAY') {
-        newConfig = {amount: parseInt(delayAmount), unit: delayUnit};
+        const amount = parseInt(delayAmount);
+        // Validate max 365 days
+        const maxValues = {minutes: 525600, hours: 8760, days: 365};
+        if (amount > maxValues[delayUnit]) {
+          toast.error(`Delay cannot exceed 365 days (${maxValues[delayUnit]} ${delayUnit})`);
+          setIsSubmitting(false);
+          return;
+        }
+        newConfig = {amount, unit: delayUnit};
       } else if (step.type === 'CONDITION') {
         // Parse the value based on type
         let parsedValue: string | number | boolean = conditionValue;
@@ -1467,16 +1664,13 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
           return;
         }
 
-        let headers = {};
-        if (webhookHeaders.trim()) {
-          try {
-            headers = JSON.parse(webhookHeaders);
-          } catch {
-            toast.error('Invalid JSON in webhook headers');
-            setIsSubmitting(false);
-            return;
+        // Convert headers array to object, filtering out empty entries
+        const headers: Record<string, string> = {};
+        webhookHeaders.forEach(header => {
+          if (header.key.trim() && header.value.trim()) {
+            headers[header.key.trim()] = header.value.trim();
           }
-        }
+        });
 
         newConfig = {
           url: webhookUrl,
@@ -1504,9 +1698,32 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
           setIsSubmitting(false);
           return;
         }
+        // Convert amount + unit to seconds
+        const amount = parseInt(eventTimeoutAmount);
+        // Validate max 365 days
+        const maxValues = {minutes: 525600, hours: 8760, days: 365};
+        if (amount > maxValues[eventTimeoutUnit]) {
+          toast.error(`Timeout cannot exceed 365 days (${maxValues[eventTimeoutUnit]} ${eventTimeoutUnit})`);
+          setIsSubmitting(false);
+          return;
+        }
+        let timeoutSeconds = 0;
+        if (amount > 0) {
+          switch (eventTimeoutUnit) {
+            case 'minutes':
+              timeoutSeconds = amount * 60;
+              break;
+            case 'hours':
+              timeoutSeconds = amount * 60 * 60;
+              break;
+            case 'days':
+              timeoutSeconds = amount * 60 * 60 * 24;
+              break;
+          }
+        }
         newConfig = {
           eventName,
-          timeout: parseInt(eventTimeout),
+          timeout: timeoutSeconds,
         };
       }
 
@@ -1536,6 +1753,20 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Step</DialogTitle>
+          <div className="flex items-center gap-2 mt-2">
+            <div className="w-6 h-6 rounded flex items-center justify-center" style={{backgroundColor: bgColor}}>
+              <Icon className="h-3.5 w-3.5" style={{color}} />
+            </div>
+            <span
+              className="text-xs font-medium px-2 py-0.5 rounded"
+              style={{
+                backgroundColor: bgColor,
+                color,
+              }}
+            >
+              {step.type.replace(/_/g, ' ')}
+            </span>
+          </div>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -1548,12 +1779,6 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
               required
               placeholder="e.g., Send Welcome Email"
             />
-          </div>
-
-          <div className="px-3 py-2 bg-neutral-50 rounded-lg border border-neutral-200">
-            <p className="text-sm text-neutral-600">
-              Type: <strong className="text-neutral-900">{step.type}</strong>
-            </p>
           </div>
 
           {/* SEND_EMAIL Configuration */}
@@ -1577,30 +1802,44 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
 
           {/* DELAY Configuration */}
           {step.type === 'DELAY' && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="editDelayAmount">Amount *</Label>
-                <Input
-                  id="editDelayAmount"
-                  type="number"
-                  value={delayAmount}
-                  onChange={e => setDelayAmount(e.target.value)}
-                  required
-                  min="1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="editDelayUnit">Unit *</Label>
-                <Select value={delayUnit} onValueChange={value => setDelayUnit(value as 'hours' | 'days' | 'minutes')}>
-                  <SelectTrigger id="editDelayUnit">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="minutes">Minutes</SelectItem>
-                    <SelectItem value="hours">Hours</SelectItem>
-                    <SelectItem value="days">Days</SelectItem>
-                  </SelectContent>
-                </Select>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="editDelayAmount">Amount *</Label>
+                  <Input
+                    id="editDelayAmount"
+                    type="number"
+                    value={delayAmount}
+                    onChange={e => setDelayAmount(e.target.value)}
+                    required
+                    min="1"
+                    max={
+                      delayUnit === 'minutes'
+                        ? 525600
+                        : delayUnit === 'hours'
+                          ? 8760
+                          : delayUnit === 'days'
+                            ? 365
+                            : undefined
+                    }
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editDelayUnit">Unit *</Label>
+                  <Select
+                    value={delayUnit}
+                    onValueChange={value => setDelayUnit(value as 'hours' | 'days' | 'minutes')}
+                  >
+                    <SelectTrigger id="editDelayUnit">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="minutes">Minutes</SelectItem>
+                      <SelectItem value="hours">Hours</SelectItem>
+                      <SelectItem value="days">Days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           )}
@@ -1708,30 +1947,71 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
             <div className="space-y-4">
               <div>
                 <Label htmlFor="editEventName">Event Name *</Label>
-                <Input
-                  id="editEventName"
-                  type="text"
-                  value={eventName}
-                  onChange={e => setEventName(e.target.value)}
-                  required
-                  placeholder="e.g., email.clicked, user.upgraded"
-                />
-                <p className="text-xs text-neutral-500 mt-1">The event name to wait for</p>
+                {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0 ? (
+                  <Select value={eventName} onValueChange={setEventName} required>
+                    <SelectTrigger id="editEventName">
+                      <SelectValue placeholder="Select an event..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {eventNamesData.eventNames.map(name => (
+                        <SelectItem key={name} value={name}>
+                          {name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    id="editEventName"
+                    type="text"
+                    value={eventName}
+                    onChange={e => setEventName(e.target.value)}
+                    required
+                    placeholder="e.g., email.clicked, user.upgraded"
+                  />
+                )}
+                <p className="text-xs text-neutral-500 mt-1">
+                  {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0
+                    ? 'Select from previously tracked events'
+                    : 'The event name to wait for'}
+                </p>
               </div>
 
               <div>
-                <Label htmlFor="editEventTimeout">Timeout (seconds)</Label>
-                <Input
-                  id="editEventTimeout"
-                  type="number"
-                  value={eventTimeout}
-                  onChange={e => setEventTimeout(e.target.value)}
-                  placeholder="86400"
-                  min="0"
-                />
-                <p className="text-xs text-neutral-500 mt-1">
-                  How long to wait before continuing (0 = wait forever). Default: 86400 (24 hours)
-                </p>
+                <Label htmlFor="editEventTimeoutAmount">Timeout</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="editEventTimeoutAmount"
+                    type="number"
+                    value={eventTimeoutAmount}
+                    onChange={e => setEventTimeoutAmount(e.target.value)}
+                    placeholder="1"
+                    min="0"
+                    max={
+                      eventTimeoutUnit === 'minutes'
+                        ? 525600
+                        : eventTimeoutUnit === 'hours'
+                          ? 8760
+                          : eventTimeoutUnit === 'days'
+                            ? 365
+                            : undefined
+                    }
+                    className="flex-1"
+                  />
+                  <Select
+                    value={eventTimeoutUnit}
+                    onValueChange={value => setEventTimeoutUnit(value as 'minutes' | 'hours' | 'days')}
+                  >
+                    <SelectTrigger className="w-[120px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="minutes">Minutes</SelectItem>
+                      <SelectItem value="hours">Hours</SelectItem>
+                      <SelectItem value="days">Days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           )}
@@ -1739,9 +2019,58 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
           {/* WEBHOOK Configuration */}
           {step.type === 'WEBHOOK' && (
             <div className="space-y-4">
+              {/* Info Alert about webhook body */}
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertTitle>Request Body</AlertTitle>
+                <AlertDescription>
+                  <div className="space-y-2">
+                    <p className="text-xs">
+                      Plunk will automatically send the following JSON payload with each webhook request:
+                    </p>
+                    <Collapsible open={showWebhookInfo} onOpenChange={setShowWebhookInfo}>
+                      <CollapsibleTrigger className="flex items-center gap-1 text-xs font-medium text-neutral-700 hover:text-neutral-900">
+                        <ChevronDown
+                          className={`h-3 w-3 transition-transform ${showWebhookInfo ? 'rotate-180' : ''}`}
+                        />
+                        {showWebhookInfo ? 'Hide' : 'Show'} payload structure
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-2">
+                        <pre className="text-[10px] bg-neutral-50 p-2 rounded border border-neutral-200 overflow-x-auto">
+                          {`{
+  "contact": {
+    "email": "user@example.com",
+    "subscribed": true,
+    "data": {
+      // All custom contact fields
+      "name": "John Doe",
+      "plan": "premium"
+    }
+  },
+  "workflow": {
+    "id": "wf_...",
+    "name": "Welcome Series"
+  },
+  "execution": {
+    "id": "exec_...",
+    "startedAt": "2025-01-19T..."
+  },
+  "event": {
+    // Event data that triggered
+    // the workflow (if any)
+  }
+}`}
+                        </pre>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </div>
+                </AlertDescription>
+              </Alert>
+
               <div>
                 <Label htmlFor="editWebhookUrl">Webhook URL *</Label>
                 <Input
+                  className={'font-mono'}
                   id="editWebhookUrl"
                   type="url"
                   value={webhookUrl}
@@ -1754,7 +2083,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
               <div>
                 <Label htmlFor="editWebhookMethod">HTTP Method *</Label>
                 <Select value={webhookMethod} onValueChange={setWebhookMethod}>
-                  <SelectTrigger id="editWebhookMethod">
+                  <SelectTrigger id="editWebhookMethod" className={'font-mono'}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1768,16 +2097,72 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
               </div>
 
               <div>
-                <Label htmlFor="editWebhookHeaders">Headers (JSON, optional)</Label>
-                <textarea
-                  id="editWebhookHeaders"
-                  value={webhookHeaders}
-                  onChange={e => setWebhookHeaders(e.target.value)}
-                  placeholder='{"Authorization": "Bearer token", "Content-Type": "application/json"}'
-                  className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
-                  rows={3}
-                />
-                <p className="text-xs text-neutral-500 mt-1">Optional custom headers as JSON</p>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>HTTP Headers (optional)</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setWebhookHeaders([...webhookHeaders, {key: '', value: ''}])}
+                    className="h-7 text-xs"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Add Header
+                  </Button>
+                </div>
+
+                {webhookHeaders.length === 0 ? (
+                  <p className="text-xs text-neutral-500 py-2">
+                    No custom headers. Click &quot;Add Header&quot; to include headers like Authorization.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {webhookHeaders.map((header, index) => (
+                      <div key={index} className="flex gap-2 items-start">
+                        <div className="flex-1">
+                          <Input
+                            placeholder="Header name (e.g., Authorization)"
+                            value={header.key}
+                            onChange={e => {
+                              const newHeaders = [...webhookHeaders];
+                              if (newHeaders[index]) {
+                                newHeaders[index].key = e.target.value;
+                              }
+                              setWebhookHeaders(newHeaders);
+                            }}
+                            className="text-sm font-mono"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <Input
+                            placeholder="Header value (e.g., Bearer token123)"
+                            value={header.value}
+                            onChange={e => {
+                              const newHeaders = [...webhookHeaders];
+                              if (newHeaders[index]) {
+                                newHeaders[index].value = e.target.value;
+                              }
+                              setWebhookHeaders(newHeaders);
+                            }}
+                            className="text-sm font-mono"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const newHeaders = webhookHeaders.filter((_, i) => i !== index);
+                            setWebhookHeaders(newHeaders);
+                          }}
+                          className="h-9 w-9 p-0"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1803,14 +2188,21 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
           {step.type === 'EXIT' && (
             <div>
               <Label htmlFor="editExitReason">Exit Reason</Label>
-              <Input
-                id="editExitReason"
-                type="text"
-                value={exitReason}
-                onChange={e => setExitReason(e.target.value)}
-                placeholder="e.g., unsubscribed, completed, not_eligible"
-              />
-              <p className="text-xs text-neutral-500 mt-1">Optional reason for exiting (for tracking/analytics)</p>
+              <Select value={exitReason} onValueChange={setExitReason}>
+                <SelectTrigger id="editExitReason">
+                  <SelectValue placeholder="Select exit reason..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="completed">Completed - Contact completed the workflow successfully</SelectItem>
+                  <SelectItem value="unsubscribed">Unsubscribed - Contact unsubscribed</SelectItem>
+                  <SelectItem value="not_eligible">Not Eligible - Contact doesn&apos;t meet criteria</SelectItem>
+                  <SelectItem value="opted_out">Opted Out - Contact opted out of this workflow</SelectItem>
+                  <SelectItem value="goal_achieved">Goal Achieved - Workflow goal was met early</SelectItem>
+                  <SelectItem value="duplicate">Duplicate - Contact already in workflow</SelectItem>
+                  <SelectItem value="error">Error - Technical issue occurred</SelectItem>
+                  <SelectItem value="other">Other - Custom reason</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           )}
 
