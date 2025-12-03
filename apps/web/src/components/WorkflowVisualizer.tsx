@@ -10,7 +10,7 @@ import {
   Position,
   ReactFlow,
   useEdgesState,
-  useNodesState,
+  useNodesState
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type {WorkflowStep} from '@plunk/db';
@@ -469,7 +469,7 @@ export function WorkflowVisualizer({steps}: WorkflowVisualizerProps) {
   }
 
   return (
-    <div className="w-full h-[700px] bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-lg border border-neutral-200 shadow-inner">
+    <div className="w-full h-[700px] bg-neutral-50 rounded-lg border border-neutral-200 shadow-inner">
       <ReactFlow
         nodes={nodes}
         edges={edges}

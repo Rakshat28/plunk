@@ -467,7 +467,7 @@ export default function Settings() {
 
               {/* Danger Zone - Separate Card */}
               <Card className="border-red-200 mt-6">
-                <CardHeader className="border-b border-red-100 bg-gradient-to-r from-red-50 to-orange-50">
+                <CardHeader className="border-b border-red-100 bg-red-50">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-white rounded-lg shadow-sm border border-red-200">
                       <AlertTriangle className="h-5 w-5 text-red-600" />

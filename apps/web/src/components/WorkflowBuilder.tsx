@@ -12,7 +12,7 @@ import {
   ReactFlow,
   useEdgesState,
   useNodesState,
-  useReactFlow,
+  useReactFlow
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type {WorkflowStep} from '@plunk/db';
@@ -702,7 +702,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
 
   return (
     <>
-      <div className="w-full h-[800px] bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-lg border border-neutral-200 shadow-inner relative">
+      <div className="w-full h-[800px] bg-neutral-50 rounded-lg border border-neutral-200 shadow-inner relative">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -821,42 +821,43 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
         </DialogContent>
       </Dialog>
 
-      {stepToDelete && (() => {
-        const affectedSteps = getAffectedSteps(stepToDelete);
-        const stepToDeleteData = steps.find(s => s.id === stepToDelete);
-        const downstreamSteps = affectedSteps.filter(s => s.id !== stepToDelete);
+      {stepToDelete &&
+        (() => {
+          const affectedSteps = getAffectedSteps(stepToDelete);
+          const stepToDeleteData = steps.find(s => s.id === stepToDelete);
+          const downstreamSteps = affectedSteps.filter(s => s.id !== stepToDelete);
 
-        return (
-          <ConfirmDialog
-            open={showDeleteDialog}
-            onOpenChange={setShowDeleteDialog}
-            onConfirm={handleDeleteStep}
-            title="Delete Step"
-            description={
-              downstreamSteps.length > 0 ? (
-                <div className="space-y-3">
-                  <p>
-                    Deleting &quot;{stepToDeleteData?.name}&quot; will also delete {downstreamSteps.length} downstream{' '}
-                    {downstreamSteps.length === 1 ? 'step' : 'steps'}:
-                  </p>
-                  <ul className="list-disc list-inside text-sm text-neutral-600 max-h-32 overflow-y-auto bg-neutral-50 p-3 rounded border border-neutral-200">
-                    {downstreamSteps.map(step => (
-                      <li key={step.id}>
-                        {step.name} ({step.type})
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="text-sm font-medium text-red-600">This action cannot be undone.</p>
-                </div>
-              ) : (
-                `Are you sure you want to delete "${stepToDeleteData?.name}"? This action cannot be undone.`
-              )
-            }
-            confirmText={downstreamSteps.length > 0 ? `Delete ${affectedSteps.length} Steps` : 'Delete'}
-            variant="destructive"
-          />
-        );
-      })()}
+          return (
+            <ConfirmDialog
+              open={showDeleteDialog}
+              onOpenChange={setShowDeleteDialog}
+              onConfirm={handleDeleteStep}
+              title="Delete Step"
+              description={
+                downstreamSteps.length > 0 ? (
+                  <div className="space-y-3">
+                    <p>
+                      Deleting &quot;{stepToDeleteData?.name}&quot; will also delete {downstreamSteps.length} downstream{' '}
+                      {downstreamSteps.length === 1 ? 'step' : 'steps'}:
+                    </p>
+                    <ul className="list-disc list-inside text-sm text-neutral-600 max-h-32 overflow-y-auto bg-neutral-50 p-3 rounded border border-neutral-200">
+                      {downstreamSteps.map(step => (
+                        <li key={step.id}>
+                          {step.name} ({step.type})
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-sm font-medium text-red-600">This action cannot be undone.</p>
+                  </div>
+                ) : (
+                  `Are you sure you want to delete "${stepToDeleteData?.name}"? This action cannot be undone.`
+                )
+              }
+              confirmText={downstreamSteps.length > 0 ? `Delete ${affectedSteps.length} Steps` : 'Delete'}
+              variant="destructive"
+            />
+          );
+        })()}
     </>
   );
 }

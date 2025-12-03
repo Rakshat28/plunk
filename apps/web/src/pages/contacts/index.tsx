@@ -132,216 +132,220 @@ export default function ContactsPage() {
       <NextSeo title="Contacts" />
       <DashboardLayout>
         <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-neutral-900">Contacts</h1>
-            <p className="text-neutral-500 mt-2">
-              Manage your email subscribers and their data.{' '}
-              {totalCount > 0 ? `${totalCount.toLocaleString()} total contacts` : ''}
-            </p>
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-neutral-900">Contacts</h1>
+              <p className="text-neutral-500 mt-2">
+                Manage your email subscribers and their data.{' '}
+                {totalCount > 0 ? `${totalCount.toLocaleString()} total contacts` : ''}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowImportDialog(true)}>
+                <Upload className="h-4 w-4" />
+                Import CSV
+              </Button>
+              <Button onClick={() => setShowCreateDialog(true)}>
+                <Plus className="h-4 w-4" />
+                Add Contact
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowImportDialog(true)}>
-              <Upload className="h-4 w-4" />
-              Import CSV
-            </Button>
-            <Button onClick={() => setShowCreateDialog(true)}>
-              <Plus className="h-4 w-4" />
-              Add Contact
-            </Button>
-          </div>
-        </div>
 
-        {/* Search & Filters */}
-        <Card>
-          <CardContent className="pt-6">
-            <form onSubmit={handleSearch} className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
-                <Input
-                  type="text"
-                  placeholder="Search by email..."
-                  value={searchInput}
-                  onChange={e => setSearchInput(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Button type="submit">Search</Button>
-              {search && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setSearch('');
-                    setSearchInput('');
-                    setCursor(undefined);
-                    setCursorHistory([undefined]);
-                    setCurrentPage(0);
-                    setContacts([]);
-                  }}
-                >
-                  Clear
-                </Button>
-              )}
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Contacts Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>All Contacts</CardTitle>
-            <CardDescription>
-              View and manage your contact list.
-              {totalCount > 0 && ` ${totalCount.toLocaleString()} total contacts`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading && contacts.length === 0 ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-center">
-                  <svg
-                    className="h-8 w-8 animate-spin mx-auto text-neutral-900"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  <p className="mt-2 text-sm text-neutral-500">Loading contacts...</p>
+          {/* Search & Filters */}
+          <Card>
+            <CardContent className="pt-6">
+              <form onSubmit={handleSearch} className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
+                  <Input
+                    type="text"
+                    placeholder="Search by email..."
+                    value={searchInput}
+                    onChange={e => setSearchInput(e.target.value)}
+                    className="pl-10"
+                  />
                 </div>
-              </div>
-            ) : contacts.length === 0 ? (
-              <div className="text-center py-12">
-                <Mail className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-neutral-900 mb-2">No contacts found</h3>
-                <p className="text-neutral-500 mb-6">
-                  {search ? 'Try adjusting your search terms' : 'Get started by creating your first contact'}
-                </p>
-                {!search && (
-                  <Button onClick={() => setShowCreateDialog(true)}>
-                    <Plus className="h-4 w-4" />
-                    Add Contact
+                <Button type="submit">Search</Button>
+                {search && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setSearch('');
+                      setSearchInput('');
+                      setCursor(undefined);
+                      setCursorHistory([undefined]);
+                      setCurrentPage(0);
+                      setContacts([]);
+                    }}
+                  >
+                    Clear
                   </Button>
                 )}
-              </div>
-            ) : (
-              <>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-neutral-50 border-b border-neutral-200">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                          Email
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                          Created
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-neutral-200">
-                      {contacts.map(contact => (
-                        <tr key={contact.id} className="hover:bg-neutral-50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-2">
-                              {contact.subscribed ? (
-                                <MailCheck className="h-4 w-4 text-green-600" />
-                              ) : (
-                                <MailX className="h-4 w-4 text-red-600" />
-                              )}
-                              <span className="text-sm font-medium text-neutral-900">{contact.email}</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                contact.subscribed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                              }`}
-                            >
-                              {contact.subscribed ? 'Subscribed' : 'Unsubscribed'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
-                            {new Date(contact.createdAt).toLocaleDateString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex items-center justify-end gap-2">
-                              <Link href={`/contacts/${contact.id}`}>
-                                <Button variant="ghost" size="sm">
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                              </Link>
-                              <Button variant="ghost" size="sm" onClick={() => promptDelete(contact.id)}>
-                                <Trash2 className="h-4 w-4 text-red-600" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              </form>
+            </CardContent>
+          </Card>
 
-                {/* Pagination Controls */}
-                {(currentPage > 0 || data?.hasMore) && (
-                  <div className="flex items-center justify-between mt-6 pt-6 border-t border-neutral-200">
-                    <div className="text-sm text-neutral-600">
-                      Showing <span className="font-medium text-neutral-900">{currentPage * pageSize + 1}</span> to{' '}
-                      <span className="font-medium text-neutral-900">{currentPage * pageSize + contacts.length}</span>
-                      {totalCount > 0 && (
-                        <>
-                          {' '}
-                          of <span className="font-medium text-neutral-900">{totalCount.toLocaleString()}</span>
-                        </>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" onClick={handlePreviousPage} disabled={currentPage === 0 || isLoading}>
-                        <ChevronLeft className="h-4 w-4" />
-                        Previous
-                      </Button>
-                      <Button variant="outline" onClick={handleNextPage} disabled={!data?.hasMore || isLoading}>
-                        Next
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </div>
+          {/* Contacts Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>All Contacts</CardTitle>
+              <CardDescription>
+                View and manage your contact list.
+                {totalCount > 0 && ` ${totalCount.toLocaleString()} total contacts`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading && contacts.length === 0 ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <svg
+                      className="h-8 w-8 animate-spin mx-auto text-neutral-900"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    <p className="mt-2 text-sm text-neutral-500">Loading contacts...</p>
                   </div>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                </div>
+              ) : contacts.length === 0 ? (
+                <div className="text-center py-12">
+                  <Mail className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-neutral-900 mb-2">No contacts found</h3>
+                  <p className="text-neutral-500 mb-6">
+                    {search ? 'Try adjusting your search terms' : 'Get started by creating your first contact'}
+                  </p>
+                  {!search && (
+                    <Button onClick={() => setShowCreateDialog(true)}>
+                      <Plus className="h-4 w-4" />
+                      Add Contact
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-neutral-50 border-b border-neutral-200">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                            Email
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                            Created
+                          </th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-neutral-200">
+                        {contacts.map(contact => (
+                          <tr key={contact.id} className="hover:bg-neutral-50 transition-colors">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center gap-2">
+                                {contact.subscribed ? (
+                                  <MailCheck className="h-4 w-4 text-green-600" />
+                                ) : (
+                                  <MailX className="h-4 w-4 text-red-600" />
+                                )}
+                                <span className="text-sm font-medium text-neutral-900">{contact.email}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  contact.subscribed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                }`}
+                              >
+                                {contact.subscribed ? 'Subscribed' : 'Unsubscribed'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
+                              {new Date(contact.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div className="flex items-center justify-end gap-2">
+                                <Link href={`/contacts/${contact.id}`}>
+                                  <Button variant="ghost" size="sm">
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                </Link>
+                                <Button variant="ghost" size="sm" onClick={() => promptDelete(contact.id)}>
+                                  <Trash2 className="h-4 w-4 text-red-600" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
 
-      {/* Create Contact Dialog */}
-      <CreateContactDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} onSuccess={() => mutate()} />
+                  {/* Pagination Controls */}
+                  {(currentPage > 0 || data?.hasMore) && (
+                    <div className="flex items-center justify-between mt-6 pt-6 border-t border-neutral-200">
+                      <div className="text-sm text-neutral-600">
+                        Showing <span className="font-medium text-neutral-900">{currentPage * pageSize + 1}</span> to{' '}
+                        <span className="font-medium text-neutral-900">{currentPage * pageSize + contacts.length}</span>
+                        {totalCount > 0 && (
+                          <>
+                            {' '}
+                            of <span className="font-medium text-neutral-900">{totalCount.toLocaleString()}</span>
+                          </>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={handlePreviousPage}
+                          disabled={currentPage === 0 || isLoading}
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                          Previous
+                        </Button>
+                        <Button variant="outline" onClick={handleNextPage} disabled={!data?.hasMore || isLoading}>
+                          Next
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Import Contacts Dialog */}
-      <ImportContactsDialog open={showImportDialog} onOpenChange={setShowImportDialog} onSuccess={() => mutate()} />
+        {/* Create Contact Dialog */}
+        <CreateContactDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} onSuccess={() => mutate()} />
 
-      {/* Delete Confirmation Dialog */}
-      <ConfirmDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        onConfirm={handleDelete}
-        title="Delete Contact"
-        description="Are you sure you want to delete this contact? This action cannot be undone."
-        confirmText="Delete"
-        variant="destructive"
-      />
-    </DashboardLayout>
+        {/* Import Contacts Dialog */}
+        <ImportContactsDialog open={showImportDialog} onOpenChange={setShowImportDialog} onSuccess={() => mutate()} />
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          onConfirm={handleDelete}
+          title="Delete Contact"
+          description="Are you sure you want to delete this contact? This action cannot be undone."
+          confirmText="Delete"
+          variant="destructive"
+        />
+      </DashboardLayout>
     </>
   );
 }
@@ -462,9 +466,23 @@ function ImportContactsDialog({open, onOpenChange, onSuccess}: ImportContactsDia
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'failed'>('idle');
   const [result, setResult] = useState<ImportResult | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [showCloseConfirmDialog, setShowCloseConfirmDialog] = useState(false);
+
+  // Helper function to truncate long file names from the middle
+  const truncateFileName = (fileName: string, maxLength: number = 30) => {
+    if (fileName.length <= maxLength) return fileName;
+
+    const extension = fileName.substring(fileName.lastIndexOf('.'));
+    const nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
+    const charsToShow = maxLength - extension.length - 3; // 3 for "..."
+    const frontChars = Math.ceil(charsToShow / 2);
+    const backChars = Math.floor(charsToShow / 2);
+
+    return `${nameWithoutExt.substring(0, frontChars)}...${nameWithoutExt.substring(nameWithoutExt.length - backChars)}${extension}`;
+  };
 
   // Clean up polling on unmount or dialog close
   useEffect(() => {
@@ -480,6 +498,7 @@ function ImportContactsDialog({open, onOpenChange, onSuccess}: ImportContactsDia
         setProgress(0);
         setStatus('idle');
         setResult(null);
+        setErrorMessage(null);
       }, 300);
     }
   }, [open]);
@@ -511,6 +530,7 @@ function ImportContactsDialog({open, onOpenChange, onSuccess}: ImportContactsDia
         state: string;
         progress: number;
         result: ImportResult | null;
+        failedReason?: string;
       }>('GET', `/contacts/import/${jobId}`);
 
       setProgress(response.progress || 0);
@@ -541,7 +561,10 @@ function ImportContactsDialog({open, onOpenChange, onSuccess}: ImportContactsDia
           clearInterval(pollIntervalRef.current);
           pollIntervalRef.current = null;
         }
-        toast.error('Import failed. Please try again.');
+        // Store and show the specific error message if available, otherwise show generic error
+        const errorMsg = response.failedReason || 'Import failed. Please check your CSV file and try again.';
+        setErrorMessage(errorMsg);
+        toast.error(errorMsg);
       } else if (response.state === 'active') {
         setStatus('processing');
       }
@@ -579,7 +602,9 @@ function ImportContactsDialog({open, onOpenChange, onSuccess}: ImportContactsDia
         void pollJobStatus(data.jobId);
       }, 1000); // Poll every second
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to upload file');
+      const errorMsg = error instanceof Error ? error.message : 'Failed to upload file';
+      setErrorMessage(errorMsg);
+      toast.error(errorMsg);
       setStatus('failed');
     } finally {
       setIsUploading(false);
@@ -615,6 +640,9 @@ function ImportContactsDialog({open, onOpenChange, onSuccess}: ImportContactsDia
                 <li>
                   Required column: <code className="bg-blue-100 px-1 rounded">email</code>
                 </li>
+                <li>
+                  Optional: <code className="bg-blue-100 px-1 rounded">subscribed</code> (true/false, 1/0, yes/no)
+                </li>
                 <li>Optional: Add any custom fields (e.g., firstName, lastName, plan)</li>
                 <li>Maximum file size: 5MB</li>
               </ul>
@@ -640,7 +668,7 @@ function ImportContactsDialog({open, onOpenChange, onSuccess}: ImportContactsDia
                     type="button"
                   >
                     <FileUp className="h-4 w-4 mr-2" />
-                    {file ? file.name : 'Choose CSV File'}
+                    {file ? truncateFileName(file.name) : 'Choose CSV File'}
                   </Button>
                 </div>
               </div>
@@ -725,7 +753,9 @@ function ImportContactsDialog({open, onOpenChange, onSuccess}: ImportContactsDia
                   <XCircle className="h-5 w-5" />
                   <span className="font-medium">Import failed</span>
                 </div>
-                <p className="text-sm text-red-800 mt-1">Please check your CSV file and try again.</p>
+                <p className="text-sm text-red-800 mt-1">
+                  {errorMessage || 'Please check your CSV file and try again.'}
+                </p>
               </div>
             )}
           </div>

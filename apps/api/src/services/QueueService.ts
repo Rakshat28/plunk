@@ -316,6 +316,7 @@ export class QueueService {
     const state = await job.getState();
     const progress = job.progress;
     const returnValue = job.returnvalue;
+    const failedReason = job.failedReason;
 
     return {
       id: job.id,
@@ -323,6 +324,7 @@ export class QueueService {
       progress,
       result: returnValue,
       data: job.data,
+      failedReason,
     };
   }
 

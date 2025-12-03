@@ -25,7 +25,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  StickySaveBar,
+  StickySaveBar
 } from '@plunk/ui';
 import type {Campaign, Segment} from '@plunk/db';
 import {CampaignAudienceType, CampaignStatus} from '@plunk/db';
@@ -36,7 +36,20 @@ import {EmailEditor} from '../../components/EmailEditor';
 import {network} from '../../lib/network';
 import {formatFullDateTime, formatUTCDateTime, getUserTimezone, schedulePresets} from '../../lib/dateUtils';
 import {useChangeTracking} from '../../lib/hooks/useChangeTracking';
-import {ArrowLeft, Calendar, ChevronDown, Mail, MousePointer, Save, Send, TestTube, Trash2, TrendingUp, Users, XCircle} from 'lucide-react';
+import {
+  ArrowLeft,
+  Calendar,
+  ChevronDown,
+  Mail,
+  MousePointer,
+  Save,
+  Send,
+  TestTube,
+  Trash2,
+  TrendingUp,
+  Users,
+  XCircle
+} from 'lucide-react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
@@ -775,7 +788,7 @@ export default function CampaignDetailsPage() {
                 </div>
                 <div className="w-full bg-neutral-200 rounded-full h-3">
                   <div
-                    className="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 rounded-full transition-all duration-500"
+                    className="bg-blue-500 h-3 rounded-full transition-all duration-500"
                     style={{width: `${(s.sentCount / s.totalRecipients) * 100}%`}}
                   />
                 </div>

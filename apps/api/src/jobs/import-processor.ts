@@ -96,16 +96,26 @@ export function createImportWorker() {
                 continue;
               }
 
-              // Extract custom data (all fields except email)
-              const {email: _, ...customData} = record;
+              // Extract subscribed field if present
+              const subscribedValue = record.subscribed;
+              let subscribed: boolean | undefined;
+
+              if (subscribedValue !== undefined && subscribedValue !== '') {
+                // Handle various truthy/falsy values
+                const lowerValue = subscribedValue.toLowerCase().trim();
+                subscribed = lowerValue === 'true' || lowerValue === '1' || lowerValue === 'yes';
+              }
+
+              // Extract custom data (all fields except email and subscribed)
+              const {email: _, subscribed: __, ...customData} = record;
               const data = Object.keys(customData).length > 0 ? customData : undefined;
 
               // Check if contact exists before upserting
               const existingContact = await ContactService.findByEmail(projectId, email);
               const isUpdate = !!existingContact;
 
-              // Upsert contact
-              await ContactService.upsert(projectId, email, data, true);
+              // Upsert contact with subscribed value from CSV if provided, otherwise default to true
+              await ContactService.upsert(projectId, email, data, subscribed ?? true);
 
               result.successCount++;
               if (isUpdate) {
