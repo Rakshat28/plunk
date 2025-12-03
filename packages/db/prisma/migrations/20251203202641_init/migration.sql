@@ -451,6 +451,18 @@ CREATE INDEX "emails_createdAt_idx" ON "emails"("createdAt");
 CREATE INDEX "emails_projectId_sourceType_createdAt_idx" ON "emails"("projectId", "sourceType", "createdAt");
 
 -- CreateIndex
+CREATE INDEX "emails_contactId_openedAt_idx" ON "emails"("contactId", "openedAt");
+
+-- CreateIndex
+CREATE INDEX "emails_contactId_clickedAt_idx" ON "emails"("contactId", "clickedAt");
+
+-- CreateIndex
+CREATE INDEX "emails_contactId_bouncedAt_idx" ON "emails"("contactId", "bouncedAt");
+
+-- CreateIndex
+CREATE INDEX "emails_contactId_complainedAt_idx" ON "emails"("contactId", "complainedAt");
+
+-- CreateIndex
 CREATE INDEX "events_projectId_name_idx" ON "events"("projectId", "name");
 
 -- CreateIndex
@@ -461,6 +473,12 @@ CREATE INDEX "events_emailId_idx" ON "events"("emailId");
 
 -- CreateIndex
 CREATE INDEX "events_createdAt_idx" ON "events"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "events_projectId_contactId_name_createdAt_idx" ON "events"("projectId", "contactId", "name", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "events_contactId_name_createdAt_idx" ON "events"("contactId", "name", "createdAt");
 
 -- CreateIndex
 CREATE INDEX "api_requests_projectId_createdAt_idx" ON "api_requests"("projectId", "createdAt" DESC);
@@ -484,7 +502,7 @@ CREATE INDEX "api_requests_projectId_statusCode_createdAt_idx" ON "api_requests"
 ALTER TABLE "memberships" ADD CONSTRAINT "memberships_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "memberships" ADD CONSTRAINT "memberships_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "projects"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "memberships" ADD CONSTRAINT "memberships_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "domains" ADD CONSTRAINT "domains_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -1,20 +1,10 @@
 import {randomBytes} from 'node:crypto';
 
-import {Controller, Get, Middleware, Patch, Post, Put} from '@overnightjs/core';
+import {Controller, Delete, Get, Middleware, Patch, Post, Put} from '@overnightjs/core';
 import {BillingLimitSchemas, ProjectSchemas} from '@plunk/shared';
 import type {NextFunction, Request, Response} from 'express';
 
-import {
-  DASHBOARD_URI,
-  SMTP_DOMAIN,
-  SMTP_ENABLED,
-  SMTP_PORT_SECURE,
-  SMTP_PORT_SUBMISSION,
-  STRIPE_ENABLED,
-  STRIPE_PRICE_EMAIL_USAGE,
-  STRIPE_PRICE_ONBOARDING,
-  TRACKING_TOGGLE_ENABLED,
-} from '../app/constants.js';
+import {DASHBOARD_URI, STRIPE_ENABLED, STRIPE_PRICE_EMAIL_USAGE, STRIPE_PRICE_ONBOARDING} from '../app/constants.js';
 import {stripe} from '../app/stripe.js';
 import {prisma} from '../database/prisma.js';
 import {NotAuthenticated, NotFound} from '../exceptions/index.js';
@@ -86,7 +76,7 @@ export class Users {
         members: {
           create: {
             userId: auth.userId,
-            role: 'ADMIN',
+            role: 'OWNER',
           },
         },
       },
@@ -613,5 +603,144 @@ export class Users {
     const metrics = await SecurityService.getProjectSecurityMetrics(id);
 
     return res.status(200).json(metrics);
+  }
+
+  @Post('@me/projects/:id/reset')
+  @Middleware([isAuthenticated])
+  @CatchAsync
+  public async resetProject(req: Request, res: Response, next: NextFunction) {
+    const auth = res.locals.auth as AuthResponse;
+    const {id} = req.params;
+
+    if (!auth.userId) {
+      throw new NotAuthenticated();
+    }
+
+    if (!id) {
+      throw new NotFound('Project ID is required');
+    }
+
+    // Verify user has admin/owner access to this project
+    const membership = await prisma.membership.findFirst({
+      where: {
+        userId: auth.userId,
+        projectId: id,
+        role: {
+          in: ['ADMIN', 'OWNER'],
+        },
+      },
+    });
+
+    if (!membership) {
+      throw new NotFound('Project not found or you do not have permission to reset it');
+    }
+
+    // Delete all project data in a transaction
+    await prisma.$transaction(async tx => {
+      // Delete all emails
+      await tx.email.deleteMany({
+        where: {projectId: id},
+      });
+
+      // Delete all events
+      await tx.event.deleteMany({
+        where: {projectId: id},
+      });
+
+      // Delete all campaigns
+      await tx.campaign.deleteMany({
+        where: {projectId: id},
+      });
+
+      // Delete all workflows
+      await tx.workflow.deleteMany({
+        where: {projectId: id},
+      });
+
+      // Delete all segments
+      await tx.segment.deleteMany({
+        where: {projectId: id},
+      });
+
+      // Delete all contacts
+      await tx.contact.deleteMany({
+        where: {projectId: id},
+      });
+
+      // Delete all templates
+      await tx.template.deleteMany({
+        where: {projectId: id},
+      });
+
+      // Delete all API requests
+      await tx.apiRequest.deleteMany({
+        where: {projectId: id},
+      });
+    });
+
+    return res.status(200).json({success: true, message: 'Project reset successfully'});
+  }
+
+  @Delete('@me/projects/:id')
+  @Middleware([isAuthenticated])
+  @CatchAsync
+  public async deleteProject(req: Request, res: Response, next: NextFunction) {
+    const auth = res.locals.auth as AuthResponse;
+    const {id} = req.params;
+
+    if (!auth.userId) {
+      throw new NotAuthenticated();
+    }
+
+    if (!id) {
+      throw new NotFound('Project ID is required');
+    }
+
+    // Verify user has owner or admin access to this project
+    const membership = await prisma.membership.findFirst({
+      where: {
+        userId: auth.userId,
+        projectId: id,
+        role: {
+          in: ['OWNER', 'ADMIN'],
+        },
+      },
+    });
+
+    if (!membership) {
+      throw new NotFound(
+        'Project not found or you do not have permission to delete it. Only project owners and admins can delete projects.',
+      );
+    }
+
+    // Get project to check for active subscription
+    const project = await prisma.project.findUnique({
+      where: {id},
+      select: {
+        subscription: true,
+        customer: true,
+      },
+    });
+
+    if (!project) {
+      throw new NotFound('Project not found');
+    }
+
+    // If project has an active subscription, cancel it first
+    if (STRIPE_ENABLED && stripe && project.subscription) {
+      try {
+        await stripe.subscriptions.cancel(project.subscription);
+      } catch (error) {
+        // Log but don't fail if subscription cancellation fails
+        console.error('Failed to cancel subscription:', error);
+      }
+    }
+
+    // Delete the project (cascading deletes will handle related data)
+    await prisma.project.delete({
+      where: {id},
+    });
+
+    return res.status(200).json({success: true, message: 'Project deleted successfully'});
   }
 }
