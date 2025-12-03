@@ -5,6 +5,7 @@ import signale from 'signale';
 import {DASHBOARD_URI, LANDING_URI, STRIPE_ENABLED} from '../app/constants.js';
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
+import {renderTemplate} from '@plunk/shared';
 
 import {BillingLimitService} from './BillingLimitService.js';
 import {DomainService} from './DomainService.js';
@@ -552,28 +553,15 @@ export class EmailService {
 
   /**
    * Format email template by replacing variables in subject and body
-   * Supports {{variable}} and {{variable ?? defaultValue}} syntax
+   * Uses shared template rendering from @plunk/shared
    */
   public static format({subject, body, data}: {subject: string; body: string; data: Record<string, unknown>}): {
     subject: string;
     body: string;
   } {
-    const replaceVariables = (text: string) => {
-      return text.replace(/\{\{(.*?)\}\}/g, (match, key) => {
-        const [mainKey, defaultValue] = key.split('??').map((s: string) => s.trim());
-
-        // Handle array values (for lists)
-        if (Array.isArray(data[mainKey])) {
-          return data[mainKey].map((e: string) => `<li>${e}</li>`).join('\n');
-        }
-
-        return data[mainKey] ?? defaultValue ?? '';
-      });
-    };
-
     return {
-      subject: replaceVariables(subject),
-      body: replaceVariables(body),
+      subject: renderTemplate(subject, data),
+      body: renderTemplate(body, data),
     };
   }
 

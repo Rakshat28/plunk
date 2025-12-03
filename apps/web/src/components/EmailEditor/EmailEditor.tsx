@@ -12,6 +12,7 @@ import {ResizableImage} from './ResizableImage';
 import {useContactFields, useContacts} from '../../lib/hooks/useContacts';
 import {useConfig} from '../../lib/hooks/useConfig';
 import {useEffect, useRef, useState} from 'react';
+import {renderTemplate} from '@plunk/shared';
 import {
   Button,
   Dialog,
@@ -276,32 +277,7 @@ export function EmailEditor({value, onChange, placeholder, subject, from, replyT
   };
 
   const replaceVariables = (text: string, contactData: Record<string, unknown>) => {
-    return text.replace(/\{\{(.*?)\}\}/g, (match, key) => {
-      const [mainKey, defaultValue] = key.split('??').map((s: string) => s.trim());
-
-      // Handle special variables
-      if (mainKey === 'unsubscribeUrl') return contactData.unsubscribeUrl || defaultValue || '#';
-      if (mainKey === 'subscribeUrl') return contactData.subscribeUrl || defaultValue || '#';
-      if (mainKey === 'manageUrl') return contactData.manageUrl || defaultValue || '#';
-
-      // Handle nested property access (e.g., data.firstName)
-      const getValue = (obj: Record<string, unknown>, path: string): unknown => {
-        return path.split('.').reduce((current: Record<string, unknown> | unknown, key) => {
-          if (current && typeof current === 'object' && !Array.isArray(current)) {
-            return (current as Record<string, unknown>)[key];
-          }
-          return undefined;
-        }, obj);
-      };
-
-      // Try multiple lookup strategies
-      const value =
-        getValue(contactData, mainKey) || // Try as nested path (e.g., data.firstName)
-        contactData[mainKey] || // Try as top-level property
-        (contactData.data as Record<string, unknown>)?.[mainKey]; // Try in data object
-
-      return value ?? defaultValue ?? '';
-    });
+    return renderTemplate(text, contactData);
   };
 
   const getPreviewHtml = () => {

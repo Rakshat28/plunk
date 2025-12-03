@@ -8,7 +8,7 @@ import type {
   Workflow,
 } from '@plunk/db';
 import {StepExecutionStatus, WorkflowExecutionStatus} from '@plunk/db';
-import {WorkflowStepConfigSchemas} from '@plunk/shared';
+import {WorkflowStepConfigSchemas, renderTemplate} from '@plunk/shared';
 
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
@@ -863,16 +863,10 @@ export class WorkflowExecutionService {
 
   /**
    * Helper: Render template with variables
+   * Uses shared template rendering from @plunk/shared
    */
   private static renderTemplate(template: string, variables: Record<string, unknown>): string {
-    let rendered = template;
-
-    for (const [key, value] of Object.entries(variables)) {
-      const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
-      rendered = rendered.replace(regex, String(value || ''));
-    }
-
-    return rendered;
+    return renderTemplate(template, variables);
   }
 
   /**
