@@ -2,6 +2,7 @@ import {type Contact, Prisma} from '@plunk/db';
 
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
+import {EventService} from './EventService.js';
 
 export interface PaginatedContacts {
   contacts: Contact[];
@@ -155,7 +156,6 @@ export class ContactService {
 
       // Track subscription event if status changed
       if (isSubscriptionChanging) {
-        const {EventService} = await import('./EventService.js');
         if (data.subscribed && !wasSubscribed) {
           await EventService.trackEvent(projectId, 'contact.subscribed', contactId);
         } else if (!data.subscribed && wasSubscribed) {
@@ -263,7 +263,6 @@ export class ContactService {
 
       // Track subscription event if status changed
       if (isSubscriptionChanging) {
-        const {EventService} = await import('./EventService.js');
         if (subscribed && !wasSubscribed) {
           await EventService.trackEvent(projectId, 'contact.subscribed', updated.id);
         } else if (!subscribed && wasSubscribed) {
@@ -351,7 +350,6 @@ export class ContactService {
     });
 
     // Track subscription event
-    const {EventService} = await import('./EventService.js');
     await EventService.trackEvent(contact.projectId, 'contact.subscribed', contactId);
 
     return contact;
@@ -367,7 +365,6 @@ export class ContactService {
     });
 
     // Track unsubscription event
-    const {EventService} = await import('./EventService.js');
     await EventService.trackEvent(contact.projectId, 'contact.unsubscribed', contactId);
 
     return contact;

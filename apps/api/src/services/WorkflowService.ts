@@ -6,6 +6,7 @@ import {HttpException} from '../exceptions/index.js';
 
 import {EventService} from './EventService.js';
 import {ContactService} from './ContactService.js';
+import {WorkflowExecutionService} from './WorkflowExecutionService.js';
 
 export interface PaginatedWorkflows {
   workflows: Workflow[];
@@ -749,7 +750,6 @@ export class WorkflowService {
 
     // Start executing the workflow asynchronously
     // Don't await - let it run in background
-    const {WorkflowExecutionService} = await import('./WorkflowExecutionService.js');
     WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id).catch(error => {
       console.error('Error executing workflow:', error);
     });

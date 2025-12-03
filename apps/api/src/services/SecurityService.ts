@@ -2,6 +2,7 @@ import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
+import {QueueService} from './QueueService.js';
 
 /**
  * Security thresholds for bounce and complaint rates
@@ -324,7 +325,6 @@ export class SecurityService {
 
       // Cancel all pending jobs for this project
       try {
-        const {QueueService} = await import('./QueueService.js');
         await QueueService.cancelAllProjectJobs(projectId);
         signale.info(`[SECURITY] Cancelled all pending jobs for project ${projectId}`);
       } catch (error) {

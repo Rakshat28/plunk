@@ -2,6 +2,7 @@ import {type Job, Queue} from 'bullmq';
 import type {RedisOptions} from 'ioredis';
 
 import {REDIS_URL} from '../app/constants.js';
+import {prisma} from '../database/prisma.js';
 
 /**
  * Queue Job Data Types
@@ -441,7 +442,6 @@ export class QueueService {
     for (const job of scheduledCampaigns) {
       // We need to check if the campaign belongs to this project
       // by looking up the campaign in the database
-      const {prisma} = await import('../database/prisma.js');
       const campaign = await prisma.campaign.findUnique({
         where: {id: job.data.campaignId},
         select: {projectId: true},
@@ -456,7 +456,6 @@ export class QueueService {
     // Cancel all pending emails for this project
     const pendingEmails = await emailQueue.getJobs(['waiting', 'delayed']);
     for (const job of pendingEmails) {
-      const {prisma} = await import('../database/prisma.js');
       const email = await prisma.email.findUnique({
         where: {id: job.data.emailId},
         select: {projectId: true},
@@ -471,7 +470,6 @@ export class QueueService {
     // Cancel all pending campaign batches for this project
     const campaignBatches = await campaignQueue.getJobs(['waiting', 'delayed']);
     for (const job of campaignBatches) {
-      const {prisma} = await import('../database/prisma.js');
       const campaign = await prisma.campaign.findUnique({
         where: {id: job.data.campaignId},
         select: {projectId: true},
@@ -486,7 +484,6 @@ export class QueueService {
     // Cancel all pending workflow steps for this project
     const workflowSteps = await workflowQueue.getJobs(['waiting', 'delayed']);
     for (const job of workflowSteps) {
-      const {prisma} = await import('../database/prisma.js');
       const execution = await prisma.workflowExecution.findUnique({
         where: {id: job.data.executionId},
         select: {workflow: {select: {projectId: true}}},

@@ -12,6 +12,7 @@ import {WorkflowStepConfigSchemas} from '@plunk/shared';
 
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
+import {DASHBOARD_URI} from '../app/constants.js';
 
 import {EmailService} from './EmailService.js';
 import {QueueService} from './QueueService.js';
@@ -446,6 +447,10 @@ export class WorkflowExecutionService {
       email: contact.email,
       ...contactData,
       ...executionContext,
+      data: contactData,
+      unsubscribeUrl: `${DASHBOARD_URI}/unsubscribe/${contact.id}`,
+      subscribeUrl: `${DASHBOARD_URI}/subscribe/${contact.id}`,
+      manageUrl: `${DASHBOARD_URI}/manage/${contact.id}`,
     };
 
     const renderedSubject = this.renderTemplate(step.template.subject, variables);

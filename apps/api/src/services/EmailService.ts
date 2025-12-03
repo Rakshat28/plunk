@@ -333,6 +333,10 @@ export class EmailService {
         data: {
           email: email.contact.email,
           ...contactData,
+          data: contactData,
+          unsubscribeUrl: `${DASHBOARD_URI}/unsubscribe/${email.contact.id}`,
+          subscribeUrl: `${DASHBOARD_URI}/subscribe/${email.contact.id}`,
+          manageUrl: `${DASHBOARD_URI}/manage/${email.contact.id}`,
         },
       });
 
@@ -466,7 +470,6 @@ export class EmailService {
             data: {subscribed: false},
           });
           // Track unsubscription event
-          const {EventService} = await import('./EventService.js');
           await EventService.trackEvent(email.projectId, 'contact.unsubscribed', email.contactId, email.id, {
             reason: 'bounce',
           });
@@ -483,7 +486,6 @@ export class EmailService {
             data: {subscribed: false},
           });
           // Track unsubscription event
-          const {EventService} = await import('./EventService.js');
           await EventService.trackEvent(email.projectId, 'contact.unsubscribed', email.contactId, email.id, {
             reason: 'complaint',
           });

@@ -3,7 +3,6 @@
  * Processes individual emails from the queue (for all sources: transactional, campaign, workflow)
  */
 
-import type {Prisma} from '@plunk/db';
 import {EmailSourceType, EmailStatus} from '@plunk/db';
 import {type Job, Worker} from 'bullmq';
 
@@ -13,6 +12,7 @@ import {EventService} from '../services/EventService.js';
 import {MeterService} from '../services/MeterService.js';
 import {emailQueue, type SendEmailJobData} from '../services/QueueService.js';
 import {sendRawEmail} from '../services/SESService.js';
+import {DASHBOARD_URI} from '../app/constants.js';
 
 export function createEmailWorker() {
   const worker = new Worker<SendEmailJobData>(
@@ -64,6 +64,10 @@ export function createEmailWorker() {
           data: {
             email: email.contact.email,
             ...contactData,
+            data: contactData,
+            unsubscribeUrl: `${DASHBOARD_URI}/unsubscribe/${email.contact.id}`,
+            subscribeUrl: `${DASHBOARD_URI}/subscribe/${email.contact.id}`,
+            manageUrl: `${DASHBOARD_URI}/manage/${email.contact.id}`,
           },
         });
 

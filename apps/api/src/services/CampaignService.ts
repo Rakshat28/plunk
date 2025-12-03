@@ -10,6 +10,8 @@ import {DomainService} from './DomainService.js';
 import {EmailService} from './EmailService.js';
 import {QueueService} from './QueueService.js';
 import {SegmentService} from './SegmentService.js';
+import {DASHBOARD_URI} from '../app/constants.js';
+import {sendRawEmail} from './SESService.js';
 
 const BATCH_SIZE = 500; // Number of emails to process per batch (increased for better performance)
 
@@ -369,6 +371,10 @@ export class CampaignService {
         const variables = {
           email: contact.email,
           ...contactData,
+          data: contactData,
+          unsubscribeUrl: `${DASHBOARD_URI}/unsubscribe/${contact.id}`,
+          subscribeUrl: `${DASHBOARD_URI}/subscribe/${contact.id}`,
+          manageUrl: `${DASHBOARD_URI}/manage/${contact.id}`,
         };
 
         const renderedSubject = EmailService.format({
@@ -506,6 +512,60 @@ export class CampaignService {
   }
 
   /**
+   * Send a test email for a campaign
+   */
+  public static async sendTest(projectId: string, campaignId: string, testEmail: string): Promise<void> {
+    const campaign = await this.get(projectId, campaignId);
+
+    // Validate that the test email belongs to a project member
+    const membership = await prisma.membership.findFirst({
+      where: {
+        projectId,
+        user: {
+          email: testEmail,
+        },
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    if (!membership) {
+      throw new HttpException(403, 'Test emails can only be sent to project members');
+    }
+
+    // Verify domain is registered and verified before sending
+    await DomainService.verifyEmailDomain(campaign.from, projectId);
+
+    // Get project to validate from address
+    const project = await prisma.project.findUnique({
+      where: {id: projectId},
+    });
+
+    if (!project) {
+      throw new HttpException(404, 'Project not found');
+    }
+
+    // Prepare the email content (no variable replacement for test emails)
+    await sendRawEmail({
+      from: {
+        name: campaign.fromName || project.name || 'Plunk',
+        email: campaign.from,
+      },
+      to: [testEmail],
+      content: {
+        subject: `[TEST] ${campaign.subject}`,
+        html: campaign.body,
+      },
+      reply: campaign.replyTo || undefined,
+      headers: {
+        'X-Plunk-Test': 'true',
+      },
+      tracking: false, // Disable tracking for test emails
+    });
+  }
+
+  /**
    * Get recipient count for a campaign
    */
   private static async getRecipientCount(projectId: string, campaign: Campaign): Promise<number> {
@@ -631,61 +691,5 @@ export class CampaignService {
       ...baseWhere,
       ...segmentWhere,
     };
-  }
-
-  /**
-   * Send a test email for a campaign
-   */
-  public static async sendTest(projectId: string, campaignId: string, testEmail: string): Promise<void> {
-    const campaign = await this.get(projectId, campaignId);
-
-    // Validate that the test email belongs to a project member
-    const membership = await prisma.membership.findFirst({
-      where: {
-        projectId,
-        user: {
-          email: testEmail,
-        },
-      },
-      include: {
-        user: true,
-      },
-    });
-
-    if (!membership) {
-      throw new HttpException(403, 'Test emails can only be sent to project members');
-    }
-
-    // Verify domain is registered and verified before sending
-    await DomainService.verifyEmailDomain(campaign.from, projectId);
-
-    // Get project to validate from address
-    const project = await prisma.project.findUnique({
-      where: {id: projectId},
-    });
-
-    if (!project) {
-      throw new HttpException(404, 'Project not found');
-    }
-
-    // Prepare the email content (no variable replacement for test emails)
-    const {sendRawEmail} = await import('./SESService.js');
-
-    await sendRawEmail({
-      from: {
-        name: campaign.fromName || project.name || 'Plunk',
-        email: campaign.from,
-      },
-      to: [testEmail],
-      content: {
-        subject: `[TEST] ${campaign.subject}`,
-        html: campaign.body,
-      },
-      reply: campaign.replyTo || undefined,
-      headers: {
-        'X-Plunk-Test': 'true',
-      },
-      tracking: false, // Disable tracking for test emails
-    });
   }
 }
