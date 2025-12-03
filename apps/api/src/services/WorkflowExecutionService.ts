@@ -9,6 +9,7 @@ import type {
 } from '@plunk/db';
 import {StepExecutionStatus, WorkflowExecutionStatus} from '@plunk/db';
 import {WorkflowStepConfigSchemas, renderTemplate} from '@plunk/shared';
+import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
@@ -41,7 +42,9 @@ export class WorkflowExecutionService {
    * This is the main entry point for executing workflow steps
    */
   public static async processStepExecution(executionId: string, stepId: string): Promise<void> {
-    const execution = await prisma.workflowExecution.findUnique({
+    signale.info(`[WORKFLOW] Processing step execution: ${executionId} -> ${stepId}`);
+
+    const initialExecution = await prisma.workflowExecution.findUnique({
       where: {id: executionId},
       include: {
         workflow: {
@@ -64,18 +67,26 @@ export class WorkflowExecutionService {
       },
     });
 
-    if (!execution) {
+    if (!initialExecution) {
+      signale.error(`[WORKFLOW] Execution ${executionId} not found`);
       throw new HttpException(404, 'Workflow execution not found');
     }
 
-    if (execution.status !== WorkflowExecutionStatus.RUNNING) {
+    signale.info(`[WORKFLOW] Execution ${executionId} status: ${initialExecution.status}`);
+
+    // For WAITING executions, check if this is a delayed step that's ready to execute
+    if (initialExecution.status === WorkflowExecutionStatus.WAITING) {
+      signale.info(`[WORKFLOW] Execution ${executionId} is WAITING, resuming from delay`);
+      // This is a delayed step - continue with execution
+    } else if (initialExecution.status !== WorkflowExecutionStatus.RUNNING) {
+      signale.info(`[WORKFLOW] Execution ${executionId} already completed or cancelled with status ${initialExecution.status}, skipping`);
       return; // Already completed or cancelled
     }
 
     // Check if project is disabled
-    if (execution.workflow.project.disabled) {
-      console.warn(
-        `[WORKFLOW] Project ${execution.workflow.projectId} (${execution.workflow.project.name}) is disabled, cancelling workflow execution ${executionId}`,
+    if (initialExecution.workflow.project.disabled) {
+      signale.warn(
+        `[WORKFLOW] Project ${initialExecution.workflow.projectId} (${initialExecution.workflow.project.name}) is disabled, cancelling workflow execution ${executionId}`,
       );
       await prisma.workflowExecution.update({
         where: {id: executionId},
@@ -92,16 +103,68 @@ export class WorkflowExecutionService {
     // Note: We allow running executions to complete even if workflow is disabled
     // This prevents disruption to contacts who are already in the workflow
     // Only NEW executions are prevented when workflow is disabled (see startExecution in WorkflowService)
-    if (!execution.workflow.enabled) {
-      console.info(
-        `[WORKFLOW] Workflow ${execution.workflow.id} (${execution.workflow.name}) is disabled, but allowing execution ${executionId} to continue`,
+    if (!initialExecution.workflow.enabled) {
+      signale.info(
+        `[WORKFLOW] Workflow ${initialExecution.workflow.id} (${initialExecution.workflow.name}) is disabled, but allowing execution ${executionId} to continue`,
       );
       // Allow execution to continue - no action needed
     }
 
-    const step = execution.workflow.steps.find(s => s.id === stepId);
+    const step = initialExecution.workflow.steps.find(s => s.id === stepId);
     if (!step) {
+      signale.error(`[WORKFLOW] Step ${stepId} not found in workflow ${initialExecution.workflow.id}`);
       throw new HttpException(404, 'Step not found in workflow');
+    }
+
+    signale.info(`[WORKFLOW] Found step: ${step.name} (${step.type})`);
+
+    // Track if this execution was in WAITING state (meaning it's a delayed step)
+    const isResumingFromDelay = initialExecution.status === WorkflowExecutionStatus.WAITING;
+
+    // If workflow execution is WAITING (e.g., from a delay), set it back to RUNNING
+    let execution = initialExecution;
+    if (initialExecution.status === WorkflowExecutionStatus.WAITING) {
+      signale.info(`[WORKFLOW] Setting execution ${executionId} from WAITING to RUNNING`);
+      await prisma.workflowExecution.update({
+        where: {id: executionId},
+        data: {
+          status: WorkflowExecutionStatus.RUNNING,
+          currentStepId: stepId,
+        },
+      });
+
+      // Re-fetch the execution with the updated status
+      const updatedExecution = await prisma.workflowExecution.findUnique({
+        where: {id: executionId},
+        include: {
+          workflow: {
+            include: {
+              steps: {
+                include: {
+                  template: true,
+                  outgoingTransitions: {
+                    orderBy: {priority: 'asc'},
+                    include: {toStep: true},
+                  },
+                },
+              },
+              project: {
+                select: {disabled: true, id: true, name: true},
+              },
+            },
+          },
+          contact: true,
+        },
+      });
+
+      if (!updatedExecution) {
+        signale.error(`[WORKFLOW] Execution ${executionId} not found after status update`);
+        throw new HttpException(404, 'Workflow execution not found');
+      }
+
+      execution = updatedExecution;
+
+      signale.info(`[WORKFLOW] Execution ${executionId} status updated to RUNNING`);
     }
 
     // Create or get step execution record
@@ -114,14 +177,21 @@ export class WorkflowExecutionService {
     });
 
     if (!stepExecution) {
-      stepExecution = await prisma.workflowStepExecution.create({
-        data: {
-          executionId,
-          stepId,
-          status: StepExecutionStatus.RUNNING,
-          startedAt: new Date(),
-        },
-      });
+      signale.info(`[WORKFLOW] Creating new step execution for ${executionId} -> ${stepId}`);
+      try {
+        stepExecution = await prisma.workflowStepExecution.create({
+          data: {
+            executionId,
+            stepId,
+            status: StepExecutionStatus.RUNNING,
+            startedAt: new Date(),
+          },
+        });
+        signale.info(`[WORKFLOW] Created step execution ${stepExecution.id}`);
+      } catch (error) {
+        signale.error(`[WORKFLOW] Failed to create step execution for ${executionId} -> ${stepId}:`, error);
+        throw error;
+      }
     } else {
       stepExecution = await prisma.workflowStepExecution.update({
         where: {id: stepExecution.id},
@@ -130,11 +200,14 @@ export class WorkflowExecutionService {
           startedAt: stepExecution.startedAt || new Date(),
         },
       });
+      signale.info(`[WORKFLOW] Updated existing step execution ${stepExecution.id} to RUNNING`);
     }
 
     try {
       // Execute the step based on its type
+      signale.info(`[WORKFLOW] Executing step ${stepId} of type ${step.type}`);
       const result = await this.executeStep(step, execution, stepExecution);
+      signale.info(`[WORKFLOW] Step ${stepId} executed successfully`);
 
       // Check if step is in a waiting state (WAIT_FOR_EVENT steps only)
       // DELAY steps now mark themselves as COMPLETED and queue the next step
@@ -148,14 +221,17 @@ export class WorkflowExecutionService {
       }
 
       // Check if the workflow execution is now in WAITING state (DELAY steps do this)
-      // If so, the step has already been handled and queued - don't process next steps
-      const updatedExecution = await prisma.workflowExecution.findUnique({
-        where: {id: execution.id},
-      });
+      // Only check this if we're NOT resuming from a delay - if we are resuming,
+      // we've already set it to RUNNING and the step just executed
+      if (!isResumingFromDelay) {
+        const updatedExecution = await prisma.workflowExecution.findUnique({
+          where: {id: execution.id},
+        });
 
-      if (updatedExecution?.status === WorkflowExecutionStatus.WAITING) {
-        // Workflow is waiting (DELAY step has queued the next step) - don't process next steps now
-        return;
+        if (updatedExecution?.status === WorkflowExecutionStatus.WAITING) {
+          // Workflow is waiting (DELAY step has queued the next step) - don't process next steps now
+          return;
+        }
       }
 
       // Mark step as completed (for normal steps that complete immediately)
@@ -171,7 +247,7 @@ export class WorkflowExecutionService {
       // Determine next step(s) based on transitions and conditions
       await this.processNextSteps(execution, step, result);
     } catch (error) {
-      console.error(`[WORKFLOW] Error executing step ${step.id}:`, error);
+      signale.error(`[WORKFLOW] Error executing step ${step.id}:`, error);
       // Mark step as failed
       await prisma.workflowStepExecution.update({
         where: {id: stepExecution.id},

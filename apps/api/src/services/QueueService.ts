@@ -1,5 +1,6 @@
 import {type Job, Queue} from 'bullmq';
 import type {RedisOptions} from 'ioredis';
+import signale from 'signale';
 
 import {REDIS_URL} from '../app/constants.js';
 import {prisma} from '../database/prisma.js';
@@ -253,7 +254,7 @@ export class QueueService {
 
     if (job) {
       await job.remove();
-      console.log(`[QUEUE] Cancelled timeout job ${jobId}`);
+      signale.info(`[QUEUE] Cancelled timeout job ${jobId}`);
     }
   }
 
@@ -435,7 +436,7 @@ export class QueueService {
    * This should be called when a project is disabled
    */
   public static async cancelAllProjectJobs(projectId: string): Promise<void> {
-    console.log(`[QUEUE] Cancelling all pending jobs for project ${projectId}`);
+    signale.info(`[QUEUE] Cancelling all pending jobs for project ${projectId}`);
 
     // Cancel all scheduled campaigns for this project
     const scheduledCampaigns = await scheduledQueue.getJobs(['waiting', 'delayed']);
@@ -449,7 +450,7 @@ export class QueueService {
 
       if (campaign?.projectId === projectId) {
         await job.remove();
-        console.log(`[QUEUE] Removed scheduled campaign job ${job.id}`);
+        signale.info(`[QUEUE] Removed scheduled campaign job ${job.id}`);
       }
     }
 
@@ -463,7 +464,7 @@ export class QueueService {
 
       if (email?.projectId === projectId) {
         await job.remove();
-        console.log(`[QUEUE] Removed email job ${job.id}`);
+        signale.info(`[QUEUE] Removed email job ${job.id}`);
       }
     }
 
@@ -477,7 +478,7 @@ export class QueueService {
 
       if (campaign?.projectId === projectId) {
         await job.remove();
-        console.log(`[QUEUE] Removed campaign batch job ${job.id}`);
+        signale.info(`[QUEUE] Removed campaign batch job ${job.id}`);
       }
     }
 
@@ -491,11 +492,11 @@ export class QueueService {
 
       if (execution?.workflow.projectId === projectId) {
         await job.remove();
-        console.log(`[QUEUE] Removed workflow step job ${job.id}`);
+        signale.info(`[QUEUE] Removed workflow step job ${job.id}`);
       }
     }
 
-    console.log(`[QUEUE] Finished cancelling jobs for project ${projectId}`);
+    signale.info(`[QUEUE] Finished cancelling jobs for project ${projectId}`);
   }
 
   /**

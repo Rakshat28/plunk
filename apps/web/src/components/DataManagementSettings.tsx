@@ -1,6 +1,7 @@
 import {useState} from 'react';
 import {
   Alert,
+  Badge,
   Button,
   Card,
   CardContent,
@@ -13,7 +14,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  Badge,
   Table,
   TableBody,
   TableCell,
@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@plunk/ui';
-import {Trash2, AlertCircle, Loader2} from 'lucide-react';
+import {AlertCircle, Loader2, Trash2} from 'lucide-react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
 import {useActiveProject} from '../lib/contexts/ActiveProjectProvider';
@@ -76,13 +76,12 @@ export function DataManagementSettings() {
   );
 
   // Filter out standard fields and only show custom data fields
-  const customFields =
-    fieldsData?.fields.filter(f => f.field.startsWith('data.')) || [];
+  const customFields = fieldsData?.fields.filter(f => f.field.startsWith('data.')) || [];
 
   // Filter out system events
   const customEvents =
     eventsData?.eventNames.filter(
-      name => !name.startsWith('email.') && !name.startsWith('segment.'),
+      name => !name.startsWith('email.') && !name.startsWith('segment.') && !name.startsWith('contact.'),
     ) || [];
 
   const handleDeleteField = async () => {
@@ -146,8 +145,8 @@ export function DataManagementSettings() {
         <CardHeader>
           <CardTitle>Custom Contact Fields</CardTitle>
           <CardDescription>
-            Manage custom fields stored in your contact data. You can only delete fields that are not
-            used in any segments or campaigns.
+            Manage custom fields stored in your contact data. You can only delete fields that are not used in any
+            segments or campaigns.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -166,9 +165,7 @@ export function DataManagementSettings() {
               <TableBody>
                 {customFields.map(field => (
                   <TableRow key={field.field}>
-                    <TableCell className="font-mono text-sm">
-                      {field.field.replace('data.', '')}
-                    </TableCell>
+                    <TableCell className="font-mono text-sm">{field.field.replace('data.', '')}</TableCell>
                     <TableCell>
                       <Badge variant="secondary">{field.type}</Badge>
                     </TableCell>
@@ -176,11 +173,7 @@ export function DataManagementSettings() {
                       <span className="text-sm text-muted-foreground">{field.coverage}%</span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openFieldDeleteDialog(field.field)}
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => openFieldDeleteDialog(field.field)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -197,8 +190,8 @@ export function DataManagementSettings() {
         <CardHeader>
           <CardTitle>Custom Events</CardTitle>
           <CardDescription>
-            Manage custom events tracked in your project. You can only delete events that are not used
-            in any segments or workflows. System events (email.*, segment.*) cannot be deleted.
+            Manage custom events tracked in your project. You can only delete events that are not used in any segments
+            or workflows. System events (email.*, segment.*) cannot be deleted.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -217,11 +210,7 @@ export function DataManagementSettings() {
                   <TableRow key={eventName}>
                     <TableCell className="font-mono text-sm">{eventName}</TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openEventDeleteDialog(eventName)}
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => openEventDeleteDialog(eventName)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -237,9 +226,7 @@ export function DataManagementSettings() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {selectedField ? 'Delete Field' : 'Delete Event'}
-            </DialogTitle>
+            <DialogTitle>{selectedField ? 'Delete Field' : 'Delete Event'}</DialogTitle>
             <DialogDescription>
               {selectedField
                 ? `Are you sure you want to delete the field "${selectedField.replace('data.', '')}"?`
@@ -266,9 +253,7 @@ export function DataManagementSettings() {
                   <AlertCircle className="h-4 w-4" />
                   <div className="ml-2">
                     <p className="text-sm font-medium">Cannot delete this field</p>
-                    <p className="text-sm">
-                      This field is currently used in:
-                    </p>
+                    <p className="text-sm">This field is currently used in:</p>
                     {fieldUsage.usedInSegments.length > 0 && (
                       <ul className="mt-2 list-disc list-inside text-sm">
                         {fieldUsage.usedInSegments.map(segment => (
@@ -311,9 +296,7 @@ export function DataManagementSettings() {
                   <AlertCircle className="h-4 w-4" />
                   <div className="ml-2">
                     <p className="text-sm font-medium">Cannot delete this event</p>
-                    <p className="text-sm">
-                      This event is currently used in:
-                    </p>
+                    <p className="text-sm">This event is currently used in:</p>
                     {eventUsage.usedInSegments.length > 0 && (
                       <ul className="mt-2 list-disc list-inside text-sm">
                         {eventUsage.usedInSegments.map(segment => (
@@ -350,9 +333,7 @@ export function DataManagementSettings() {
               variant="destructive"
               onClick={selectedField ? handleDeleteField : handleDeleteEvent}
               disabled={
-                isDeleting ||
-                (!!selectedField && !fieldUsage?.canDelete) ||
-                (!!selectedEvent && !eventUsage?.canDelete)
+                isDeleting || (!!selectedField && !fieldUsage?.canDelete) || (!!selectedEvent && !eventUsage?.canDelete)
               }
             >
               {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
