@@ -49,7 +49,7 @@ export function useContacts(options: UseContactsOptions = {}) {
  * Hook to fetch available contact fields for variable usage
  */
 export function useContactFields() {
-  const {data, error, mutate, isLoading} = useSWR<{fields: string[]}>(
+  const {data, error, mutate, isLoading} = useSWR<{fields: {field: string; type: string}[]; count: number}>(
     '/contacts/fields',
     {
       revalidateOnFocus: false,
@@ -58,8 +58,11 @@ export function useContactFields() {
     },
   );
 
+  // Extract just the field names as strings
+  const fieldNames = (data?.fields || []).map(f => f.field);
+
   return {
-    fields: data?.fields || [],
+    fields: fieldNames,
     error,
     isLoading,
     mutate,
