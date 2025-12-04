@@ -7,6 +7,7 @@ import {type Job, Worker} from 'bullmq';
 import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
+import {NtfyService} from '../services/NtfyService.js';
 import {type SegmentCountJobData, segmentCountQueue} from '../services/QueueService.js';
 import {SegmentService} from '../services/SegmentService.js';
 
@@ -42,6 +43,11 @@ async function processProjectSegments(projectId: string, projectName?: string): 
         signale.success(
           `[SEGMENT-COUNT-WORKER] Segment "${segment.name}": +${result.added} entries, -${result.removed} exits, ${result.total} total members`,
         );
+
+        // Notify about segment membership update (only for tracked segments)
+        if (projectName) {
+          await NtfyService.notifySegmentMembershipComputed(segment.name, projectName, projectId, result.total);
+        }
       } catch (error) {
         signale.error(`[SEGMENT-COUNT-WORKER] Failed to compute membership for segment ${segment.id}:`, error);
         // Continue with other segments

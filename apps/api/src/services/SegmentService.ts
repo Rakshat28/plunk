@@ -5,6 +5,7 @@ import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
 
 import {EventService} from './EventService.js';
+import {NtfyService} from './NtfyService.js';
 
 // Re-export types for use in other services
 export type {FilterCondition, FilterGroup, SegmentFilter} from '@plunk/types';
@@ -115,7 +116,7 @@ export class SegmentService {
     const where = this.buildWhereClause(projectId, data.condition);
     const memberCount = await prisma.contact.count({where});
 
-    return prisma.segment.create({
+    const segment = await prisma.segment.create({
       data: {
         projectId,
         name: data.name,
@@ -124,7 +125,17 @@ export class SegmentService {
         trackMembership: data.trackMembership ?? false,
         memberCount,
       },
+      include: {
+        project: {
+          select: {name: true},
+        },
+      },
     });
+
+    // Notify about segment creation
+    await NtfyService.notifySegmentCreated(segment.name, segment.project.name, projectId);
+
+    return segment;
   }
 
   /**
@@ -178,7 +189,21 @@ export class SegmentService {
    */
   public static async delete(projectId: string, segmentId: string): Promise<void> {
     // First verify segment exists and belongs to project
-    await this.get(projectId, segmentId);
+    const segment = await prisma.segment.findFirst({
+      where: {
+        id: segmentId,
+        projectId,
+      },
+      include: {
+        project: {
+          select: {name: true},
+        },
+      },
+    });
+
+    if (!segment) {
+      throw new HttpException(404, 'Segment not found');
+    }
 
     // Check if segment is used in any active campaigns
     const campaignsUsingSegment = await prisma.campaign.count({
@@ -200,6 +225,9 @@ export class SegmentService {
     await prisma.segment.delete({
       where: {id: segmentId},
     });
+
+    // Notify about segment deletion
+    await NtfyService.notifySegmentDeleted(segment.name, segment.project.name, projectId);
   }
 
   /**

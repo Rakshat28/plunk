@@ -6,7 +6,9 @@
 import {type Job, Worker} from 'bullmq';
 import {parse} from 'csv-parse/sync';
 
+import {prisma} from '../database/prisma.js';
 import {ContactService} from '../services/ContactService.js';
+import {NtfyService} from '../services/NtfyService.js';
 import {type ContactImportJobData, importQueue} from '../services/QueueService.js';
 
 const BATCH_SIZE = 100; // Process contacts in batches of 100
@@ -27,6 +29,14 @@ export function createImportWorker() {
       const {projectId, csvData, filename} = job.data;
 
       console.log(`[IMPORT-PROCESSOR] Processing import for project ${projectId} (${filename})`);
+
+      // Fetch project information for notifications
+      const project = await prisma.project.findUnique({
+        where: {id: projectId},
+        select: {name: true},
+      });
+
+      const projectName = project?.name || projectId;
 
       const result: ImportResult = {
         totalRows: 0,
@@ -57,6 +67,9 @@ export function createImportWorker() {
         }
 
         console.log(`[IMPORT-PROCESSOR] Parsed ${records.length} rows from CSV`);
+
+        // Notify that import has started
+        await NtfyService.notifyContactImportStarted(projectName, projectId, filename, result.totalRows);
 
         // Validate that 'email' column exists
         const firstRecord = records[0];
@@ -142,15 +155,30 @@ export function createImportWorker() {
           `[IMPORT-PROCESSOR] Import completed: ${result.createdCount} created, ${result.updatedCount} updated, ${result.failureCount} failed`,
         );
 
+        // Notify that import has completed
+        await NtfyService.notifyContactImportCompleted(
+          projectName,
+          projectId,
+          filename,
+          result.successCount,
+          result.createdCount,
+          result.updatedCount,
+          result.failureCount,
+        );
+
         return result;
       } catch (error) {
         console.error(`[IMPORT-PROCESSOR] Failed to process import:`, error);
+
+        // Notify that import has failed
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        await NtfyService.notifyContactImportFailed(projectName, projectId, filename, errorMessage);
 
         // Return partial results with error
         result.errors.push({
           row: 0,
           email: '',
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: errorMessage,
         });
 
         throw error; // Re-throw to mark job as failed
