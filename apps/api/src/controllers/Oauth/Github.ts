@@ -10,6 +10,7 @@ import {
 } from '../../app/constants.js';
 import {prisma} from '../../database/prisma.js';
 import {jwt} from '../../middleware/auth.js';
+import {NtfyService} from '../../services/NtfyService.js';
 import {UserService} from '../../services/UserService.js';
 import {CatchAsync} from '../../utils/asyncHandler.js';
 
@@ -59,6 +60,7 @@ export class Github {
     const email = emails.find((e: {primary: boolean; email: string}) => e.primary).email;
 
     let user = await UserService.email(email as string);
+    let isNewUser = false;
 
     if (!user) {
       user = await prisma.user.create({
@@ -67,10 +69,16 @@ export class Github {
           type: 'GITHUB_OAUTH',
         },
       });
+      isNewUser = true;
     }
 
     if (user.type !== 'GITHUB_OAUTH') {
       return res.redirect(DASHBOARD_URI + '/auth/login?message=You used another form of authentication');
+    }
+
+    // Send notification if this is a new user
+    if (isNewUser) {
+      await NtfyService.notifyUserOAuthSignup(user.email, user.id, 'GitHub');
     }
 
     const token = jwt.sign(user.id);

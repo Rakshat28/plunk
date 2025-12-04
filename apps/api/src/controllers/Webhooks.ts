@@ -9,6 +9,7 @@ import {STRIPE_ENABLED, STRIPE_WEBHOOK_SECRET} from '../app/constants.js';
 import {stripe} from '../app/stripe.js';
 import {prisma} from '../database/prisma.js';
 import {EventService} from '../services/EventService.js';
+import {NtfyService} from '../services/NtfyService.js';
 import {SecurityService} from '../services/SecurityService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
 
@@ -165,6 +166,14 @@ export class Webhooks {
             bounceType: body.bounce?.bounceType,
             bouncedAt: now.toISOString(),
           };
+
+          // Send notification about bounce
+          await NtfyService.notifyEmailBounce(
+            email.project.name,
+            email.projectId,
+            email.contact.email,
+            body.bounce?.bounceType,
+          );
           break;
 
         case 'Complaint':
@@ -180,6 +189,9 @@ export class Webhooks {
             ...baseEventData,
             complainedAt: now.toISOString(),
           };
+
+          // Send notification about complaint
+          await NtfyService.notifyEmailComplaint(email.project.name, email.projectId, email.contact.email);
           break;
 
         default:
@@ -256,7 +268,7 @@ export class Webhooks {
           }
 
           // Update project with customer and subscription IDs
-          await prisma.project.update({
+          const updatedProject = await prisma.project.update({
             where: {id: projectId},
             data: {
               customer: customerId,
@@ -265,6 +277,9 @@ export class Webhooks {
           });
 
           signale.success(`[WEBHOOK] Checkout completed for project ${projectId}`);
+
+          // Send notification about subscription started
+          await NtfyService.notifySubscriptionStarted(updatedProject.name, projectId, subscriptionId);
           break;
         }
 
@@ -283,7 +298,9 @@ export class Webhooks {
           }
 
           signale.success(`[WEBHOOK] Invoice paid for project ${project.name} (${project.id})`);
-          // Additional logic can be added here (e.g., extend trial, update billing status)
+
+          // Send notification about invoice payment
+          await NtfyService.notifyInvoicePaid(project.name, project.id);
           break;
         }
 
@@ -302,7 +319,9 @@ export class Webhooks {
           }
 
           signale.warn(`[WEBHOOK] Payment failed for project ${project.name} (${project.id})`);
-          // Additional logic can be added here (e.g., disable project, send notification)
+
+          // Send notification about payment failure
+          await NtfyService.notifyPaymentFailed(project.name, project.id);
           break;
         }
 
@@ -329,7 +348,9 @@ export class Webhooks {
           });
 
           signale.warn(`[WEBHOOK] Subscription deleted for project ${project.name} (${project.id})`);
-          // Additional logic can be added here (e.g., downgrade to free plan)
+
+          // Send notification about subscription cancellation
+          await NtfyService.notifySubscriptionCancelled(project.name, project.id, subscriptionId);
           break;
         }
 
@@ -351,7 +372,9 @@ export class Webhooks {
           signale.info(
             `[WEBHOOK] Status: ${subscription.status}, Cancel at period end: ${subscription.cancel_at_period_end}`,
           );
-          // Additional logic can be added here (e.g., update subscription status, handle plan changes)
+
+          // Send notification about subscription update
+          await NtfyService.notifySubscriptionUpdated(project.name, project.id);
           break;
         }
 

@@ -11,6 +11,7 @@ import {NotAuthenticated, NotFound} from '../exceptions/index.js';
 import type {AuthResponse} from '../middleware/auth.js';
 import {isAuthenticated} from '../middleware/auth.js';
 import {BillingLimitService} from '../services/BillingLimitService.js';
+import {NtfyService} from '../services/NtfyService.js';
 import {SecurityService} from '../services/SecurityService.js';
 import {UserService} from '../services/UserService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
@@ -82,6 +83,9 @@ export class Users {
       },
     });
 
+    // Send notification about project creation
+    await NtfyService.notifyProjectCreated(project.name, project.id, auth.userId);
+
     return res.status(201).json(project);
   }
 
@@ -150,7 +154,21 @@ export class Users {
         public: publicKey,
         secret: secretKey,
       },
+      select: {
+        id: true,
+        name: true,
+        public: true,
+        secret: true,
+        createdAt: true,
+        updatedAt: true,
+        disabled: true,
+        customer: true,
+        subscription: true,
+      },
     });
+
+    // Send notification about API key regeneration
+    await NtfyService.notifyApiKeysRegenerated(project.name!, id!, auth.userId!);
 
     return res.status(200).json(project);
   }
@@ -717,6 +735,7 @@ export class Users {
     const project = await prisma.project.findUnique({
       where: {id},
       select: {
+        name: true,
         subscription: true,
         customer: true,
       },
@@ -740,6 +759,9 @@ export class Users {
     await prisma.project.delete({
       where: {id},
     });
+
+    // Send notification about project deletion
+    await NtfyService.notifyProjectDeleted(project.name, id, auth.userId);
 
     return res.status(200).json({success: true, message: 'Project deleted successfully'});
   }

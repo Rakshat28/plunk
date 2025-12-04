@@ -4,8 +4,9 @@ import {Prisma, WorkflowExecutionStatus} from '@plunk/db';
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
 
-import {EventService} from './EventService.js';
 import {ContactService} from './ContactService.js';
+import {EventService} from './EventService.js';
+import {NtfyService} from './NtfyService.js';
 import {WorkflowExecutionService} from './WorkflowExecutionService.js';
 
 export interface PaginatedWorkflows {
@@ -171,6 +172,17 @@ export class WorkflowService {
       await EventService.invalidateWorkflowCache(projectId);
     }
 
+    // Get project name for notification
+    const project = await prisma.project.findUnique({
+      where: {id: projectId},
+      select: {name: true},
+    });
+
+    if (project) {
+      // Send notification about workflow creation
+      await NtfyService.notifyWorkflowCreated(workflow.name, project.name, projectId);
+    }
+
     return workflow;
   }
 
@@ -225,11 +237,25 @@ export class WorkflowService {
     const updated = await prisma.workflow.update({
       where: {id: workflowId},
       data: updateData,
+      include: {
+        project: {
+          select: {name: true},
+        },
+      },
     });
 
     // Invalidate workflow cache if enabled status changed or workflow is enabled
     if (data.enabled !== undefined || updated.enabled) {
       await EventService.invalidateWorkflowCache(projectId);
+    }
+
+    // Send notification if enabled status changed
+    if (data.enabled !== undefined && data.enabled !== workflow.enabled) {
+      if (data.enabled) {
+        await NtfyService.notifyWorkflowEnabled(updated.name, updated.project.name, projectId);
+      } else {
+        await NtfyService.notifyWorkflowDisabled(updated.name, updated.project.name, projectId);
+      }
     }
 
     return updated;
@@ -239,8 +265,19 @@ export class WorkflowService {
    * Delete a workflow
    */
   public static async delete(projectId: string, workflowId: string): Promise<void> {
-    // Verify workflow exists and belongs to project
-    const workflow = await this.get(projectId, workflowId);
+    // Verify workflow exists and belongs to project - get with project name
+    const workflow = await prisma.workflow.findUnique({
+      where: {id: workflowId, projectId},
+      include: {
+        project: {
+          select: {name: true},
+        },
+      },
+    });
+
+    if (!workflow) {
+      throw new HttpException(404, 'Workflow not found');
+    }
 
     // Check if workflow has active executions
     const activeExecutions = await this.hasActiveExecutions(workflowId);
@@ -260,6 +297,9 @@ export class WorkflowService {
     if (workflow.enabled) {
       await EventService.invalidateWorkflowCache(projectId);
     }
+
+    // Send notification about workflow deletion
+    await NtfyService.notifyWorkflowDeleted(workflow.name, workflow.project.name, projectId);
   }
 
   /**

@@ -144,6 +144,7 @@ Required for builds and deployment (see turbo.json and .env.example):
 - OAuth (optional): `GITHUB_OAUTH_CLIENT`, `GITHUB_OAUTH_SECRET`, `GOOGLE_OAUTH_CLIENT`, `GOOGLE_OAUTH_SECRET`
 - Stripe (optional): `STRIPE_SK`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ONBOARDING`, `STRIPE_PRICE_EMAIL_USAGE`,
   `STRIPE_METER_EVENT_NAME`
+- Notifications (optional): `NTFY_URL` (ntfy.sh topic URL or self-hosted server for system notifications)
 
 **Important Notes:**
 

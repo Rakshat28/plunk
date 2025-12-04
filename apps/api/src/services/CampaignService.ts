@@ -8,6 +8,7 @@ import {buildEmailFieldsUpdate} from '../utils/modelUpdate.js';
 
 import {DomainService} from './DomainService.js';
 import {EmailService} from './EmailService.js';
+import {NtfyService} from './NtfyService.js';
 import {QueueService} from './QueueService.js';
 import {SegmentService} from './SegmentService.js';
 import {DASHBOARD_URI} from '../app/constants.js';
@@ -71,7 +72,7 @@ export class CampaignService {
     }
 
     // Create campaign
-    return prisma.campaign.create({
+    const campaign = await prisma.campaign.create({
       data: {
         projectId,
         name: data.name,
@@ -86,7 +87,17 @@ export class CampaignService {
         segmentId: data.segmentId,
         status: CampaignStatus.DRAFT,
       },
+      include: {
+        project: {
+          select: {name: true},
+        },
+      },
     });
+
+    // Send notification about campaign creation
+    await NtfyService.notifyCampaignCreated(campaign.name, campaign.project.name, projectId);
+
+    return campaign;
   }
 
   /**
@@ -208,7 +219,18 @@ export class CampaignService {
    * Delete a campaign
    */
   public static async delete(projectId: string, campaignId: string): Promise<void> {
-    const campaign = await this.get(projectId, campaignId);
+    const campaign = await prisma.campaign.findUnique({
+      where: {id: campaignId, projectId},
+      include: {
+        project: {
+          select: {name: true},
+        },
+      },
+    });
+
+    if (!campaign) {
+      throw new HttpException(404, 'Campaign not found');
+    }
 
     // Can only delete draft campaigns
     if (campaign.status !== CampaignStatus.DRAFT) {
@@ -218,6 +240,9 @@ export class CampaignService {
     await prisma.campaign.delete({
       where: {id: campaignId},
     });
+
+    // Send notification about campaign deletion
+    await NtfyService.notifyCampaignDeleted(campaign.name, campaign.project.name, projectId);
   }
 
   /**
@@ -283,10 +308,24 @@ export class CampaignService {
           scheduledFor,
           totalRecipients: recipientCount,
         },
+        include: {
+          project: {
+            select: {name: true},
+          },
+        },
       });
 
       // Queue for scheduled sending
       await QueueService.scheduleCampaign(campaignId, scheduledFor);
+
+      // Send notification about campaign scheduled
+      await NtfyService.notifyCampaignScheduled(
+        updatedCampaign.name,
+        updatedCampaign.project.name,
+        projectId,
+        scheduledFor,
+        recipientCount,
+      );
 
       return updatedCampaign;
     } else {
@@ -319,14 +358,27 @@ export class CampaignService {
     }
 
     // Update campaign to SENDING status
-    await prisma.campaign.update({
+    const updatedCampaign = await prisma.campaign.update({
       where: {id: campaignId},
       data: {
         status: CampaignStatus.SENDING,
         totalRecipients: recipientCount,
         sentAt: new Date(),
       },
+      include: {
+        project: {
+          select: {name: true},
+        },
+      },
     });
+
+    // Send notification about campaign sending started
+    await NtfyService.notifyCampaignSendingStarted(
+      updatedCampaign.name,
+      updatedCampaign.project.name,
+      projectId,
+      recipientCount,
+    );
 
     // Queue first batch to start the cursor-based chain
     await QueueService.queueCampaignBatch({
@@ -432,12 +484,25 @@ export class CampaignService {
       });
     } else {
       // All batches processed, mark campaign as SENT
-      await prisma.campaign.update({
+      const completedCampaign = await prisma.campaign.update({
         where: {id: campaignId},
         data: {
           status: CampaignStatus.SENT,
         },
+        include: {
+          project: {
+            select: {name: true},
+          },
+        },
       });
+
+      // Send notification about campaign send completed
+      await NtfyService.notifyCampaignSendCompleted(
+        completedCampaign.name,
+        completedCampaign.project.name,
+        completedCampaign.projectId,
+        completedCampaign.totalRecipients || 0,
+      );
     }
   }
 
@@ -458,12 +523,22 @@ export class CampaignService {
     }
 
     // Update status
-    return prisma.campaign.update({
+    const cancelledCampaign = await prisma.campaign.update({
       where: {id: campaignId},
       data: {
         status: CampaignStatus.CANCELLED,
       },
+      include: {
+        project: {
+          select: {name: true},
+        },
+      },
     });
+
+    // Send notification about campaign cancellation
+    await NtfyService.notifyCampaignCancelled(cancelledCampaign.name, cancelledCampaign.project.name, projectId);
+
+    return cancelledCampaign;
   }
 
   /**

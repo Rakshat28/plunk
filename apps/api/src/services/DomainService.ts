@@ -2,6 +2,7 @@ import {prisma} from '../database/prisma.js';
 import {wrapRedis} from '../database/redis.js';
 import {HttpException} from '../exceptions/index.js';
 import {Keys} from './keys.js';
+import {NtfyService} from './NtfyService.js';
 import {getDomainVerificationAttributes, verifyDomain} from './SESService.js';
 
 export class DomainService {
@@ -41,7 +42,15 @@ export class DomainService {
         verified: false,
         dkimTokens,
       },
+      include: {
+        project: {
+          select: {name: true},
+        },
+      },
     });
+
+    // Send notification about domain added
+    await NtfyService.notifyDomainAdded(domain, newDomain.project.name, projectId);
 
     return newDomain;
   }
@@ -60,15 +69,31 @@ export class DomainService {
 
     // Update domain if verification status changed
     if (attributes.status === 'Success' && !domain.verified) {
-      await prisma.domain.update({
+      const updatedDomain = await prisma.domain.update({
         where: {id: domainId},
         data: {verified: true},
+        include: {
+          project: {
+            select: {name: true, id: true},
+          },
+        },
       });
+
+      // Send notification about domain verified
+      await NtfyService.notifyDomainVerified(domain.domain, updatedDomain.project.name, updatedDomain.project.id);
     } else if (attributes.status !== 'Success' && domain.verified) {
-      await prisma.domain.update({
+      const updatedDomain = await prisma.domain.update({
         where: {id: domainId},
         data: {verified: false},
+        include: {
+          project: {
+            select: {name: true, id: true},
+          },
+        },
       });
+
+      // Send notification about domain verification failed
+      await NtfyService.notifyDomainVerificationFailed(domain.domain, updatedDomain.project.name, updatedDomain.project.id);
     }
 
     return {
@@ -83,7 +108,14 @@ export class DomainService {
    * Remove a domain from a project
    */
   public static async removeDomain(domainId: string) {
-    const domain = await prisma.domain.findUnique({where: {id: domainId}});
+    const domain = await prisma.domain.findUnique({
+      where: {id: domainId},
+      include: {
+        project: {
+          select: {name: true, id: true},
+        },
+      },
+    });
 
     if (!domain) {
       throw new Error('Domain not found');
@@ -151,6 +183,9 @@ export class DomainService {
     }
 
     await prisma.domain.delete({where: {id: domainId}});
+
+    // Send notification about domain removal
+    await NtfyService.notifyDomainRemoved(domainName, domain.project.name, domain.project.id);
 
     return true;
   }

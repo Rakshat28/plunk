@@ -16,6 +16,7 @@ import {HttpException} from '../exceptions/index.js';
 import {DASHBOARD_URI} from '../app/constants.js';
 
 import {EmailService} from './EmailService.js';
+import {NtfyService} from './NtfyService.js';
 import {QueueService} from './QueueService.js';
 
 // Type aliases for workflow execution context
@@ -259,13 +260,35 @@ export class WorkflowExecutionService {
       });
 
       // Mark workflow execution as failed
-      await prisma.workflowExecution.update({
+      const failedExecution = await prisma.workflowExecution.update({
         where: {id: executionId},
         data: {
           status: WorkflowExecutionStatus.FAILED,
           completedAt: new Date(),
         },
+        include: {
+          workflow: {
+            select: {
+              name: true,
+              project: {
+                select: {name: true, id: true},
+              },
+            },
+          },
+          contact: {
+            select: {email: true},
+          },
+        },
       });
+
+      // Send notification about workflow execution failure
+      await NtfyService.notifyWorkflowExecutionFailed(
+        failedExecution.workflow.name,
+        failedExecution.workflow.project.name,
+        failedExecution.workflow.project.id,
+        failedExecution.contact.email,
+        error instanceof Error ? error.message : 'Unknown error',
+      );
 
       throw error;
     }

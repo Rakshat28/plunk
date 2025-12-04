@@ -2,6 +2,7 @@ import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
+import {NtfyService} from './NtfyService.js';
 import {QueueService} from './QueueService.js';
 
 /**
@@ -112,6 +113,17 @@ export class SecurityService {
       } else if (status.warnings.length > 0) {
         // Log warnings for monitoring
         signale.warn(`[SECURITY] Project ${projectId} has security warnings:`, status.warnings);
+
+        // Get project name for notification
+        const project = await prisma.project.findUnique({
+          where: {id: projectId},
+          select: {name: true},
+        });
+
+        if (project) {
+          // Send notification about security warning
+          await NtfyService.notifySecurityWarning(project.name, projectId, status.warnings);
+        }
       }
     } catch (error) {
       // Log error but don't throw - we don't want security checks to break the webhook
@@ -331,8 +343,8 @@ export class SecurityService {
         signale.error(`[SECURITY] Failed to cancel pending jobs for project ${projectId}:`, error);
       }
 
-      // TODO: Send notification to project owners about the suspension
-      // This could be implemented using the notification service or email alert
+      // Send urgent notification about project suspension
+      await NtfyService.notifyProjectDisabledForSecurity(project.name, projectId, status.violations);
     } catch (error) {
       signale.error(`[SECURITY] Failed to disable project ${projectId}:`, error);
     }

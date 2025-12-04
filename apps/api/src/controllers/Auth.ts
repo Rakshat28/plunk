@@ -7,6 +7,7 @@ import {prisma} from '../database/prisma.js';
 import {redis, REDIS_ONE_MINUTE} from '../database/redis.js';
 import {jwt} from '../middleware/auth.js';
 import {AuthService} from '../services/AuthService.js';
+import {NtfyService} from '../services/NtfyService.js';
 import {UserService} from '../services/UserService.js';
 import {Keys} from '../services/keys.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
@@ -67,6 +68,9 @@ export class Auth {
     });
 
     await redis.set(Keys.User.id(created_user.id), JSON.stringify(created_user), 'EX', REDIS_ONE_MINUTE * 60);
+
+    // Send notification about new user signup
+    await NtfyService.notifyUserSignup(created_user.email, created_user.id);
 
     const token = jwt.sign(created_user.id);
     const cookie = UserService.cookieOptions();

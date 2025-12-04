@@ -3,6 +3,7 @@ import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
+import {NtfyService} from './NtfyService.js';
 
 /**
  * Usage information for a specific email category
@@ -189,6 +190,17 @@ export class BillingLimitService {
 
       // Check if blocked (at or over limit)
       if (usage >= limit) {
+        // Get project name for notification
+        const project = await prisma.project.findUnique({
+          where: {id: projectId},
+          select: {name: true},
+        });
+
+        if (project) {
+          // Send notification about limit exceeded
+          await NtfyService.notifyBillingLimitExceeded(project.name, projectId, usage, limit, sourceType);
+        }
+
         return {
           allowed: false,
           warning: false,
@@ -201,6 +213,18 @@ export class BillingLimitService {
 
       // Check if warning (80% or more)
       const isWarning = percentage >= this.WARNING_THRESHOLD * 100;
+
+      // Send notification for warning threshold
+      if (isWarning) {
+        const project = await prisma.project.findUnique({
+          where: {id: projectId},
+          select: {name: true},
+        });
+
+        if (project) {
+          await NtfyService.notifyBillingLimitApproaching(project.name, projectId, usage, limit, percentage, sourceType);
+        }
+      }
 
       return {
         allowed: true,
