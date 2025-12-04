@@ -89,17 +89,18 @@ export default function WorkflowsPage() {
       <DashboardLayout>
         <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-neutral-900">Workflows</h1>
-            <p className="text-neutral-500 mt-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Workflows</h1>
+            <p className="text-neutral-500 mt-2 text-sm sm:text-base">
               Automate your email campaigns with powerful workflows.{' '}
               {data?.total ? `${data.total} total workflows` : ''}
             </p>
           </div>
-          <Button onClick={() => setShowCreateDialog(true)}>
+          <Button onClick={() => setShowCreateDialog(true)} className="w-full sm:w-auto">
             <Plus className="h-4 w-4" />
-            Create Workflow
+            <span className="hidden sm:inline">Create Workflow</span>
+            <span className="sm:hidden">Create</span>
           </Button>
         </div>
 
@@ -358,7 +359,7 @@ function CreateWorkflowDialog({open, onOpenChange, onSuccess}: CreateWorkflowDia
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create New Workflow</DialogTitle>
         </DialogHeader>
@@ -438,11 +439,11 @@ function CreateWorkflowDialog({open, onOpenChange, onSuccess}: CreateWorkflowDia
             </div>
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
               {isSubmitting ? 'Creating...' : 'Create Workflow'}
             </Button>
           </DialogFooter>

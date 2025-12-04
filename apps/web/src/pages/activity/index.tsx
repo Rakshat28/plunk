@@ -78,8 +78,8 @@ export default function ActivityPage() {
         <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-neutral-900">Activity</h1>
-          <p className="text-neutral-500 mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Activity</h1>
+          <p className="text-neutral-500 mt-2 text-sm sm:text-base">
             Real-time overview of events, emails, and workflow executions across your project.
           </p>
         </div>

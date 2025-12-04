@@ -73,17 +73,18 @@ export default function SegmentsPage() {
       <DashboardLayout>
         <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-neutral-900">Segments</h1>
-            <p className="text-neutral-500 mt-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Segments</h1>
+            <p className="text-neutral-500 mt-2 text-sm sm:text-base">
               Create dynamic audience groups based on contact attributes and behaviors
             </p>
           </div>
-          <Link href="/segments/new">
-            <Button>
+          <Link href="/segments/new" className="w-full sm:w-auto">
+            <Button className="w-full sm:w-auto">
               <Plus className="h-4 w-4" />
-              Create Segment
+              <span className="hidden sm:inline">Create Segment</span>
+              <span className="sm:hidden">Create</span>
             </Button>
           </Link>
         </div>

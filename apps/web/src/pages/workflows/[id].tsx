@@ -383,56 +383,58 @@ export default function WorkflowEditorPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Link href="/workflows">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold text-neutral-900">{workflow.name}</h1>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 truncate">{workflow.name}</h1>
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${
                     workflow.enabled ? 'bg-green-100 text-green-800' : 'bg-neutral-100 text-neutral-800'
                   }`}
                 >
                   {workflow.enabled ? (
                     <>
-                      <Power className="h-3 w-3 mr-1" />
-                      Active
+                      <Power className="h-3 w-3 sm:mr-1" />
+                      <span className="hidden sm:inline">Active</span>
                     </>
                   ) : (
                     <>
-                      <PowerOff className="h-3 w-3 mr-1" />
-                      Disabled
+                      <PowerOff className="h-3 w-3 sm:mr-1" />
+                      <span className="hidden sm:inline">Disabled</span>
                     </>
                   )}
                 </span>
               </div>
-              {workflow.description && <p className="text-neutral-500 mt-1">{workflow.description}</p>}
+              {workflow.description && <p className="text-neutral-500 mt-1 text-sm sm:text-base">{workflow.description}</p>}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => setShowSettingsDialog(true)}>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={() => setShowSettingsDialog(true)} className="flex-1 sm:flex-none">
               <Settings className="h-4 w-4" />
-              Settings
+              <span className="hidden sm:inline">Settings</span>
             </Button>
-            <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
+            <Button variant="destructive" onClick={() => setShowDeleteDialog(true)} className="flex-1 sm:flex-none">
               <Trash2 className="h-4 w-4" />
-              Delete
+              <span className="hidden sm:inline">Delete</span>
             </Button>
-            <Button onClick={handleToggleEnabled}>
+            <Button onClick={handleToggleEnabled} className="flex-1 sm:flex-none">
               {workflow.enabled ? (
                 <>
                   <PowerOff className="h-4 w-4" />
-                  Disable
+                  <span className="hidden sm:inline">Disable</span>
+                  <span className="sm:hidden">Off</span>
                 </>
               ) : (
                 <>
                   <Power className="h-4 w-4" />
-                  Enable
+                  <span className="hidden sm:inline">Enable</span>
+                  <span className="sm:hidden">On</span>
                 </>
               )}
             </Button>
@@ -1060,7 +1062,7 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Workflow Step</DialogTitle>
         </DialogHeader>
@@ -1682,7 +1684,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Step</DialogTitle>
           <div className="flex items-center gap-2 mt-2">

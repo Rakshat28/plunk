@@ -77,20 +77,25 @@ export default function CreateTemplatePage() {
     <DashboardLayout>
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <Link href="/templates">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-neutral-900">Create Template</h1>
-            <p className="text-neutral-500 mt-1">Create a reusable email template for campaigns and workflows</p>
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Link href="/templates">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Create Template</h1>
+              <p className="text-neutral-500 mt-1 text-sm sm:text-base">Create a reusable email template for campaigns and workflows</p>
+            </div>
           </div>
-          <Button onClick={handleSubmit} disabled={saving}>
-            <Save className="h-4 w-4" />
-            {saving ? 'Creating...' : 'Create Template'}
-          </Button>
+          <div className="flex justify-end">
+            <Button onClick={handleSubmit} disabled={saving} className="w-full sm:w-auto">
+              <Save className="h-4 w-4" />
+              <span className="hidden sm:inline">{saving ? 'Creating...' : 'Create Template'}</span>
+              <span className="sm:hidden">{saving ? 'Creating...' : 'Create'}</span>
+            </Button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

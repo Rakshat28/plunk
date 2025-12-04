@@ -211,16 +211,16 @@ export default function AnalyticsPage() {
       <DashboardLayout>
         <div className="space-y-6">
           {/* Header */}
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-neutral-900">Analytics</h1>
-              <p className="text-neutral-500 mt-2">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Analytics</h1>
+              <p className="text-neutral-500 mt-2 text-sm sm:text-base">
                 Comprehensive insights into your email performance, engagement metrics, and delivery statistics.
               </p>
             </div>
             <div className="flex gap-3">
               <Select value={dateRange} onValueChange={setDateRange}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Select period" />
                 </SelectTrigger>
                 <SelectContent>

@@ -133,23 +133,27 @@ export default function ContactsPage() {
       <DashboardLayout>
         <div className="space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-neutral-900">Contacts</h1>
-              <p className="text-neutral-500 mt-2">
-                Manage your email subscribers and their data.{' '}
-                {totalCount > 0 ? `${totalCount.toLocaleString()} total contacts` : ''}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setShowImportDialog(true)}>
-                <Upload className="h-4 w-4" />
-                Import CSV
-              </Button>
-              <Button onClick={() => setShowCreateDialog(true)}>
-                <Plus className="h-4 w-4" />
-                Add Contact
-              </Button>
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Contacts</h1>
+                <p className="text-neutral-500 mt-2 text-sm sm:text-base">
+                  Manage your email subscribers and their data.{' '}
+                  {totalCount > 0 ? `${totalCount.toLocaleString()} total contacts` : ''}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setShowImportDialog(true)} className="flex-1 sm:flex-none">
+                  <Upload className="h-4 w-4" />
+                  <span className="hidden sm:inline">Import CSV</span>
+                  <span className="sm:hidden">Import</span>
+                </Button>
+                <Button onClick={() => setShowCreateDialog(true)} className="flex-1 sm:flex-none">
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Add Contact</span>
+                  <span className="sm:hidden">Add</span>
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -233,7 +237,8 @@ export default function ContactsPage() {
                 </div>
               ) : (
                 <>
-                  <div className="overflow-x-auto">
+                  {/* Desktop Table View - Hidden on mobile */}
+                  <div className="hidden md:block overflow-x-auto">
                     <table className="w-full">
                       <thead className="bg-neutral-50 border-b border-neutral-200">
                         <tr>
@@ -294,10 +299,53 @@ export default function ContactsPage() {
                     </table>
                   </div>
 
+                  {/* Mobile Card View - Only visible on mobile */}
+                  <div className="md:hidden space-y-3">
+                    {contacts.map(contact => (
+                      <div
+                        key={contact.id}
+                        className="border border-neutral-200 rounded-lg p-4 bg-white hover:bg-neutral-50 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            {contact.subscribed ? (
+                              <MailCheck className="h-4 w-4 text-green-600 flex-shrink-0" />
+                            ) : (
+                              <MailX className="h-4 w-4 text-red-600 flex-shrink-0" />
+                            )}
+                            <span className="text-sm font-medium text-neutral-900 truncate">{contact.email}</span>
+                          </div>
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${
+                              contact.subscribed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}
+                          >
+                            {contact.subscribed ? 'Subscribed' : 'Unsubscribed'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-neutral-500">
+                            {new Date(contact.createdAt).toLocaleDateString()}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <Link href={`/contacts/${contact.id}`}>
+                              <Button variant="ghost" size="sm">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <Button variant="ghost" size="sm" onClick={() => promptDelete(contact.id)}>
+                              <Trash2 className="h-4 w-4 text-red-600" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
                   {/* Pagination Controls */}
                   {(currentPage > 0 || data?.hasMore) && (
-                    <div className="flex items-center justify-between mt-6 pt-6 border-t border-neutral-200">
-                      <div className="text-sm text-neutral-600">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6 pt-6 border-t border-neutral-200">
+                      <div className="text-xs sm:text-sm text-neutral-600 text-center sm:text-left">
                         Showing <span className="font-medium text-neutral-900">{currentPage * pageSize + 1}</span> to{' '}
                         <span className="font-medium text-neutral-900">{currentPage * pageSize + contacts.length}</span>
                         {totalCount > 0 && (
@@ -307,17 +355,23 @@ export default function ContactsPage() {
                           </>
                         )}
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 justify-center sm:justify-end">
                         <Button
                           variant="outline"
                           onClick={handlePreviousPage}
                           disabled={currentPage === 0 || isLoading}
+                          className="flex-1 sm:flex-none"
                         >
                           <ChevronLeft className="h-4 w-4" />
-                          Previous
+                          <span className="hidden sm:inline">Previous</span>
                         </Button>
-                        <Button variant="outline" onClick={handleNextPage} disabled={!data?.hasMore || isLoading}>
-                          Next
+                        <Button
+                          variant="outline"
+                          onClick={handleNextPage}
+                          disabled={!data?.hasMore || isLoading}
+                          className="flex-1 sm:flex-none"
+                        >
+                          <span className="hidden sm:inline">Next</span>
                           <ChevronRight className="h-4 w-4" />
                         </Button>
                       </div>
@@ -626,7 +680,7 @@ function ImportContactsDialog({open, onOpenChange, onSuccess}: ImportContactsDia
   return (
     <>
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Import Contacts from CSV</DialogTitle>
           </DialogHeader>

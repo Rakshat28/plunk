@@ -147,29 +147,34 @@ export default function TemplateEditorPage() {
     <DashboardLayout>
       <form onSubmit={handleSave} className={`space-y-6 ${hasChanges ? 'pb-32' : ''}`}>
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Link href="/templates">
               <Button type="button" variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-neutral-900">Edit Template</h1>
-              <p className="text-neutral-500 mt-1">Make changes to your email template</p>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Edit Template</h1>
+              <p className="text-neutral-500 mt-1 text-sm sm:text-base">Make changes to your email template</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            {!hasChanges && !isSubmitting && <span className="text-sm text-neutral-500">All changes saved</span>}
-            {hasChanges && !isSubmitting && <span className="text-sm text-amber-600">Unsaved changes</span>}
-            <Button type="button" variant="destructive" onClick={() => setShowDeleteDialog(true)}>
-              <Trash2 className="h-4 w-4" />
-              Delete
-            </Button>
-            <Button type="submit" disabled={!hasChanges || isSubmitting}>
-              <Save className="h-4 w-4" />
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex-1">
+              {!hasChanges && !isSubmitting && <span className="text-xs sm:text-sm text-neutral-500">All changes saved</span>}
+              {hasChanges && !isSubmitting && <span className="text-xs sm:text-sm text-amber-600">Unsaved changes</span>}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="destructive" onClick={() => setShowDeleteDialog(true)} className="flex-1 sm:flex-none">
+                <Trash2 className="h-4 w-4" />
+                <span className="hidden sm:inline">Delete</span>
+              </Button>
+              <Button type="submit" disabled={!hasChanges || isSubmitting} className="flex-1 sm:flex-none">
+                <Save className="h-4 w-4" />
+                <span className="hidden sm:inline">{isSubmitting ? 'Saving...' : 'Save Changes'}</span>
+                <span className="sm:hidden">{isSubmitting ? 'Saving...' : 'Save'}</span>
+              </Button>
+            </div>
           </div>
         </div>
 

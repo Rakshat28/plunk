@@ -396,7 +396,7 @@ export function EmailEditor({value, onChange, placeholder, subject, from, replyT
   return (
     <div className="border border-neutral-200 rounded-lg bg-white">
       {/* Mode toggle */}
-      <div className="border-b border-neutral-200 bg-neutral-50 p-2 flex justify-between items-center">
+      <div className="border-b border-neutral-200 bg-neutral-50 p-2 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
         <div className="flex gap-1">
           <Button
             type="button"
@@ -404,8 +404,8 @@ export function EmailEditor({value, onChange, placeholder, subject, from, replyT
             size="sm"
             onClick={() => mode === 'html' && handleModeToggle()}
           >
-            <Eye className="h-4 w-4 mr-2" />
-            Visual
+            <Eye className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Visual</span>
           </Button>
           <Button
             type="button"
@@ -413,11 +413,11 @@ export function EmailEditor({value, onChange, placeholder, subject, from, replyT
             size="sm"
             onClick={() => mode === 'visual' && handleModeToggle()}
           >
-            <Code2 className="h-4 w-4 mr-2" />
-            HTML
+            <Code2 className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">HTML</span>
           </Button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-1 sm:flex-none">
           <Label htmlFor="preview-contact" className="text-xs text-neutral-600 whitespace-nowrap">
             Preview as:
           </Label>
@@ -425,7 +425,7 @@ export function EmailEditor({value, onChange, placeholder, subject, from, replyT
             value={selectedContactId || 'none'}
             onValueChange={val => setSelectedContactId(val === 'none' ? '' : val)}
           >
-            <SelectTrigger id="preview-contact" className="h-8 w-[200px] text-xs">
+            <SelectTrigger id="preview-contact" className="h-8 w-full sm:w-[200px] text-xs">
               <SelectValue placeholder="Select contact..." />
             </SelectTrigger>
             <SelectContent>

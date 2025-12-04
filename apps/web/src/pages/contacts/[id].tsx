@@ -129,18 +129,18 @@ export default function ContactDetailPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Link href="/contacts">
               <Button variant="outline" size="sm">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-neutral-900">{contact.email}</h1>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 truncate">{contact.email}</h1>
               <p className="text-neutral-500 mt-1">
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     contact.subscribed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                   }`}
                 >
@@ -149,10 +149,13 @@ export default function ContactDetailPage() {
               </p>
             </div>
           </div>
-          <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
-            <Trash2 className="h-4 w-4" />
-            Delete Contact
-          </Button>
+          <div className="flex justify-end">
+            <Button variant="destructive" onClick={() => setShowDeleteDialog(true)} className="w-full sm:w-auto">
+              <Trash2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Delete Contact</span>
+              <span className="sm:hidden">Delete</span>
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

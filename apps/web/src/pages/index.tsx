@@ -70,10 +70,10 @@ export default function Index() {
           <Alert variant="warning">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Upgrade to remove Plunk branding</AlertTitle>
-            <AlertDescription className="flex items-center justify-between">
-              <span>Your emails currently include Plunk branding. Upgrade to a subscription to remove it.</span>
+            <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <span className="text-sm">Your emails currently include Plunk branding. Upgrade to a subscription to remove it.</span>
               <Link href="/settings?tab=billing">
-                <Button size="sm">Upgrade Now</Button>
+                <Button size="sm" className="w-full sm:w-auto">Upgrade Now</Button>
               </Link>
             </AlertDescription>
           </Alert>
@@ -81,8 +81,8 @@ export default function Index() {
 
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-neutral-900">Dashboard</h1>
-          <p className="text-neutral-500 mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Dashboard</h1>
+          <p className="text-neutral-500 mt-2 text-sm sm:text-base">
             Welcome back to {activeProject?.name || 'Plunk'}. Here&apos;s what&apos;s happening with your emails.
           </p>
         </div>

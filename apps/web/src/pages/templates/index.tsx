@@ -66,18 +66,19 @@ export default function TemplatesPage() {
       <DashboardLayout>
         <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-neutral-900">Email Templates</h1>
-            <p className="text-neutral-500 mt-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Email Templates</h1>
+            <p className="text-neutral-500 mt-2 text-sm sm:text-base">
               Create and manage reusable email templates for your campaigns and workflows.{' '}
               {data?.total ? `${data.total} total templates` : ''}
             </p>
           </div>
-          <Link href="/templates/create">
-            <Button>
+          <Link href="/templates/create" className="w-full sm:w-auto">
+            <Button className="w-full sm:w-auto">
               <Plus className="h-4 w-4" />
-              Create Template
+              <span className="hidden sm:inline">Create Template</span>
+              <span className="sm:hidden">Create</span>
             </Button>
           </Link>
         </div>

@@ -331,39 +331,42 @@ export default function CampaignDetailsPage() {
       <DashboardLayout>
         <form onSubmit={handleSave} className={`space-y-6 ${hasChanges ? 'pb-32' : ''}`}>
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               <Link href="/campaigns">
                 <Button type="button" variant="ghost" size="sm">
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
               </Link>
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-3xl font-bold text-neutral-900">{c.name}</h1>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 truncate">{c.name}</h1>
                   <Badge variant="secondary">Draft</Badge>
                 </div>
-                <p className="text-neutral-500 mt-1">Make changes to your campaign before sending</p>
+                <p className="text-neutral-500 mt-1 text-sm sm:text-base">Make changes to your campaign before sending</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              {!hasChanges && !isSubmitting && <span className="text-sm text-neutral-500">All changes saved</span>}
-              {hasChanges && !isSubmitting && <span className="text-sm text-amber-600">Unsaved changes</span>}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="flex-1">
+                {!hasChanges && !isSubmitting && <span className="text-xs sm:text-sm text-neutral-500">All changes saved</span>}
+                {hasChanges && !isSubmitting && <span className="text-xs sm:text-sm text-amber-600">Unsaved changes</span>}
+              </div>
               <div className="flex gap-2">
-                <Button type="button" variant="destructive" onClick={() => setShowDeleteDialog(true)}>
+                <Button type="button" variant="destructive" onClick={() => setShowDeleteDialog(true)} className="flex-1 sm:flex-none">
                   <Trash2 className="h-4 w-4" />
-                  Delete
+                  <span className="hidden sm:inline">Delete</span>
                 </Button>
-                <Button type="submit" disabled={!hasChanges || isSubmitting} variant="outline">
+                <Button type="submit" disabled={!hasChanges || isSubmitting} variant="outline" className="flex-1 sm:flex-none">
                   <Save className="h-4 w-4" />
-                  {isSubmitting ? 'Saving...' : 'Save'}
+                  <span className="hidden sm:inline">{isSubmitting ? 'Saving...' : 'Save'}</span>
+                  <span className="sm:hidden">Save</span>
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button type="button">
+                    <Button type="button" className="flex-1 sm:flex-none">
                       <Send className="h-4 w-4" />
-                      Send
-                      <ChevronDown className="h-4 w-4 ml-1" />
+                      <span className="hidden sm:inline">Send</span>
+                      <ChevronDown className="h-4 w-4 sm:ml-1" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -553,7 +556,7 @@ export default function CampaignDetailsPage() {
 
           {/* Test Email Dialog */}
           <Dialog open={isTestEmailDialogOpen} onOpenChange={setIsTestEmailDialogOpen}>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle>Send Test Email</DialogTitle>
                 <DialogDescription>
@@ -604,7 +607,7 @@ export default function CampaignDetailsPage() {
 
           {/* Schedule Dialog */}
           <Dialog open={isScheduleDialogOpen} onOpenChange={setIsScheduleDialogOpen}>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle>Schedule Campaign</DialogTitle>
                 <DialogDescription>
@@ -742,28 +745,31 @@ export default function CampaignDetailsPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Link href="/campaigns">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-neutral-900">{c.name}</h1>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 truncate">{c.name}</h1>
                 {getStatusBadge(c.status)}
               </div>
-              {c.description && <p className="text-neutral-500">{c.description}</p>}
+              {c.description && <p className="text-neutral-500 text-sm sm:text-base">{c.description}</p>}
             </div>
           </div>
 
           {/* Actions */}
           {(c.status === CampaignStatus.SCHEDULED || c.status === CampaignStatus.SENDING) && (
-            <Button variant="destructive" onClick={() => setShowCancelDialog(true)}>
-              <XCircle className="h-4 w-4" />
-              Cancel Campaign
-            </Button>
+            <div className="flex justify-end">
+              <Button variant="destructive" onClick={() => setShowCancelDialog(true)} className="w-full sm:w-auto">
+                <XCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Cancel Campaign</span>
+                <span className="sm:hidden">Cancel</span>
+              </Button>
+            </div>
           )}
         </div>
 

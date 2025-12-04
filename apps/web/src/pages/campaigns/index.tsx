@@ -109,17 +109,18 @@ export default function CampaignsPage() {
       <DashboardLayout>
         <div className="space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-neutral-900">Campaigns</h1>
-              <p className="text-neutral-500 mt-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Campaigns</h1>
+              <p className="text-neutral-500 mt-2 text-sm sm:text-base">
                 Send one-time email broadcasts to your contacts. {data?.total ? `${data.total} total campaigns` : ''}
               </p>
             </div>
-            <Link href="/campaigns/create">
-              <Button>
+            <Link href="/campaigns/create" className="w-full sm:w-auto">
+              <Button className="w-full sm:w-auto">
                 <Plus className="h-4 w-4" />
-                Create Campaign
+                <span className="hidden sm:inline">Create Campaign</span>
+                <span className="sm:hidden">Create</span>
               </Button>
             </Link>
           </div>

@@ -294,7 +294,7 @@ export default function Login() {
           }
         }}
       >
-        <DialogContent className="max-w-md">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Reset your password</DialogTitle>
             <DialogDescription>Enter your email to receive a password reset link.</DialogDescription>

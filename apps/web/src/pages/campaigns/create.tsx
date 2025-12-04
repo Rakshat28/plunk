@@ -96,17 +96,15 @@ export default function CreateCampaignPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/campaigns">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-neutral-900">Create Campaign</h1>
-              <p className="text-neutral-500 mt-1">Create a new email campaign to send to your contacts</p>
-            </div>
+        <div className="flex items-center gap-3 sm:gap-4">
+          <Link href="/campaigns">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Create Campaign</h1>
+            <p className="text-neutral-500 mt-1 text-sm sm:text-base">Create a new email campaign to send to your contacts</p>
           </div>
         </div>
 
