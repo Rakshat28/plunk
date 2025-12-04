@@ -8,28 +8,11 @@ import {
   ConfirmDialog,
   Input,
   Label,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
 } from '@plunk/ui';
 import type {Contact, Segment} from '@plunk/db';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {network} from '../../lib/network';
-import {
-  ArrowLeft,
-  Calendar,
-  Database,
-  Filter,
-  MailCheck,
-  MailX,
-  Plus,
-  RefreshCw,
-  Save,
-  Trash2,
-  Users,
-} from 'lucide-react';
+import {ArrowLeft, Calendar, Database, Filter, MailCheck, MailX, RefreshCw, Save, Trash2, Users} from 'lucide-react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
@@ -86,10 +69,12 @@ export default function SegmentDetailPage() {
       setName(segment.name);
       setDescription(segment.description || '');
       setTrackMembership(segment.trackMembership);
-      setCondition((segment.condition as unknown as FilterCondition) || {
-        logic: 'AND',
-        groups: [{filters: [{field: 'subscribed', operator: 'equals', value: true}]}],
-      });
+      setCondition(
+        (segment.condition as unknown as FilterCondition) || {
+          logic: 'AND',
+          groups: [{filters: [{field: 'subscribed', operator: 'equals', value: true}]}],
+        },
+      );
     }
   }, [segment]);
 
@@ -143,7 +128,6 @@ export default function SegmentDetailPage() {
       toast.error(error instanceof Error ? error.message : 'Failed to delete segment');
     }
   };
-
 
   if (isLoading) {
     return (

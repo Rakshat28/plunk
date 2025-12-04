@@ -54,7 +54,7 @@ import {toast} from 'sonner';
 import useSWR from 'swr';
 import {WorkflowBuilder} from '../../components/WorkflowBuilder';
 import {ReactFlowProvider} from '@xyflow/react';
-import {ContactSchemas, WorkflowSchemas} from '@plunk/shared';
+import {WorkflowSchemas} from '@plunk/shared';
 
 interface WorkflowWithDetails extends Workflow {
   steps: (WorkflowStep & {
@@ -411,7 +411,9 @@ export default function WorkflowEditorPage() {
                   )}
                 </span>
               </div>
-              {workflow.description && <p className="text-neutral-500 mt-1 text-sm sm:text-base">{workflow.description}</p>}
+              {workflow.description && (
+                <p className="text-neutral-500 mt-1 text-sm sm:text-base">{workflow.description}</p>
+              )}
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
