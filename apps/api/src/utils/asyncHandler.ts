@@ -13,7 +13,7 @@ import type {NextFunction, Request, Response} from 'express';
  * are caught and passed to the Express error middleware, fixing the hanging
  * request issue when Zod validation fails.
  */
-export function CatchAsync(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+export function CatchAsync(target: object, propertyKey: string, descriptor: PropertyDescriptor) {
   const originalMethod = descriptor.value;
 
   descriptor.value = function (req: Request, res: Response, next: NextFunction) {

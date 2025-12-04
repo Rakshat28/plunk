@@ -15,7 +15,7 @@ export class Events {
   @Post('track')
   @Middleware([requireAuth])
   @CatchAsync
-  public async track(req: Request, res: Response, next: NextFunction) {
+  public async track(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {name, contactId, emailId, data} = req.body;
 
@@ -35,7 +35,7 @@ export class Events {
   @Get('')
   @Middleware([requireAuth])
   @CatchAsync
-  public async list(req: Request, res: Response, next: NextFunction) {
+  public async list(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const eventName = req.query.eventName as string | undefined;
     const limit = parseInt(req.query.limit as string) || 100;
@@ -52,7 +52,7 @@ export class Events {
   @Get('stats')
   @Middleware([requireAuth])
   @CatchAsync
-  public async stats(req: Request, res: Response, next: NextFunction) {
+  public async stats(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
@@ -69,7 +69,7 @@ export class Events {
   @Get('contact/:contactId')
   @Middleware([requireAuth])
   @CatchAsync
-  public async getContactEvents(req: Request, res: Response, next: NextFunction) {
+  public async getContactEvents(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const contactId = req.params.contactId;
     const limit = parseInt(req.query.limit as string) || 50;
@@ -90,7 +90,7 @@ export class Events {
   @Get('names')
   @Middleware([requireAuth])
   @CatchAsync
-  public async getEventNames(req: Request, res: Response, next: NextFunction) {
+  public async getEventNames(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
 
     const eventNames = await EventService.getUniqueEventNames(auth.projectId!);
@@ -106,7 +106,7 @@ export class Events {
   @Get(':eventName/usage')
   @Middleware([requireAuth])
   @CatchAsync
-  public async getEventUsage(req: Request, res: Response, next: NextFunction) {
+  public async getEventUsage(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const eventName = req.params.eventName;
 
@@ -133,7 +133,7 @@ export class Events {
   @Delete(':eventName')
   @Middleware([requireAuth])
   @CatchAsync
-  public async deleteEvent(req: Request, res: Response, next: NextFunction) {
+  public async deleteEvent(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const eventName = req.params.eventName;
 

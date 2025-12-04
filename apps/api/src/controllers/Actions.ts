@@ -49,7 +49,7 @@ export class Actions {
   @Post('track')
   @Middleware([requirePublicKey])
   @CatchAsync
-  public async track(req: Request, res: Response, next: NextFunction) {
+  public async track(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
 
     // Zod validation - errors automatically handled by global error handler
@@ -155,7 +155,7 @@ export class Actions {
   @Post('send')
   @Middleware([requireSecretKey])
   @CatchAsync
-  public async send(req: Request, res: Response, next: NextFunction) {
+  public async send(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
 
     // Zod validation - errors automatically handled by global error handler
@@ -244,12 +244,7 @@ export class Actions {
         : (data as Record<string, unknown> | undefined);
 
       // Create or update contact with metadata
-      const contact = await ContactService.upsert(
-        auth.projectId,
-        recipient.email,
-        recipientData,
-        subscribed,
-      );
+      const contact = await ContactService.upsert(auth.projectId, recipient.email, recipientData, subscribed);
 
       // Get merged data including non-persistent fields for template rendering
       const mergedData = ContactService.getMergedData(contact, data as Record<string, unknown> | undefined);

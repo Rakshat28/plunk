@@ -1,17 +1,14 @@
 import {beforeEach, describe, expect, it} from 'vitest';
-import {factories, getPrismaClient} from '../../../../../test/helpers';
+import {factories} from '../../../../../test/helpers';
 import {EventService} from '../../services/EventService';
 import {WorkflowService} from '../../services/WorkflowService';
 
 describe('Workflows Controller', () => {
   let projectId: string;
-  let userId: string;
-  const prisma = getPrismaClient();
 
   beforeEach(async () => {
-    const {project, user} = await factories.createUserWithProject();
+    const {project} = await factories.createUserWithProject();
     projectId = project.id;
-    userId = user.id;
   });
 
   // ========================================

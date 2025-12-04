@@ -17,7 +17,7 @@ export class Templates {
   @Get('')
   @Middleware([requireAuth])
   @CatchAsync
-  public async list(req: Request, res: Response, next: NextFunction) {
+  public async list(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const page = parseInt(req.query.page as string) || 1;
     const pageSize = Math.min(parseInt(req.query.pageSize as string) || 20, 100);
@@ -36,7 +36,7 @@ export class Templates {
   @Get(':id')
   @Middleware([requireAuth])
   @CatchAsync
-  public async get(req: Request, res: Response, next: NextFunction) {
+  public async get(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const templateId = req.params.id;
 
@@ -56,7 +56,7 @@ export class Templates {
   @Post('')
   @Middleware([requireAuth])
   @CatchAsync
-  public async create(req: Request, res: Response, next: NextFunction) {
+  public async create(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {name, description, subject, body, from, fromName, replyTo, type} = req.body;
 
@@ -100,7 +100,7 @@ export class Templates {
   @Patch(':id')
   @Middleware([requireAuth])
   @CatchAsync
-  public async update(req: Request, res: Response, next: NextFunction) {
+  public async update(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const templateId = req.params.id;
     const {name, description, subject, body, from, fromName, replyTo, type} = req.body;
@@ -135,7 +135,7 @@ export class Templates {
   @Delete(':id')
   @Middleware([requireAuth])
   @CatchAsync
-  public async delete(req: Request, res: Response, next: NextFunction) {
+  public async delete(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const templateId = req.params.id;
 
@@ -155,7 +155,7 @@ export class Templates {
   @Post(':id/duplicate')
   @Middleware([requireAuth])
   @CatchAsync
-  public async duplicate(req: Request, res: Response, next: NextFunction) {
+  public async duplicate(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const templateId = req.params.id;
 
@@ -175,7 +175,7 @@ export class Templates {
   @Get(':id/usage')
   @Middleware([requireAuth])
   @CatchAsync
-  public async getUsage(req: Request, res: Response, next: NextFunction) {
+  public async getUsage(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const templateId = req.params.id;
 

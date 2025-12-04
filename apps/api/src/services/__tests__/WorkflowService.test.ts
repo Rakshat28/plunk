@@ -1,5 +1,5 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest';
-import {WorkflowTriggerType, WorkflowStepType, WorkflowExecutionStatus} from '@plunk/db';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {WorkflowExecutionStatus, WorkflowStepType, WorkflowTriggerType} from '@plunk/db';
 import {WorkflowService} from '../WorkflowService';
 import {factories, getPrismaClient} from '../../../../../test/helpers';
 
@@ -58,7 +58,7 @@ describe('WorkflowService', () => {
   afterEach(async () => {
     const {redis} = await import('../../database/redis');
     if ('clear' in redis) {
-      (redis as any).clear();
+      (redis as unknown as {clear: () => void}).clear();
     }
   });
 
@@ -233,9 +233,11 @@ describe('WorkflowService', () => {
 
       const result = await WorkflowService.list(projectId);
 
-      const found = result.workflows.find(w => w.id === workflow.id);
-      expect((found as any)._count.steps).toBe(3); // TRIGGER + 2 added
-      expect((found as any)._count.executions).toBe(1);
+      const found = result.workflows.find(w => w.id === workflow.id) as
+        | ((typeof result.workflows)[number] & {_count: {steps: number; executions: number}})
+        | undefined;
+      expect(found?._count.steps).toBe(3); // TRIGGER + 2 added
+      expect(found?._count.executions).toBe(1);
     });
   });
 

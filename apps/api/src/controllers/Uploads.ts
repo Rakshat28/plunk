@@ -34,7 +34,7 @@ export class Uploads {
   @Post('image')
   @Middleware([requireAuth, upload.single('image')])
   @CatchAsync
-  public async uploadImage(req: Request, res: Response, next: NextFunction) {
+  public async uploadImage(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
 
     try {

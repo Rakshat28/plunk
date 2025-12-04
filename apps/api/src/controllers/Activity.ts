@@ -23,7 +23,7 @@ export class Activity {
   @Get('')
   @Middleware([requireAuth])
   @CatchAsync
-  public async getActivities(req: Request, res: Response, next: NextFunction) {
+  public async getActivities(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
     const cursor = req.query.cursor as string | undefined;
@@ -64,7 +64,7 @@ export class Activity {
   @Get('stats')
   @Middleware([requireAuth])
   @CatchAsync
-  public async getStats(req: Request, res: Response, next: NextFunction) {
+  public async getStats(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
@@ -84,7 +84,7 @@ export class Activity {
   @Get('recent-count')
   @Middleware([requireAuth])
   @CatchAsync
-  public async getRecentCount(req: Request, res: Response, next: NextFunction) {
+  public async getRecentCount(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const minutes = Math.min(parseInt(req.query.minutes as string) || 5, 60); // Max 60 minutes
 
@@ -100,7 +100,7 @@ export class Activity {
   @Get('types')
   @Middleware([requireAuth])
   @CatchAsync
-  public async getTypes(_req: Request, res: Response, next: NextFunction) {
+  public async getTypes(_req: Request, res: Response, _next: NextFunction) {
     const types = Object.values(ActivityType);
     return res.status(200).json({types});
   }
@@ -116,7 +116,7 @@ export class Activity {
   @Get('upcoming')
   @Middleware([requireAuth])
   @CatchAsync
-  public async getUpcoming(req: Request, res: Response, next: NextFunction) {
+  public async getUpcoming(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
     const daysAhead = Math.min(parseInt(req.query.daysAhead as string) || 30, 90);

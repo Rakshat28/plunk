@@ -1,16 +1,16 @@
-import {describe, it, expect, beforeEach} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vitest';
 import {ActionSchemas} from '@plunk/shared';
 import {factories, getPrismaClient} from '../../../../../test/helpers';
 import {
-  ErrorCode,
-  NotFound,
-  ValidationError,
-  NotAuthenticated,
-  NotAllowed,
-  RateLimitError,
-  ConflictError,
   BadRequest,
+  ConflictError,
+  ErrorCode,
   HttpException,
+  NotAllowed,
+  NotAuthenticated,
+  NotFound,
+  RateLimitError,
+  ValidationError
 } from '../../exceptions/index.js';
 import {EmailService} from '../../services/EmailService.js';
 
@@ -69,8 +69,6 @@ describe('Actions API Integration Tests', () => {
     });
 
     it('should validate required fields for /v1/send', () => {
-      
-
       const result = ActionSchemas.send.safeParse({});
 
       expect(result.success).toBe(false);
@@ -80,8 +78,6 @@ describe('Actions API Integration Tests', () => {
     });
 
     it('should validate subject and body required when no template', () => {
-      
-
       const result = ActionSchemas.send.safeParse({
         to: 'test@example.com',
         // Missing subject, body, and template
@@ -94,8 +90,6 @@ describe('Actions API Integration Tests', () => {
     });
 
     it('should validate required fields for /v1/track', () => {
-
-
       const result = ActionSchemas.track.safeParse({
         email: 'test@example.com',
         // Missing event name
@@ -271,8 +265,6 @@ describe('Actions API Integration Tests', () => {
   // ========================================
   describe('Custom HTTP Exception Types', () => {
     it('should structure NotFound errors correctly', () => {
-      
-
       const error = new NotFound('Template', 'abc-123');
 
       expect(error.code).toBe(404);
@@ -283,8 +275,6 @@ describe('Actions API Integration Tests', () => {
     });
 
     it('should map resources to specific error codes', () => {
-      
-
       const testCases = [
         {resource: 'contact', expectedCode: ErrorCode.CONTACT_NOT_FOUND},
         {resource: 'template', expectedCode: ErrorCode.TEMPLATE_NOT_FOUND},
@@ -300,8 +290,6 @@ describe('Actions API Integration Tests', () => {
     });
 
     it('should structure ValidationError with field details', () => {
-      
-
       const fieldErrors = [
         {field: 'email', message: 'Invalid email format', code: 'invalid_email'},
         {field: 'data.firstName', message: 'Required field', code: 'required'},
@@ -315,8 +303,6 @@ describe('Actions API Integration Tests', () => {
     });
 
     it('should structure NotAuthenticated errors', () => {
-      
-
       const error = new NotAuthenticated();
 
       expect(error.code).toBe(401);
@@ -324,8 +310,6 @@ describe('Actions API Integration Tests', () => {
     });
 
     it('should structure NotAllowed errors', () => {
-      
-
       const error = new NotAllowed('Cannot perform action', 'Insufficient permissions');
 
       expect(error.code).toBe(403);
@@ -334,8 +318,6 @@ describe('Actions API Integration Tests', () => {
     });
 
     it('should structure RateLimitError', () => {
-      
-
       const error = new RateLimitError('Too many requests', 60);
 
       expect(error.code).toBe(429);
@@ -344,8 +326,6 @@ describe('Actions API Integration Tests', () => {
     });
 
     it('should structure ConflictError', () => {
-      
-
       const error = new ConflictError('Contact exists', {email: 'test@example.com'});
 
       expect(error.code).toBe(409);
@@ -354,8 +334,6 @@ describe('Actions API Integration Tests', () => {
     });
 
     it('should structure BadRequest errors', () => {
-      
-
       const error = new BadRequest('Invalid format', ErrorCode.INVALID_REQUEST_BODY, {
         expected: 'JSON',
       });
@@ -381,7 +359,6 @@ describe('Actions API Integration Tests', () => {
         type: 'MARKETING',
       });
 
-
       await expect(
         EmailService.sendTransactionalEmail({
           projectId,
@@ -395,7 +372,6 @@ describe('Actions API Integration Tests', () => {
     });
 
     it('should return NotFound when template does not exist', async () => {
-      const contact = await factories.createContact({projectId});
       const nonExistentId = '00000000-0000-0000-0000-000000000000';
 
       const template = await prisma.template.findUnique({
@@ -405,7 +381,7 @@ describe('Actions API Integration Tests', () => {
       expect(template).toBeNull();
 
       // In actual API, this would trigger NotFound exception
-      
+
       const error = new NotFound('Template', nonExistentId);
 
       expect(error.code).toBe(404);
@@ -413,8 +389,6 @@ describe('Actions API Integration Tests', () => {
     });
 
     it('should handle billing limit exceeded', () => {
-      
-
       const error = new HttpException(429, 'Billing limit exceeded');
 
       expect(error.code).toBe(429);

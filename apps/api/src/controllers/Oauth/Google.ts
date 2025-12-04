@@ -28,7 +28,7 @@ export class Google {
 
   @Get('callback')
   @CatchAsync
-  public async callback(req: Request, res: Response, next: NextFunction) {
+  public async callback(req: Request, res: Response, _next: NextFunction) {
     if (!GOOGLE_OAUTH_ENABLED) {
       return res.status(404).json({error: 'Google OAuth is not configured'});
     }

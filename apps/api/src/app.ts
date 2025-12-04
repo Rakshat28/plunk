@@ -19,7 +19,7 @@ import {
   SMTP_ENABLED,
   STRIPE_ENABLED,
   TRACKING_TOGGLE_ENABLED,
-  WIKI_URI
+  WIKI_URI,
 } from './app/constants.js';
 import {Actions} from './controllers/Actions.js';
 import {Activity} from './controllers/Activity.js';
@@ -159,7 +159,7 @@ server.app.use((error: Error, req: Request, res: Response, _next: NextFunction) 
       field: err.path.join('.'),
       message: err.message,
       code: err.code,
-      received: err.code !== 'invalid_type' ? undefined : (err as any).received,
+      received: err.code !== 'invalid_type' ? undefined : 'received' in err ? err.received : undefined,
     }));
 
     const statusCode = 422;

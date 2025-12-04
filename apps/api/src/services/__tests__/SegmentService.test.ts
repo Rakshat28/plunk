@@ -1,6 +1,9 @@
-import {describe, it, expect, beforeEach} from 'vitest';
-import {SegmentService} from '../SegmentService';
+import {beforeEach, describe, expect, it} from 'vitest';
+import {type SegmentFilter, SegmentService} from '../SegmentService';
 import {factories, getPrismaClient} from '../../../../../test/helpers';
+
+// Type for intentionally invalid filter input (used for testing validation)
+type InvalidFilterInput = Partial<SegmentFilter>;
 
 describe('SegmentService', () => {
   let projectId: string;
@@ -395,10 +398,10 @@ describe('SegmentService', () => {
           name: 'Invalid Segment',
           filters: [
             {
-              // Intentionally missing field, cast to any to bypass compile-time validation
+              // Intentionally missing field, cast to bypass compile-time validation
               operator: 'equals',
               value: 'test',
-            } as any,
+            } as InvalidFilterInput as SegmentFilter,
           ],
         }),
       ).rejects.toThrow(/field is required/i);
@@ -411,10 +414,10 @@ describe('SegmentService', () => {
           filters: [
             {
               field: 'email',
-              // Intentionally invalid operator, cast to any
+              // Intentionally invalid operator
               operator: 'DROP TABLE contacts;',
               value: 'test',
-            } as any,
+            } as InvalidFilterInput as SegmentFilter,
           ],
         }),
       ).rejects.toThrow(/invalid operator/i);
@@ -428,8 +431,8 @@ describe('SegmentService', () => {
             {
               field: 'email',
               operator: 'equals',
-              // Value intentionally omitted, cast to any
-            } as any,
+              // Value intentionally omitted
+            } as InvalidFilterInput as SegmentFilter,
           ],
         }),
       ).rejects.toThrow(/requires a value/i);

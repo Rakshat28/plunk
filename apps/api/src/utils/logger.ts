@@ -155,7 +155,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
 
   // Capture the original res.json to log responses
   const originalJson = res.json.bind(res);
-  res.json = function (body: any) {
+  res.json = function (body: unknown) {
     const duration = Date.now() - startTime;
     logger.response(req, res, res.statusCode, duration);
     return originalJson(body);

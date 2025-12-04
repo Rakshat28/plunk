@@ -19,7 +19,7 @@ export class Domains {
   @Get('project/:projectId')
   @Middleware([isAuthenticated])
   @CatchAsync
-  public async getProjectDomains(req: Request, res: Response, next: NextFunction) {
+  public async getProjectDomains(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {projectId} = DomainSchemas.projectId.parse(req.params);
 
@@ -46,7 +46,7 @@ export class Domains {
   @Post('')
   @Middleware([isAuthenticated])
   @CatchAsync
-  public async addDomain(req: Request, res: Response, next: NextFunction) {
+  public async addDomain(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {projectId, domain} = DomainSchemas.create.parse(req.body);
 
@@ -106,7 +106,7 @@ export class Domains {
   @Get(':id/verify')
   @Middleware([isAuthenticated])
   @CatchAsync
-  public async checkVerification(req: Request, res: Response, next: NextFunction) {
+  public async checkVerification(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = UtilitySchemas.id.parse(req.params);
 
@@ -143,7 +143,7 @@ export class Domains {
   @Delete(':id')
   @Middleware([isAuthenticated])
   @CatchAsync
-  public async removeDomain(req: Request, res: Response, next: NextFunction) {
+  public async removeDomain(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = UtilitySchemas.id.parse(req.params);
 

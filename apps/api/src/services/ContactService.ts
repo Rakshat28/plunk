@@ -1,4 +1,5 @@
 import {type Contact, Prisma} from '@plunk/db';
+import type {FilterCondition, FilterGroup} from '@plunk/types';
 
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
@@ -144,8 +145,7 @@ export class ContactService {
     }
 
     // Track subscription status change
-    const isSubscriptionChanging =
-      data.subscribed !== undefined && existing.subscribed !== data.subscribed;
+    const isSubscriptionChanging = data.subscribed !== undefined && existing.subscribed !== data.subscribed;
     const wasSubscribed = existing.subscribed;
 
     try {
@@ -249,8 +249,7 @@ export class ContactService {
 
     if (existing) {
       // Track subscription status change
-      const isSubscriptionChanging =
-        subscribed !== undefined && existing.subscribed !== subscribed;
+      const isSubscriptionChanging = subscribed !== undefined && existing.subscribed !== subscribed;
       const wasSubscribed = existing.subscribed;
 
       const updated = await prisma.contact.update({
@@ -561,14 +560,8 @@ export class ContactService {
 
     // Check which segments use this field
     const usedInSegments = segments.filter(segment => {
-      const condition = segment.condition as any;
+      const condition = segment.condition as FilterCondition | null;
       return this.fieldUsedInCondition(field, condition);
-    });
-
-    // Get all campaigns for the project (emails)
-    const campaigns = await prisma.email.findMany({
-      where: {projectId},
-      select: {id: true, subject: true},
     });
 
     // For now, we'll check if campaigns use the field in their subject or body
@@ -602,51 +595,6 @@ export class ContactService {
       contactCount,
       canDelete,
     };
-  }
-
-  /**
-   * Helper: Check if a field is used in a filter condition (recursive)
-   */
-  private static fieldUsedInCondition(field: string, condition: any): boolean {
-    if (!condition || typeof condition !== 'object') {
-      return false;
-    }
-
-    // Check groups in the condition
-    if (Array.isArray(condition.groups)) {
-      for (const group of condition.groups) {
-        if (this.fieldUsedInGroup(field, group)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Helper: Check if a field is used in a filter group (recursive)
-   */
-  private static fieldUsedInGroup(field: string, group: any): boolean {
-    if (!group || typeof group !== 'object') {
-      return false;
-    }
-
-    // Check filters in the group
-    if (Array.isArray(group.filters)) {
-      for (const filter of group.filters) {
-        if (filter.field === field) {
-          return true;
-        }
-      }
-    }
-
-    // Check nested conditions
-    if (group.conditions) {
-      return this.fieldUsedInCondition(field, group.conditions);
-    }
-
-    return false;
   }
 
   /**
@@ -685,5 +633,50 @@ export class ContactService {
     `;
 
     return {deletedFrom: result};
+  }
+
+  /**
+   * Helper: Check if a field is used in a filter condition (recursive)
+   */
+  private static fieldUsedInCondition(field: string, condition: FilterCondition | null): boolean {
+    if (!condition || typeof condition !== 'object') {
+      return false;
+    }
+
+    // Check groups in the condition
+    if (Array.isArray(condition.groups)) {
+      for (const group of condition.groups) {
+        if (this.fieldUsedInGroup(field, group)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Helper: Check if a field is used in a filter group (recursive)
+   */
+  private static fieldUsedInGroup(field: string, group: FilterGroup): boolean {
+    if (!group || typeof group !== 'object') {
+      return false;
+    }
+
+    // Check filters in the group
+    if (Array.isArray(group.filters)) {
+      for (const filter of group.filters) {
+        if (filter.field === field) {
+          return true;
+        }
+      }
+    }
+
+    // Check nested conditions
+    if (group.conditions) {
+      return this.fieldUsedInCondition(field, group.conditions);
+    }
+
+    return false;
   }
 }

@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import {simpleParser} from 'mailparser';
+import {type AddressObject, simpleParser} from 'mailparser';
 import signale from 'signale';
 import {
   SMTPServer,
@@ -7,8 +7,8 @@ import {
   type SMTPServerAuthentication,
   type SMTPServerAuthenticationResponse,
   type SMTPServerDataStream,
-  type SMTPServerSession,
   type SMTPServerOptions,
+  type SMTPServerSession,
 } from 'smtp-server';
 import fs from 'fs';
 import path from 'path';
@@ -56,13 +56,14 @@ function loadFromTraefikAcme(): {key: Buffer; cert: Buffer} | null {
     const certificates = acmeData?.letsencrypt?.Certificates || acmeData?.Certificates || [];
 
     interface TraefikCert {
-      domain?: string | { main?: string };
+      domain?: string | {main?: string};
       certificate: string;
       key: string;
     }
 
-    const certData = certificates.find((cert: TraefikCert) =>
-      (typeof cert.domain === 'object' && cert.domain?.main === SMTP_DOMAIN) || cert.domain === SMTP_DOMAIN
+    const certData = certificates.find(
+      (cert: TraefikCert) =>
+        (typeof cert.domain === 'object' && cert.domain?.main === SMTP_DOMAIN) || cert.domain === SMTP_DOMAIN,
     );
 
     if (!certData) {
@@ -294,11 +295,11 @@ function handleData(
     const recipientNameMap = new Map<string, string>();
 
     // Helper to extract addresses from AddressObject
-    const extractAddresses = (addressObj: any) => {
+    const extractAddresses = (addressObj: AddressObject | AddressObject[] | undefined) => {
       if (!addressObj) return [];
       // Handle both single AddressObject and array
       const addresses = Array.isArray(addressObj) ? addressObj : [addressObj];
-      return addresses.flatMap((obj: any) => obj.value || []);
+      return addresses.flatMap(obj => obj.value || []);
     };
 
     if (parsed.to) {

@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { SegmentService } from '../SegmentService';
-import { factories, getPrismaClient } from '../../../../../test/helpers';
+import {beforeEach, describe, expect, it} from 'vitest';
+import {SegmentService} from '../SegmentService';
+import {factories} from '../../../../../test/helpers';
 
 /**
  * Comprehensive Operator Tests for Segment Filtering
@@ -16,10 +16,9 @@ import { factories, getPrismaClient } from '../../../../../test/helpers';
  */
 describe('SegmentService - Comprehensive Operator Tests', () => {
   let projectId: string;
-  const prisma = getPrismaClient();
 
   beforeEach(async () => {
-    const { project } = await factories.createUserWithProject();
+    const {project} = await factories.createUserWithProject();
     projectId = project.id;
   });
 
@@ -31,15 +30,15 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should match exact string values in JSON data fields', async () => {
         const match = await factories.createContact({
           projectId,
-          data: { plan: 'premium' },
+          data: {plan: 'premium'},
         });
         await factories.createContact({
           projectId,
-          data: { plan: 'basic' },
+          data: {plan: 'basic'},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.plan', operator: 'equals', value: 'premium' }],
+          filters: [{field: 'data.plan', operator: 'equals', value: 'premium'}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -58,7 +57,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'email', operator: 'equals', value: 'USER@EXAMPLE.COM' }],
+          filters: [{field: 'email', operator: 'equals', value: 'USER@EXAMPLE.COM'}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -77,7 +76,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'subscribed', operator: 'equals', value: true }],
+          filters: [{field: 'subscribed', operator: 'equals', value: true}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -88,15 +87,15 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should match numeric values as strings in JSON fields', async () => {
         const match = await factories.createContact({
           projectId,
-          data: { userId: '12345' },
+          data: {userId: '12345'},
         });
         await factories.createContact({
           projectId,
-          data: { userId: '67890' },
+          data: {userId: '67890'},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.userId', operator: 'equals', value: '12345' }],
+          filters: [{field: 'data.userId', operator: 'equals', value: '12345'}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -109,15 +108,15 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should exclude exact matches in JSON data fields', async () => {
         const match = await factories.createContact({
           projectId,
-          data: { plan: 'premium' },
+          data: {plan: 'premium'},
         });
         await factories.createContact({
           projectId,
-          data: { plan: 'basic' },
+          data: {plan: 'basic'},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.plan', operator: 'notEquals', value: 'basic' }],
+          filters: [{field: 'data.plan', operator: 'notEquals', value: 'basic'}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -136,7 +135,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'subscribed', operator: 'notEquals', value: false }],
+          filters: [{field: 'subscribed', operator: 'notEquals', value: false}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -147,23 +146,23 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should NOT include contacts where field does not exist (only excludes matching values)', async () => {
         const withMatchingField = await factories.createContact({
           projectId,
-          data: { plan: 'basic' },
+          data: {plan: 'basic'},
         });
         const withDifferentValue = await factories.createContact({
           projectId,
-          data: { plan: 'premium' },
+          data: {plan: 'premium'},
         });
         const withoutField = await factories.createContact({
           projectId,
-          data: { other: 'value' },
+          data: {other: 'value'},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.plan', operator: 'notEquals', value: 'basic' }],
+          filters: [{field: 'data.plan', operator: 'notEquals', value: 'basic'}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map((c) => c.id);
+        const ids = result.contacts.map(c => c.id);
         // notEquals only matches where field exists and has different value
         expect(ids).toContain(withDifferentValue.id);
         expect(ids).not.toContain(withMatchingField.id);
@@ -175,15 +174,15 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should match substring in JSON data fields', async () => {
         const match = await factories.createContact({
           projectId,
-          data: { company: 'Acme Corporation' },
+          data: {company: 'Acme Corporation'},
         });
         await factories.createContact({
           projectId,
-          data: { company: 'Other Industries' },
+          data: {company: 'Other Industries'},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.company', operator: 'contains', value: 'Acme' }],
+          filters: [{field: 'data.company', operator: 'contains', value: 'Acme'}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -206,11 +205,11 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'email', operator: 'contains', value: 'company' }],
+          filters: [{field: 'email', operator: 'contains', value: 'company'}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map((c) => c.id);
+        const ids = result.contacts.map(c => c.id);
         expect(ids).toContain(match1.id);
         expect(ids).toContain(match2.id);
         expect(result.contacts).toHaveLength(2);
@@ -219,11 +218,11 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should not match when field does not exist', async () => {
         await factories.createContact({
           projectId,
-          data: { other: 'value' },
+          data: {other: 'value'},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.company', operator: 'contains', value: 'Acme' }],
+          filters: [{field: 'data.company', operator: 'contains', value: 'Acme'}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -241,7 +240,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'email', operator: 'contains', value: 'gmail' }],
+          filters: [{field: 'email', operator: 'contains', value: 'gmail'}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -254,15 +253,15 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should exclude substring matches in JSON data fields', async () => {
         const match = await factories.createContact({
           projectId,
-          data: { company: 'Other Industries' },
+          data: {company: 'Other Industries'},
         });
         await factories.createContact({
           projectId,
-          data: { company: 'Acme Corporation' },
+          data: {company: 'Acme Corporation'},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.company', operator: 'notContains', value: 'Acme' }],
+          filters: [{field: 'data.company', operator: 'notContains', value: 'Acme'}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -273,23 +272,23 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should NOT include contacts where field does not exist (only excludes matching substrings)', async () => {
         const withoutField = await factories.createContact({
           projectId,
-          data: { other: 'value' },
+          data: {other: 'value'},
         });
         const withMatchingSubstring = await factories.createContact({
           projectId,
-          data: { company: 'Acme Corporation' },
+          data: {company: 'Acme Corporation'},
         });
         const withDifferentValue = await factories.createContact({
           projectId,
-          data: { company: 'Other Industries' },
+          data: {company: 'Other Industries'},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.company', operator: 'notContains', value: 'Acme' }],
+          filters: [{field: 'data.company', operator: 'notContains', value: 'Acme'}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map((c) => c.id);
+        const ids = result.contacts.map(c => c.id);
         // notContains only matches where field exists and doesn't contain substring
         expect(ids).toContain(withDifferentValue.id);
         expect(ids).not.toContain(withMatchingSubstring.id);
@@ -311,7 +310,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'email', operator: 'notContains', value: 'gmail' }],
+          filters: [{field: 'email', operator: 'notContains', value: 'gmail'}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -329,23 +328,23 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should match values greater than threshold', async () => {
         const high = await factories.createContact({
           projectId,
-          data: { score: 100 },
+          data: {score: 100},
         });
         const veryHigh = await factories.createContact({
           projectId,
-          data: { score: 200 },
+          data: {score: 200},
         });
         await factories.createContact({
           projectId,
-          data: { score: 50 },
+          data: {score: 50},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.score', operator: 'greaterThan', value: 50 }],
+          filters: [{field: 'data.score', operator: 'greaterThan', value: 50}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map((c) => c.id);
+        const ids = result.contacts.map(c => c.id);
         expect(ids).toContain(high.id);
         expect(ids).toContain(veryHigh.id);
         expect(result.contacts).toHaveLength(2);
@@ -354,11 +353,11 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should exclude values equal to threshold', async () => {
         await factories.createContact({
           projectId,
-          data: { score: 50 },
+          data: {score: 50},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.score', operator: 'greaterThan', value: 50 }],
+          filters: [{field: 'data.score', operator: 'greaterThan', value: 50}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -368,15 +367,15 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should work with negative numbers', async () => {
         const match = await factories.createContact({
           projectId,
-          data: { temperature: 5 },
+          data: {temperature: 5},
         });
         await factories.createContact({
           projectId,
-          data: { temperature: -10 },
+          data: {temperature: -10},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.temperature', operator: 'greaterThan', value: 0 }],
+          filters: [{field: 'data.temperature', operator: 'greaterThan', value: 0}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -387,15 +386,15 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should work with decimal values', async () => {
         const match = await factories.createContact({
           projectId,
-          data: { rating: 4.5 },
+          data: {rating: 4.5},
         });
         await factories.createContact({
           projectId,
-          data: { rating: 3.2 },
+          data: {rating: 3.2},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.rating', operator: 'greaterThan', value: 4.0 }],
+          filters: [{field: 'data.rating', operator: 'greaterThan', value: 4.0}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -408,23 +407,23 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should match values greater than or equal to threshold', async () => {
         const equal = await factories.createContact({
           projectId,
-          data: { score: 50 },
+          data: {score: 50},
         });
         const greater = await factories.createContact({
           projectId,
-          data: { score: 100 },
+          data: {score: 100},
         });
         await factories.createContact({
           projectId,
-          data: { score: 25 },
+          data: {score: 25},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.score', operator: 'greaterThanOrEqual', value: 50 }],
+          filters: [{field: 'data.score', operator: 'greaterThanOrEqual', value: 50}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map((c) => c.id);
+        const ids = result.contacts.map(c => c.id);
         expect(ids).toContain(equal.id);
         expect(ids).toContain(greater.id);
         expect(result.contacts).toHaveLength(2);
@@ -435,23 +434,23 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should match values less than threshold', async () => {
         const low = await factories.createContact({
           projectId,
-          data: { score: 25 },
+          data: {score: 25},
         });
         const veryLow = await factories.createContact({
           projectId,
-          data: { score: 10 },
+          data: {score: 10},
         });
         await factories.createContact({
           projectId,
-          data: { score: 50 },
+          data: {score: 50},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.score', operator: 'lessThan', value: 50 }],
+          filters: [{field: 'data.score', operator: 'lessThan', value: 50}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map((c) => c.id);
+        const ids = result.contacts.map(c => c.id);
         expect(ids).toContain(low.id);
         expect(ids).toContain(veryLow.id);
         expect(result.contacts).toHaveLength(2);
@@ -460,11 +459,11 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should exclude values equal to threshold', async () => {
         await factories.createContact({
           projectId,
-          data: { score: 50 },
+          data: {score: 50},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.score', operator: 'lessThan', value: 50 }],
+          filters: [{field: 'data.score', operator: 'lessThan', value: 50}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -476,23 +475,23 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should match values less than or equal to threshold', async () => {
         const equal = await factories.createContact({
           projectId,
-          data: { score: 50 },
+          data: {score: 50},
         });
         const less = await factories.createContact({
           projectId,
-          data: { score: 25 },
+          data: {score: 25},
         });
         await factories.createContact({
           projectId,
-          data: { score: 100 },
+          data: {score: 100},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.score', operator: 'lessThanOrEqual', value: 50 }],
+          filters: [{field: 'data.score', operator: 'lessThanOrEqual', value: 50}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map((c) => c.id);
+        const ids = result.contacts.map(c => c.id);
         expect(ids).toContain(equal.id);
         expect(ids).toContain(less.id);
         expect(result.contacts).toHaveLength(2);
@@ -501,17 +500,18 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
 
     describe('Numeric edge cases', () => {
       it('should handle zero values correctly', async () => {
-        const zero = await factories.createContact({
+        // Create a contact with balance 0 (should NOT match greaterThan 0)
+        await factories.createContact({
           projectId,
-          data: { balance: 0 },
+          data: {balance: 0},
         });
         const positive = await factories.createContact({
           projectId,
-          data: { balance: 100 },
+          data: {balance: 100},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.balance', operator: 'greaterThan', value: 0 }],
+          filters: [{field: 'data.balance', operator: 'greaterThan', value: 0}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -522,15 +522,15 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should handle very large numbers', async () => {
         const match = await factories.createContact({
           projectId,
-          data: { views: 1000000 },
+          data: {views: 1000000},
         });
         await factories.createContact({
           projectId,
-          data: { views: 500000 },
+          data: {views: 500000},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.views', operator: 'greaterThanOrEqual', value: 1000000 }],
+          filters: [{field: 'data.views', operator: 'greaterThanOrEqual', value: 1000000}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -548,15 +548,15 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should match contacts where field exists and is not null', async () => {
         const withField = await factories.createContact({
           projectId,
-          data: { company: 'Acme Inc' },
+          data: {company: 'Acme Inc'},
         });
         await factories.createContact({
           projectId,
-          data: { name: 'John' },
+          data: {name: 'John'},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.company', operator: 'exists', value: true }],
+          filters: [{field: 'data.company', operator: 'exists', value: true}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -567,15 +567,15 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should exclude contacts where field is null', async () => {
         const withValue = await factories.createContact({
           projectId,
-          data: { company: 'Acme Inc' },
+          data: {company: 'Acme Inc'},
         });
         await factories.createContact({
           projectId,
-          data: { company: null },
+          data: {company: null},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.company', operator: 'exists', value: true }],
+          filters: [{field: 'data.company', operator: 'exists', value: true}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -586,11 +586,11 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should match fields with empty string values', async () => {
         const withEmptyString = await factories.createContact({
           projectId,
-          data: { notes: '' },
+          data: {notes: ''},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.notes', operator: 'exists', value: true }],
+          filters: [{field: 'data.notes', operator: 'exists', value: true}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -601,11 +601,11 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should match fields with zero values', async () => {
         const withZero = await factories.createContact({
           projectId,
-          data: { score: 0 },
+          data: {score: 0},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.score', operator: 'exists', value: true }],
+          filters: [{field: 'data.score', operator: 'exists', value: true}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -616,11 +616,11 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should match fields with boolean false values', async () => {
         const withFalse = await factories.createContact({
           projectId,
-          data: { verified: false },
+          data: {verified: false},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.verified', operator: 'exists', value: true }],
+          filters: [{field: 'data.verified', operator: 'exists', value: true}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -633,15 +633,15 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should match contacts where field does not exist', async () => {
         const withoutField = await factories.createContact({
           projectId,
-          data: { name: 'John' },
+          data: {name: 'John'},
         });
         await factories.createContact({
           projectId,
-          data: { company: 'Acme Inc' },
+          data: {company: 'Acme Inc'},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.company', operator: 'notExists', value: true }],
+          filters: [{field: 'data.company', operator: 'notExists', value: true}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -652,15 +652,15 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should match contacts where field is null', async () => {
         const withNull = await factories.createContact({
           projectId,
-          data: { company: null },
+          data: {company: null},
         });
         await factories.createContact({
           projectId,
-          data: { company: 'Acme Inc' },
+          data: {company: 'Acme Inc'},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.company', operator: 'notExists', value: true }],
+          filters: [{field: 'data.company', operator: 'notExists', value: true}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -671,11 +671,11 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should exclude fields with empty string values', async () => {
         await factories.createContact({
           projectId,
-          data: { notes: '' },
+          data: {notes: ''},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.notes', operator: 'notExists', value: true }],
+          filters: [{field: 'data.notes', operator: 'notExists', value: true}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -685,11 +685,11 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should exclude fields with zero values', async () => {
         await factories.createContact({
           projectId,
-          data: { score: 0 },
+          data: {score: 0},
         });
 
         const segment = await factories.createSegment(projectId, {
-          filters: [{ field: 'data.score', operator: 'notExists', value: true }],
+          filters: [{field: 'data.score', operator: 'notExists', value: true}],
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
@@ -704,7 +704,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
   describe('Temporal Operators', () => {
     describe('within operator', () => {
       it('should match contacts created within specified days', async () => {
-        const recent = await factories.createContact({ projectId });
+        const recent = await factories.createContact({projectId});
 
         const segment = await factories.createSegment(projectId, {
           filters: [
@@ -718,12 +718,12 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map((c) => c.id);
+        const ids = result.contacts.map(c => c.id);
         expect(ids).toContain(recent.id);
       });
 
       it('should match contacts created within specified hours', async () => {
-        const veryRecent = await factories.createContact({ projectId });
+        const veryRecent = await factories.createContact({projectId});
 
         const segment = await factories.createSegment(projectId, {
           filters: [
@@ -737,12 +737,12 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map((c) => c.id);
+        const ids = result.contacts.map(c => c.id);
         expect(ids).toContain(veryRecent.id);
       });
 
       it('should match contacts created within specified minutes', async () => {
-        const justNow = await factories.createContact({ projectId });
+        const justNow = await factories.createContact({projectId});
 
         const segment = await factories.createSegment(projectId, {
           filters: [
@@ -756,7 +756,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map((c) => c.id);
+        const ids = result.contacts.map(c => c.id);
         expect(ids).toContain(justNow.id);
       });
     });
@@ -767,9 +767,9 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
   // ========================================
   describe('Date Comparison Operators', () => {
     it('should support greaterThan for dates', async () => {
-      const older = await factories.createContact({ projectId });
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      const newer = await factories.createContact({ projectId });
+      const older = await factories.createContact({projectId});
+      await new Promise(resolve => setTimeout(resolve, 10));
+      const newer = await factories.createContact({projectId});
 
       const segment = await factories.createSegment(projectId, {
         filters: [
@@ -782,17 +782,17 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       });
 
       const result = await SegmentService.getContacts(projectId, segment.id);
-      const ids = result.contacts.map((c) => c.id);
+      const ids = result.contacts.map(c => c.id);
       expect(ids).toContain(newer.id);
       expect(ids).not.toContain(older.id);
     });
 
     it('should support lessThanOrEqual for dates', async () => {
-      const first = await factories.createContact({ projectId });
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      const second = await factories.createContact({ projectId });
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      const third = await factories.createContact({ projectId });
+      const first = await factories.createContact({projectId});
+      await new Promise(resolve => setTimeout(resolve, 10));
+      const second = await factories.createContact({projectId});
+      await new Promise(resolve => setTimeout(resolve, 10));
+      const third = await factories.createContact({projectId});
 
       const segment = await factories.createSegment(projectId, {
         filters: [
@@ -805,7 +805,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       });
 
       const result = await SegmentService.getContacts(projectId, segment.id);
-      const ids = result.contacts.map((c) => c.id);
+      const ids = result.contacts.map(c => c.id);
       expect(ids).toContain(first.id);
       expect(ids).toContain(second.id);
       expect(ids).not.toContain(third.id);
@@ -830,27 +830,27 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       await factories.createContact({
         projectId,
         subscribed: false,
-        data: { plan: 'premium', score: 85, company: 'Acme Inc' },
+        data: {plan: 'premium', score: 85, company: 'Acme Inc'},
       });
 
       await factories.createContact({
         projectId,
         subscribed: true,
-        data: { plan: 'basic', score: 85, company: 'Acme Inc' },
+        data: {plan: 'basic', score: 85, company: 'Acme Inc'},
       });
 
       await factories.createContact({
         projectId,
         subscribed: true,
-        data: { plan: 'premium', score: 50, company: 'Acme Inc' },
+        data: {plan: 'premium', score: 50, company: 'Acme Inc'},
       });
 
       const segment = await factories.createSegment(projectId, {
         filters: [
-          { field: 'subscribed', operator: 'equals', value: true },
-          { field: 'data.plan', operator: 'equals', value: 'premium' },
-          { field: 'data.score', operator: 'greaterThanOrEqual', value: 80 },
-          { field: 'data.company', operator: 'contains', value: 'Acme' },
+          {field: 'subscribed', operator: 'equals', value: true},
+          {field: 'data.plan', operator: 'equals', value: 'premium'},
+          {field: 'data.score', operator: 'greaterThanOrEqual', value: 80},
+          {field: 'data.company', operator: 'contains', value: 'Acme'},
         ],
       });
 
@@ -870,18 +870,18 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
 
       await factories.createContact({
         projectId,
-        data: { company: 'Tech Corp' }, // Missing revenue
+        data: {company: 'Tech Corp'}, // Missing revenue
       });
 
       await factories.createContact({
         projectId,
-        data: { revenue: 100000 }, // Missing company
+        data: {revenue: 100000}, // Missing company
       });
 
       const segment = await factories.createSegment(projectId, {
         filters: [
-          { field: 'data.company', operator: 'exists', value: true },
-          { field: 'data.revenue', operator: 'greaterThanOrEqual', value: 100000 },
+          {field: 'data.company', operator: 'exists', value: true},
+          {field: 'data.revenue', operator: 'greaterThanOrEqual', value: 100000},
         ],
       });
 

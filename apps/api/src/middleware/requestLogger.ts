@@ -107,7 +107,7 @@ export const databaseRequestLogger = (req: Request, res: Response, next: NextFun
 
   // Capture the original res.json to log after response
   const originalJson = res.json.bind(res);
-  res.json = function (body: any) {
+  res.json = function (body: unknown) {
     // Call original json method first
     const result = originalJson(body);
 
@@ -124,7 +124,12 @@ export const databaseRequestLogger = (req: Request, res: Response, next: NextFun
  * Log the request to the database
  * This runs asynchronously and failures are logged but don't affect the response
  */
-async function logRequestToDatabase(req: Request, res: Response, startTime: number, responseBody: any): Promise<void> {
+async function logRequestToDatabase(
+  req: Request,
+  res: Response,
+  startTime: number,
+  responseBody: unknown,
+): Promise<void> {
   try {
     const requestId = res.locals.requestId as string | undefined;
     const auth = res.locals.auth as {type?: string; userId?: string; projectId?: string} | undefined;
@@ -136,9 +141,17 @@ async function logRequestToDatabase(req: Request, res: Response, startTime: numb
     let errorCode: string | undefined;
     let errorMessage: string | undefined;
 
-    if (statusCode >= 400 && responseBody?.error) {
-      errorCode = responseBody.error.code;
-      errorMessage = responseBody.error.message;
+    if (
+      statusCode >= 400 &&
+      responseBody &&
+      typeof responseBody === 'object' &&
+      'error' in responseBody &&
+      responseBody.error &&
+      typeof responseBody.error === 'object'
+    ) {
+      const error = responseBody.error as {code?: string; message?: string};
+      errorCode = error.code;
+      errorMessage = error.message;
     }
 
     // Calculate request/response sizes (approximate)

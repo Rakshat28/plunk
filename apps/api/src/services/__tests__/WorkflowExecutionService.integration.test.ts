@@ -1,5 +1,5 @@
-import {describe, it, expect, beforeEach, vi} from 'vitest';
-import {WorkflowStepType, StepExecutionStatus, WorkflowExecutionStatus, TemplateType, Prisma} from '@plunk/db';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {Prisma, StepExecutionStatus, WorkflowExecutionStatus, WorkflowStepType} from '@plunk/db';
 import {WorkflowExecutionService} from '../WorkflowExecutionService';
 import {factories, getPrismaClient} from '../../../../../test/helpers';
 
@@ -140,7 +140,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
       const conditionExec = stepExecutions.find(se => se.step.type === WorkflowStepType.CONDITION);
       expect(conditionExec).toBeDefined();
       expect(conditionExec?.status).toBe(StepExecutionStatus.COMPLETED);
-      expect((conditionExec?.output as any)?.branch).toBe('yes');
+      expect((conditionExec?.output as {branch?: string} | null)?.branch).toBe('yes');
     });
 
     it('should follow NO branch when condition evaluates to false', async () => {
@@ -229,7 +229,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
 
       const conditionExec = stepExecutions.find(se => se.step.type === WorkflowStepType.CONDITION);
       expect(conditionExec).toBeDefined();
-      expect((conditionExec?.output as any)?.branch).toBe('no');
+      expect((conditionExec?.output as {branch?: string} | null)?.branch).toBe('no');
     });
 
     it('should handle complex nested conditions', async () => {
@@ -356,8 +356,8 @@ describe('WorkflowExecutionService - Integration Tests', () => {
       expect(stepExecutions.length).toBeGreaterThanOrEqual(3);
       const conditions = stepExecutions.filter(se => se.step.type === WorkflowStepType.CONDITION);
       expect(conditions).toHaveLength(2);
-      expect((conditions[0].output as any)?.branch).toBe('yes'); // US = yes
-      expect((conditions[1].output as any)?.branch).toBe('yes'); // Premium = yes
+      expect((conditions[0].output as {branch?: string} | null)?.branch).toBe('yes'); // US = yes
+      expect((conditions[1].output as {branch?: string} | null)?.branch).toBe('yes'); // Premium = yes
     });
   });
 
@@ -695,7 +695,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
       // Should have: TRIGGER, CONDITION, and Path A (since segment = 'A')
       expect(stepExecutions.length).toBeGreaterThanOrEqual(2);
       const conditionExec = stepExecutions.find(se => se.step.type === WorkflowStepType.CONDITION);
-      expect((conditionExec?.output as any)?.branch).toBe('yes');
+      expect((conditionExec?.output as {branch?: string} | null)?.branch).toBe('yes');
     });
   });
 
@@ -813,7 +813,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
       });
 
       expect(conditionExec?.status).toBe(StepExecutionStatus.COMPLETED);
-      expect((conditionExec?.output as any)?.branch).toBe('no');
+      expect((conditionExec?.output as {branch?: string} | null)?.branch).toBe('no');
     });
   });
 
@@ -1078,7 +1078,11 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         data: {fromStepId: triggerStep!.id, toStepId: conditionStep.id},
       });
       await prisma.workflowTransition.create({
-        data: {fromStepId: conditionStep.id, toStepId: exitStep.id, condition: {branch: 'yes'} as Prisma.InputJsonValue},
+        data: {
+          fromStepId: conditionStep.id,
+          toStepId: exitStep.id,
+          condition: {branch: 'yes'} as Prisma.InputJsonValue,
+        },
       });
 
       const execution = await prisma.workflowExecution.create({
@@ -1140,7 +1144,11 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         data: {fromStepId: triggerStep!.id, toStepId: conditionStep.id},
       });
       await prisma.workflowTransition.create({
-        data: {fromStepId: conditionStep.id, toStepId: exitStep.id, condition: {branch: 'yes'} as Prisma.InputJsonValue},
+        data: {
+          fromStepId: conditionStep.id,
+          toStepId: exitStep.id,
+          condition: {branch: 'yes'} as Prisma.InputJsonValue,
+        },
       });
 
       const execution = await prisma.workflowExecution.create({
@@ -1178,7 +1186,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         status: 200,
         text: async () => JSON.stringify({success: true}),
       }));
-      global.fetch = mockFetch as any;
+      global.fetch = mockFetch as unknown as typeof fetch;
 
       const contact = await factories.createContact({
         projectId,

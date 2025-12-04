@@ -1,7 +1,7 @@
 import {Controller, Post} from '@overnightjs/core';
 import type {Prisma} from '@plunk/db';
 import {EmailStatus} from '@plunk/db';
-import type {NextFunction, Request, Response} from 'express';
+import type {Request, Response} from 'express';
 import signale from 'signale';
 import type Stripe from 'stripe';
 

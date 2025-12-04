@@ -1,5 +1,5 @@
-import {describe, it, expect, beforeEach, vi, afterEach} from 'vitest';
-import {WorkflowTriggerType, WorkflowExecutionStatus} from '@plunk/db';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {WorkflowExecutionStatus, WorkflowTriggerType} from '@plunk/db';
 import {EventService} from '../EventService';
 import {factories, getPrismaClient} from '../../../../../test/helpers';
 
@@ -59,7 +59,7 @@ describe('EventService', () => {
     // Clear Redis mock
     const {redis} = await import('../../database/redis');
     if ('clear' in redis) {
-      (redis as any).clear();
+      (redis as unknown as {clear: () => void}).clear();
     }
   });
 
@@ -441,7 +441,6 @@ describe('EventService', () => {
       const contact = await factories.createContact({projectId});
 
       const oldDate = new Date('2024-01-01');
-      const recentDate = new Date('2024-06-01');
 
       // Create old event directly
       await prisma.event.create({

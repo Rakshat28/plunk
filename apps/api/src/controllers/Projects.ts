@@ -16,7 +16,7 @@ export class Projects {
   @Get(':id/setup-state')
   @Middleware([requireAuth])
   @CatchAsync
-  private async getSetupState(req: Request, res: Response, next: NextFunction) {
+  private async getSetupState(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
 
@@ -89,7 +89,7 @@ export class Projects {
   @Get(':id/members')
   @Middleware([requireAuth])
   @CatchAsync
-  private async getMembers(req: Request, res: Response, next: NextFunction) {
+  private async getMembers(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = req.params;
 

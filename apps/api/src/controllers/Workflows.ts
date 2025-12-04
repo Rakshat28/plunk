@@ -16,7 +16,7 @@ export class Workflows {
   @Get('')
   @Middleware([requireAuth])
   @CatchAsync
-  public async list(req: Request, res: Response, next: NextFunction) {
+  public async list(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const page = parseInt(req.query.page as string) || 1;
     const pageSize = Math.min(parseInt(req.query.pageSize as string) || 20, 100);
@@ -36,7 +36,7 @@ export class Workflows {
   @Get('fields')
   @Middleware([requireAuth])
   @CatchAsync
-  public async getAvailableFields(req: Request, res: Response, next: NextFunction) {
+  public async getAvailableFields(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const eventName = req.query.eventName as string | undefined;
 
@@ -59,7 +59,7 @@ export class Workflows {
   @Get(':id')
   @Middleware([requireAuth])
   @CatchAsync
-  public async get(req: Request, res: Response, next: NextFunction) {
+  public async get(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
 
@@ -79,7 +79,7 @@ export class Workflows {
   @Post('')
   @Middleware([requireAuth])
   @CatchAsync
-  public async create(req: Request, res: Response, next: NextFunction) {
+  public async create(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {name, description, eventName, enabled, allowReentry} = req.body;
 
@@ -109,7 +109,7 @@ export class Workflows {
   @Patch(':id')
   @Middleware([requireAuth])
   @CatchAsync
-  public async update(req: Request, res: Response, next: NextFunction) {
+  public async update(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const {name, description, triggerType, triggerConfig, enabled, allowReentry} = req.body;
@@ -137,7 +137,7 @@ export class Workflows {
   @Delete(':id')
   @Middleware([requireAuth])
   @CatchAsync
-  public async delete(req: Request, res: Response, next: NextFunction) {
+  public async delete(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
 
@@ -157,7 +157,7 @@ export class Workflows {
   @Post(':id/steps')
   @Middleware([requireAuth])
   @CatchAsync
-  public async addStep(req: Request, res: Response, next: NextFunction) {
+  public async addStep(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const {type, name, position, config, templateId, autoConnect} = req.body;
@@ -189,7 +189,7 @@ export class Workflows {
   @Patch(':id/steps/:stepId')
   @Middleware([requireAuth])
   @CatchAsync
-  public async updateStep(req: Request, res: Response, next: NextFunction) {
+  public async updateStep(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const stepId = req.params.stepId;
@@ -216,7 +216,7 @@ export class Workflows {
   @Delete(':id/steps/:stepId')
   @Middleware([requireAuth])
   @CatchAsync
-  public async deleteStep(req: Request, res: Response, next: NextFunction) {
+  public async deleteStep(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const stepId = req.params.stepId;
@@ -237,7 +237,7 @@ export class Workflows {
   @Post(':id/transitions')
   @Middleware([requireAuth])
   @CatchAsync
-  public async createTransition(req: Request, res: Response, next: NextFunction) {
+  public async createTransition(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const {fromStepId, toStepId, condition, priority} = req.body;
@@ -267,7 +267,7 @@ export class Workflows {
   @Delete(':id/transitions/:transitionId')
   @Middleware([requireAuth])
   @CatchAsync
-  public async deleteTransition(req: Request, res: Response, next: NextFunction) {
+  public async deleteTransition(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const transitionId = req.params.transitionId;
@@ -288,7 +288,7 @@ export class Workflows {
   @Post(':id/executions')
   @Middleware([requireAuth])
   @CatchAsync
-  public async startExecution(req: Request, res: Response, next: NextFunction) {
+  public async startExecution(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const {contactId, context} = req.body;
@@ -313,7 +313,7 @@ export class Workflows {
   @Get(':id/executions')
   @Middleware([requireAuth])
   @CatchAsync
-  public async listExecutions(req: Request, res: Response, next: NextFunction) {
+  public async listExecutions(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const page = parseInt(req.query.page as string) || 1;
@@ -336,7 +336,7 @@ export class Workflows {
   @Get(':id/executions/:executionId')
   @Middleware([requireAuth])
   @CatchAsync
-  public async getExecution(req: Request, res: Response, next: NextFunction) {
+  public async getExecution(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const executionId = req.params.executionId;
@@ -357,7 +357,7 @@ export class Workflows {
   @Delete(':id/executions/:executionId')
   @Middleware([requireAuth])
   @CatchAsync
-  public async cancelExecution(req: Request, res: Response, next: NextFunction) {
+  public async cancelExecution(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
     const executionId = req.params.executionId;
@@ -378,7 +378,7 @@ export class Workflows {
   @Post(':id/executions/cancel-all')
   @Middleware([requireAuth])
   @CatchAsync
-  public async cancelAllExecutions(req: Request, res: Response, next: NextFunction) {
+  public async cancelAllExecutions(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const workflowId = req.params.id;
 

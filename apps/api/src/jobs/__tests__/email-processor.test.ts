@@ -1,7 +1,7 @@
-import {describe, it, expect, beforeEach, vi} from 'vitest';
-import {EmailStatus, EmailSourceType} from '@plunk/db';
-import {factories, getPrismaClient, createServiceMocks} from '../../../../../test/helpers';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 import type {Prisma} from '@plunk/db';
+import {EmailSourceType, EmailStatus} from '@plunk/db';
+import {createServiceMocks, factories, getPrismaClient} from '../../../../../test/helpers';
 
 // Mock MeterService
 vi.mock('../../services/MeterService.js', () => ({
@@ -286,7 +286,9 @@ describe('Email Processor', () => {
 
       expect(emailWithAttachmentsData?.attachments).toBeDefined();
       expect(Array.isArray(emailWithAttachmentsData?.attachments)).toBe(true);
-      expect((emailWithAttachmentsData?.attachments as any[]).length).toBeGreaterThan(0);
+      expect(
+        Array.isArray(emailWithAttachmentsData?.attachments) ? emailWithAttachmentsData.attachments.length : 0,
+      ).toBeGreaterThan(0);
 
       expect(emailWithoutAttachmentsData?.attachments).toBeNull();
     });

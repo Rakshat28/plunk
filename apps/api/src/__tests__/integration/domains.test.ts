@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {factories, getPrismaClient} from '../../../../../test/helpers';
 import {DomainService} from '../../services/DomainService.js';
 import * as SESService from '../../services/SESService.js';
@@ -71,7 +71,7 @@ describe('Domain Verification and Ownership Tests', () => {
     });
 
     it('should allow access when user is a member of the project that owns the domain', async () => {
-      const {user, project} = await factories.createUserWithProject();
+      const {project} = await factories.createUserWithProject();
       const domain = 'shared-domain.com';
 
       // User 1 adds the domain to their project
@@ -101,7 +101,7 @@ describe('Domain Verification and Ownership Tests', () => {
   describe('Preventing Unauthorized Domain Linking', () => {
     it('should prevent linking a domain to another project when user is not a member', async () => {
       const {project: project1} = await factories.createUserWithProject();
-      const {user: user2, project: project2} = await factories.createUserWithProject();
+      const {user: user2} = await factories.createUserWithProject();
       const domain = 'protected-domain.com';
 
       // Project 1 adds the domain
@@ -172,9 +172,7 @@ describe('Domain Verification and Ownership Tests', () => {
       await DomainService.addDomain(project.id, domain);
 
       // Try to verify email domain
-      await expect(
-        DomainService.verifyEmailDomain(`sender@${domain}`, project.id),
-      ).rejects.toThrow(/not verified/i);
+      await expect(DomainService.verifyEmailDomain(`sender@${domain}`, project.id)).rejects.toThrow(/not verified/i);
     });
 
     it('should allow using verified domain for sending emails', async () => {
@@ -210,9 +208,9 @@ describe('Domain Verification and Ownership Tests', () => {
       });
 
       // Try to use from different project
-      await expect(
-        DomainService.verifyEmailDomain(`sender@${domain}`, project2.id),
-      ).rejects.toThrow(/belongs to a different project/i);
+      await expect(DomainService.verifyEmailDomain(`sender@${domain}`, project2.id)).rejects.toThrow(
+        /belongs to a different project/i,
+      );
     });
 
     it('should prevent using unregistered domain', async () => {
@@ -220,9 +218,7 @@ describe('Domain Verification and Ownership Tests', () => {
       const domain = 'not-registered.com';
 
       // Try to use domain that was never added
-      await expect(
-        DomainService.verifyEmailDomain(`sender@${domain}`, project.id),
-      ).rejects.toThrow(/not registered/i);
+      await expect(DomainService.verifyEmailDomain(`sender@${domain}`, project.id)).rejects.toThrow(/not registered/i);
     });
   });
 

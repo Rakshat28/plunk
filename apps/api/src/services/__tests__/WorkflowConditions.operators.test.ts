@@ -1,5 +1,5 @@
-import {describe, it, expect, beforeEach, vi} from 'vitest';
-import {WorkflowStepType, StepExecutionStatus, WorkflowExecutionStatus} from '@plunk/db';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {WorkflowExecutionStatus, WorkflowStepType} from '@plunk/db';
 import {WorkflowExecutionService} from '../WorkflowExecutionService';
 import {factories, getPrismaClient} from '../../../../../test/helpers';
 
@@ -124,7 +124,8 @@ describe('Workflow CONDITION Step - Comprehensive Operator Tests', () => {
       },
     });
 
-    return (stepExecution?.output as any)?.branch || 'unknown';
+    const output = stepExecution?.output as {branch?: string} | null;
+    return output?.branch || 'unknown';
   }
 
   // ========================================

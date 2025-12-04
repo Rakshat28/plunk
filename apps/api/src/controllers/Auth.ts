@@ -15,7 +15,7 @@ import {CatchAsync} from '../utils/asyncHandler.js';
 export class Auth {
   @Post('login')
   @CatchAsync
-  public async login(req: Request, res: Response, next: NextFunction) {
+  public async login(req: Request, res: Response, _next: NextFunction) {
     const {email, password} = AuthenticationSchemas.login.parse(req.body);
 
     const user = await UserService.email(email);
@@ -46,7 +46,7 @@ export class Auth {
 
   @Post('signup')
   @CatchAsync
-  public async signup(req: Request, res: Response, next: NextFunction) {
+  public async signup(req: Request, res: Response, _next: NextFunction) {
     const {email, password} = AuthenticationSchemas.login.parse(req.body);
 
     const user = await UserService.email(email);
