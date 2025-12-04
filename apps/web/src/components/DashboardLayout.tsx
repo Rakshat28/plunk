@@ -67,16 +67,30 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
   const [showProjectMenu, setShowProjectMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const projectMenuRef = useRef<HTMLDivElement>(null);
-  const userMenuRef = useRef<HTMLDivElement>(null);
+  const desktopProjectMenuRef = useRef<HTMLDivElement>(null);
+  const desktopUserMenuRef = useRef<HTMLDivElement>(null);
+  const mobileProjectMenuRef = useRef<HTMLDivElement>(null);
+  const mobileUserMenuRef = useRef<HTMLDivElement>(null);
 
   // Handle click outside for project menu
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (projectMenuRef.current && !projectMenuRef.current.contains(event.target as Node)) {
+      const isClickOutsideProjectMenu =
+        desktopProjectMenuRef.current &&
+        !desktopProjectMenuRef.current.contains(event.target as Node) &&
+        mobileProjectMenuRef.current &&
+        !mobileProjectMenuRef.current.contains(event.target as Node);
+
+      const isClickOutsideUserMenu =
+        desktopUserMenuRef.current &&
+        !desktopUserMenuRef.current.contains(event.target as Node) &&
+        mobileUserMenuRef.current &&
+        !mobileUserMenuRef.current.contains(event.target as Node);
+
+      if (isClickOutsideProjectMenu) {
         setShowProjectMenu(false);
       }
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (isClickOutsideUserMenu) {
         setShowUserMenu(false);
       }
     }
@@ -134,7 +148,10 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
   );
 
   // Sidebar content (reusable for both desktop and mobile)
-  const sidebarContent = (
+  const getSidebarContent = (
+    projectMenuRef: React.RefObject<HTMLDivElement | null>,
+    userMenuRef: React.RefObject<HTMLDivElement | null>,
+  ) => (
     <>
       {/* Logo */}
       <div className="h-16 flex items-center gap-2 px-6 border-b border-neutral-200">
@@ -164,7 +181,9 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
               {availableProjects.map(project => (
                 <button
                   key={project.id}
-                  onClick={() => {
+                  onClick={e => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     setActiveProject(project);
                     setShowProjectMenu(false);
                   }}
@@ -182,6 +201,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
               <div className="border-t border-neutral-200 my-1" />
               <Link
                 href="/projects/create"
+                onClick={() => setShowProjectMenu(false)}
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 transition-colors text-neutral-700"
               >
                 <Plus className="h-4 w-4" />
@@ -267,7 +287,9 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
   return (
     <div className="flex h-screen bg-neutral-50">
       {/* Desktop Sidebar - Hidden on mobile */}
-      <div className="hidden lg:flex w-64 bg-white border-r border-neutral-200 flex-col">{sidebarContent}</div>
+      <div className="hidden lg:flex w-64 bg-white border-r border-neutral-200 flex-col">
+        {getSidebarContent(desktopProjectMenuRef, desktopUserMenuRef)}
+      </div>
 
       {/* Mobile Sidebar Overlay */}
       {showMobileMenu && (
@@ -282,7 +304,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
           showMobileMenu ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex flex-col h-full">{sidebarContent}</div>
+        <div className="flex flex-col h-full">{getSidebarContent(mobileProjectMenuRef, mobileUserMenuRef)}</div>
       </div>
 
       {/* Main Content */}

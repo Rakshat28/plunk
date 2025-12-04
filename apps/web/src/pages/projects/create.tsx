@@ -1,4 +1,5 @@
 import {zodResolver} from '@hookform/resolvers/zod';
+import type {Project} from '@plunk/db';
 import {ProjectSchemas} from '@plunk/shared';
 import {
   Button,
@@ -21,11 +22,13 @@ import React, {useState} from 'react';
 import {useForm} from 'react-hook-form';
 import type {z} from 'zod';
 
+import {useActiveProject} from '../../lib/contexts/ActiveProjectProvider';
 import {useProjects} from '../../lib/hooks/useProject';
 import {network} from '../../lib/network';
 
 export default function CreateProject() {
   const {mutate: projectsMutate} = useProjects();
+  const {setActiveProject} = useActiveProject();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof ProjectSchemas.create>>({
@@ -39,10 +42,17 @@ export default function CreateProject() {
 
   async function onSubmit(values: z.infer<typeof ProjectSchemas.create>) {
     try {
-      await network.fetch<{success: boolean}, typeof ProjectSchemas.create>('POST', '/users/@me/projects', values);
+      const newProject = await network.fetch<Project, typeof ProjectSchemas.create>(
+        'POST',
+        '/users/@me/projects',
+        values,
+      );
 
       // Refresh the projects list
       await projectsMutate();
+
+      // Set the newly created project as active
+      setActiveProject(newProject);
 
       // Redirect to dashboard
       await router.push('/');
