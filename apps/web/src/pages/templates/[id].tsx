@@ -145,7 +145,7 @@ export default function TemplateEditorPage() {
 
   return (
     <DashboardLayout>
-      <form onSubmit={handleSave} className={`space-y-6 ${hasChanges ? 'pb-32' : ''}`}>
+      <form onSubmit={handleSave} className={`max-w-5xl mx-auto space-y-6 ${hasChanges ? 'pb-32' : ''}`}>
         {/* Header */}
         <div className="space-y-4">
           <div className="flex items-center gap-3 sm:gap-4">
@@ -161,11 +161,20 @@ export default function TemplateEditorPage() {
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex-1">
-              {!hasChanges && !isSubmitting && <span className="text-xs sm:text-sm text-neutral-500">All changes saved</span>}
-              {hasChanges && !isSubmitting && <span className="text-xs sm:text-sm text-amber-600">Unsaved changes</span>}
+              {!hasChanges && !isSubmitting && (
+                <span className="text-xs sm:text-sm text-neutral-500">All changes saved</span>
+              )}
+              {hasChanges && !isSubmitting && (
+                <span className="text-xs sm:text-sm text-amber-600">Unsaved changes</span>
+              )}
             </div>
             <div className="flex items-center gap-2">
-              <Button type="button" variant="destructive" onClick={() => setShowDeleteDialog(true)} className="flex-1 sm:flex-none">
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => setShowDeleteDialog(true)}
+                className="flex-1 sm:flex-none"
+              >
                 <Trash2 className="h-4 w-4" />
                 <span className="hidden sm:inline">Delete</span>
               </Button>
@@ -179,7 +188,7 @@ export default function TemplateEditorPage() {
         </div>
 
         {/* Template Editor */}
-        <div className="max-w-5xl mx-auto space-y-6">
+        <div className="space-y-6">
           {/* Template Settings */}
           <div>
             <Card>
@@ -215,7 +224,9 @@ export default function TemplateEditorPage() {
                   <Label htmlFor="type">Type *</Label>
                   <Select
                     value={editedTemplate.type}
-                    onValueChange={value => setEditedTemplate({...editedTemplate, type: value as 'MARKETING' | 'TRANSACTIONAL'})}
+                    onValueChange={value =>
+                      setEditedTemplate({...editedTemplate, type: value as 'MARKETING' | 'TRANSACTIONAL'})
+                    }
                   >
                     <SelectTrigger id="type">
                       <SelectValue />
