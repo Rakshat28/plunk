@@ -35,7 +35,6 @@ interface EmailEditorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  canUploadImages?: boolean;
   // Optional props for preview header
   subject?: string;
   from?: string;

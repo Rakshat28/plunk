@@ -179,10 +179,6 @@ export default function CreateTemplatePage() {
                 value={body}
                 onChange={setBody}
                 placeholder="<h1>Welcome!</h1><p>Thanks for subscribing to our newsletter.</p>"
-                canUploadImages={true}
-                subject={subject}
-                from={from}
-                replyTo={replyTo}
               />
             </CardContent>
           </Card>

@@ -119,6 +119,44 @@ const FilterRow = memo(function FilterRow({filter, onChange, onRemove, available
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
+  // Helper to get default value based on field type
+  const getDefaultValueForType = useCallback((type: string) => {
+    switch (type) {
+      case 'boolean':
+        return true;
+      case 'number':
+        return 0;
+      case 'date':
+        return '';
+      default:
+        return '';
+    }
+  }, []);
+
+  // Helper to get valid operators for a field type
+  const getOperatorsForType = useCallback((type: string, isEvent: boolean) => {
+    if (isEvent) {
+      return EVENT_OPERATORS;
+    }
+
+    if (type === 'boolean') {
+      return STANDARD_OPERATORS.filter(op =>
+        ['equals', 'notEquals', 'exists', 'notExists'].includes(op.value)
+      );
+    }
+
+    if (type === 'number' || type === 'date') {
+      return STANDARD_OPERATORS.filter(op =>
+        ['equals', 'notEquals', 'greaterThan', 'lessThan', 'greaterThanOrEqual', 'lessThanOrEqual', 'exists', 'notExists', 'within'].includes(op.value)
+      );
+    }
+
+    // String type - no within operator, no comparison operators
+    return STANDARD_OPERATORS.filter(op =>
+      ['equals', 'notEquals', 'contains', 'notContains', 'exists', 'notExists'].includes(op.value)
+    );
+  }, []);
+
   const needsValue = !['exists', 'notExists', 'triggered', 'notTriggered'].includes(filter.operator);
   const needsUnit = ['within', 'triggeredWithin'].includes(filter.operator);
 
@@ -208,45 +246,7 @@ const FilterRow = memo(function FilterRow({filter, onChange, onRemove, available
 
     setOpen(false);
     setSearch('');
-  }, [availableFields, filter.operator, fieldType, onChange]);
-
-  // Helper to get default value based on field type
-  const getDefaultValueForType = useCallback((type: string) => {
-    switch (type) {
-      case 'boolean':
-        return true;
-      case 'number':
-        return 0;
-      case 'date':
-        return '';
-      default:
-        return '';
-    }
-  }, []);
-
-  // Helper to get valid operators for a field type
-  const getOperatorsForType = useCallback((type: string, isEvent: boolean) => {
-    if (isEvent) {
-      return EVENT_OPERATORS;
-    }
-
-    if (type === 'boolean') {
-      return STANDARD_OPERATORS.filter(op =>
-        ['equals', 'notEquals', 'exists', 'notExists'].includes(op.value)
-      );
-    }
-
-    if (type === 'number' || type === 'date') {
-      return STANDARD_OPERATORS.filter(op =>
-        ['equals', 'notEquals', 'greaterThan', 'lessThan', 'greaterThanOrEqual', 'lessThanOrEqual', 'exists', 'notExists', 'within'].includes(op.value)
-      );
-    }
-
-    // String type - no within operator, no comparison operators
-    return STANDARD_OPERATORS.filter(op =>
-      ['equals', 'notEquals', 'contains', 'notContains', 'exists', 'notExists'].includes(op.value)
-    );
-  }, []);
+  }, [availableFields, filter.operator, fieldType, onChange, getDefaultValueForType, getOperatorsForType]);
 
   // Get label for selected field
   const getFieldLabel = useCallback(() => {

@@ -270,10 +270,6 @@ export default function TemplateEditorPage() {
                   value={editedTemplate.body || ''}
                   onChange={body => setEditedTemplate({...editedTemplate, body})}
                   placeholder="<h1>Welcome!</h1><p>Thanks for subscribing to our newsletter.</p>"
-                  canUploadImages={true}
-                  subject={editedTemplate.subject}
-                  from={editedTemplate.from}
-                  replyTo={editedTemplate.replyTo || undefined}
                 />
               </CardContent>
             </Card>

@@ -334,6 +334,18 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [stepToDelete, setStepToDelete] = useState<string | null>(null);
 
+  // Define handlers before they are used in useMemo
+  const handleEditStep = useCallback((stepId: string) => {
+    // This will be handled by the parent component
+    const event = new CustomEvent('workflow-edit-step', {detail: {stepId}});
+    window.dispatchEvent(event);
+  }, []);
+
+  const handleDeleteStepClick = useCallback((stepId: string) => {
+    setStepToDelete(stepId);
+    setShowDeleteDialog(true);
+  }, []);
+
   // Convert workflow steps to React Flow nodes
 
   const rawNodes: Node[] = useMemo(() => {
@@ -621,17 +633,6 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [addStepContext, workflowId, onUpdate],
   );
-
-  const handleEditStep = useCallback((stepId: string) => {
-    // This will be handled by the parent component
-    const event = new CustomEvent('workflow-edit-step', {detail: {stepId}});
-    window.dispatchEvent(event);
-  }, []);
-
-  const handleDeleteStepClick = useCallback((stepId: string) => {
-    setStepToDelete(stepId);
-    setShowDeleteDialog(true);
-  }, []);
 
   // Get all steps that will be affected by deleting a step (the step itself + all downstream steps)
   const getAffectedSteps = useCallback(

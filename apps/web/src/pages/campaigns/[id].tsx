@@ -546,10 +546,6 @@ export default function CampaignDetailsPage() {
                   setHasChanges(true);
                 }}
                 placeholder="<h1>Welcome!</h1><p>Your email content here...</p>"
-                canUploadImages={true}
-                subject={editedCampaign.subject}
-                from={editedCampaign.from}
-                replyTo={editedCampaign.replyTo || undefined}
               />
             </CardContent>
           </Card>

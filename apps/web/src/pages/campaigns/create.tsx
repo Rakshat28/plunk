@@ -195,10 +195,6 @@ export default function CreateCampaignPage() {
                       value={body}
                       onChange={setBody}
                       placeholder="<h1>Welcome!</h1><p>Your email content here...</p>"
-                      canUploadImages={true}
-                      subject={subject}
-                      from={from}
-                      replyTo={replyTo}
                     />
                   </div>
                 </CardContent>
