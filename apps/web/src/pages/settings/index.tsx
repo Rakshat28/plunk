@@ -32,7 +32,7 @@ import {
 } from '@plunk/ui';
 import {AnimatePresence, motion} from 'framer-motion';
 import {NextSeo} from 'next-seo';
-import {AlertTriangle, CreditCard, Database, Globe, Mail, Settings as SettingsIcon} from 'lucide-react';
+import {AlertTriangle, CreditCard, Database, Globe, Mail, Settings as SettingsIcon, Users} from 'lucide-react';
 import type {z} from 'zod';
 import {useRouter} from 'next/router';
 import {DashboardLayout} from '../../components/DashboardLayout';
@@ -44,12 +44,15 @@ import {UnpaidInvoiceBanner} from '../../components/UnpaidInvoiceBanner';
 import {ApiKeyDisplay} from '../../components/ApiKeyDisplay';
 import {SmtpSettings} from '../../components/SmtpSettings';
 import {DataManagementSettings} from '../../components/DataManagementSettings';
+import {TeamSettings} from '../../components/TeamSettings';
 import {useActiveProject} from '../../lib/contexts/ActiveProjectProvider';
 import {network} from '../../lib/network';
 import {useProjects} from '../../lib/hooks/useProject';
 import {useConfig} from '../../lib/hooks/useConfig';
+import {useUser} from '../../lib/hooks/useUser';
+import useSWR from 'swr';
 
-type TabId = 'general' | 'billing' | 'domains' | 'smtp' | 'data';
+type TabId = 'general' | 'billing' | 'domains' | 'smtp' | 'data' | 'team';
 
 interface Tab {
   id: TabId;
@@ -62,6 +65,7 @@ const buildTabs = (options: {billingEnabled: boolean; smtpEnabled: boolean}): Ta
   const {billingEnabled, smtpEnabled} = options;
   const allTabs: Tab[] = [
     {id: 'general', label: 'General', icon: SettingsIcon},
+    {id: 'team', label: 'Team', icon: Users},
     {id: 'billing', label: 'Billing', icon: CreditCard, condition: billingEnabled},
     {id: 'domains', label: 'Domains', icon: Globe},
     {id: 'smtp', label: 'SMTP', icon: Mail, condition: smtpEnabled},
@@ -75,6 +79,7 @@ export default function Settings() {
   const {activeProject, setActiveProject} = useActiveProject();
   const {mutate: projectsMutate} = useProjects();
   const {data: config} = useConfig();
+  const {data: user} = useUser();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showRegenerateDialog, setShowRegenerateDialog] = useState(false);
@@ -83,6 +88,15 @@ export default function Settings() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [resetConfirmText, setResetConfirmText] = useState('');
   const [isLoadingBilling, setIsLoadingBilling] = useState(false);
+
+  // Fetch current user's membership for the active project
+  const {data: membershipData} = useSWR<{
+    success: boolean;
+    data: Array<{userId: string; email: string; role: 'OWNER' | 'ADMIN' | 'MEMBER'}>;
+  }>(activeProject?.id ? `/projects/${activeProject.id}/members` : null, {revalidateOnFocus: false});
+
+  const currentUserMembership = membershipData?.data.find(m => m.userId === user?.id);
+  const currentUserRole = currentUserMembership?.role || 'MEMBER';
 
   const billingEnabled = config?.features.billing.enabled ?? false;
   const smtpEnabled = config?.features.smtp.enabled ?? false;
@@ -637,6 +651,11 @@ export default function Settings() {
                   onManageBilling={handleManageBilling}
                 />
               </div>
+            </TabsContent>
+
+            {/* Team Tab */}
+            <TabsContent value="team">
+              <TeamSettings projectId={activeProject.id} currentUserRole={currentUserRole} currentUserId={user?.id || ''} />
             </TabsContent>
 
             {/* Domains Tab */}

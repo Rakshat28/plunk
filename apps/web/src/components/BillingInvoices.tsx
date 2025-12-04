@@ -88,20 +88,20 @@ export function BillingInvoices({projectId, hasSubscription, onManageBilling}: B
   const getStatusBadge = (status: string, paid: boolean) => {
     // Stripe invoices have status 'paid' when paid, or paid boolean is true
     if (paid || status === 'paid') {
-      return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Paid</Badge>;
+      return <Badge variant="green">Paid</Badge>;
     }
 
     switch (status) {
       case 'open':
-        return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">Unpaid</Badge>;
+        return <Badge variant="orange">Unpaid</Badge>;
       case 'draft':
-        return <Badge className="bg-neutral-100 text-neutral-800 hover:bg-neutral-100">Draft</Badge>;
+        return <Badge variant="neutral">Draft</Badge>;
       case 'uncollectible':
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Uncollectible</Badge>;
+        return <Badge variant="red">Uncollectible</Badge>;
       case 'void':
-        return <Badge className="bg-neutral-100 text-neutral-800 hover:bg-neutral-100">Void</Badge>;
+        return <Badge variant="neutral">Void</Badge>;
       default:
-        return <Badge className="bg-neutral-100 text-neutral-800 hover:bg-neutral-100">{status}</Badge>;
+        return <Badge variant="neutral">{status}</Badge>;
     }
   };
 

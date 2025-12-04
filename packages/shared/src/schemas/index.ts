@@ -394,3 +394,13 @@ export const BillingLimitSchemas = {
     transactional: z.coerce.number().int().positive().nullable(),
   }),
 } as const;
+
+export const MembershipSchemas = {
+  addMember: z.object({
+    email,
+    role: z.enum(['ADMIN', 'MEMBER']).default('MEMBER'),
+  }),
+  updateRole: z.object({
+    role: z.enum(['ADMIN', 'MEMBER']),
+  }),
+} as const;
