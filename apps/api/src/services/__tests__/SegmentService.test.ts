@@ -233,7 +233,9 @@ describe('SegmentService', () => {
 
       expect(segment.name).toBe('VIP Customers');
       expect(segment.projectId).toBe(projectId);
-      expect(Array.isArray(segment.filters)).toBe(true);
+      // Segments now use condition object with groups containing filters
+      expect(segment.condition).toBeDefined();
+      expect(typeof segment.condition).toBe('object');
     });
 
     it('should list all segments for a project', async () => {
@@ -387,7 +389,10 @@ describe('SegmentService', () => {
       await expect(
         SegmentService.create(projectId, {
           name: 'Invalid Segment',
-          filters: [],
+          condition: {
+            logic: 'AND',
+            groups: [{filters: []}],
+          },
         }),
       ).rejects.toThrow(/at least one filter/i);
     });
@@ -396,13 +401,20 @@ describe('SegmentService', () => {
       await expect(
         SegmentService.create(projectId, {
           name: 'Invalid Segment',
-          filters: [
-            {
-              // Intentionally missing field, cast to bypass compile-time validation
-              operator: 'equals',
-              value: 'test',
-            } as InvalidFilterInput as SegmentFilter,
-          ],
+          condition: {
+            logic: 'AND',
+            groups: [
+              {
+                filters: [
+                  {
+                    // Intentionally missing field, cast to bypass compile-time validation
+                    operator: 'equals',
+                    value: 'test',
+                  } as InvalidFilterInput as SegmentFilter,
+                ],
+              },
+            ],
+          },
         }),
       ).rejects.toThrow(/field is required/i);
     });
@@ -411,14 +423,21 @@ describe('SegmentService', () => {
       await expect(
         SegmentService.create(projectId, {
           name: 'Invalid Segment',
-          filters: [
-            {
-              field: 'email',
-              // Intentionally invalid operator
-              operator: 'DROP TABLE contacts;',
-              value: 'test',
-            } as InvalidFilterInput as SegmentFilter,
-          ],
+          condition: {
+            logic: 'AND',
+            groups: [
+              {
+                filters: [
+                  {
+                    field: 'email',
+                    // Intentionally invalid operator
+                    operator: 'DROP TABLE contacts;',
+                    value: 'test',
+                  } as InvalidFilterInput as SegmentFilter,
+                ],
+              },
+            ],
+          },
         }),
       ).rejects.toThrow(/invalid operator/i);
     });
@@ -427,13 +446,20 @@ describe('SegmentService', () => {
       await expect(
         SegmentService.create(projectId, {
           name: 'Invalid Segment',
-          filters: [
-            {
-              field: 'email',
-              operator: 'equals',
-              // Value intentionally omitted
-            } as InvalidFilterInput as SegmentFilter,
-          ],
+          condition: {
+            logic: 'AND',
+            groups: [
+              {
+                filters: [
+                  {
+                    field: 'email',
+                    operator: 'equals',
+                    // Value intentionally omitted
+                  } as InvalidFilterInput as SegmentFilter,
+                ],
+              },
+            ],
+          },
         }),
       ).rejects.toThrow(/requires a value/i);
     });
@@ -441,13 +467,20 @@ describe('SegmentService', () => {
     it('should ACCEPT valid filters', async () => {
       const segment = await SegmentService.create(projectId, {
         name: 'Valid Segment',
-        filters: [
-          {
-            field: 'subscribed',
-            operator: 'equals',
-            value: true,
-          },
-        ],
+        condition: {
+          logic: 'AND',
+          groups: [
+            {
+              filters: [
+                {
+                  field: 'subscribed',
+                  operator: 'equals',
+                  value: true,
+                },
+              ],
+            },
+          ],
+        },
       });
 
       expect(segment.id).toBeDefined();

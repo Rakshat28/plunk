@@ -33,7 +33,7 @@ export default defineConfig({
     // Run tests sequentially to avoid database cleanup conflicts
     fileParallelism: false,
     // Limit concurrent test files to reduce memory pressure
-    maxConcurrency: 1,
+    maxConcurrency: 3,
     // Only include our test files, not dependency tests
     include: [
       'apps/**/__tests__/**/*.{test,spec}.{ts,tsx}',

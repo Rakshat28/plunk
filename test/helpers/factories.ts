@@ -1,15 +1,15 @@
 import {
-  PrismaClient,
   AuthMethod,
+  CampaignStatus,
+  EmailSourceType,
+  EmailStatus,
+  Prisma,
+  PrismaClient,
   Role,
   TemplateType,
-  CampaignStatus,
-  EmailStatus,
-  EmailSourceType,
-  WorkflowTriggerType,
-  WorkflowStepType,
   WorkflowExecutionStatus,
-  StepExecutionStatus,
+  WorkflowStepType,
+  WorkflowTriggerType
 } from '@plunk/db';
 import {getPrismaClient} from './database';
 import bcrypt from 'bcrypt';
@@ -513,20 +513,31 @@ export class TestFactories {
 
   /**
    * Create a segment
+   * Supports both old format (filters array) and new format (condition object)
    */
   async createSegment(
     projectId: string,
     overrides: {
       name?: string;
-      filters?: unknown;
+      filters?: Array<{field: string; operator: string; value?: unknown; unit?: string}>;
+      condition?: {
+        logic: 'AND' | 'OR';
+        groups: Array<{filters: Array<{field: string; operator: string; value?: unknown; unit?: string}>}>;
+      };
       trackMembership?: boolean;
     } = {},
   ) {
+    // Convert filters array to condition format if condition not provided
+    const condition = overrides.condition || {
+      logic: 'AND' as const,
+      groups: [{filters: overrides.filters || []}],
+    };
+
     return this.prisma.segment.create({
       data: {
         projectId,
         name: overrides.name || `Segment ${uniqueId()}`,
-        filters: overrides.filters || [],
+        condition: condition as unknown as Prisma.InputJsonValue,
         trackMembership: overrides.trackMembership ?? false,
       },
     });

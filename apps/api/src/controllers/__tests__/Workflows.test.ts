@@ -43,9 +43,9 @@ describe('Workflows Controller', () => {
       expect(responseBody.fields).toContain('contact.subscribed');
 
       // Should include custom contact data fields
-      expect(responseBody.fields).toContain('data.firstName');
-      expect(responseBody.fields).toContain('data.lastName');
-      expect(responseBody.fields).toContain('data.plan');
+      expect(responseBody.fields).toContain('contact.data.firstName');
+      expect(responseBody.fields).toContain('contact.data.lastName');
+      expect(responseBody.fields).toContain('contact.data.plan');
 
       // Should include event fields
       expect(responseBody.fields).toContain('event.subject');
