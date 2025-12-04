@@ -196,58 +196,7 @@ export class BillingLimitService {
         };
       }
 
-      // Free tier projects (no subscription): enforce total 1000 email/month limit
-      if (!project.subscription) {
-        const totalUsage = await this.getTotalUsage(projectId);
-        const limit = this.FREE_TIER_TOTAL_LIMIT;
-        const percentage = (totalUsage / limit) * 100;
-
-        // Check if blocked (at or over limit)
-        if (totalUsage >= limit) {
-          await NtfyService.notifyBillingLimitExceeded(
-            project.name,
-            projectId,
-            totalUsage,
-            limit,
-            EmailSourceType.TRANSACTIONAL, // Use generic type for notification
-          );
-
-          return {
-            allowed: false,
-            warning: false,
-            usage: totalUsage,
-            limit,
-            percentage,
-            message: `Free tier limit reached. You've sent ${totalUsage}/${limit} emails this month. Upgrade to continue sending.`,
-          };
-        }
-
-        // Check if warning (80% or more)
-        const isWarning = percentage >= this.WARNING_THRESHOLD * 100;
-        if (isWarning) {
-          await NtfyService.notifyBillingLimitApproaching(
-            project.name,
-            projectId,
-            totalUsage,
-            limit,
-            percentage,
-            EmailSourceType.TRANSACTIONAL, // Use generic type for notification
-          );
-        }
-
-        return {
-          allowed: true,
-          warning: isWarning,
-          usage: totalUsage,
-          limit,
-          percentage,
-          message: isWarning
-            ? `Warning: You've used ${Math.round(percentage)}% of your free tier limit (${totalUsage}/${limit} emails)`
-            : undefined,
-        };
-      }
-
-      // Paid tier projects (with subscription): check per-category limits if set
+      // Determine which limit to use based on source type
       let limit: number | null;
       switch (sourceType) {
         case EmailSourceType.WORKFLOW:
@@ -261,6 +210,63 @@ export class BillingLimitService {
           break;
         default:
           limit = null;
+      }
+
+      // Check if any custom per-category limits are set
+      const hasCustomLimits =
+        project.billingLimitWorkflows !== null ||
+        project.billingLimitCampaigns !== null ||
+        project.billingLimitTransactional !== null;
+
+      // Free tier projects (no subscription and no custom limits): enforce total 1000 email/month limit
+      if (!project.subscription && !hasCustomLimits) {
+        const totalUsage = await this.getTotalUsage(projectId);
+        const freeLimit = this.FREE_TIER_TOTAL_LIMIT;
+        const percentage = (totalUsage / freeLimit) * 100;
+
+        // Check if blocked (at or over limit)
+        if (totalUsage >= freeLimit) {
+          await NtfyService.notifyBillingLimitExceeded(
+            project.name,
+            projectId,
+            totalUsage,
+            freeLimit,
+            EmailSourceType.TRANSACTIONAL, // Use generic type for notification
+          );
+
+          return {
+            allowed: false,
+            warning: false,
+            usage: totalUsage,
+            limit: freeLimit,
+            percentage,
+            message: `Free tier limit reached. You've sent ${totalUsage}/${freeLimit} emails this month. Upgrade to continue sending.`,
+          };
+        }
+
+        // Check if warning (80% or more)
+        const isWarning = percentage >= this.WARNING_THRESHOLD * 100;
+        if (isWarning) {
+          await NtfyService.notifyBillingLimitApproaching(
+            project.name,
+            projectId,
+            totalUsage,
+            freeLimit,
+            percentage,
+            EmailSourceType.TRANSACTIONAL, // Use generic type for notification
+          );
+        }
+
+        return {
+          allowed: true,
+          warning: isWarning,
+          usage: totalUsage,
+          limit: freeLimit,
+          percentage,
+          message: isWarning
+            ? `Warning: You've used ${Math.round(percentage)}% of your free tier limit (${totalUsage}/${freeLimit} emails)`
+            : undefined,
+        };
       }
 
       // If no limit set for paid tier, allow unlimited
@@ -385,8 +391,14 @@ export class BillingLimitService {
         };
       };
 
-      // Free tier projects: show total usage with shared limit
-      if (!project.subscription) {
+      // Check if any custom per-category limits are set
+      const hasCustomLimits =
+        project.billingLimitWorkflows !== null ||
+        project.billingLimitCampaigns !== null ||
+        project.billingLimitTransactional !== null;
+
+      // Free tier projects (no subscription and no custom limits): show total usage with shared limit
+      if (!project.subscription && !hasCustomLimits) {
         const totalUsage = workflowUsage + campaignUsage + transactionalUsage;
         const limit = this.FREE_TIER_TOTAL_LIMIT;
         const percentage = (totalUsage / limit) * 100;
@@ -410,7 +422,7 @@ export class BillingLimitService {
         };
       }
 
-      // Paid tier projects: show per-category limits
+      // Projects with subscription or custom limits: show per-category limits
       return {
         workflows: calculateCategoryUsage(workflowUsage, project.billingLimitWorkflows),
         campaigns: calculateCategoryUsage(campaignUsage, project.billingLimitCampaigns),

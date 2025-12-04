@@ -110,7 +110,11 @@ describe('BillingLimitService - Critical Enforcement', () => {
     it('should ALLOW emails when limit is null (unlimited)', async () => {
       await prisma.project.update({
         where: {id: projectId},
-        data: {billingLimitTransactional: null},
+        data: {
+          billingLimitTransactional: null,
+          // Set one other limit to trigger per-category mode (not free tier)
+          billingLimitCampaigns: 1000,
+        },
       });
 
       // Create 100 emails
@@ -418,6 +422,338 @@ describe('BillingLimitService - Critical Enforcement', () => {
 
       // Should be close to limit (8 existing + some new <= ~13 due to races)
       expect(totalEmails).toBeLessThanOrEqual(15);
+    });
+  });
+
+  describe('Free Tier Total Limit (1000 emails/month across all types)', () => {
+    it('should enforce 1000 email total limit for free tier projects', async () => {
+      // Create a contact for this test
+      const contact = await factories.createContact({projectId});
+
+      // Free tier project has no subscription and no custom limits set
+      await prisma.project.update({
+        where: {id: projectId},
+        data: {
+          billingLimitWorkflows: null,
+          billingLimitCampaigns: null,
+          billingLimitTransactional: null,
+        },
+      });
+
+      // Create 1000 emails total across different types
+      for (let i = 0; i < 300; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: EmailSourceType.WORKFLOW,
+        });
+      }
+      for (let i = 0; i < 400; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: EmailSourceType.CAMPAIGN,
+        });
+      }
+      for (let i = 0; i < 300; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: EmailSourceType.TRANSACTIONAL,
+        });
+      }
+
+      await BillingLimitService.invalidateCache(projectId);
+
+      // All three types should now be blocked since total is 1000
+      await expect(
+        EmailService.sendWorkflowEmail({
+          projectId,
+          contactId: contact.id,
+          subject: 'Test',
+          body: 'Test',
+          from: 'test@example.com',
+        }),
+      ).rejects.toThrow(/free tier limit/i);
+
+      await expect(
+        EmailService.sendCampaignEmail({
+          projectId,
+          contactId: contact.id,
+          subject: 'Test',
+          body: 'Test',
+          from: 'test@example.com',
+        }),
+      ).rejects.toThrow(/free tier limit/i);
+
+      await expect(
+        EmailService.sendTransactionalEmail({
+          projectId,
+          contactId: contact.id,
+          subject: 'Test',
+          body: 'Test',
+          from: 'test@example.com',
+        }),
+      ).rejects.toThrow(/free tier limit/i);
+    });
+
+    it('should count all email types towards free tier total limit', async () => {
+      // Create a contact for this test
+      const contact = await factories.createContact({projectId});
+
+      // Free tier project
+      await prisma.project.update({
+        where: {id: projectId},
+        data: {
+          billingLimitWorkflows: null,
+          billingLimitCampaigns: null,
+          billingLimitTransactional: null,
+        },
+      });
+
+      // Create 200 of each type (600 total)
+      for (let i = 0; i < 200; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: EmailSourceType.WORKFLOW,
+        });
+      }
+      for (let i = 0; i < 200; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: EmailSourceType.CAMPAIGN,
+        });
+      }
+      for (let i = 0; i < 200; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: EmailSourceType.TRANSACTIONAL,
+        });
+      }
+
+      await BillingLimitService.invalidateCache(projectId);
+
+      // Check limits for each type - all should report 600 total usage
+      const workflowCheck = await BillingLimitService.checkLimit(projectId, EmailSourceType.WORKFLOW);
+      const campaignCheck = await BillingLimitService.checkLimit(projectId, EmailSourceType.CAMPAIGN);
+      const transactionalCheck = await BillingLimitService.checkLimit(projectId, EmailSourceType.TRANSACTIONAL);
+
+      // All types should see the same total usage (600) and same limit (1000)
+      expect(workflowCheck.usage).toBe(600);
+      expect(workflowCheck.limit).toBe(1000);
+      expect(workflowCheck.allowed).toBe(true);
+      expect(workflowCheck.percentage).toBe(60);
+
+      expect(campaignCheck.usage).toBe(600);
+      expect(campaignCheck.limit).toBe(1000);
+      expect(campaignCheck.allowed).toBe(true);
+
+      expect(transactionalCheck.usage).toBe(600);
+      expect(transactionalCheck.limit).toBe(1000);
+      expect(transactionalCheck.allowed).toBe(true);
+    });
+
+    it('should show warning at 80% of free tier total limit (800 emails)', async () => {
+      // Create a contact for this test
+      const contact = await factories.createContact({projectId});
+
+      // Free tier project
+      await prisma.project.update({
+        where: {id: projectId},
+        data: {
+          billingLimitWorkflows: null,
+          billingLimitCampaigns: null,
+          billingLimitTransactional: null,
+        },
+      });
+
+      // Create 800 emails spread across types
+      for (let i = 0; i < 300; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: EmailSourceType.WORKFLOW,
+        });
+      }
+      for (let i = 0; i < 250; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: EmailSourceType.CAMPAIGN,
+        });
+      }
+      for (let i = 0; i < 250; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: EmailSourceType.TRANSACTIONAL,
+        });
+      }
+
+      await BillingLimitService.invalidateCache(projectId);
+
+      // All types should show warning
+      const workflowCheck = await BillingLimitService.checkLimit(projectId, EmailSourceType.WORKFLOW);
+      expect(workflowCheck.allowed).toBe(true);
+      expect(workflowCheck.warning).toBe(true);
+      expect(workflowCheck.usage).toBe(800);
+      expect(workflowCheck.percentage).toBeGreaterThanOrEqual(80);
+      expect(workflowCheck.message).toMatch(/warning/i);
+    });
+
+    it('should allow free tier to send different distribution of email types', async () => {
+      // Create a contact for this test
+      const contact = await factories.createContact({projectId});
+
+      // Free tier project
+      await prisma.project.update({
+        where: {id: projectId},
+        data: {
+          billingLimitWorkflows: null,
+          billingLimitCampaigns: null,
+          billingLimitTransactional: null,
+        },
+      });
+
+      // Create 900 transactional, 50 campaigns, 49 workflows (999 total - under limit)
+      for (let i = 0; i < 900; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: EmailSourceType.TRANSACTIONAL,
+        });
+      }
+      for (let i = 0; i < 50; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: EmailSourceType.CAMPAIGN,
+        });
+      }
+      for (let i = 0; i < 49; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: EmailSourceType.WORKFLOW,
+        });
+      }
+
+      await BillingLimitService.invalidateCache(projectId);
+
+      // Should still allow one more email of any type
+      const workflowCheck = await BillingLimitService.checkLimit(projectId, EmailSourceType.WORKFLOW);
+      expect(workflowCheck.allowed).toBe(true);
+      expect(workflowCheck.usage).toBe(999);
+
+      // Send the 1000th email (should succeed)
+      await EmailService.sendWorkflowEmail({
+        projectId,
+        contactId: contact.id,
+        subject: 'Test',
+        body: 'Test',
+        from: 'test@example.com',
+      });
+
+      await BillingLimitService.invalidateCache(projectId);
+
+      // Now all types should be blocked
+      const campaignCheck = await BillingLimitService.checkLimit(projectId, EmailSourceType.CAMPAIGN);
+      expect(campaignCheck.allowed).toBe(false);
+      expect(campaignCheck.usage).toBe(1000);
+    });
+
+    it('should distinguish free tier from paid tier with per-category limits', async () => {
+      // Create a contact for this test
+      const contact = await factories.createContact({projectId});
+
+      // Set custom per-category limits (paid tier behavior)
+      await prisma.project.update({
+        where: {id: projectId},
+        data: {
+          billingLimitWorkflows: 100,
+          billingLimitCampaigns: 200,
+          billingLimitTransactional: 300,
+        },
+      });
+
+      // Create 150 workflow emails (exceeds workflow limit but under total)
+      for (let i = 0; i < 150; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: EmailSourceType.WORKFLOW,
+        });
+      }
+
+      await BillingLimitService.invalidateCache(projectId);
+
+      // Workflow should be blocked (150 > 100)
+      const workflowCheck = await BillingLimitService.checkLimit(projectId, EmailSourceType.WORKFLOW);
+      expect(workflowCheck.allowed).toBe(false);
+      expect(workflowCheck.usage).toBe(150);
+      expect(workflowCheck.limit).toBe(100);
+
+      // But campaigns should still be allowed (independent limit)
+      const campaignCheck = await BillingLimitService.checkLimit(projectId, EmailSourceType.CAMPAIGN);
+      expect(campaignCheck.allowed).toBe(true);
+      expect(campaignCheck.usage).toBe(0);
+      expect(campaignCheck.limit).toBe(200);
+    });
+
+    it('should show shared limit for all categories in getLimitsAndUsage for free tier', async () => {
+      // Create a contact for this test
+      const contact = await factories.createContact({projectId});
+
+      // Free tier project
+      await prisma.project.update({
+        where: {id: projectId},
+        data: {
+          billingLimitWorkflows: null,
+          billingLimitCampaigns: null,
+          billingLimitTransactional: null,
+        },
+      });
+
+      // Create various emails
+      for (let i = 0; i < 100; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: EmailSourceType.WORKFLOW,
+        });
+      }
+      for (let i = 0; i < 200; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: EmailSourceType.CAMPAIGN,
+        });
+      }
+      for (let i = 0; i < 150; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: EmailSourceType.TRANSACTIONAL,
+        });
+      }
+
+      await BillingLimitService.invalidateCache(projectId);
+
+      const limits = await BillingLimitService.getLimitsAndUsage(projectId);
+
+      // All categories should show the same total usage (450) and limit (1000)
+      expect(limits.workflows.limit).toBe(1000);
+      expect(limits.workflows.usage).toBe(450);
+      expect(limits.workflows.percentage).toBe(45);
+
+      expect(limits.campaigns.limit).toBe(1000);
+      expect(limits.campaigns.usage).toBe(450);
+
+      expect(limits.transactional.limit).toBe(1000);
+      expect(limits.transactional.usage).toBe(450);
     });
   });
 });
