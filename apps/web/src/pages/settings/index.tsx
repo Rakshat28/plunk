@@ -483,17 +483,17 @@ export default function Settings() {
                 <CardContent className="pt-6 space-y-6">
                   {/* Reset Project */}
                   <div className="group">
-                    <div className="flex items-start justify-between gap-4 p-5 rounded-lg border border-gray-200 bg-white transition-all">
+                    <div className="flex items-start justify-between gap-4 p-5 rounded-lg border border-neutral-200 bg-white transition-all">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <Database className="h-4 w-4 text-orange-600" />
-                          <h4 className="font-semibold text-gray-900">Reset Project Data</h4>
+                          <h4 className="font-semibold text-neutral-900">Reset Project Data</h4>
                         </div>
-                        <p className="text-sm text-gray-600 mb-3">
+                        <p className="text-sm text-neutral-600 mb-3">
                           Clear all campaigns, contacts, workflows, templates, and events. This gives you a blank
                           project to start fresh.
                         </p>
-                        <div className="flex items-start gap-2 text-xs text-gray-500">
+                        <div className="flex items-start gap-2 text-xs text-neutral-500">
                           <span className="font-medium">Preserved:</span>
                           <span>API keys, domains, billing information</span>
                         </div>
@@ -701,7 +701,7 @@ export default function Settings() {
             </DialogHeader>
 
             <div className="py-4">
-              <label className="text-sm font-medium text-gray-700 block mb-2 text-center">
+              <label className="text-sm font-medium text-neutral-700 block mb-2 text-center">
                 Type{' '}
                 <span className="font-mono font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded">RESET</span>{' '}
                 to confirm
@@ -759,7 +759,7 @@ export default function Settings() {
             </DialogHeader>
 
             <div className="py-4">
-              <label className="text-sm font-medium text-gray-700 block mb-2 text-center">
+              <label className="text-sm font-medium text-neutral-700 block mb-2 text-center">
                 Type <span className="font-mono font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded">DELETE</span>{' '}
                 to confirm
               </label>
