@@ -1,5 +1,6 @@
 import {Badge, Collapsible, CollapsibleContent, CollapsibleTrigger} from '@plunk/ui';
 import type {Activity} from './ActivityFeed';
+import {memo} from 'react';
 import {
   AlertCircle,
   Calendar,
@@ -293,7 +294,7 @@ function getActivityConfig(activity: Activity): ActivityConfig {
   }
 }
 
-export function ActivityItem({activity, isUpcoming = false}: ActivityItemProps) {
+export const ActivityItem = memo(function ActivityItem({activity, isUpcoming = false}: ActivityItemProps) {
   const config = getActivityConfig(activity);
   const Icon = config.icon;
   const timestamp = new Date(activity.timestamp);
@@ -358,4 +359,4 @@ export function ActivityItem({activity, isUpcoming = false}: ActivityItemProps) 
       </div>
     </div>
   );
-}
+});

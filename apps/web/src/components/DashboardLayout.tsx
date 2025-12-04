@@ -19,7 +19,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -87,7 +87,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
     }
   }, [showProjectMenu, showUserMenu]);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       // Call the logout endpoint to clear the cookie
       await network.fetch('GET', '/auth/logout');
@@ -112,7 +112,21 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
       await mutateUser(null, false);
       await router.push('/auth/login');
     }
-  };
+  }, [mutateUser, router]);
+
+  const handleToggleProjectMenu = useCallback(() => {
+    setShowProjectMenu(prev => !prev);
+  }, []);
+
+  const handleToggleUserMenu = useCallback(() => {
+    setShowUserMenu(prev => !prev);
+  }, []);
+
+  const handleLogoutClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    void handleLogout();
+  }, [handleLogout]);
 
   return (
     <div className="flex h-screen bg-neutral-50">
@@ -128,7 +142,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
         <div className="p-4 border-b border-neutral-200">
           <div className="relative" ref={projectMenuRef}>
             <button
-              onClick={() => setShowProjectMenu(!showProjectMenu)}
+              onClick={handleToggleProjectMenu}
               className="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg hover:bg-neutral-50 transition-colors"
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -219,7 +233,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
 
           <div className="relative" ref={userMenuRef}>
             <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
+              onClick={handleToggleUserMenu}
               className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 transition-colors"
             >
               <User className="h-5 w-5" />
@@ -231,11 +245,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
             {showUserMenu && (
               <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-neutral-200 rounded-lg shadow-lg z-50 py-1">
                 <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    void handleLogout();
-                  }}
+                  onClick={handleLogoutClick}
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 transition-colors text-red-600"
                 >
                   <LogOut className="h-4 w-4" />

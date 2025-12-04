@@ -2,6 +2,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle, Alert} from '
 import {AlertCircle, TrendingUp} from 'lucide-react';
 import {useBillingConsumption} from '../lib/hooks/useBillingConsumption';
 import {useConfig} from '../lib/hooks/useConfig';
+import {useCallback} from 'react';
 
 interface BillingConsumptionProps {
   projectId: string;
@@ -14,6 +15,22 @@ export function BillingConsumption({projectId, hasSubscription}: BillingConsumpt
 
   // Always call the hook to satisfy Rules of Hooks
   const {consumptionData, isLoading, error} = useBillingConsumption(projectId, hasSubscription && billingEnabled);
+
+  // Define callbacks BEFORE any conditional returns (Rules of Hooks)
+  const formatCurrency = useCallback((amount: number, currency: string) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency.toUpperCase(),
+    }).format(amount / 100);
+  }, []);
+
+  const formatDate = useCallback((dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  }, []);
 
   if (!billingEnabled) {
     // If billing is globally disabled, hide the card entirely
@@ -78,21 +95,6 @@ export function BillingConsumption({projectId, hasSubscription}: BillingConsumpt
   if (!consumptionData) {
     return null;
   }
-
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency.toUpperCase(),
-    }).format(amount / 100);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
 
   return (
     <Card>

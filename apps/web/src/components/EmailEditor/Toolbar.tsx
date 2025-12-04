@@ -22,7 +22,7 @@ import {
   Variable,
 } from 'lucide-react';
 import {Button, Input} from '@plunk/ui';
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 
 interface ToolbarProps {
   editor: Editor | null;
@@ -56,11 +56,9 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
     };
   }, [editor]);
 
-  if (!editor) {
-    return null;
-  }
-
-  const addLink = () => {
+  // Define all callbacks BEFORE conditional return (Rules of Hooks)
+  const addLink = useCallback(() => {
+    if (!editor) return;
     if (linkUrl) {
       // If updating an existing link, extend selection to cover the entire link first
       if (editor.isActive('link')) {
@@ -71,26 +69,107 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
       setLinkUrl('');
       setShowLinkInput(false);
     }
-  };
+  }, [editor, linkUrl]);
 
-  const removeLink = () => {
+  const removeLink = useCallback(() => {
+    if (!editor) return;
     editor.chain().focus().unsetLink().run();
     setLinkUrl('');
     setShowLinkInput(false);
-  };
+  }, [editor]);
 
-  const setColor = (color: string) => {
+  const setColor = useCallback((color: string) => {
+    if (!editor) return;
     editor.chain().focus().setColor(color).run();
     setSelectedColor(color);
-  };
+  }, [editor]);
 
-  const applyCustomColor = () => {
+  const applyCustomColor = useCallback(() => {
     if (customColor && /^#[0-9A-F]{6}$/i.test(customColor)) {
       setColor(customColor);
       setCustomColor('');
       setShowColorPicker(false);
     }
-  };
+  }, [customColor, setColor]);
+
+  // Editor command callbacks (memoized to avoid recreating on every render)
+  const handleUndo = useCallback(() => {
+    if (!editor) return;
+    editor.chain().focus().undo().run();
+  }, [editor]);
+  const handleRedo = useCallback(() => {
+    if (!editor) return;
+    editor.chain().focus().redo().run();
+  }, [editor]);
+  const handleBold = useCallback(() => {
+    if (!editor) return;
+    editor.chain().focus().toggleBold().run();
+  }, [editor]);
+  const handleItalic = useCallback(() => {
+    if (!editor) return;
+    editor.chain().focus().toggleItalic().run();
+  }, [editor]);
+  const handleStrike = useCallback(() => {
+    if (!editor) return;
+    editor.chain().focus().toggleStrike().run();
+  }, [editor]);
+  const handleCode = useCallback(() => {
+    if (!editor) return;
+    editor.chain().focus().toggleCode().run();
+  }, [editor]);
+  const handleHeading1 = useCallback(() => {
+    if (!editor) return;
+    editor.chain().focus().toggleHeading({level: 1}).run();
+  }, [editor]);
+  const handleHeading2 = useCallback(() => {
+    if (!editor) return;
+    editor.chain().focus().toggleHeading({level: 2}).run();
+  }, [editor]);
+  const handleHeading3 = useCallback(() => {
+    if (!editor) return;
+    editor.chain().focus().toggleHeading({level: 3}).run();
+  }, [editor]);
+  const handleBulletList = useCallback(() => {
+    if (!editor) return;
+    editor.chain().focus().toggleBulletList().run();
+  }, [editor]);
+  const handleOrderedList = useCallback(() => {
+    if (!editor) return;
+    editor.chain().focus().toggleOrderedList().run();
+  }, [editor]);
+  const handleBlockquote = useCallback(() => {
+    if (!editor) return;
+    editor.chain().focus().toggleBlockquote().run();
+  }, [editor]);
+  const handleAlignLeft = useCallback(() => {
+    if (!editor) return;
+    editor.chain().focus().setTextAlign('left').run();
+  }, [editor]);
+  const handleAlignCenter = useCallback(() => {
+    if (!editor) return;
+    editor.chain().focus().setTextAlign('center').run();
+  }, [editor]);
+  const handleAlignRight = useCallback(() => {
+    if (!editor) return;
+    editor.chain().focus().setTextAlign('right').run();
+  }, [editor]);
+  const handleAlignJustify = useCallback(() => {
+    if (!editor) return;
+    editor.chain().focus().setTextAlign('justify').run();
+  }, [editor]);
+  const handleToggleColorPicker = useCallback(() => setShowColorPicker(!showColorPicker), [showColorPicker]);
+  const handleToggleLinkInput = useCallback(() => {
+    if (!editor) return;
+    if (editor.isActive('link')) {
+      // Get the current link URL and show the input to edit it
+      const previousUrl = editor.getAttributes('link').href || '';
+      setLinkUrl(previousUrl);
+      setShowLinkInput(true);
+    } else {
+      setShowLinkInput(!showLinkInput);
+      setLinkUrl('');
+    }
+  }, [editor, showLinkInput]);
 
   // Tailwind color palette organized by hue
   const colorGroups = [
@@ -128,6 +207,11 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
     },
   ];
 
+  // Conditional return AFTER all hooks (Rules of Hooks)
+  if (!editor) {
+    return null;
+  }
+
   return (
     <div className="border-b border-neutral-200 bg-neutral-50 p-2 flex flex-wrap gap-1 sticky top-0 z-10">
       {/* History */}
@@ -137,7 +221,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => editor.chain().focus().undo().run()}
+          onClick={handleUndo}
           disabled={!editor.can().undo()}
           className="h-8 w-8"
         >
@@ -148,7 +232,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => editor.chain().focus().redo().run()}
+          onClick={handleRedo}
           disabled={!editor.can().redo()}
           className="h-8 w-8"
         >
@@ -163,7 +247,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleBold().run()}
+          onClick={handleBold}
           data-active={editor.isActive('bold')}
           className="h-8 w-8 data-[active=true]:bg-neutral-200"
         >
@@ -174,7 +258,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleItalic().run()}
+          onClick={handleItalic}
           data-active={editor.isActive('italic')}
           className="h-8 w-8 data-[active=true]:bg-neutral-200"
         >
@@ -185,7 +269,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleStrike().run()}
+          onClick={handleStrike}
           data-active={editor.isActive('strike')}
           className="h-8 w-8 data-[active=true]:bg-neutral-200"
         >
@@ -196,7 +280,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleCode().run()}
+          onClick={handleCode}
           data-active={editor.isActive('code')}
           className="h-8 w-8 data-[active=true]:bg-neutral-200"
         >
@@ -211,7 +295,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleHeading({level: 1}).run()}
+          onClick={handleHeading1}
           data-active={editor.isActive('heading', {level: 1})}
           className="h-8 w-8 data-[active=true]:bg-neutral-200"
         >
@@ -222,7 +306,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleHeading({level: 2}).run()}
+          onClick={handleHeading2}
           data-active={editor.isActive('heading', {level: 2})}
           className="h-8 w-8 data-[active=true]:bg-neutral-200"
         >
@@ -233,7 +317,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleHeading({level: 3}).run()}
+          onClick={handleHeading3}
           data-active={editor.isActive('heading', {level: 3})}
           className="h-8 w-8 data-[active=true]:bg-neutral-200"
         >
@@ -248,7 +332,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          onClick={handleBulletList}
           data-active={editor.isActive('bulletList')}
           className="h-8 w-8 data-[active=true]:bg-neutral-200"
         >
@@ -259,7 +343,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          onClick={handleOrderedList}
           data-active={editor.isActive('orderedList')}
           className="h-8 w-8 data-[active=true]:bg-neutral-200"
         >
@@ -270,7 +354,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          onClick={handleBlockquote}
           data-active={editor.isActive('blockquote')}
           className="h-8 w-8 data-[active=true]:bg-neutral-200"
         >
@@ -285,7 +369,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          onClick={handleAlignLeft}
           data-active={editor.isActive({textAlign: 'left'})}
           className="h-8 w-8 data-[active=true]:bg-neutral-200"
         >
@@ -296,7 +380,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          onClick={handleAlignCenter}
           data-active={editor.isActive({textAlign: 'center'})}
           className="h-8 w-8 data-[active=true]:bg-neutral-200"
         >
@@ -307,7 +391,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          onClick={handleAlignRight}
           data-active={editor.isActive({textAlign: 'right'})}
           className="h-8 w-8 data-[active=true]:bg-neutral-200"
         >
@@ -318,7 +402,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+          onClick={handleAlignJustify}
           data-active={editor.isActive({textAlign: 'justify'})}
           className="h-8 w-8 data-[active=true]:bg-neutral-200"
         >
@@ -333,7 +417,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => setShowColorPicker(!showColorPicker)}
+          onClick={handleToggleColorPicker}
           className="h-8 w-8"
         >
           <Palette className="h-4 w-4" />
@@ -379,26 +463,29 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
                 <div key={group.name}>
                   <label className="text-xs font-medium text-neutral-600 mb-1.5 block">{group.name}</label>
                   <div className="grid grid-cols-7 gap-1.5">
-                    {group.colors.map(color => (
-                      <button
-                        key={color}
-                        type="button"
-                        onMouseDown={e => e.preventDefault()}
-                        onClick={() => {
-                          setColor(color);
-                          setShowColorPicker(false);
-                        }}
-                        className="w-8 h-8 rounded border-2 border-neutral-300 hover:border-neutral-500 hover:scale-110 transition-all relative group"
-                        style={{backgroundColor: color}}
-                        title={color}
-                      >
-                        {selectedColor === color && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-2 h-2 rounded-full bg-white shadow-lg" />
-                          </div>
-                        )}
-                      </button>
-                    ))}
+                    {group.colors.map(color => {
+                      const handleColorClick = () => {
+                        setColor(color);
+                        setShowColorPicker(false);
+                      };
+                      return (
+                        <button
+                          key={color}
+                          type="button"
+                          onMouseDown={e => e.preventDefault()}
+                          onClick={handleColorClick}
+                          className="w-8 h-8 rounded border-2 border-neutral-300 hover:border-neutral-500 hover:scale-110 transition-all relative group"
+                          style={{backgroundColor: color}}
+                          title={color}
+                        >
+                          {selectedColor === color && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-2 h-2 rounded-full bg-white shadow-lg" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
@@ -414,17 +501,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           variant="ghost"
           size="icon"
           onMouseDown={e => e.preventDefault()}
-          onClick={() => {
-            if (editor.isActive('link')) {
-              // Get the current link URL and show the input to edit it
-              const previousUrl = editor.getAttributes('link').href || '';
-              setLinkUrl(previousUrl);
-              setShowLinkInput(true);
-            } else {
-              setShowLinkInput(!showLinkInput);
-              setLinkUrl('');
-            }
-          }}
+          onClick={handleToggleLinkInput}
           data-active={editor.isActive('link')}
           className="h-8 w-8 data-[active=true]:bg-neutral-200"
         >

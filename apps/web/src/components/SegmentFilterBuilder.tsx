@@ -1,7 +1,7 @@
 import {Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Popover, PopoverContent, PopoverTrigger} from '@plunk/ui';
 import type {FilterCondition, FilterGroup, SegmentFilter, SegmentFilterOperator} from '@plunk/types';
 import {Plus, Trash2, GripVertical, Check, ChevronsUpDown, Search} from 'lucide-react';
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useMemo, useCallback, memo} from 'react';
 import {network} from '../lib/network';
 
 const STANDARD_OPERATORS: {value: SegmentFilterOperator; label: string}[] = [
@@ -115,7 +115,7 @@ interface FilterRowProps {
   availableFields: FieldOption[];
 }
 
-function FilterRow({filter, onChange, onRemove, availableFields}: FilterRowProps) {
+const FilterRow = memo(function FilterRow({filter, onChange, onRemove, availableFields}: FilterRowProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -123,13 +123,13 @@ function FilterRow({filter, onChange, onRemove, availableFields}: FilterRowProps
   const needsUnit = ['within', 'triggeredWithin'].includes(filter.operator);
 
   // Get field type from available fields
-  const fieldOption = availableFields.find(f => f.value === filter.field);
+  const fieldOption = useMemo(() => availableFields.find(f => f.value === filter.field), [availableFields, filter.field]);
   const fieldType = fieldOption?.type || 'string';
 
   const isEventOrEmailActivity = fieldType === 'event' || fieldType === 'email';
 
-  // Get operators based on field type
-  const getOperators = () => {
+  // Get operators based on field type (memoized)
+  const operators = useMemo(() => {
     if (isEventOrEmailActivity) {
       return EVENT_OPERATORS;
     }
@@ -151,9 +151,9 @@ function FilterRow({filter, onChange, onRemove, availableFields}: FilterRowProps
     return STANDARD_OPERATORS.filter(op =>
       ['equals', 'notEquals', 'contains', 'notContains', 'exists', 'notExists'].includes(op.value)
     );
-  };
+  }, [fieldType, isEventOrEmailActivity]);
 
-  const handleFieldChange = (value: string) => {
+  const handleFieldChange = useCallback((value: string) => {
     const selectedField = availableFields.find(f => f.value === value);
     const newFieldType = selectedField?.type || 'string';
     const isEvent = newFieldType === 'event' || newFieldType === 'email';
@@ -208,10 +208,10 @@ function FilterRow({filter, onChange, onRemove, availableFields}: FilterRowProps
 
     setOpen(false);
     setSearch('');
-  };
+  }, [availableFields, filter.operator, fieldType, onChange]);
 
   // Helper to get default value based on field type
-  const getDefaultValueForType = (type: string) => {
+  const getDefaultValueForType = useCallback((type: string) => {
     switch (type) {
       case 'boolean':
         return true;
@@ -222,10 +222,10 @@ function FilterRow({filter, onChange, onRemove, availableFields}: FilterRowProps
       default:
         return '';
     }
-  };
+  }, []);
 
   // Helper to get valid operators for a field type
-  const getOperatorsForType = (type: string, isEvent: boolean) => {
+  const getOperatorsForType = useCallback((type: string, isEvent: boolean) => {
     if (isEvent) {
       return EVENT_OPERATORS;
     }
@@ -246,34 +246,38 @@ function FilterRow({filter, onChange, onRemove, availableFields}: FilterRowProps
     return STANDARD_OPERATORS.filter(op =>
       ['equals', 'notEquals', 'contains', 'notContains', 'exists', 'notExists'].includes(op.value)
     );
-  };
+  }, []);
 
   // Get label for selected field
-  const getFieldLabel = () => {
+  const getFieldLabel = useCallback(() => {
     const field = availableFields.find(f => f.value === filter.field);
     return field?.label || filter.field;
-  };
+  }, [availableFields, filter.field]);
 
-  // Group fields by category for display
-  const groupedFields = availableFields.reduce<Record<string, FieldOption[]>>((acc, field) => {
-    if (!acc[field.category]) {
-      acc[field.category] = [];
-    }
-    acc[field.category]!.push(field);
-    return acc;
-  }, {});
+  // Group fields by category for display (memoized to avoid expensive reduce on every render)
+  const groupedFields = useMemo(() => {
+    return availableFields.reduce<Record<string, FieldOption[]>>((acc, field) => {
+      if (!acc[field.category]) {
+        acc[field.category] = [];
+      }
+      acc[field.category]!.push(field);
+      return acc;
+    }, {});
+  }, [availableFields]);
 
-  // Filter fields based on search
-  const filteredGroups = Object.entries(groupedFields).reduce((acc, [category, fields]) => {
-    const filtered = fields.filter(f =>
-      f.label.toLowerCase().includes(search.toLowerCase()) ||
-      f.value.toLowerCase().includes(search.toLowerCase())
-    );
-    if (filtered.length > 0) {
-      acc[category] = filtered;
-    }
-    return acc;
-  }, {} as Record<string, FieldOption[]>);
+  // Filter fields based on search (memoized to avoid expensive filter on every keystroke)
+  const filteredGroups = useMemo(() => {
+    return Object.entries(groupedFields).reduce((acc, [category, fields]) => {
+      const filtered = fields.filter(f =>
+        f.label.toLowerCase().includes(search.toLowerCase()) ||
+        f.value.toLowerCase().includes(search.toLowerCase())
+      );
+      if (filtered.length > 0) {
+        acc[category] = filtered;
+      }
+      return acc;
+    }, {} as Record<string, FieldOption[]>);
+  }, [groupedFields, search]);
 
   return (
     <div className="flex items-start gap-2 p-3 bg-neutral-50 rounded-lg border border-neutral-200">
@@ -391,7 +395,7 @@ function FilterRow({filter, onChange, onRemove, availableFields}: FilterRowProps
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {getOperators().map(op => (
+              {operators.map(op => (
                 <SelectItem key={op.value} value={op.value}>
                   {op.label}
                 </SelectItem>
@@ -474,7 +478,7 @@ function FilterRow({filter, onChange, onRemove, availableFields}: FilterRowProps
       </Button>
     </div>
   );
-}
+});
 
 interface FilterGroupComponentProps {
   group: FilterGroup;
@@ -485,28 +489,28 @@ interface FilterGroupComponentProps {
 }
 
 function FilterGroupComponent({group, onChange, onRemove, depth = 0, availableFields}: FilterGroupComponentProps) {
-  const addFilter = () => {
+  const addFilter = useCallback(() => {
     onChange({
       ...group,
       filters: [...group.filters, {field: 'email', operator: 'contains', value: ''}],
     });
-  };
+  }, [group, onChange]);
 
-  const updateFilter = (index: number, filter: SegmentFilter) => {
+  const updateFilter = useCallback((index: number, filter: SegmentFilter) => {
     onChange({
       ...group,
       filters: group.filters.map((f, i) => (i === index ? filter : f)),
     });
-  };
+  }, [group, onChange]);
 
-  const removeFilter = (index: number) => {
+  const removeFilter = useCallback((index: number) => {
     onChange({
       ...group,
       filters: group.filters.filter((_, i) => i !== index),
     });
-  };
+  }, [group, onChange]);
 
-  const addNestedCondition = () => {
+  const addNestedCondition = useCallback(() => {
     onChange({
       ...group,
       conditions: {
@@ -514,19 +518,19 @@ function FilterGroupComponent({group, onChange, onRemove, depth = 0, availableFi
         groups: [{filters: [{field: 'email', operator: 'contains', value: ''}]}],
       },
     });
-  };
+  }, [group, onChange]);
 
-  const updateNestedCondition = (condition: FilterCondition) => {
+  const updateNestedCondition = useCallback((condition: FilterCondition) => {
     onChange({
       ...group,
       conditions: condition,
     });
-  };
+  }, [group, onChange]);
 
-  const removeNestedCondition = () => {
+  const removeNestedCondition = useCallback(() => {
     const {conditions, ...rest} = group;
     onChange(rest);
-  };
+  }, [group, onChange]);
 
   const bgColors = ['bg-white', 'bg-blue-50/50', 'bg-purple-50/50', 'bg-green-50/50'];
   const borderColors = ['border-neutral-300', 'border-blue-300', 'border-purple-300', 'border-green-300'];
@@ -547,7 +551,7 @@ function FilterGroupComponent({group, onChange, onRemove, depth = 0, availableFi
 
       <div className="space-y-3">
         {group.filters.map((filter, index) => (
-          <FilterRow key={index} filter={filter} onChange={f => updateFilter(index, f)} onRemove={() => removeFilter(index)} availableFields={availableFields} />
+          <FilterRow key={`${filter.field}-${filter.operator}-${index}`} filter={filter} onChange={f => updateFilter(index, f)} onRemove={() => removeFilter(index)} availableFields={availableFields} />
         ))}
 
         {group.conditions && (
@@ -593,33 +597,33 @@ interface FilterConditionComponentProps {
 }
 
 function FilterConditionComponent({condition, onChange, depth = 0, availableFields}: FilterConditionComponentProps) {
-  const addGroup = () => {
+  const addGroup = useCallback(() => {
     onChange({
       ...condition,
       groups: [...condition.groups, {filters: [{field: 'email', operator: 'contains', value: ''}]}],
     });
-  };
+  }, [condition, onChange]);
 
-  const updateGroup = (index: number, group: FilterGroup) => {
+  const updateGroup = useCallback((index: number, group: FilterGroup) => {
     onChange({
       ...condition,
       groups: condition.groups.map((g, i) => (i === index ? group : g)),
     });
-  };
+  }, [condition, onChange]);
 
-  const removeGroup = (index: number) => {
+  const removeGroup = useCallback((index: number) => {
     onChange({
       ...condition,
       groups: condition.groups.filter((_, i) => i !== index),
     });
-  };
+  }, [condition, onChange]);
 
-  const toggleLogic = () => {
+  const toggleLogic = useCallback(() => {
     onChange({
       ...condition,
       logic: condition.logic === 'AND' ? 'OR' : 'AND',
     });
-  };
+  }, [condition, onChange]);
 
   return (
     <div className="space-y-4">
@@ -640,7 +644,7 @@ function FilterConditionComponent({condition, onChange, depth = 0, availableFiel
 
       <div className="space-y-4">
         {condition.groups.map((group, index) => (
-          <div key={index}>
+          <div key={`group-${depth}-${index}-${group.filters.length}`}>
             {index > 0 && (
               <div className="flex items-center justify-center my-2">
                 <div className="px-3 py-1 bg-neutral-900 text-white text-xs font-bold font-mono rounded-full">{condition.logic}</div>

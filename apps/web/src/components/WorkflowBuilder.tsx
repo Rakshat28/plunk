@@ -357,10 +357,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
           template: step.template,
           config: step.config,
           onEdit: () => handleEditStep(step.id),
-          onDelete: () => {
-            setStepToDelete(step.id);
-            setShowDeleteDialog(true);
-          },
+          onDelete: () => handleDeleteStepClick(step.id),
         },
       };
     });
@@ -420,7 +417,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
     });
 
     return nodes;
-  }, [steps]);
+  }, [steps, handleEditStep, handleDeleteStepClick]);
 
   // Convert transitions to React Flow edges
   const rawEdges: Edge[] = useMemo(() => {
@@ -625,11 +622,16 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
     [addStepContext, workflowId, onUpdate],
   );
 
-  const handleEditStep = (stepId: string) => {
+  const handleEditStep = useCallback((stepId: string) => {
     // This will be handled by the parent component
     const event = new CustomEvent('workflow-edit-step', {detail: {stepId}});
     window.dispatchEvent(event);
-  };
+  }, []);
+
+  const handleDeleteStepClick = useCallback((stepId: string) => {
+    setStepToDelete(stepId);
+    setShowDeleteDialog(true);
+  }, []);
 
   // Get all steps that will be affected by deleting a step (the step itself + all downstream steps)
   const getAffectedSteps = useCallback(

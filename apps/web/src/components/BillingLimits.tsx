@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {memo, useEffect, useMemo, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {BillingLimitSchemas} from '@plunk/shared';
@@ -270,24 +270,24 @@ interface UsageDisplayProps {
   usage: CategoryLimit;
 }
 
-function UsageDisplay({category, usage}: UsageDisplayProps) {
-  const getStatusColor = () => {
+const UsageDisplay = memo(function UsageDisplay({category, usage}: UsageDisplayProps) {
+  const statusColor = useMemo(() => {
     if (usage.isBlocked) return 'text-red-600';
     if (usage.isWarning) return 'text-orange-600';
     return 'text-green-600';
-  };
+  }, [usage.isBlocked, usage.isWarning]);
 
-  const getProgressColor = () => {
+  const progressColor = useMemo(() => {
     if (usage.isBlocked) return 'bg-red-600';
     if (usage.isWarning) return 'bg-orange-500';
     return 'bg-green-600';
-  };
+  }, [usage.isBlocked, usage.isWarning]);
 
-  const getStatusIcon = () => {
+  const statusIcon = useMemo(() => {
     if (usage.isBlocked) return <AlertCircle className="h-4 w-4" />;
     if (usage.isWarning) return <AlertTriangle className="h-4 w-4" />;
     return <Check className="h-4 w-4" />;
-  };
+  }, [usage.isBlocked, usage.isWarning]);
 
   const limitText = usage.limit === null ? 'Unlimited' : usage.limit.toLocaleString();
 
@@ -300,8 +300,8 @@ function UsageDisplay({category, usage}: UsageDisplayProps) {
             {usage.usage.toLocaleString()} / {limitText} emails this month
           </p>
         </div>
-        <div className={`flex items-center gap-2 ${getStatusColor()}`}>
-          {getStatusIcon()}
+        <div className={`flex items-center gap-2 ${statusColor}`}>
+          {statusIcon}
           <span className="text-sm font-medium">
             {usage.limit === null ? 'Unlimited' : `${Math.round(usage.percentage)}%`}
           </span>
@@ -310,7 +310,7 @@ function UsageDisplay({category, usage}: UsageDisplayProps) {
 
       {usage.limit !== null && (
         <>
-          <Progress value={Math.min(usage.percentage, 100)} className="h-2" indicatorClassName={getProgressColor()} />
+          <Progress value={Math.min(usage.percentage, 100)} className="h-2" indicatorClassName={progressColor} />
 
           {usage.isBlocked && (
             <Alert className="mt-3 bg-red-50 border-red-200 text-red-900">
@@ -338,4 +338,4 @@ function UsageDisplay({category, usage}: UsageDisplayProps) {
       )}
     </div>
   );
-}
+});
