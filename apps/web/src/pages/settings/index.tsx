@@ -639,7 +639,11 @@ export default function Settings() {
                 </Card>
 
                 {/* Billing Limits */}
-                <BillingLimits projectId={activeProject.id} hasSubscription={!!activeProject.subscription} />
+                <BillingLimits
+                  projectId={activeProject.id}
+                  hasSubscription={!!activeProject.subscription}
+                  billingEnabled={billingEnabled}
+                />
 
                 {/* Current Month Consumption */}
                 <BillingConsumption projectId={activeProject.id} hasSubscription={!!activeProject.subscription} />

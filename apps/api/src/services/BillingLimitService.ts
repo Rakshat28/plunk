@@ -41,6 +41,11 @@ export interface LimitCheckResult {
  * Billing Limit Service
  * Handles usage tracking and enforcement of billing limits per email category
  *
+ * FREE TIER LIMITS:
+ * - Free tier projects (billing enabled, no subscription) have a total limit of 1000 emails/month
+ * - This limit is shared across all email types (workflows + campaigns + transactional)
+ * - Paid tier projects (with subscription) can have custom per-category limits or unlimited
+ *
  * PERFORMANCE CONSIDERATIONS:
  * - Operates at scale with 1M+ contacts/month (potentially millions of emails)
  * - Uses Redis caching (5-min TTL) to avoid expensive DB queries on every email send
@@ -51,6 +56,35 @@ export interface LimitCheckResult {
 export class BillingLimitService {
   private static readonly CACHE_TTL = 300; // 5 minutes
   private static readonly WARNING_THRESHOLD = 0.8; // 80%
+  private static readonly FREE_TIER_TOTAL_LIMIT = 1000; // Total emails per month for free tier projects
+
+  /**
+   * Get total usage count across all email categories
+   * Used for free tier total limit enforcement
+   *
+   * @param projectId - Project ID
+   * @returns Total email count for the calendar month (all types combined)
+   */
+  public static async getTotalUsage(projectId: string): Promise<number> {
+    const {start, end} = this.getCurrentMonthRange();
+
+    try {
+      const count = await prisma.email.count({
+        where: {
+          projectId,
+          createdAt: {
+            gte: start,
+            lt: end,
+          },
+        },
+      });
+
+      return count;
+    } catch (error) {
+      signale.error(`[BILLING_LIMIT] Failed to query total usage for ${projectId}:`, error);
+      return 0; // Return 0 on error to avoid blocking
+    }
+  }
 
   /**
    * Get current usage count for a specific email category
@@ -130,16 +164,21 @@ export class BillingLimitService {
    * Check if sending an email would exceed the billing limit
    * Returns detailed result including warning status
    *
+   * For free tier projects (no subscription): checks total usage across all categories against 1000/month limit
+   * For paid tier projects (with subscription): checks per-category limits if set
+   *
    * @param projectId - Project ID
    * @param sourceType - Email category
    * @returns LimitCheckResult with allowed/warning status
    */
   public static async checkLimit(projectId: string, sourceType: EmailSourceType): Promise<LimitCheckResult> {
     try {
-      // Get project billing limits
+      // Get project billing info
       const project = await prisma.project.findUnique({
         where: {id: projectId},
         select: {
+          name: true,
+          subscription: true,
           billingLimitWorkflows: true,
           billingLimitCampaigns: true,
           billingLimitTransactional: true,
@@ -157,7 +196,58 @@ export class BillingLimitService {
         };
       }
 
-      // Get the limit for this source type
+      // Free tier projects (no subscription): enforce total 1000 email/month limit
+      if (!project.subscription) {
+        const totalUsage = await this.getTotalUsage(projectId);
+        const limit = this.FREE_TIER_TOTAL_LIMIT;
+        const percentage = (totalUsage / limit) * 100;
+
+        // Check if blocked (at or over limit)
+        if (totalUsage >= limit) {
+          await NtfyService.notifyBillingLimitExceeded(
+            project.name,
+            projectId,
+            totalUsage,
+            limit,
+            EmailSourceType.TRANSACTIONAL, // Use generic type for notification
+          );
+
+          return {
+            allowed: false,
+            warning: false,
+            usage: totalUsage,
+            limit,
+            percentage,
+            message: `Free tier limit reached. You've sent ${totalUsage}/${limit} emails this month. Upgrade to continue sending.`,
+          };
+        }
+
+        // Check if warning (80% or more)
+        const isWarning = percentage >= this.WARNING_THRESHOLD * 100;
+        if (isWarning) {
+          await NtfyService.notifyBillingLimitApproaching(
+            project.name,
+            projectId,
+            totalUsage,
+            limit,
+            percentage,
+            EmailSourceType.TRANSACTIONAL, // Use generic type for notification
+          );
+        }
+
+        return {
+          allowed: true,
+          warning: isWarning,
+          usage: totalUsage,
+          limit,
+          percentage,
+          message: isWarning
+            ? `Warning: You've used ${Math.round(percentage)}% of your free tier limit (${totalUsage}/${limit} emails)`
+            : undefined,
+        };
+      }
+
+      // Paid tier projects (with subscription): check per-category limits if set
       let limit: number | null;
       switch (sourceType) {
         case EmailSourceType.WORKFLOW:
@@ -173,7 +263,7 @@ export class BillingLimitService {
           limit = null;
       }
 
-      // If no limit set, allow unlimited
+      // If no limit set for paid tier, allow unlimited
       if (limit === null) {
         return {
           allowed: true,
@@ -253,15 +343,19 @@ export class BillingLimitService {
    * Get complete billing limits and usage for all categories
    * Used for displaying limits in UI
    *
+   * For free tier projects: shows total usage across all categories with 1000/month limit
+   * For paid tier projects: shows per-category usage with custom limits
+   *
    * @param projectId - Project ID
    * @returns Complete billing limits and usage information
    */
   public static async getLimitsAndUsage(projectId: string): Promise<BillingLimitsResponse> {
     try {
-      // Get project limits
+      // Get project info
       const project = await prisma.project.findUnique({
         where: {id: projectId},
         select: {
+          subscription: true,
           billingLimitWorkflows: true,
           billingLimitCampaigns: true,
           billingLimitTransactional: true,
@@ -291,6 +385,32 @@ export class BillingLimitService {
         };
       };
 
+      // Free tier projects: show total usage with shared limit
+      if (!project.subscription) {
+        const totalUsage = workflowUsage + campaignUsage + transactionalUsage;
+        const limit = this.FREE_TIER_TOTAL_LIMIT;
+        const percentage = (totalUsage / limit) * 100;
+        const isWarning = percentage >= this.WARNING_THRESHOLD * 100;
+        const isBlocked = totalUsage >= limit;
+
+        // For free tier, show the same limit and total usage for all three categories
+        // This makes it clear in the UI that it's a shared limit
+        const sharedUsageInfo: CategoryUsage = {
+          limit,
+          usage: totalUsage,
+          percentage,
+          isWarning,
+          isBlocked,
+        };
+
+        return {
+          workflows: sharedUsageInfo,
+          campaigns: sharedUsageInfo,
+          transactional: sharedUsageInfo,
+        };
+      }
+
+      // Paid tier projects: show per-category limits
       return {
         workflows: calculateCategoryUsage(workflowUsage, project.billingLimitWorkflows),
         campaigns: calculateCategoryUsage(campaignUsage, project.billingLimitCampaigns),

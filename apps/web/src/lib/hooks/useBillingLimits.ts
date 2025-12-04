@@ -16,10 +16,13 @@ export interface BillingLimitsData {
 
 /**
  * Hook to fetch billing limits for a project
+ *
+ * Free tier projects (no subscription): Shows total usage with 1000/month limit
+ * Paid tier projects (with subscription): Shows per-category usage with custom limits
  */
-export function useBillingLimits(projectId: string | undefined, hasSubscription: boolean) {
+export function useBillingLimits(projectId: string | undefined, billingEnabled: boolean) {
   const {data, error, mutate, isLoading} = useSWR<BillingLimitsData>(
-    projectId && hasSubscription ? `/users/@me/projects/${projectId}/billing-limits` : null,
+    projectId && billingEnabled ? `/users/@me/projects/${projectId}/billing-limits` : null,
     {
       revalidateOnFocus: false,
       refreshInterval: 30000, // Refresh every 30 seconds to keep usage updated

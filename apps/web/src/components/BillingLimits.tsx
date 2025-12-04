@@ -29,17 +29,18 @@ import {network} from '../lib/network';
 interface BillingLimitsProps {
   projectId: string;
   hasSubscription: boolean;
+  billingEnabled: boolean;
 }
 
 type LimitsFormValues = z.infer<typeof BillingLimitSchemas.update>;
 
-export function BillingLimits({projectId, hasSubscription}: BillingLimitsProps) {
+export function BillingLimits({projectId, hasSubscription, billingEnabled}: BillingLimitsProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Fetch billing limits using SWR
-  const {limitsData, isLoading, mutate} = useBillingLimits(projectId, hasSubscription);
+  // Fetch billing limits using SWR (fetch for both free and paid tiers when billing is enabled)
+  const {limitsData, isLoading, mutate} = useBillingLimits(projectId, billingEnabled);
 
   const form = useForm<LimitsFormValues>({
     resolver: zodResolver(BillingLimitSchemas.update),
@@ -96,26 +97,12 @@ export function BillingLimits({projectId, hasSubscription}: BillingLimitsProps) 
     setErrorMessage(null);
   };
 
-  if (!hasSubscription) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Billing Limits</CardTitle>
-          <CardDescription>Set monthly limits for each email category</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <div className="ml-2">
-              <p className="text-sm">
-                Billing limits are only available with an active subscription. Start a subscription to set limits for
-                your email usage.
-              </p>
-            </div>
-          </Alert>
-        </CardContent>
-      </Card>
-    );
+  // Free tier projects can view their usage but can't edit limits
+  const canEditLimits = hasSubscription;
+
+  // If billing is not enabled, don't show the component
+  if (!billingEnabled) {
+    return null;
   }
 
   if (isLoading) {
@@ -137,11 +124,26 @@ export function BillingLimits({projectId, hasSubscription}: BillingLimitsProps) 
       <CardHeader>
         <CardTitle>Billing Limits</CardTitle>
         <CardDescription>
-          Set monthly limits for each email category. Limits reset on the 1st of each month.
+          {hasSubscription
+            ? 'Set monthly limits for each email category. Limits reset on the 1st of each month.'
+            : 'Free tier projects have a total limit of 1,000 emails per month across all categories.'}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
+          {/* Free tier info banner */}
+          {!hasSubscription && limitsData && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <div className="ml-2">
+                <p className="text-sm">
+                  You&apos;re on the free tier with 1,000 emails per month. Upgrade to a paid subscription for
+                  unlimited emails or custom limits.
+                </p>
+              </div>
+            </Alert>
+          )}
+
           {/* Success/Error Messages */}
           <AnimatePresence mode="wait">
             {successMessage && (
@@ -169,13 +171,22 @@ export function BillingLimits({projectId, hasSubscription}: BillingLimitsProps) 
           {/* Usage Display (when not editing) */}
           {!isEditing && limitsData && (
             <div className="space-y-4">
-              <UsageDisplay category="Workflows" usage={limitsData.workflows} />
-              <UsageDisplay category="Campaigns" usage={limitsData.campaigns} />
-              <UsageDisplay category="Transactional" usage={limitsData.transactional} />
+              {/* For free tier, show total usage across all categories */}
+              {!hasSubscription ? (
+                <UsageDisplay category="Total Emails (All Categories)" usage={limitsData.workflows} />
+              ) : (
+                <>
+                  <UsageDisplay category="Workflows" usage={limitsData.workflows} />
+                  <UsageDisplay category="Campaigns" usage={limitsData.campaigns} />
+                  <UsageDisplay category="Transactional" usage={limitsData.transactional} />
+                </>
+              )}
 
-              <div className="flex justify-end pt-4">
-                <Button onClick={() => setIsEditing(true)}>Edit Limits</Button>
-              </div>
+              {canEditLimits && (
+                <div className="flex justify-end pt-4">
+                  <Button onClick={() => setIsEditing(true)}>Edit Limits</Button>
+                </div>
+              )}
             </div>
           )}
 
