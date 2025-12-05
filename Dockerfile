@@ -182,6 +182,8 @@ RUN mkdir -p \
 # Stage 3: Production Runtime
 # ============================================
 FROM node:20-alpine AS runner
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 WORKDIR /app
 
 # Install OpenSSL for Prisma, curl for health checks, nginx, and gettext (for envsubst)
