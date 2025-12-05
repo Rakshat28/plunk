@@ -352,6 +352,9 @@ CREATE INDEX "contacts_projectId_idx" ON "contacts"("projectId");
 CREATE INDEX "contacts_projectId_subscribed_idx" ON "contacts"("projectId", "subscribed");
 
 -- CreateIndex
+CREATE INDEX "contacts_data_idx" ON "contacts" USING GIN ("data" jsonb_ops);
+
+-- CreateIndex
 CREATE UNIQUE INDEX "contacts_projectId_email_key" ON "contacts"("projectId", "email");
 
 -- CreateIndex
@@ -362,6 +365,9 @@ CREATE INDEX "templates_projectId_type_idx" ON "templates"("projectId", "type");
 
 -- CreateIndex
 CREATE INDEX "segments_projectId_idx" ON "segments"("projectId");
+
+-- CreateIndex
+CREATE INDEX "segments_condition_idx" ON "segments" USING GIN ("condition" jsonb_ops);
 
 -- CreateIndex
 CREATE INDEX "segment_memberships_segmentId_exitedAt_idx" ON "segment_memberships"("segmentId", "exitedAt");
@@ -380,6 +386,9 @@ CREATE INDEX "campaigns_scheduledFor_idx" ON "campaigns"("scheduledFor");
 
 -- CreateIndex
 CREATE INDEX "campaigns_segmentId_idx" ON "campaigns"("segmentId");
+
+-- CreateIndex
+CREATE INDEX "campaigns_audienceCondition_idx" ON "campaigns" USING GIN ("audienceCondition" jsonb_ops);
 
 -- CreateIndex
 CREATE INDEX "workflows_projectId_idx" ON "workflows"("projectId");
@@ -479,6 +488,9 @@ CREATE INDEX "events_projectId_contactId_name_createdAt_idx" ON "events"("projec
 
 -- CreateIndex
 CREATE INDEX "events_contactId_name_createdAt_idx" ON "events"("contactId", "name", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "events_data_idx" ON "events" USING GIN ("data" jsonb_ops);
 
 -- CreateIndex
 CREATE INDEX "api_requests_projectId_createdAt_idx" ON "api_requests"("projectId", "createdAt" DESC);

@@ -146,6 +146,7 @@ model Contact {
   @@unique([projectId, email])
   @@index([projectId])
   @@index([projectId, subscribed])
+  @@index([data(ops: JsonbOps)], type: Gin) // GIN index for fast JSON queries on Contact.data
   @@map("contacts")
 }
 
@@ -236,6 +237,7 @@ model Segment {
   updatedAt DateTime @updatedAt
 
   @@index([projectId])
+  @@index([condition(ops: JsonbOps)], type: Gin) // GIN index for segment condition queries
   @@map("segments")
 }
 
@@ -313,6 +315,7 @@ model Campaign {
   @@index([projectId, status])
   @@index([scheduledFor])
   @@index([segmentId])
+  @@index([audienceCondition(ops: JsonbOps)], type: Gin) // GIN index for campaign audience condition queries
   @@map("campaigns")
 }
 
@@ -608,6 +611,7 @@ model Event {
   @@index([createdAt])
   @@index([projectId, contactId, name, createdAt]) // For event-based segment queries (fast!)
   @@index([contactId, name, createdAt]) // For per-contact event lookups
+  @@index([data(ops: JsonbOps)], type: Gin) // GIN index for event data queries
   @@map("events")
 }
 
