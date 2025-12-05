@@ -276,8 +276,9 @@ export class Webhooks {
             },
           });
 
-          // add 1 eur/usd in credit in return for onboarding fee
+          // Update Stripe customer name to match project name and add credit for onboarding fee
           await stripe.customers.update(customerId, {
+            name: updatedProject.name,
             balance: -100,
           });
 
