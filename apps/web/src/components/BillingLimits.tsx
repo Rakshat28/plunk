@@ -1,4 +1,4 @@
-import {memo, useEffect, useMemo, useState} from 'react';
+import {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {BillingLimitSchemas} from '@plunk/shared';
@@ -25,6 +25,36 @@ import {AnimatePresence, motion} from 'framer-motion';
 import type {z} from 'zod';
 import {useBillingLimits, type BillingLimitsData, type CategoryLimit} from '../lib/hooks/useBillingLimits';
 import {network} from '../lib/network';
+
+// Price per email in the smallest currency unit (e.g., cents for USD/EUR)
+const PRICE_PER_EMAIL = 0.1; // 0.001 USD/EUR = 0.1 cents
+
+/**
+ * Calculate the monetary cost for a given number of emails
+ * @param emailCount - Number of emails
+ * @param currency - Currency code (e.g., 'usd', 'eur')
+ * @returns Formatted currency string
+ */
+const formatEmailCost = (emailCount: number, currency: string | null): string => {
+  if (!currency) {
+    return '';
+  }
+
+  // Calculate cost in smallest currency unit (cents)
+  const costInCents = emailCount * PRICE_PER_EMAIL;
+
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency.toUpperCase(),
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(costInCents / 100);
+  } catch (error) {
+    // Fallback if currency is invalid
+    return `${(costInCents / 100).toFixed(2)} ${currency.toUpperCase()}`;
+  }
+};
 
 interface BillingLimitsProps {
   projectId: string;
@@ -173,12 +203,20 @@ export function BillingLimits({projectId, hasSubscription, billingEnabled}: Bill
             <div className="space-y-4">
               {/* For free tier, show total usage across all categories */}
               {!hasSubscription ? (
-                <UsageDisplay category="Total Emails (All Categories)" usage={limitsData.workflows} />
+                <UsageDisplay
+                  category="Total Emails (All Categories)"
+                  usage={limitsData.workflows}
+                  currency={limitsData.currency}
+                />
               ) : (
                 <>
-                  <UsageDisplay category="Workflows" usage={limitsData.workflows} />
-                  <UsageDisplay category="Campaigns" usage={limitsData.campaigns} />
-                  <UsageDisplay category="Transactional" usage={limitsData.transactional} />
+                  <UsageDisplay category="Workflows" usage={limitsData.workflows} currency={limitsData.currency} />
+                  <UsageDisplay category="Campaigns" usage={limitsData.campaigns} currency={limitsData.currency} />
+                  <UsageDisplay
+                    category="Transactional"
+                    usage={limitsData.transactional}
+                    currency={limitsData.currency}
+                  />
                 </>
               )}
 
@@ -197,66 +235,97 @@ export function BillingLimits({projectId, hasSubscription, billingEnabled}: Bill
                 <FormField
                   control={form.control}
                   name="workflows"
-                  render={({field}) => (
-                    <FormItem>
-                      <FormLabel>Workflow Emails Limit</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="Unlimited"
-                          {...field}
-                          value={field.value ?? ''}
-                          onChange={e => field.onChange(e.target.value === '' ? null : e.target.value)}
-                        />
-                      </FormControl>
-                      <FormDescription>Maximum workflow emails per month. Leave empty for unlimited.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({field}) => {
+                    const estimatedCost =
+                      limitsData?.currency && field.value
+                        ? formatEmailCost(Number(field.value), limitsData.currency)
+                        : null;
+                    return (
+                      <FormItem>
+                        <FormLabel>Workflow Emails Limit</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Unlimited"
+                            {...field}
+                            value={field.value ?? ''}
+                            onChange={e => field.onChange(e.target.value === '' ? null : e.target.value)}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Maximum workflow emails per month. Leave empty for unlimited.
+                          {estimatedCost && (
+                            <span className="text-neutral-500"> ≈ {estimatedCost}/month</span>
+                          )}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 <FormField
                   control={form.control}
                   name="campaigns"
-                  render={({field}) => (
-                    <FormItem>
-                      <FormLabel>Campaign Emails Limit</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="Unlimited"
-                          {...field}
-                          value={field.value ?? ''}
-                          onChange={e => field.onChange(e.target.value === '' ? null : e.target.value)}
-                        />
-                      </FormControl>
-                      <FormDescription>Maximum campaign emails per month. Leave empty for unlimited.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({field}) => {
+                    const estimatedCost =
+                      limitsData?.currency && field.value
+                        ? formatEmailCost(Number(field.value), limitsData.currency)
+                        : null;
+                    return (
+                      <FormItem>
+                        <FormLabel>Campaign Emails Limit</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Unlimited"
+                            {...field}
+                            value={field.value ?? ''}
+                            onChange={e => field.onChange(e.target.value === '' ? null : e.target.value)}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Maximum campaign emails per month. Leave empty for unlimited.
+                          {estimatedCost && (
+                            <span className="text-neutral-500"> ≈ {estimatedCost}/month</span>
+                          )}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 <FormField
                   control={form.control}
                   name="transactional"
-                  render={({field}) => (
-                    <FormItem>
-                      <FormLabel>Transactional Emails Limit</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="Unlimited"
-                          {...field}
-                          value={field.value ?? ''}
-                          onChange={e => field.onChange(e.target.value === '' ? null : e.target.value)}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Maximum transactional emails per month. Leave empty for unlimited.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({field}) => {
+                    const estimatedCost =
+                      limitsData?.currency && field.value
+                        ? formatEmailCost(Number(field.value), limitsData.currency)
+                        : null;
+                    return (
+                      <FormItem>
+                        <FormLabel>Transactional Emails Limit</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Unlimited"
+                            {...field}
+                            value={field.value ?? ''}
+                            onChange={e => field.onChange(e.target.value === '' ? null : e.target.value)}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Maximum transactional emails per month. Leave empty for unlimited.
+                          {estimatedCost && (
+                            <span className="text-neutral-500"> ≈ {estimatedCost}/month</span>
+                          )}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 <div className="flex justify-end gap-2 pt-4">
@@ -279,9 +348,10 @@ export function BillingLimits({projectId, hasSubscription, billingEnabled}: Bill
 interface UsageDisplayProps {
   category: string;
   usage: CategoryLimit;
+  currency: string | null;
 }
 
-const UsageDisplay = memo(function UsageDisplay({category, usage}: UsageDisplayProps) {
+const UsageDisplay = memo(function UsageDisplay({category, usage, currency}: UsageDisplayProps) {
   const statusColor = useMemo(() => {
     if (usage.isBlocked) return 'text-red-600';
     if (usage.isWarning) return 'text-orange-600';
@@ -302,14 +372,29 @@ const UsageDisplay = memo(function UsageDisplay({category, usage}: UsageDisplayP
 
   const limitText = usage.limit === null ? 'Unlimited' : usage.limit.toLocaleString();
 
+  // Calculate monetary values
+  const usageCost = currency ? formatEmailCost(usage.usage, currency) : null;
+  const limitCost = currency && usage.limit !== null ? formatEmailCost(usage.limit, currency) : null;
+
   return (
     <div className="border border-neutral-200 rounded-lg p-4">
       <div className="flex items-center justify-between mb-3">
         <div>
           <h3 className="font-medium text-neutral-900">{category}</h3>
-          <p className="text-sm text-neutral-500">
-            {usage.usage.toLocaleString()} / {limitText} emails this month
-          </p>
+          <div className="flex items-baseline gap-2 mt-1">
+            <p className="text-sm text-neutral-600">
+              {usage.usage.toLocaleString()} / {limitText} emails
+            </p>
+            {currency && (
+              <>
+                <span className="text-neutral-300">•</span>
+                <p className="text-sm text-neutral-500">
+                  {usageCost}
+                  {limitCost && ` / ${limitCost}`}
+                </p>
+              </>
+            )}
+          </div>
         </div>
         <div className={`flex items-center gap-2 ${statusColor}`}>
           {statusIcon}

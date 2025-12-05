@@ -12,6 +12,7 @@ export interface BillingLimitsData {
   workflows: CategoryLimit;
   campaigns: CategoryLimit;
   transactional: CategoryLimit;
+  currency: string | null;
 }
 
 /**

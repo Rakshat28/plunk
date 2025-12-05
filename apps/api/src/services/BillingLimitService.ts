@@ -1,6 +1,7 @@
 import {EmailSourceType} from '@plunk/db';
 import signale from 'signale';
 
+import {stripe} from '../app/stripe.js';
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
 import {NtfyService} from './NtfyService.js';
@@ -23,6 +24,7 @@ export interface BillingLimitsResponse {
   workflows: CategoryUsage;
   campaigns: CategoryUsage;
   transactional: CategoryUsage;
+  currency: string | null;
 }
 
 /**
@@ -361,6 +363,7 @@ export class BillingLimitService {
       const project = await prisma.project.findUnique({
         where: {id: projectId},
         select: {
+          customer: true,
           subscription: true,
           billingLimitWorkflows: true,
           billingLimitCampaigns: true,
@@ -370,6 +373,20 @@ export class BillingLimitService {
 
       if (!project) {
         throw new Error('Project not found');
+      }
+
+      // Get currency from Stripe customer if available
+      let currency: string | null = null;
+      if (stripe && project.customer) {
+        try {
+          const customer = await stripe.customers.retrieve(project.customer);
+          if (!customer.deleted) {
+            currency = customer.currency || 'usd';
+          }
+        } catch (error) {
+          signale.warn(`[BILLING_LIMIT] Failed to fetch currency for customer ${project.customer}:`, error);
+          // Continue without currency - will be null in response
+        }
       }
 
       // Get usage for all categories in parallel
@@ -419,6 +436,7 @@ export class BillingLimitService {
           workflows: sharedUsageInfo,
           campaigns: sharedUsageInfo,
           transactional: sharedUsageInfo,
+          currency,
         };
       }
 
@@ -427,6 +445,7 @@ export class BillingLimitService {
         workflows: calculateCategoryUsage(workflowUsage, project.billingLimitWorkflows),
         campaigns: calculateCategoryUsage(campaignUsage, project.billingLimitCampaigns),
         transactional: calculateCategoryUsage(transactionalUsage, project.billingLimitTransactional),
+        currency,
       };
     } catch (error) {
       signale.error(`[BILLING_LIMIT] Error getting limits and usage for ${projectId}:`, error);
