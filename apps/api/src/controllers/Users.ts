@@ -15,6 +15,7 @@ import {NtfyService} from '../services/NtfyService.js';
 import {SecurityService} from '../services/SecurityService.js';
 import {UserService} from '../services/UserService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
+import signale from 'signale';
 
 @Controller('users')
 export class Users {
@@ -459,21 +460,25 @@ export class Users {
     let totalUsage = 0;
 
     try {
-      upcomingInvoice = (await (stripe.invoices as any).retrieveUpcoming({customer: project.customer})) as any;
+      upcomingInvoice = (await stripe.invoices.createPreview({
+        customer: project.customer,
+        subscription: project.subscription,
+      })) as any;
 
       // Extract metered usage from invoice line items
       if (upcomingInvoice && upcomingInvoice.lines && upcomingInvoice.lines.data) {
-        const meteredLine = upcomingInvoice.lines.data.find((line: any) => {
-          const price = line.price;
-          return price && typeof price === 'object' && 'id' in price && price.id === STRIPE_PRICE_EMAIL_USAGE;
-        });
+        // Since we only have one meter (email usage), we can safely use the first line item
+        // The invoice preview doesn't expand the price object, so we can't match by price ID
+        const meteredLine = upcomingInvoice.lines.data[0];
+
         if (meteredLine && meteredLine.quantity) {
           totalUsage = meteredLine.quantity;
         }
       }
-    } catch {
+    } catch (error) {
       // No upcoming invoice yet or error retrieving it
       // This is normal for new subscriptions or if there's no usage yet
+      signale.error('[BILLING] Error retrieving upcoming invoice:', error);
     }
 
     // Get customer to retrieve balance (credits)
@@ -495,7 +500,7 @@ export class Users {
       };
     }
 
-    return res.status(200).json({
+    const responseData = {
       period: {
         start: startOfMonth.toISOString(),
         end: now.toISOString(),
@@ -519,7 +524,9 @@ export class Users {
             total: upcomingInvoice.total ?? 0,
           }
         : null,
-    });
+    };
+
+    return res.status(200).json(responseData);
   }
 
   @Get('@me/projects/:id/billing-invoices')
@@ -771,7 +778,7 @@ export class Users {
         await stripe.subscriptions.cancel(project.subscription);
       } catch (error) {
         // Log but don't fail if subscription cancellation fails
-        console.error('Failed to cancel subscription:', error);
+        signale.error('Failed to cancel subscription:', error);
       }
     }
 
