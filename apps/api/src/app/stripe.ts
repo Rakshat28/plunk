@@ -9,6 +9,6 @@ import {STRIPE_ENABLED, STRIPE_SK} from './constants.js';
  */
 export const stripe = STRIPE_ENABLED
   ? new Stripe(STRIPE_SK, {
-      apiVersion: '2025-10-29.clover',
+      apiVersion: '2025-11-17.clover',
     })
   : null;
