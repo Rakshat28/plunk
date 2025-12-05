@@ -276,6 +276,11 @@ export class Webhooks {
             },
           });
 
+          // add 1 eur/usd in credit in return for onboarding fee
+          await stripe.customers.update(customerId, {
+            balance: -100,
+          });
+
           signale.success(`[WEBHOOK] Checkout completed for project ${projectId}`);
 
           // Send notification about subscription started

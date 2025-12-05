@@ -19,12 +19,20 @@ export interface UpcomingInvoice {
   total: number;
 }
 
+export interface AccountCredits {
+  balance: number;
+  hasCredits: boolean;
+  creditAmount: number;
+  currency: string;
+}
+
 export interface BillingConsumptionData {
   period: BillingPeriod;
   usage: {
     total: number;
     records: UsageRecord[];
   };
+  credits: AccountCredits | null;
   upcomingInvoice: UpcomingInvoice | null;
 }
 

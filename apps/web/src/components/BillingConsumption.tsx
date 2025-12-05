@@ -1,5 +1,5 @@
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, Alert} from '@plunk/ui';
-import {AlertCircle, TrendingUp} from 'lucide-react';
+import {AlertCircle, TrendingUp, Coins} from 'lucide-react';
 import {useBillingConsumption} from '../lib/hooks/useBillingConsumption';
 import {useConfig} from '../lib/hooks/useConfig';
 import {useCallback} from 'react';
@@ -119,6 +119,26 @@ export function BillingConsumption({projectId, hasSubscription}: BillingConsumpt
             </div>
           </div>
 
+          {/* Account Credits */}
+          {consumptionData.credits && consumptionData.credits.hasCredits && (
+            <div className="border border-green-200 rounded-lg p-6 bg-green-50">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-white rounded-lg shadow-sm border border-green-200">
+                  <Coins className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-green-700">Account Credits</p>
+                  <p className="text-2xl font-bold text-green-900">
+                    {formatCurrency(consumptionData.credits.creditAmount, consumptionData.credits.currency)}
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-green-700 mt-2">
+                Credits will be automatically applied to your upcoming invoices
+              </p>
+            </div>
+          )}
+
           {/* Upcoming Invoice */}
           {consumptionData.upcomingInvoice && (
             <div className="border border-neutral-200 rounded-lg p-6">
@@ -137,6 +157,14 @@ export function BillingConsumption({projectId, hasSubscription}: BillingConsumpt
                     {formatCurrency(consumptionData.upcomingInvoice.subtotal, consumptionData.upcomingInvoice.currency)}
                   </span>
                 </div>
+                {consumptionData.credits && consumptionData.credits.hasCredits && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-green-600">Credits Applied</span>
+                    <span className="text-sm font-medium text-green-600">
+                      -{formatCurrency(consumptionData.credits.creditAmount, consumptionData.credits.currency)}
+                    </span>
+                  </div>
+                )}
                 <div className="border-t border-neutral-200 pt-3 mt-3">
                   <div className="flex justify-between items-center">
                     <span className="text-base font-semibold text-neutral-900">Amount Due</span>

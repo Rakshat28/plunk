@@ -476,6 +476,25 @@ export class Users {
       // This is normal for new subscriptions or if there's no usage yet
     }
 
+    // Get customer to retrieve balance (credits)
+    const customer = await stripe.customers.retrieve(project.customer);
+    let credits = null;
+
+    if (!customer.deleted) {
+      // Stripe stores balance in cents as a negative number (credit) or positive (debit)
+      // A negative balance means the customer has credits
+      const balance = customer.balance || 0;
+      const hasCredits = balance < 0;
+      const creditAmount = hasCredits ? Math.abs(balance) : 0;
+
+      credits = {
+        balance,
+        hasCredits,
+        creditAmount,
+        currency: customer.currency || 'usd',
+      };
+    }
+
     return res.status(200).json({
       period: {
         start: startOfMonth.toISOString(),
@@ -485,6 +504,7 @@ export class Users {
         total: totalUsage,
         records: [], // Deprecated in favor of invoice line items
       },
+      credits,
       upcomingInvoice: upcomingInvoice
         ? {
             amountDue: upcomingInvoice.amount_due,
