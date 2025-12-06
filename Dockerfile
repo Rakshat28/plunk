@@ -3,7 +3,7 @@
 # Use SERVICE environment variable to specify which service to run
 
 # ============================================
-# Stage 1: Dependencies
+# Stage 1: Dependencies (All dependencies for building)
 # ============================================
 # Use build platform (AMD64) to install dependencies, avoiding QEMU issues
 FROM --platform=$BUILDPLATFORM node:20-slim AS deps
@@ -52,6 +52,38 @@ RUN --mount=type=cache,target=/root/.yarn/berry/cache,sharing=locked \
     --mount=type=cache,target=/root/.cache/yarn,sharing=locked \
     echo "Building on $BUILDPLATFORM for $TARGETPLATFORM" && \
     yarn install --immutable
+
+# ============================================
+# Stage 1b: Production Dependencies for API/SMTP
+# ============================================
+# Install only production dependencies needed for API and SMTP services
+FROM --platform=$BUILDPLATFORM node:20-slim AS prod-deps
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+WORKDIR /app
+
+# Enable Corepack and set Yarn version
+RUN corepack enable && corepack prepare yarn@4.9.1 --activate
+
+# Copy Yarn configuration
+COPY .yarnrc.yml ./
+COPY .yarn/releases ./.yarn/releases
+
+# Copy all package.json files (needed for workspace resolution)
+COPY package.json yarn.lock ./
+COPY apps/api/package.json ./apps/api/
+COPY apps/smtp/package.json ./apps/smtp/
+COPY packages/db/package.json ./packages/db/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/types/package.json ./packages/types/
+COPY packages/email/package.json ./packages/email/
+
+# Install ONLY production dependencies for api, smtp, and their workspace dependencies
+# This excludes devDependencies and unneeded workspaces (web, landing, wiki, ui)
+RUN --mount=type=cache,target=/root/.yarn/berry/cache,sharing=locked \
+    --mount=type=cache,target=/root/.cache/yarn,sharing=locked \
+    echo "Installing production dependencies for API/SMTP on $BUILDPLATFORM for $TARGETPLATFORM" && \
+    yarn workspaces focus api smtp --production
 
 # ============================================
 # Stage 2: Builder
@@ -189,9 +221,6 @@ WORKDIR /app
 # Install OpenSSL for Prisma, curl for health checks, nginx, and gettext (for envsubst)
 RUN apk add --no-cache openssl curl nginx gettext
 
-# Enable Corepack and set Yarn version (must be before PM2 install)
-RUN corepack enable && corepack prepare yarn@4.9.1 --activate
-
 # Install PM2 globally for process management
 # Use cache mount and specific version to prevent hangs
 RUN --mount=type=cache,target=/root/.npm \
@@ -205,60 +234,78 @@ RUN adduser --system --uid 1001 plunk
 RUN mkdir -p /var/log/nginx /var/lib/nginx /run/nginx && \
     chown -R plunk:nodejs /var/log/nginx /var/lib/nginx /run/nginx /etc/nginx
 
-# Copy built artifacts from builder
+# ============================================
+# Copy API and SMTP services with minimal dependencies
+# ============================================
+
+# Copy built API and SMTP services
 COPY --from=builder --chown=plunk:nodejs /app/apps/api/dist ./apps/api/dist
 COPY --from=builder --chown=plunk:nodejs /app/apps/smtp/dist ./apps/smtp/dist
-COPY --from=builder --chown=plunk:nodejs /app/apps/web/.next ./apps/web/.next
-COPY --from=builder --chown=plunk:nodejs /app/apps/landing/.next ./apps/landing/.next
-COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/.next ./apps/wiki/.next
 
-# Copy OpenAPI spec for wiki API documentation (required by fumadocs-openapi at runtime)
-COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/openapi.local.json ./apps/wiki/openapi.local.json
+# Copy ONLY production dependencies for API/SMTP (excludes dev deps and frontend packages)
+COPY --from=prod-deps --chown=plunk:nodejs /app/node_modules ./node_modules
 
-# Copy package files
-COPY --from=builder --chown=plunk:nodejs /app/package.json ./
-COPY --from=builder --chown=plunk:nodejs /app/apps/api/package.json ./apps/api/
-COPY --from=builder --chown=plunk:nodejs /app/apps/smtp/package.json ./apps/smtp/
-COPY --from=builder --chown=plunk:nodejs /app/apps/web/package.json ./apps/web/
-COPY --from=builder --chown=plunk:nodejs /app/apps/landing/package.json ./apps/landing/
-COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/package.json ./apps/wiki/
-
-# Copy Next.js standalone builds (guaranteed to exist from builder stage)
-COPY --from=builder --chown=plunk:nodejs /app/apps/web/.next/standalone ./apps/web/.next/standalone
-COPY --from=builder --chown=plunk:nodejs /app/apps/landing/.next/standalone ./apps/landing/.next/standalone
-COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/.next/standalone ./apps/wiki/.next/standalone
-
-# Copy OpenAPI spec to wiki standalone directory (required at runtime)
-COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/openapi.local.json ./apps/wiki/.next/standalone/apps/wiki/openapi.local.json
-
-# Copy static files INTO the standalone directories (required for Next.js standalone to serve assets)
-# Web app
-COPY --from=builder --chown=plunk:nodejs /app/apps/web/public ./apps/web/.next/standalone/apps/web/public
-COPY --from=builder --chown=plunk:nodejs /app/apps/web/.next/static ./apps/web/.next/standalone/apps/web/.next/static
-# Landing app
-COPY --from=builder --chown=plunk:nodejs /app/apps/landing/public ./apps/landing/.next/standalone/apps/landing/public
-COPY --from=builder --chown=plunk:nodejs /app/apps/landing/.next/static ./apps/landing/.next/standalone/apps/landing/.next/static
-# Wiki app
-COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/public ./apps/wiki/.next/standalone/apps/wiki/public
-COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/.next/static ./apps/wiki/.next/standalone/apps/wiki/.next/static
-
-# Note: Wiki documentation is built at compile time with default URLs
-# The entrypoint script will do a find-and-replace to update URLs at runtime
-
-# Copy node_modules from deps stage (includes all dependencies)
-COPY --from=deps --chown=plunk:nodejs /app/node_modules ./node_modules
-
-# Copy Prisma client from builder stage (regenerated with correct ESM format)
+# Copy Prisma client from builder (includes generated client with correct platform binaries)
 COPY --from=builder --chown=plunk:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=plunk:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 
-# Copy shared packages
-COPY --from=builder --chown=plunk:nodejs /app/packages ./packages
+# Copy only the shared packages that are built (not source files)
+# These are needed by API/SMTP at runtime
+COPY --from=builder --chown=plunk:nodejs /app/packages/db/dist ./packages/db/dist
+COPY --from=builder --chown=plunk:nodejs /app/packages/db/package.json ./packages/db/package.json
+COPY --from=builder --chown=plunk:nodejs /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder --chown=plunk:nodejs /app/packages/shared/package.json ./packages/shared/package.json
+COPY --from=builder --chown=plunk:nodejs /app/packages/email/dist ./packages/email/dist
+COPY --from=builder --chown=plunk:nodejs /app/packages/email/package.json ./packages/email/package.json
+# @plunk/types exports source TypeScript files directly (no build output)
+COPY --from=builder --chown=plunk:nodejs /app/packages/types/src ./packages/types/src
+COPY --from=builder --chown=plunk:nodejs /app/packages/types/package.json ./packages/types/package.json
 
-# Copy Yarn configuration
-COPY --from=builder --chown=plunk:nodejs /app/.yarn ./.yarn
-COPY --from=builder --chown=plunk:nodejs /app/.yarnrc.yml ./
-COPY --from=builder --chown=plunk:nodejs /app/yarn.lock ./
+# Copy Prisma schema (needed for migrations at runtime)
+COPY --from=builder --chown=plunk:nodejs /app/packages/db/prisma ./packages/db/prisma
+
+# Copy root package.json and workspace config (needed for yarn workspace commands in entrypoint)
+COPY --from=builder --chown=plunk:nodejs /app/package.json ./
+COPY --from=prod-deps --chown=plunk:nodejs /app/.yarnrc.yml ./
+COPY --from=prod-deps --chown=plunk:nodejs /app/.yarn ./.yarn
+COPY --from=prod-deps --chown=plunk:nodejs /app/yarn.lock ./
+
+# Copy API/SMTP package.json files
+COPY --from=builder --chown=plunk:nodejs /app/apps/api/package.json ./apps/api/
+COPY --from=builder --chown=plunk:nodejs /app/apps/smtp/package.json ./apps/smtp/
+
+# ============================================
+# Copy Next.js apps with their standalone builds
+# ============================================
+# Next.js standalone mode bundles all dependencies internally, so we don't need
+# to copy node_modules for these apps - they're completely self-contained
+
+# Web app - standalone build with static assets
+COPY --from=builder --chown=plunk:nodejs /app/apps/web/.next/standalone ./apps/web/.next/standalone
+COPY --from=builder --chown=plunk:nodejs /app/apps/web/public ./apps/web/.next/standalone/apps/web/public
+COPY --from=builder --chown=plunk:nodejs /app/apps/web/.next/static ./apps/web/.next/standalone/apps/web/.next/static
+
+# Landing app - standalone build with static assets
+COPY --from=builder --chown=plunk:nodejs /app/apps/landing/.next/standalone ./apps/landing/.next/standalone
+COPY --from=builder --chown=plunk:nodejs /app/apps/landing/public ./apps/landing/.next/standalone/apps/landing/public
+COPY --from=builder --chown=plunk:nodejs /app/apps/landing/.next/static ./apps/landing/.next/standalone/apps/landing/.next/static
+
+# Wiki app - standalone build with static assets and OpenAPI spec
+COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/.next/standalone ./apps/wiki/.next/standalone
+COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/public ./apps/wiki/.next/standalone/apps/wiki/public
+COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/.next/static ./apps/wiki/.next/standalone/apps/wiki/.next/static
+COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/openapi.local.json ./apps/wiki/.next/standalone/apps/wiki/openapi.local.json
+
+# Copy full .next directories for the entrypoint script (URL replacement via find command)
+# These are much smaller than node_modules and needed for runtime URL replacement
+COPY --from=builder --chown=plunk:nodejs /app/apps/web/.next ./apps/web/.next
+COPY --from=builder --chown=plunk:nodejs /app/apps/landing/.next ./apps/landing/.next
+COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/.next ./apps/wiki/.next
+COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/openapi.local.json ./apps/wiki/openapi.local.json
+
+# ============================================
+# Copy runtime configuration
+# ============================================
 
 # Copy nginx configuration templates and setup script
 COPY --chown=plunk:nodejs docker/nginx/ /app/docker/nginx/
