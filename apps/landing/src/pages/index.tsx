@@ -12,21 +12,21 @@ import Image from 'next/image';
 import Script from 'next/script';
 import Link from 'next/link';
 import {
-  Workflow,
-  Users,
-  Mail,
+  ArrowRight,
   BarChart3,
+  Clock,
   Code2,
   Globe,
-  Shield,
-  PackageOpen,
-  ArrowRight,
-  Clock,
   Lock,
+  Mail,
+  Megaphone,
+  PackageOpen,
+  Send,
+  Shield,
   TrendingUp,
   User,
-  Megaphone,
-  Send,
+  Users,
+  Workflow,
 } from 'lucide-react';
 
 const testimonials = [
@@ -77,12 +77,12 @@ const features = [
   {
     icon: <Users className="h-5 w-5" />,
     title: 'Dynamic Segments',
-    description: 'Real-time audience segmentation based on contact data, behavior, and custom fields.',
+    description: 'Real-time audience segmentation based on contact data and behavior.',
   },
   {
     icon: <Mail className="h-5 w-5" />,
     title: 'Campaign Management',
-    description: 'Broadcast emails with scheduling, A/B testing, and performance tracking.',
+    description: 'Broadcast emails with scheduling and performance tracking.',
   },
   {
     icon: <BarChart3 className="h-5 w-5" />,
@@ -92,7 +92,7 @@ const features = [
   {
     icon: <Code2 className="h-5 w-5" />,
     title: 'Developer API',
-    description: 'RESTful API with comprehensive documentation and language-specific SDKs.',
+    description: 'RESTful API with comprehensive documentation.',
   },
   {
     icon: <Globe className="h-5 w-5" />,
