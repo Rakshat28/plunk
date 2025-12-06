@@ -48,3 +48,4 @@ robots.txt
 install-state.gz
 
 tsconfig.tsbuildinfo
+next-env.d.ts

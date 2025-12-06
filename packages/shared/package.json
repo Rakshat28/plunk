@@ -10,8 +10,8 @@
   "devDependencies": {
     "@plunk/db": "*",
     "@plunk/typescript-config": "*",
-    "@types/node": "24.10.0",
-    "typescript": "5.7.2"
+    "@types/node": "^24.10.0",
+    "typescript": "^5.7.2"
   },
   "dependencies": {
     "zod": "^3.23.8"
