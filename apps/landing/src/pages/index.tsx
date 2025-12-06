@@ -26,7 +26,7 @@ import {
   TrendingUp,
   User,
   Users,
-  Workflow,
+  Workflow
 } from 'lucide-react';
 
 const testimonials = [
