@@ -545,9 +545,9 @@ export default function Settings() {
                       </div>
                       <Button
                         type="button"
-                        variant="default"
+                        variant="destructive"
                         onClick={() => setShowDeleteDialog(true)}
-                        className="shrink-0 bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow-md transition-all"
+                        className="shrink-0"
                       >
                         Delete Project
                       </Button>

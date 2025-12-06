@@ -220,9 +220,9 @@ export default function WorkflowsPage() {
                             onClick={() => handleToggleEnabled(workflow.id, workflow.enabled)}
                           >
                             {workflow.enabled ? (
-                              <PowerOff className="h-4 w-4 text-orange-600" />
+                              <PowerOff className="h-4 w-4" />
                             ) : (
-                              <Power className="h-4 w-4 text-green-600" />
+                              <Power className="h-4 w-4" />
                             )}
                           </Button>
                           <Link href={`/workflows/${workflow.id}`}>
@@ -238,7 +238,7 @@ export default function WorkflowsPage() {
                               setShowDeleteDialog(true);
                             }}
                           >
-                            <Trash2 className="h-4 w-4 text-red-600" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>

@@ -28,16 +28,16 @@ function HelpResources() {
       <p className="text-xs font-medium text-neutral-500 mb-3">Need help?</p>
       <div className="flex flex-col sm:flex-row gap-2">
         <Link href={WIKI_URI} target="_blank" className="flex-1">
-          <button className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-neutral-700 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50 hover:border-neutral-300 transition-all">
+          <Button variant="outline" size="sm" className="w-full">
             <BookOpen className="h-3.5 w-3.5" />
             Documentation
-          </button>
+          </Button>
         </Link>
         <Link href={`${LANDING_URI}/discord`} target="_blank" className="flex-1">
-          <button className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-neutral-700 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50 hover:border-neutral-300 transition-all">
+          <Button variant="outline" size="sm" className="w-full">
             <MessageCircle className="h-3.5 w-3.5" />
             Join Discord
-          </button>
+          </Button>
         </Link>
       </div>
     </div>
@@ -237,7 +237,6 @@ export function QuickStart({setupState, isLoading}: QuickStartProps) {
                   <Button
                     size="sm"
                     variant={step.isCompleted ? 'outline' : 'default'}
-                    className="h-9 transition-all group-hover:shadow-sm"
                   >
                     {step.linkText}
                   </Button>

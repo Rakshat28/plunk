@@ -133,9 +133,9 @@ function AddStepNode({data}: {data: {label: string; onClick?: () => void}}) {
         }}
       />
 
-      <div className="cursor-pointer hover:scale-110 transition-transform" onClick={data.onClick}>
-        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-neutral-100 to-neutral-200 border-2 border-dashed border-neutral-400 hover:border-neutral-600 hover:from-blue-50 hover:to-blue-100 hover:border-blue-400 flex items-center justify-center shadow-md hover:shadow-lg transition-all">
-          <Plus className="h-8 w-8 text-neutral-500 hover:text-blue-600 transition-colors" />
+      <div className="cursor-pointer hover:scale-105 transition-transform" onClick={data.onClick}>
+        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-neutral-100 to-neutral-200 border-2 border-dashed border-neutral-400 hover:border-neutral-600 hover:from-blue-50 hover:to-blue-100 hover:border-blue-400 flex items-center justify-center shadow-md transition-all">
+          <Plus className="h-8 w-8 text-neutral-500 transition-colors" />
         </div>
         {data.label && <div className="text-xs text-neutral-500 text-center mt-2 font-medium">{data.label}</div>}
       </div>
@@ -192,26 +192,30 @@ function CustomNode({
         {/* Action buttons - shown on hover */}
         {showActions && data.type !== 'TRIGGER' && (
           <div className="absolute -top-3 -right-3 flex gap-1.5 z-10">
-            <button
+            <Button
               onClick={e => {
                 e.stopPropagation();
                 data.onEdit?.();
               }}
-              className="p-1.5 bg-white border-2 border-neutral-300 rounded-lg shadow-md hover:border-neutral-400 hover:bg-neutral-50 transition-all"
+              variant="outline"
+              size="icon"
+              className="h-7 w-7 shadow-md"
               title="Edit step"
             >
-              <Settings className="h-3.5 w-3.5 text-neutral-700" />
-            </button>
-            <button
+              <Settings className="h-3.5 w-3.5" />
+            </Button>
+            <Button
               onClick={e => {
                 e.stopPropagation();
                 data.onDelete?.();
               }}
-              className="p-1.5 bg-white border-2 border-red-300 rounded-lg shadow-md hover:border-red-400 hover:bg-red-50 transition-all"
+              variant="outline"
+              size="icon"
+              className="h-7 w-7 shadow-md hover:bg-red-50 hover:border-red-400"
               title="Delete step"
             >
-              <Trash2 className="h-3.5 w-3.5 text-red-600" />
-            </button>
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
           </div>
         )}
 

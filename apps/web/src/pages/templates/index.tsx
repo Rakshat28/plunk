@@ -126,39 +126,30 @@ export default function TemplatesPage() {
 
                 {/* Type Filter */}
                 <div className="flex gap-2">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setTypeFilter('ALL')}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                      typeFilter === 'ALL'
-                        ? 'bg-neutral-900 text-white'
-                        : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-                    }`}
+                    variant={typeFilter === 'ALL' ? 'default' : 'secondary'}
+                    size="sm"
                   >
                     All Templates
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => setTypeFilter('MARKETING')}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                      typeFilter === 'MARKETING'
-                        ? 'bg-neutral-900 text-white'
-                        : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-                    }`}
+                    variant={typeFilter === 'MARKETING' ? 'default' : 'secondary'}
+                    size="sm"
                   >
                     Marketing
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => setTypeFilter('TRANSACTIONAL')}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                      typeFilter === 'TRANSACTIONAL'
-                        ? 'bg-neutral-900 text-white'
-                        : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-                    }`}
+                    variant={typeFilter === 'TRANSACTIONAL' ? 'default' : 'secondary'}
+                    size="sm"
                   >
                     Transactional
-                  </button>
+                  </Button>
                 </div>
               </form>
             </CardContent>
@@ -246,7 +237,7 @@ export default function TemplatesPage() {
                               setShowDeleteDialog(true);
                             }}
                           >
-                            <Trash2 className="h-4 w-4 text-red-600" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>

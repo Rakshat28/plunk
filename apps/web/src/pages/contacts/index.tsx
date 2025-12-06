@@ -289,7 +289,7 @@ export default function ContactsPage() {
                                   </Button>
                                 </Link>
                                 <Button variant="ghost" size="sm" onClick={() => promptDelete(contact.id)}>
-                                  <Trash2 className="h-4 w-4 text-red-600" />
+                                  <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
                             </td>
@@ -334,7 +334,7 @@ export default function ContactsPage() {
                               </Button>
                             </Link>
                             <Button variant="ghost" size="sm" onClick={() => promptDelete(contact.id)}>
-                              <Trash2 className="h-4 w-4 text-red-600" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>

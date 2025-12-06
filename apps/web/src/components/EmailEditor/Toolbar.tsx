@@ -474,7 +474,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
                           type="button"
                           onMouseDown={e => e.preventDefault()}
                           onClick={handleColorClick}
-                          className="w-8 h-8 rounded border-2 border-neutral-300 hover:border-neutral-500 hover:scale-110 transition-all relative group"
+                          className="w-8 h-8 rounded border-2 border-neutral-300 hover:border-neutral-500 hover:scale-105 transition-all relative group"
                           style={{backgroundColor: color}}
                           title={color}
                         >
