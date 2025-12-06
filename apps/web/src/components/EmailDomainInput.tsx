@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useMemo} from 'react';
 import {
   Alert,
   AlertDescription,
@@ -28,69 +28,40 @@ export function EmailDomainInput({value, onChange, id, placeholder, required, la
   const {activeProject} = useActiveProject();
   const {domains, isLoading} = useDomains(activeProject?.id);
 
-  // Split the email into local part and domain
-  const [localPart, setLocalPart] = useState('');
-  const [selectedDomain, setSelectedDomain] = useState('');
+  // Get verified domains only - memoized to avoid re-creating on every render
+  const verifiedDomains = useMemo(() => domains?.filter(d => d.verified) || [], [domains]);
 
-  // Get verified domains only
-  const verifiedDomains = domains?.filter(d => d.verified) || [];
-
-  // Initialize from value
-  useEffect(() => {
+  // Derive local state directly from the value prop
+  const parsedEmail = useMemo(() => {
     if (value && value.includes('@')) {
       const [local, domain] = value.split('@');
-
-      setLocalPart(local ?? '');
-
-      // Check if the domain is in our verified list
-      const domainPart = domain ?? '';
-      const matchingDomain = verifiedDomains.find(d => d.domain === domainPart);
-      if (matchingDomain) {
-        setSelectedDomain(domainPart);
-      } else {
-        // If domain not verified, keep it in the domain field
-
-        setSelectedDomain(domainPart);
-      }
+      return {localPart: local ?? '', domain: domain ?? ''};
     } else if (value) {
-      // If no @ sign, treat entire value as local part
-
-      setLocalPart(value);
+      return {localPart: value, domain: ''};
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return {localPart: '', domain: ''};
   }, [value]);
 
-  // Initialize selected domain with first verified domain if none selected
-  useEffect(() => {
-    if (!selectedDomain && verifiedDomains.length > 0) {
-      const firstDomain = verifiedDomains[0];
-      if (firstDomain) {
-        setSelectedDomain(firstDomain.domain);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDomain]);
-
-  // Update parent component when local part or domain changes
-  const handleUpdate = (newLocal: string, newDomain: string) => {
-    if (newLocal && newDomain) {
-      onChange(`${newLocal}@${newDomain}`);
-    } else if (newLocal) {
-      onChange(newLocal);
-    } else {
-      onChange('');
-    }
-  };
+  // Use derived state for display, with fallback to first domain if none specified
+  const displayDomain = parsedEmail.domain || (verifiedDomains.length > 0 ? verifiedDomains[0]!.domain : '');
+  const displayLocalPart = parsedEmail.localPart;
 
   const handleLocalPartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newLocal = e.target.value;
-    setLocalPart(newLocal);
-    handleUpdate(newLocal, selectedDomain);
+    if (newLocal && displayDomain) {
+      onChange(`${newLocal}@${displayDomain}`);
+    } else {
+      onChange(newLocal);
+    }
   };
 
   const handleDomainChange = (newDomain: string) => {
-    setSelectedDomain(newDomain);
-    handleUpdate(localPart, newDomain);
+    if (displayLocalPart && newDomain) {
+      onChange(`${displayLocalPart}@${newDomain}`);
+    } else if (displayLocalPart) {
+      onChange(displayLocalPart);
+    }
+    // If no local part, don't call onChange - wait for user to type something
   };
 
   if (isLoading) {
@@ -142,14 +113,14 @@ export function EmailDomainInput({value, onChange, id, placeholder, required, la
         <Input
           id={id}
           type="text"
-          value={localPart}
+          value={displayLocalPart}
           onChange={handleLocalPartChange}
           placeholder={placeholder || 'hello'}
           required={required}
           className="flex-1"
         />
         <span className="text-neutral-500">@</span>
-        <Select value={selectedDomain} onValueChange={handleDomainChange} required={required}>
+        <Select value={displayDomain} onValueChange={handleDomainChange} required={required}>
           <SelectTrigger className="w-[200px] shrink-0">
             <SelectValue />
           </SelectTrigger>
