@@ -8,7 +8,7 @@
   "devDependencies": {
     "@plunk/typescript-config": "*",
     "@types/node": "22.10.5",
-    "@types/react": "^19",
+    "@types/react": "^19.2.7",
     "typescript": "5.7.2"
   },
   "exports": {
