@@ -16,7 +16,21 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type {WorkflowStep} from '@plunk/db';
-import {Clock, GitBranch, LogOut, Mail, Plus, Settings, Trash2, UserCog, Webhook} from 'lucide-react';
+import {
+  Clock,
+  GitBranch,
+  Hourglass,
+  Lightbulb,
+  Link,
+  LogOut,
+  Mail,
+  Plus,
+  Settings,
+  Timer,
+  Trash2,
+  UserCog,
+  Webhook
+} from 'lucide-react';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import dagre from 'dagre';
 import {network} from '../lib/network';
@@ -245,7 +259,7 @@ function CustomNode({
         {data.template && (
           <div className="mt-3 pt-3 border-t border-neutral-100">
             <div className="flex items-center gap-2 text-xs text-neutral-600">
-              <span className="font-medium">📧</span>
+              <Mail className="h-3 w-3" />
               <span className="truncate">{data.template.name}</span>
             </div>
           </div>
@@ -253,7 +267,7 @@ function CustomNode({
         {data.type === 'DELAY' && data.config?.amount && (
           <div className="mt-3 pt-3 border-t border-neutral-100">
             <div className="flex items-center gap-2 text-xs text-neutral-600">
-              <span className="font-medium">⏱️</span>
+              <Timer className="h-3 w-3" />
               <span>
                 Wait {data.config.amount} {data.config.unit}
               </span>
@@ -264,7 +278,7 @@ function CustomNode({
           <div className="mt-3 pt-3 border-t border-neutral-100">
             <div className="text-xs text-neutral-600">
               <div className="flex items-center gap-1 mb-1">
-                <span className="font-medium">🔀</span>
+                <GitBranch className="h-3 w-3" />
                 <span className="font-mono text-[10px] truncate">
                   {/* Handle both legacy format {field, type} and new format (string) */}
                   {typeof data.config.field === 'object' && data.config.field !== null && 'field' in data.config.field
@@ -281,7 +295,7 @@ function CustomNode({
         {data.type === 'WAIT_FOR_EVENT' && data.config?.eventName && (
           <div className="mt-3 pt-3 border-t border-neutral-100">
             <div className="flex items-center gap-2 text-xs text-neutral-600">
-              <span className="font-medium">⏳</span>
+              <Hourglass className="h-3 w-3" />
               <span className="truncate">{data.config.eventName}</span>
             </div>
           </div>
@@ -289,7 +303,7 @@ function CustomNode({
         {data.type === 'WEBHOOK' && data.config?.url && (
           <div className="mt-3 pt-3 border-t border-neutral-100">
             <div className="flex items-center gap-2 text-xs text-neutral-600">
-              <span className="font-medium">🔗</span>
+              <Link className="h-3 w-3" />
               <span className="truncate text-[10px]">
                 {data.config.method || 'POST'} {data.config.url}
               </span>
@@ -453,7 +467,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
             target: transition.toStepId,
             type: 'smoothstep',
             animated: step.type === 'DELAY' || step.type === 'WAIT_FOR_EVENT',
-            label: isConditional ? (branch === 'yes' ? '✓ Yes' : '✗ No') : undefined,
+            label: isConditional ? (branch === 'yes' ? 'Yes' : 'No') : undefined,
             labelStyle: {
               fill: branch === 'yes' ? '#16a34a' : branch === 'no' ? '#dc2626' : '#64748b',
               fontWeight: 600,
@@ -498,7 +512,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
             target: `${step.id}-add-yes`,
             type: 'smoothstep',
             animated: false,
-            label: '✓ Yes',
+            label: 'Yes',
             labelStyle: {fill: '#16a34a', fontWeight: 600, fontSize: 12},
             labelBgStyle: {fill: '#fff', fillOpacity: 0.95},
             labelBgPadding: [8, 4] as [number, number],
@@ -515,7 +529,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
             target: `${step.id}-add-no`,
             type: 'smoothstep',
             animated: false,
-            label: '✗ No',
+            label: 'No',
             labelStyle: {fill: '#dc2626', fontWeight: 600, fontSize: 12},
             labelBgStyle: {fill: '#fff', fillOpacity: 0.95},
             labelBgPadding: [8, 4] as [number, number],
@@ -775,7 +789,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
               className="bg-blue-50 border border-blue-200 px-4 py-2.5 rounded-lg shadow-lg"
             >
               <div className="flex items-center gap-2 text-sm text-blue-900">
-                <span>💡</span>
+                <Lightbulb className="h-4 w-4" />
                 <span>Click the + buttons to add and connect steps!</span>
               </div>
             </Panel>

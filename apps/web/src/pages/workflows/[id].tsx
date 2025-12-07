@@ -1137,9 +1137,12 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                 </SelectTrigger>
                 <SelectContent>
                   {templatesData?.templates.map(template => (
-                    <SelectItem key={template.id} value={template.id}>
-                      {template.name}
-                    </SelectItem>
+                    <SelectItemWithDescription
+                      key={template.id}
+                      value={template.id}
+                      title={template.name}
+                      description={`${template.type === 'TRANSACTIONAL' ? 'Transactional' : 'Marketing'} • Subject: ${template.subject}`}
+                    />
                   ))}
                 </SelectContent>
               </Select>
@@ -1752,9 +1755,12 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                 </SelectTrigger>
                 <SelectContent>
                   {templatesData?.templates.map(template => (
-                    <SelectItem key={template.id} value={template.id}>
-                      {template.name}
-                    </SelectItem>
+                    <SelectItemWithDescription
+                      key={template.id}
+                      value={template.id}
+                      title={template.name}
+                      description={`${template.type === 'TRANSACTIONAL' ? 'Transactional' : 'Marketing'} • Subject: ${template.subject}`}
+                    />
                   ))}
                 </SelectContent>
               </Select>

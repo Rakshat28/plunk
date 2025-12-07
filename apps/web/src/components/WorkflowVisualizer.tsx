@@ -14,7 +14,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type {WorkflowStep} from '@plunk/db';
-import {Clock, GitBranch, LogOut, Mail, UserCog, Webhook} from 'lucide-react';
+import {AlertTriangle, Clock, GitBranch, Hourglass, Link, LogOut, Mail, Timer, UserCog, Webhook} from 'lucide-react';
 import {useEffect, useMemo} from 'react';
 import dagre from 'dagre';
 
@@ -176,7 +176,7 @@ function CustomNode({
         {data.template && (
           <div className="mt-3 pt-3 border-t border-neutral-100">
             <div className="flex items-center gap-2 text-xs text-neutral-600">
-              <span className="font-medium">📧</span>
+              <Mail className="h-3 w-3" />
               <span className="truncate">{data.template.name}</span>
             </div>
           </div>
@@ -184,7 +184,7 @@ function CustomNode({
         {data.type === 'DELAY' && data.config?.amount && (
           <div className="mt-3 pt-3 border-t border-neutral-100">
             <div className="flex items-center gap-2 text-xs text-neutral-600">
-              <span className="font-medium">⏱️</span>
+              <Timer className="h-3 w-3" />
               <span>
                 Wait {data.config.amount} {data.config.unit}
               </span>
@@ -193,15 +193,16 @@ function CustomNode({
         )}
         {data.type === 'CONDITION' && (
           <div className="mt-3 pt-3 border-t border-neutral-100">
-            <div className="text-xs text-neutral-600">
-              <span className="font-medium">🔀</span> If/Else Branch
+            <div className="flex items-center gap-1 text-xs text-neutral-600">
+              <GitBranch className="h-3 w-3" />
+              <span>If/Else Branch</span>
             </div>
           </div>
         )}
         {data.type === 'WAIT_FOR_EVENT' && data.config?.eventName && (
           <div className="mt-3 pt-3 border-t border-neutral-100">
             <div className="flex items-center gap-2 text-xs text-neutral-600">
-              <span className="font-medium">⏳</span>
+              <Hourglass className="h-3 w-3" />
               <span className="truncate">{data.config.eventName}</span>
             </div>
           </div>
@@ -209,7 +210,7 @@ function CustomNode({
         {data.type === 'WEBHOOK' && data.config?.url && (
           <div className="mt-3 pt-3 border-t border-neutral-100">
             <div className="flex items-center gap-2 text-xs text-neutral-600">
-              <span className="font-medium">🔗</span>
+              <Link className="h-3 w-3" />
               <span className="truncate">{data.config.method || 'POST'}</span>
             </div>
           </div>
@@ -333,7 +334,7 @@ export function WorkflowVisualizer({steps}: WorkflowVisualizerProps) {
             target: transition.toStepId,
             type: 'smoothstep',
             animated: false,
-            label: isConditional ? (branch === 'yes' ? '✓ Yes' : '✗ No') : undefined,
+            label: isConditional ? (branch === 'yes' ? 'Yes' : 'No') : undefined,
             labelStyle: {
               fill: branch === 'yes' ? '#16a34a' : branch === 'no' ? '#dc2626' : '#64748b',
               fontWeight: 600,
@@ -376,7 +377,7 @@ export function WorkflowVisualizer({steps}: WorkflowVisualizerProps) {
             target: `${step.id}-yes-end`,
             type: 'smoothstep',
             animated: false,
-            label: '✓ Yes',
+            label: 'Yes',
             labelStyle: {
               fill: '#16a34a',
               fontWeight: 600,
@@ -409,7 +410,7 @@ export function WorkflowVisualizer({steps}: WorkflowVisualizerProps) {
             target: `${step.id}-no-end`,
             type: 'smoothstep',
             animated: false,
-            label: '✗ No',
+            label: 'No',
             labelStyle: {
               fill: '#dc2626',
               fontWeight: 600,
@@ -518,7 +519,7 @@ export function WorkflowVisualizer({steps}: WorkflowVisualizerProps) {
             className="bg-amber-50 border border-amber-200 px-4 py-2.5 rounded-lg shadow-lg"
           >
             <div className="flex items-center gap-2 text-sm text-amber-900">
-              <span>⚠️</span>
+              <AlertTriangle className="h-4 w-4" />
               <span>No transitions found. Connect your steps to see the flow.</span>
             </div>
           </Panel>

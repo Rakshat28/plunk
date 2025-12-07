@@ -23,6 +23,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectItemWithDescription,
   SelectTrigger,
   SelectValue,
   StickySaveBar
@@ -343,20 +344,36 @@ export default function CampaignDetailsPage() {
                   <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 truncate">{c.name}</h1>
                   <Badge variant="secondary">Draft</Badge>
                 </div>
-                <p className="text-neutral-500 mt-1 text-sm sm:text-base">Make changes to your campaign before sending</p>
+                <p className="text-neutral-500 mt-1 text-sm sm:text-base">
+                  Make changes to your campaign before sending
+                </p>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <div className="flex-1">
-                {!hasChanges && !isSubmitting && <span className="text-xs sm:text-sm text-neutral-500">All changes saved</span>}
-                {hasChanges && !isSubmitting && <span className="text-xs sm:text-sm text-amber-600">Unsaved changes</span>}
+                {!hasChanges && !isSubmitting && (
+                  <span className="text-xs sm:text-sm text-neutral-500">All changes saved</span>
+                )}
+                {hasChanges && !isSubmitting && (
+                  <span className="text-xs sm:text-sm text-amber-600">Unsaved changes</span>
+                )}
               </div>
               <div className="flex gap-2">
-                <Button type="button" variant="destructive" onClick={() => setShowDeleteDialog(true)} className="flex-1 sm:flex-none">
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="flex-1 sm:flex-none"
+                >
                   <Trash2 className="h-4 w-4" />
                   <span className="hidden sm:inline">Delete</span>
                 </Button>
-                <Button type="submit" disabled={!hasChanges || isSubmitting} variant="outline" className="flex-1 sm:flex-none">
+                <Button
+                  type="submit"
+                  disabled={!hasChanges || isSubmitting}
+                  variant="outline"
+                  className="flex-1 sm:flex-none"
+                >
                   <Save className="h-4 w-4" />
                   <span className="hidden sm:inline">{isSubmitting ? 'Saving...' : 'Save'}</span>
                   <span className="sm:hidden">Save</span>
@@ -470,9 +487,21 @@ export default function CampaignDetailsPage() {
                       <SelectValue placeholder="Select audience type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={CampaignAudienceType.ALL}>All Subscribed Contacts</SelectItem>
-                      <SelectItem value={CampaignAudienceType.SEGMENT}>Segment</SelectItem>
-                      <SelectItem value={CampaignAudienceType.FILTERED}>Filtered</SelectItem>
+                      <SelectItemWithDescription
+                        value={CampaignAudienceType.ALL}
+                        title="All Subscribed Contacts"
+                        description="Send to everyone who hasn't unsubscribed"
+                      />
+                      <SelectItemWithDescription
+                        value={CampaignAudienceType.SEGMENT}
+                        title="Segment"
+                        description="Target a defined group of contacts"
+                      />
+                      <SelectItemWithDescription
+                        value={CampaignAudienceType.FILTERED}
+                        title="Filtered"
+                        description="Use advanced filter conditions"
+                      />
                     </SelectContent>
                   </Select>
                 </div>
@@ -499,9 +528,12 @@ export default function CampaignDetailsPage() {
                         {segments &&
                           segments.length > 0 &&
                           segments.map(segment => (
-                            <SelectItem key={segment.id} value={segment.id}>
-                              {segment.name} ({segment.memberCount.toLocaleString()} contacts)
-                            </SelectItem>
+                            <SelectItemWithDescription
+                              key={segment.id}
+                              value={segment.id}
+                              title={segment.name}
+                              description={`${segment.memberCount.toLocaleString()} contacts`}
+                            />
                           ))}
                       </SelectContent>
                     </Select>
