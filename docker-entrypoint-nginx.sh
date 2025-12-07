@@ -17,7 +17,19 @@ fi
 # Run database migrations
 echo "🗄️  Running database migrations..."
 cd /app
-yarn workspace @plunk/db migrate:prod || echo "⚠️  Migration failed or already up to date"
+if ! yarn workspace @plunk/db migrate:prod; then
+  echo ""
+  echo "❌ ERROR: Database migration failed!"
+  echo "   The container cannot start with failed migrations."
+  echo "   Please check:"
+  echo "   1. DATABASE_URL is set correctly"
+  echo "   2. Database server is accessible from this container"
+  echo "   3. Database credentials are valid"
+  echo "   4. Migration logs above for specific errors"
+  echo ""
+  exit 1
+fi
+echo "✅ Database migrations completed successfully"
 
 # Setup nginx configuration and source it to get env vars
 . /app/docker/nginx/setup-nginx.sh
