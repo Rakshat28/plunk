@@ -828,8 +828,31 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
   const [conditionField, setConditionField] = useState('');
   const [conditionOperator, setConditionOperator] = useState('equals');
   const [conditionValue, setConditionValue] = useState('');
-  const [availableFields, setAvailableFields] = useState<string[]>([]);
+  const [availableFields, setAvailableFields] = useState<Array<{field: string; type: string; category: string}>>([]);
   const [loadingFields, setLoadingFields] = useState(false);
+
+  // Get current field type for smart operator filtering
+  const currentFieldType = availableFields.find(f => f.field === conditionField)?.type || 'string';
+
+  // Get valid operators based on field type
+  const getOperatorsForType = (fieldType: string) => {
+    const allOperators = [
+      {value: 'equals', label: 'Equals', types: ['string', 'number', 'boolean', 'date']},
+      {value: 'notEquals', label: 'Not Equals', types: ['string', 'number', 'boolean', 'date']},
+      {value: 'contains', label: 'Contains', types: ['string']},
+      {value: 'notContains', label: 'Does not contain', types: ['string']},
+      {value: 'greaterThan', label: 'Greater than', types: ['number', 'date']},
+      {value: 'lessThan', label: 'Less than', types: ['number', 'date']},
+      {value: 'greaterThanOrEqual', label: 'Greater than or equal', types: ['number', 'date']},
+      {value: 'lessThanOrEqual', label: 'Less than or equal', types: ['number', 'date']},
+      {value: 'exists', label: 'Exists', types: ['string', 'number', 'boolean', 'date']},
+      {value: 'notExists', label: 'Does not exist', types: ['string', 'number', 'boolean', 'date']},
+    ];
+    return allOperators.filter(op => op.types.includes(fieldType));
+  };
+
+  const validOperators = getOperatorsForType(currentFieldType);
+  const needsValue = !['exists', 'notExists'].includes(conditionOperator);
 
   // WAIT_FOR_EVENT fields
   const [eventName, setEventName] = useState('');
@@ -869,12 +892,17 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
 
           // Pass eventName as query param to filter event fields
           const url = eventName ? `/workflows/fields?eventName=${encodeURIComponent(eventName)}` : '/workflows/fields';
-          const response = await network.fetch<{fields: string[]}>('GET', url);
-          setAvailableFields(response.fields);
+          const response = await network.fetch<{
+            fields: string[];
+            typedFields: Array<{field: string; type: string; category: string}>;
+          }>('GET', url);
+          setAvailableFields(
+            response.typedFields || response.fields.map(f => ({field: f, type: 'string', category: 'Unknown'})),
+          );
 
           // Set default field if available
-          if (response.fields.length > 0 && !conditionField) {
-            setConditionField(response.fields[0]!);
+          if (response.typedFields && response.typedFields.length > 0 && !conditionField) {
+            setConditionField(response.typedFields[0]!.field);
           }
         } catch (error) {
           console.error('Failed to fetch available fields:', error);
@@ -888,6 +916,26 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
     void fetchAvailableFields();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type, open, workflow]);
+
+  // Handle condition field change - reset operator if not valid for new type
+  const handleConditionFieldChange = (newField: string) => {
+    const newFieldType = availableFields.find(f => f.field === newField)?.type || 'string';
+    const newValidOperators = getOperatorsForType(newFieldType);
+
+    setConditionField(newField);
+
+    // Reset operator if current one is not valid for new field type
+    if (!newValidOperators.some(op => op.value === conditionOperator)) {
+      setConditionOperator('equals');
+    }
+
+    // Reset value when switching to boolean
+    if (newFieldType === 'boolean') {
+      setConditionValue('true');
+    } else if (currentFieldType === 'boolean' && newFieldType !== 'boolean') {
+      setConditionValue('');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1196,15 +1244,32 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                   </div>
                 ) : availableFields.length > 0 ? (
                   <>
-                    <Select value={conditionField} onValueChange={setConditionField} required>
+                    <Select value={conditionField} onValueChange={handleConditionFieldChange} required>
                       <SelectTrigger id="conditionField">
                         <SelectValue placeholder="Select a field..." />
                       </SelectTrigger>
                       <SelectContent>
-                        {availableFields.map(field => (
-                          <SelectItem key={field} value={field}>
-                            {field}
-                          </SelectItem>
+                        {/* Group fields by category */}
+                        {Object.entries(
+                          availableFields.reduce<Record<string, typeof availableFields>>((acc, field) => {
+                            if (!acc[field.category]) acc[field.category] = [];
+                            acc[field.category]!.push(field);
+                            return acc;
+                          }, {}),
+                        ).map(([category, fields]) => (
+                          <div key={category}>
+                            <div className="px-2 py-1.5 text-xs font-semibold text-neutral-500">{category}</div>
+                            {fields.map(field => (
+                              <SelectItem key={field.field} value={field.field}>
+                                <div className="flex items-center gap-2">
+                                  <span>{field.field.replace('contact.', '').replace('data.', '')}</span>
+                                  <span className="text-xs px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-600 font-mono">
+                                    {field.type}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </div>
                         ))}
                       </SelectContent>
                     </Select>
@@ -1221,7 +1286,7 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                       value={conditionField}
                       onChange={e => setConditionField(e.target.value)}
                       required
-                      placeholder="e.g., subscribed or data.plan"
+                      placeholder="e.g., contact.subscribed or contact.data.plan"
                     />
                     <p className="text-xs text-neutral-500 mt-1">
                       No fields found in contacts. Enter a field manually.
@@ -1237,34 +1302,63 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="equals">Equals</SelectItem>
-                    <SelectItem value="notEquals">Not Equals</SelectItem>
-                    <SelectItem value="contains">Contains</SelectItem>
-                    <SelectItem value="notContains">Not Contains</SelectItem>
-                    <SelectItem value="greaterThan">Greater Than</SelectItem>
-                    <SelectItem value="lessThan">Less Than</SelectItem>
-                    <SelectItem value="greaterThanOrEqual">Greater Than or Equal</SelectItem>
-                    <SelectItem value="lessThanOrEqual">Less Than or Equal</SelectItem>
-                    <SelectItem value="exists">Exists</SelectItem>
-                    <SelectItem value="notExists">Not Exists</SelectItem>
+                    {validOperators.map(op => (
+                      <SelectItem key={op.value} value={op.value}>
+                        {op.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+                {currentFieldType && (
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Showing operators for{' '}
+                    <span className="font-mono bg-neutral-200 px-1 rounded">{currentFieldType}</span> fields
+                  </p>
+                )}
               </div>
 
-              <div>
-                <Label htmlFor="conditionValue">Value *</Label>
-                <Input
-                  id="conditionValue"
-                  type="text"
-                  value={conditionValue}
-                  onChange={e => setConditionValue(e.target.value)}
-                  required
-                  placeholder="e.g., true, false, premium, 100"
-                />
-                <p className="text-xs text-neutral-500 mt-1">
-                  Enter: true/false for booleans, numbers for comparisons, or text for strings
-                </p>
-              </div>
+              {needsValue && (
+                <div>
+                  <Label htmlFor="conditionValue">Value *</Label>
+                  {currentFieldType === 'boolean' ? (
+                    <Select value={conditionValue || 'true'} onValueChange={setConditionValue}>
+                      <SelectTrigger id="conditionValue">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">True</SelectItem>
+                        <SelectItem value="false">False</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : currentFieldType === 'number' ? (
+                    <Input
+                      id="conditionValue"
+                      type="number"
+                      value={conditionValue}
+                      onChange={e => setConditionValue(e.target.value)}
+                      required
+                      placeholder="e.g., 100"
+                    />
+                  ) : currentFieldType === 'date' ? (
+                    <Input
+                      id="conditionValue"
+                      type="datetime-local"
+                      value={conditionValue}
+                      onChange={e => setConditionValue(e.target.value)}
+                      required
+                    />
+                  ) : (
+                    <Input
+                      id="conditionValue"
+                      type="text"
+                      value={conditionValue}
+                      onChange={e => setConditionValue(e.target.value)}
+                      required
+                      placeholder="e.g., premium, active"
+                    />
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -1485,8 +1579,51 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
   });
   const [conditionOperator, setConditionOperator] = useState(String(config?.operator || 'equals'));
   const [conditionValue, setConditionValue] = useState(String(config?.value ?? ''));
-  const [availableFields, setAvailableFields] = useState<string[]>([]);
+  const [availableFields, setAvailableFields] = useState<Array<{field: string; type: string; category: string}>>([]);
   const [loadingFields, setLoadingFields] = useState(false);
+
+  // Get current field type for smart operator filtering
+  const currentFieldType = availableFields.find(f => f.field === conditionField)?.type || 'string';
+
+  // Get valid operators based on field type
+  const getOperatorsForType = (fieldType: string) => {
+    const allOperators = [
+      {value: 'equals', label: 'Equals', types: ['string', 'number', 'boolean', 'date']},
+      {value: 'notEquals', label: 'Not Equals', types: ['string', 'number', 'boolean', 'date']},
+      {value: 'contains', label: 'Contains', types: ['string']},
+      {value: 'notContains', label: 'Does not contain', types: ['string']},
+      {value: 'greaterThan', label: 'Greater than', types: ['number', 'date']},
+      {value: 'lessThan', label: 'Less than', types: ['number', 'date']},
+      {value: 'greaterThanOrEqual', label: 'Greater than or equal', types: ['number', 'date']},
+      {value: 'lessThanOrEqual', label: 'Less than or equal', types: ['number', 'date']},
+      {value: 'exists', label: 'Exists', types: ['string', 'number', 'boolean', 'date']},
+      {value: 'notExists', label: 'Does not exist', types: ['string', 'number', 'boolean', 'date']},
+    ];
+    return allOperators.filter(op => op.types.includes(fieldType));
+  };
+
+  const validOperators = getOperatorsForType(currentFieldType);
+  const needsValue = !['exists', 'notExists'].includes(conditionOperator);
+
+  // Handle condition field change - reset operator if not valid for new type
+  const handleConditionFieldChange = (newField: string) => {
+    const newFieldType = availableFields.find(f => f.field === newField)?.type || 'string';
+    const newValidOperators = getOperatorsForType(newFieldType);
+
+    setConditionField(newField);
+
+    // Reset operator if current one is not valid for new field type
+    if (!newValidOperators.some(op => op.value === conditionOperator)) {
+      setConditionOperator('equals');
+    }
+
+    // Reset value when switching to boolean
+    if (newFieldType === 'boolean') {
+      setConditionValue('true');
+    } else if (currentFieldType === 'boolean' && newFieldType !== 'boolean') {
+      setConditionValue('');
+    }
+  };
 
   // WAIT_FOR_EVENT fields
   const [eventName, setEventName] = useState(String(config?.eventName || ''));
@@ -1545,8 +1682,13 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
 
           // Pass eventName as query param to filter event fields
           const url = eventName ? `/workflows/fields?eventName=${encodeURIComponent(eventName)}` : '/workflows/fields';
-          const response = await network.fetch<{fields: string[]}>('GET', url);
-          setAvailableFields(response.fields);
+          const response = await network.fetch<{
+            fields: string[];
+            typedFields: Array<{field: string; type: string; category: string}>;
+          }>('GET', url);
+          setAvailableFields(
+            response.typedFields || response.fields.map(f => ({field: f, type: 'string', category: 'Unknown'})),
+          );
         } catch (error) {
           console.error('Failed to fetch available fields:', error);
           setAvailableFields([]);
@@ -1814,15 +1956,32 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                   </div>
                 ) : availableFields.length > 0 ? (
                   <>
-                    <Select value={conditionField} onValueChange={setConditionField} required>
+                    <Select value={conditionField} onValueChange={handleConditionFieldChange} required>
                       <SelectTrigger id="editConditionField">
                         <SelectValue placeholder="Select a field..." />
                       </SelectTrigger>
                       <SelectContent>
-                        {availableFields.map(field => (
-                          <SelectItem key={field} value={field}>
-                            {field}
-                          </SelectItem>
+                        {/* Group fields by category */}
+                        {Object.entries(
+                          availableFields.reduce<Record<string, typeof availableFields>>((acc, field) => {
+                            if (!acc[field.category]) acc[field.category] = [];
+                            acc[field.category]!.push(field);
+                            return acc;
+                          }, {}),
+                        ).map(([category, fields]) => (
+                          <div key={category}>
+                            <div className="px-2 py-1.5 text-xs font-semibold text-neutral-500">{category}</div>
+                            {fields.map(field => (
+                              <SelectItem key={field.field} value={field.field}>
+                                <div className="flex items-center gap-2">
+                                  <span>{field.field.replace('contact.', '').replace('data.', '')}</span>
+                                  <span className="text-xs px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-600 font-mono">
+                                    {field.type}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </div>
                         ))}
                       </SelectContent>
                     </Select>
@@ -1839,7 +1998,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                       value={conditionField}
                       onChange={e => setConditionField(e.target.value)}
                       required
-                      placeholder="e.g., subscribed or data.plan"
+                      placeholder="e.g., contact.subscribed or contact.data.plan"
                     />
                     <p className="text-xs text-neutral-500 mt-1">
                       No fields found in contacts. Enter a field manually.
@@ -1855,34 +2014,63 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="equals">Equals</SelectItem>
-                    <SelectItem value="notEquals">Not Equals</SelectItem>
-                    <SelectItem value="contains">Contains</SelectItem>
-                    <SelectItem value="notContains">Not Contains</SelectItem>
-                    <SelectItem value="greaterThan">Greater Than</SelectItem>
-                    <SelectItem value="lessThan">Less Than</SelectItem>
-                    <SelectItem value="greaterThanOrEqual">Greater Than or Equal</SelectItem>
-                    <SelectItem value="lessThanOrEqual">Less Than or Equal</SelectItem>
-                    <SelectItem value="exists">Exists</SelectItem>
-                    <SelectItem value="notExists">Not Exists</SelectItem>
+                    {validOperators.map(op => (
+                      <SelectItem key={op.value} value={op.value}>
+                        {op.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+                {currentFieldType && (
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Showing operators for{' '}
+                    <span className="font-mono bg-neutral-200 px-1 rounded">{currentFieldType}</span> fields
+                  </p>
+                )}
               </div>
 
-              <div>
-                <Label htmlFor="editConditionValue">Value *</Label>
-                <Input
-                  id="editConditionValue"
-                  type="text"
-                  value={conditionValue}
-                  onChange={e => setConditionValue(e.target.value)}
-                  required
-                  placeholder="e.g., true, false, premium, 100"
-                />
-                <p className="text-xs text-neutral-500 mt-1">
-                  Enter: true/false for booleans, numbers for comparisons, or text for strings
-                </p>
-              </div>
+              {needsValue && (
+                <div>
+                  <Label htmlFor="editConditionValue">Value *</Label>
+                  {currentFieldType === 'boolean' ? (
+                    <Select value={conditionValue || 'true'} onValueChange={setConditionValue}>
+                      <SelectTrigger id="editConditionValue">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">True</SelectItem>
+                        <SelectItem value="false">False</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : currentFieldType === 'number' ? (
+                    <Input
+                      id="editConditionValue"
+                      type="number"
+                      value={conditionValue}
+                      onChange={e => setConditionValue(e.target.value)}
+                      required
+                      placeholder="e.g., 100"
+                    />
+                  ) : currentFieldType === 'date' ? (
+                    <Input
+                      id="editConditionValue"
+                      type="datetime-local"
+                      value={conditionValue}
+                      onChange={e => setConditionValue(e.target.value)}
+                      required
+                    />
+                  ) : (
+                    <Input
+                      id="editConditionValue"
+                      type="text"
+                      value={conditionValue}
+                      onChange={e => setConditionValue(e.target.value)}
+                      required
+                      placeholder="e.g., premium, active"
+                    />
+                  )}
+                </div>
+              )}
             </div>
           )}
 

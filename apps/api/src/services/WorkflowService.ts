@@ -34,20 +34,6 @@ export interface WorkflowExecutionWithDetails extends WorkflowExecution {
 
 export class WorkflowService {
   /**
-   * Check if a workflow has active executions
-   */
-  private static async hasActiveExecutions(workflowId: string): Promise<number> {
-    return prisma.workflowExecution.count({
-      where: {
-        workflowId,
-        status: {
-          in: [WorkflowExecutionStatus.RUNNING, WorkflowExecutionStatus.WAITING],
-        },
-      },
-    });
-  }
-
-  /**
    * Get all workflows for a project with pagination
    */
   public static async list(projectId: string, page = 1, pageSize = 20, search?: string): Promise<PaginatedWorkflows> {
@@ -400,8 +386,7 @@ export class WorkflowService {
 
       if (activeExecutions > 0) {
         // Only allow safe changes: name and position updates
-        const hasCriticalChanges =
-          data.config !== undefined || data.templateId !== undefined;
+        const hasCriticalChanges = data.config !== undefined || data.templateId !== undefined;
 
         if (hasCriticalChanges) {
           throw new HttpException(
@@ -930,10 +915,7 @@ export class WorkflowService {
   /**
    * Cancel all active executions for a workflow
    */
-  public static async cancelAllExecutions(
-    projectId: string,
-    workflowId: string,
-  ): Promise<{cancelled: number}> {
+  public static async cancelAllExecutions(projectId: string, workflowId: string): Promise<{cancelled: number}> {
     // Verify workflow exists and belongs to project
     await this.get(projectId, workflowId);
 
@@ -959,22 +941,49 @@ export class WorkflowService {
    * Get all available fields for workflow conditions (contact fields + event fields)
    */
   public static async getAvailableFields(projectId: string, eventName?: string) {
-    // Get contact fields (standard + custom data fields)
+    // Get contact fields with types (standard + custom data fields)
     const contactFieldsWithTypes = await ContactService.getAvailableFields(projectId);
 
-    // Extract just the field names and prefix with 'contact.'
-    const contactFields = contactFieldsWithTypes.map(f => `contact.${f.field}`);
+    // Build typed field list with 'contact.' prefix
+    const contactFields = contactFieldsWithTypes.map(f => ({
+      field: `contact.${f.field}`,
+      type: f.type,
+      category: f.field.startsWith('data.') ? 'Custom Data' : 'Contact Fields',
+    }));
 
     // Get event fields by analyzing actual event data
-    // This will only show fields that have been seen in actual events
-    const eventFields = await EventService.getAvailableEventFields(projectId, eventName);
+    // Event fields are treated as dynamic (unknown type at runtime)
+    const eventFieldNames = await EventService.getAvailableEventFields(projectId, eventName);
+    const eventFields = eventFieldNames.map(field => ({
+      field,
+      type: 'string' as const, // Event fields default to string, can contain any JSON value
+      category: 'Event Data',
+    }));
 
     // Combine all fields
-    const allFields = [...contactFields, ...eventFields].sort();
+    const allFields = [...contactFields, ...eventFields].sort((a, b) => a.field.localeCompare(b.field));
+
+    // Also return legacy format for backwards compatibility
+    const fieldNames = allFields.map(f => f.field);
 
     return {
-      fields: allFields,
+      fields: fieldNames,
+      typedFields: allFields,
       count: allFields.length,
     };
+  }
+
+  /**
+   * Check if a workflow has active executions
+   */
+  private static async hasActiveExecutions(workflowId: string): Promise<number> {
+    return prisma.workflowExecution.count({
+      where: {
+        workflowId,
+        status: {
+          in: [WorkflowExecutionStatus.RUNNING, WorkflowExecutionStatus.WAITING],
+        },
+      },
+    });
   }
 }
