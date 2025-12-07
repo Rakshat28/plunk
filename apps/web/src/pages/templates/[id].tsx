@@ -10,7 +10,7 @@ import {
   Label,
   Select,
   SelectContent,
-  SelectItem,
+  SelectItemWithDescription,
   SelectTrigger,
   SelectValue,
   StickySaveBar,
@@ -232,8 +232,16 @@ export default function TemplateEditorPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="MARKETING">Marketing</SelectItem>
-                      <SelectItem value="TRANSACTIONAL">Transactional</SelectItem>
+                      <SelectItemWithDescription
+                        value="MARKETING"
+                        title="Marketing"
+                        description="Includes unsubscribe link, respects opt-out"
+                      />
+                      <SelectItemWithDescription
+                        value="TRANSACTIONAL"
+                        title="Transactional"
+                        description="For receipts, alerts - sent regardless of opt-out"
+                      />
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-neutral-500 mt-1">

@@ -1,4 +1,4 @@
-import {CampaignAudienceType, TemplateType, WorkflowStepType, WorkflowTriggerType} from '@plunk/db';
+import {CampaignAudienceType, TemplateType, TrackingMode, WorkflowStepType, WorkflowTriggerType} from '@plunk/db';
 import {z} from 'zod';
 
 const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null(), z.date()]);
@@ -59,7 +59,7 @@ export const ProjectSchemas = {
   }),
   update: z.object({
     name: z.string().min(1).max(100).optional(),
-    trackingEnabled: z.boolean().optional(),
+    tracking: z.nativeEnum(TrackingMode).optional(),
   }),
 } as const;
 
@@ -223,11 +223,7 @@ export const WorkflowStepConfigSchemas = {
     ),
   waitForEvent: z.object({
     eventName: z.string().min(1),
-    timeout: z
-      .number()
-      .positive()
-      .max(31536000, 'Timeout cannot exceed 365 days (31,536,000 seconds)')
-      .optional(),
+    timeout: z.number().positive().max(31536000, 'Timeout cannot exceed 365 days (31,536,000 seconds)').optional(),
   }),
   condition: z.object({
     field: z.string().min(1),

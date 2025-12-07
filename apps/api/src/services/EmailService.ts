@@ -1,5 +1,5 @@
 import type {Contact, Email, Prisma, Project} from '@plunk/db';
-import {EmailSourceType, EmailStatus} from '@plunk/db';
+import {EmailSourceType, EmailStatus, TrackingMode} from '@plunk/db';
 import signale from 'signale';
 
 import {DASHBOARD_URI, LANDING_URI, STRIPE_ENABLED} from '../app/constants.js';
@@ -365,6 +365,9 @@ export class EmailService {
           ? (email.attachments as Array<{filename: string; content: string; contentType: string}>)
           : undefined;
 
+      // Determine tracking based on project settings and email type
+      const shouldTrack = this.shouldTrackEmail(email.project.tracking, email.sourceType);
+
       // Send via AWS SES
       const result = await sendRawEmail({
         from: {
@@ -379,7 +382,7 @@ export class EmailService {
         reply: email.replyTo || undefined,
         headers: customHeaders,
         attachments: attachments,
-        tracking: email.project.trackingEnabled, // Use project's tracking preference
+        tracking: shouldTrack,
       });
 
       // Mark as sent with SES message ID
@@ -563,6 +566,23 @@ export class EmailService {
       subject: renderTemplate(subject, data),
       body: renderTemplate(body, data),
     };
+  }
+
+  /**
+   * Determine if an email should be tracked based on project tracking mode and email source type
+   */
+  public static shouldTrackEmail(trackingMode: TrackingMode, sourceType: EmailSourceType): boolean {
+    switch (trackingMode) {
+      case TrackingMode.ENABLED:
+        return true;
+      case TrackingMode.DISABLED:
+        return false;
+      case TrackingMode.MARKETING_ONLY:
+        // Track only campaigns and workflows (marketing), not transactional emails
+        return sourceType !== EmailSourceType.TRANSACTIONAL;
+      default:
+        return true;
+    }
   }
 
   /**

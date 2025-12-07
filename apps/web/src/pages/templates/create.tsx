@@ -9,7 +9,7 @@ import {
   Label,
   Select,
   SelectContent,
-  SelectItem,
+  SelectItemWithDescription,
   SelectTrigger,
   SelectValue,
 } from '@plunk/ui';
@@ -74,117 +74,127 @@ export default function CreateTemplatePage() {
   return (
     <>
       <NextSeo title="Create Template" />
-    <DashboardLayout>
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <Link href="/templates">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4" />
+      <DashboardLayout>
+        <div className="max-w-5xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <Link href="/templates">
+                <Button variant="ghost" size="sm">
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </Link>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Create Template</h1>
+                <p className="text-neutral-500 mt-1 text-sm sm:text-base">
+                  Create a reusable email template for campaigns and workflows
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={handleSubmit} disabled={saving} className="w-full sm:w-auto">
+                <Save className="h-4 w-4" />
+                <span className="hidden sm:inline">{saving ? 'Creating...' : 'Create Template'}</span>
+                <span className="sm:hidden">{saving ? 'Creating...' : 'Create'}</span>
               </Button>
-            </Link>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Create Template</h1>
-              <p className="text-neutral-500 mt-1 text-sm sm:text-base">Create a reusable email template for campaigns and workflows</p>
             </div>
           </div>
-          <div className="flex justify-end">
-            <Button onClick={handleSubmit} disabled={saving} className="w-full sm:w-auto">
-              <Save className="h-4 w-4" />
-              <span className="hidden sm:inline">{saving ? 'Creating...' : 'Create Template'}</span>
-              <span className="sm:hidden">{saving ? 'Creating...' : 'Create'}</span>
-            </Button>
-          </div>
-        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Template Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Template Settings</CardTitle>
-              <CardDescription>Configure your template details and email settings</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Template Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Template Settings</CardTitle>
+                <CardDescription>Configure your template details and email settings</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Template Name *</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      value={name}
+                      onChange={e => setName(e.target.value)}
+                      required
+                      placeholder="Welcome Email"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="type">Template Type *</Label>
+                    <Select value={type} onValueChange={value => setType(value as 'MARKETING' | 'TRANSACTIONAL')}>
+                      <SelectTrigger id="type">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItemWithDescription
+                          value="MARKETING"
+                          title="Marketing"
+                          description="Includes unsubscribe link, respects opt-out"
+                        />
+                        <SelectItemWithDescription
+                          value="TRANSACTIONAL"
+                          title="Transactional"
+                          description="For receipts, alerts - sent regardless of opt-out"
+                        />
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 <div>
-                  <Label htmlFor="name">Template Name *</Label>
+                  <Label htmlFor="description">Description</Label>
                   <Input
-                    id="name"
+                    id="description"
                     type="text"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    required
-                    placeholder="Welcome Email"
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
+                    placeholder="Sent to new subscribers"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="type">Template Type *</Label>
-                  <Select value={type} onValueChange={value => setType(value as 'MARKETING' | 'TRANSACTIONAL')}>
-                    <SelectTrigger id="type">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="MARKETING">Marketing</SelectItem>
-                      <SelectItem value="TRANSACTIONAL">Transactional</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="subject">Subject Line *</Label>
+                  <Input
+                    id="subject"
+                    type="text"
+                    value={subject}
+                    onChange={e => setSubject(e.target.value)}
+                    required
+                    placeholder="Welcome to our platform!"
+                  />
                 </div>
-              </div>
 
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Input
-                  id="description"
-                  type="text"
-                  value={description}
-                  onChange={e => setDescription(e.target.value)}
-                  placeholder="Sent to new subscribers"
+                <EmailSettings
+                  from={from}
+                  fromName={fromName}
+                  replyTo={replyTo}
+                  onFromChange={setFrom}
+                  onFromNameChange={setFromName}
+                  onReplyToChange={setReplyTo}
+                  fromNamePlaceholder={activeProject?.name || 'Your Company'}
                 />
-              </div>
+              </CardContent>
+            </Card>
 
-              <div>
-                <Label htmlFor="subject">Subject Line *</Label>
-                <Input
-                  id="subject"
-                  type="text"
-                  value={subject}
-                  onChange={e => setSubject(e.target.value)}
-                  required
-                  placeholder="Welcome to our platform!"
+            {/* Email Body */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Email Body</CardTitle>
+                <CardDescription>Create your email using the visual editor or paste custom HTML</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <EmailEditor
+                  value={body}
+                  onChange={setBody}
+                  placeholder="<h1>Welcome!</h1><p>Thanks for subscribing to our newsletter.</p>"
                 />
-              </div>
-
-              <EmailSettings
-                from={from}
-                fromName={fromName}
-                replyTo={replyTo}
-                onFromChange={setFrom}
-                onFromNameChange={setFromName}
-                onReplyToChange={setReplyTo}
-                fromNamePlaceholder={activeProject?.name || 'Your Company'}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Email Body */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Email Body</CardTitle>
-              <CardDescription>Create your email using the visual editor or paste custom HTML</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <EmailEditor
-                value={body}
-                onChange={setBody}
-                placeholder="<h1>Welcome!</h1><p>Thanks for subscribing to our newsletter.</p>"
-              />
-            </CardContent>
-          </Card>
-        </form>
-      </div>
-    </DashboardLayout>
+              </CardContent>
+            </Card>
+          </form>
+        </div>
+      </DashboardLayout>
     </>
   );
 }

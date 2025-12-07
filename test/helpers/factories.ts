@@ -7,6 +7,7 @@ import {
   PrismaClient,
   Role,
   TemplateType,
+  TrackingMode,
   WorkflowExecutionStatus,
   WorkflowStepType,
   WorkflowTriggerType
@@ -34,7 +35,7 @@ export interface UserFactoryOptions {
 export interface ProjectFactoryOptions {
   name?: string;
   disabled?: boolean;
-  trackingEnabled?: boolean;
+  tracking?: TrackingMode;
   billingLimitWorkflows?: number | null;
   billingLimitCampaigns?: number | null;
   billingLimitTransactional?: number | null;
@@ -127,7 +128,7 @@ export class TestFactories {
         public: `pk_${uniqueId()}`,
         secret: `sk_${uniqueId()}`,
         disabled: options.disabled || false,
-        trackingEnabled: options.trackingEnabled ?? true,
+        tracking: options.tracking ?? TrackingMode.ENABLED,
         billingLimitWorkflows: options.billingLimitWorkflows,
         billingLimitCampaigns: options.billingLimitCampaigns,
         billingLimitTransactional: options.billingLimitTransactional,

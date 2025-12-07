@@ -29,6 +29,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectItemWithDescription,
   SelectTrigger,
   SelectValue,
   Table,
@@ -346,8 +347,16 @@ export function TeamSettings({projectId, currentUserRole, currentUserId}: TeamSe
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="MEMBER">Member - Can view and use the project</SelectItem>
-                        <SelectItem value="ADMIN">Admin - Can manage settings and members</SelectItem>
+                        <SelectItemWithDescription
+                          value="MEMBER"
+                          title="Member"
+                          description="Can view and use the project"
+                        />
+                        <SelectItemWithDescription
+                          value="ADMIN"
+                          title="Admin"
+                          description="Can manage settings and members"
+                        />
                       </SelectContent>
                     </Select>
                     <FormMessage />

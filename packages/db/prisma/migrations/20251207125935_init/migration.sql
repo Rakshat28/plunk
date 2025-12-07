@@ -8,6 +8,9 @@ CREATE TYPE "Role" AS ENUM ('OWNER', 'ADMIN', 'MEMBER');
 CREATE TYPE "TemplateType" AS ENUM ('TRANSACTIONAL', 'MARKETING');
 
 -- CreateEnum
+CREATE TYPE "TrackingMode" AS ENUM ('ENABLED', 'DISABLED', 'MARKETING_ONLY');
+
+-- CreateEnum
 CREATE TYPE "CampaignStatus" AS ENUM ('DRAFT', 'SCHEDULED', 'SENDING', 'SENT', 'CANCELLED');
 
 -- CreateEnum
@@ -55,7 +58,7 @@ CREATE TABLE "projects" (
     "billingLimitWorkflows" INTEGER,
     "billingLimitCampaigns" INTEGER,
     "billingLimitTransactional" INTEGER,
-    "trackingEnabled" BOOLEAN NOT NULL DEFAULT true,
+    "tracking" "TrackingMode" NOT NULL DEFAULT 'ENABLED',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

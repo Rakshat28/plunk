@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import type {Prisma} from '@plunk/db';
-import {EmailSourceType, EmailStatus} from '@plunk/db';
+import {EmailSourceType, EmailStatus, TrackingMode} from '@plunk/db';
 import {createServiceMocks, factories, getPrismaClient} from '../../../../../test/helpers';
 
 // Mock MeterService
@@ -16,7 +16,7 @@ describe('Email Processor', () => {
   const _serviceMocks = createServiceMocks();
 
   beforeEach(async () => {
-    const {project} = await factories.createUserWithProject({}, {trackingEnabled: true});
+    const {project} = await factories.createUserWithProject({}, {tracking: TrackingMode.ENABLED});
     projectId = project.id;
   });
 

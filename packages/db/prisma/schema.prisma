@@ -54,7 +54,7 @@ model Project {
   billingLimitTransactional Int? // Max transactional emails per month
 
   // Email Tracking
-  trackingEnabled Boolean @default(true) // Enable/disable open and click tracking
+  tracking TrackingMode @default(ENABLED) // Open and click tracking mode
 
   // Relations
   members     Membership[]
@@ -634,6 +634,12 @@ enum Role {
 enum TemplateType {
   TRANSACTIONAL
   MARKETING
+}
+
+enum TrackingMode {
+  ENABLED // Track opens and clicks for all emails
+  DISABLED // No tracking for any emails
+  MARKETING_ONLY // Track only marketing/campaign emails, not transactional
 }
 
 enum CampaignStatus {

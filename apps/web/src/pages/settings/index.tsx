@@ -2,6 +2,7 @@ import {useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {ProjectSchemas} from '@plunk/shared';
+import {TrackingMode} from '@plunk/db';
 import {
   Alert,
   Button,
@@ -24,7 +25,11 @@ import {
   FormLabel,
   FormMessage,
   Input,
-  Switch,
+  Select,
+  SelectContent,
+  SelectItemWithDescription,
+  SelectTrigger,
+  SelectValue,
   Tabs,
   TabsContent,
   TabsList,
@@ -158,7 +163,7 @@ export default function Settings() {
     resolver: zodResolver(ProjectSchemas.update),
     defaultValues: {
       name: activeProject?.name || '',
-      trackingEnabled: activeProject?.trackingEnabled ?? true,
+      tracking: activeProject?.tracking ?? TrackingMode.ENABLED,
     },
   });
 
@@ -167,7 +172,7 @@ export default function Settings() {
     if (activeProject) {
       form.reset({
         name: activeProject.name,
-        trackingEnabled: activeProject.trackingEnabled ?? true,
+        tracking: activeProject.tracking ?? TrackingMode.ENABLED,
       });
     }
   }, [activeProject, form]);
@@ -395,23 +400,42 @@ export default function Settings() {
                         )}
                       />
 
-                      {/* Email Tracking Toggle - only show if feature is available */}
+                      {/* Email Tracking Mode - only show if feature is available */}
                       {trackingToggleEnabled && (
                         <FormField
                           control={form.control}
-                          name="trackingEnabled"
+                          name="tracking"
                           render={({field}) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border border-neutral-200 p-4">
-                              <div className="space-y-0.5">
-                                <FormLabel className="text-base">Email Tracking</FormLabel>
-                                <FormDescription>
-                                  Enable open and click tracking for emails sent from this project. When disabled,
-                                  emails will be sent without tracking pixels.
-                                </FormDescription>
-                              </div>
-                              <FormControl>
-                                <Switch checked={field.value} onCheckedChange={field.onChange} />
-                              </FormControl>
+                            <FormItem>
+                              <FormLabel>Email Tracking</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select tracking mode" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItemWithDescription
+                                    value={TrackingMode.ENABLED}
+                                    title="Enabled"
+                                    description="Track opens and clicks for all emails"
+                                  />
+                                  <SelectItemWithDescription
+                                    value={TrackingMode.DISABLED}
+                                    title="Disabled"
+                                    description="No tracking for any emails"
+                                  />
+                                  <SelectItemWithDescription
+                                    value={TrackingMode.MARKETING_ONLY}
+                                    title="Marketing Only"
+                                    description="Track only campaigns and workflow emails, not transactional"
+                                  />
+                                </SelectContent>
+                              </Select>
+                              <FormDescription>
+                                Control how email opens and clicks are tracked for this project.
+                              </FormDescription>
+                              <FormMessage />
                             </FormItem>
                           )}
                         />
@@ -659,7 +683,11 @@ export default function Settings() {
 
             {/* Team Tab */}
             <TabsContent value="team">
-              <TeamSettings projectId={activeProject.id} currentUserRole={currentUserRole} currentUserId={user?.id || ''} />
+              <TeamSettings
+                projectId={activeProject.id}
+                currentUserRole={currentUserRole}
+                currentUserId={user?.id || ''}
+              />
             </TabsContent>
 
             {/* Domains Tab */}

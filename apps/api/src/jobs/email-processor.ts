@@ -89,6 +89,9 @@ export function createEmailWorker() {
           ? {name: email.toName, email: email.contact.email}
           : email.contact.email;
 
+        // Determine tracking based on project settings and email type
+        const shouldTrack = EmailService.shouldTrackEmail(email.project.tracking, email.sourceType);
+
         // Send via AWS SES
         const result = await sendRawEmail({
           from: {
@@ -101,7 +104,7 @@ export function createEmailWorker() {
             html: compiledHtml,
           },
           reply: email.replyTo || undefined,
-          tracking: email.project.trackingEnabled, // Use project's tracking preference
+          tracking: shouldTrack,
           attachments: email.attachments as {filename: string; content: string; contentType: string}[] | null,
         });
 

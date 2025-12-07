@@ -23,6 +23,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectItemWithDescription,
   SelectTrigger,
   SelectValue,
   Switch
@@ -1076,13 +1077,37 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="SEND_EMAIL">Send Email</SelectItem>
-                <SelectItem value="DELAY">Delay - Wait for time</SelectItem>
-                <SelectItem value="WAIT_FOR_EVENT">Wait for Event</SelectItem>
-                <SelectItem value="CONDITION">Condition - If/else branching</SelectItem>
-                <SelectItem value="WEBHOOK">Webhook - Call external API</SelectItem>
-                <SelectItem value="UPDATE_CONTACT">Update Contact</SelectItem>
-                <SelectItem value="EXIT">Exit - End workflow</SelectItem>
+                <SelectItemWithDescription
+                  value="SEND_EMAIL"
+                  title="Send Email"
+                  description="Send an email using a template"
+                />
+                <SelectItemWithDescription
+                  value="DELAY"
+                  title="Delay"
+                  description="Wait for a specified amount of time"
+                />
+                <SelectItemWithDescription
+                  value="WAIT_FOR_EVENT"
+                  title="Wait for Event"
+                  description="Pause until a specific event occurs"
+                />
+                <SelectItemWithDescription
+                  value="CONDITION"
+                  title="Condition"
+                  description="If/else branching based on contact data"
+                />
+                <SelectItemWithDescription
+                  value="WEBHOOK"
+                  title="Webhook"
+                  description="Call an external API endpoint"
+                />
+                <SelectItemWithDescription
+                  value="UPDATE_CONTACT"
+                  title="Update Contact"
+                  description="Modify contact data fields"
+                />
+                <SelectItemWithDescription value="EXIT" title="Exit" description="End the workflow for this contact" />
               </SelectContent>
             </Select>
             <p className="text-xs text-neutral-500 mt-1">
