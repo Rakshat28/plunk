@@ -1,0 +1,47 @@
+---
+title: Webhooks
+description: Send HTTP requests from workflows
+icon: Webhook
+---
+
+## Overview
+
+Webhooks send HTTP requests to external services from within workflows.
+
+## Adding a webhook step
+
+1. Edit a workflow
+2. Add a **Webhook** step
+3. Configure URL, method, headers, and body
+
+## Configuration
+
+```json
+{
+  "url": "https://your-api.com/webhook",
+  "method": "POST",
+  "headers": {
+    "Authorization": "Bearer your_api_token"
+  },
+  "body": {
+    "email": "{{email}}",
+    "firstName": "{{data.firstName}}"
+  }
+}
+```
+
+**Methods:** POST, PUT, PATCH, GET, DELETE
+
+## Variables
+
+- `{{email}}`, `{{id}}` — Contact fields
+- `{{data.fieldName}}` — Custom data
+- `{{workflowName}}`, `{{now}}` — Workflow context
+
+## Error handling
+
+- Failed webhooks don't block the workflow
+- Errors logged in execution details
+- 30 second timeout
+- No automatic retries
+

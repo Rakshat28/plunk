@@ -1,292 +1,39 @@
 ---
-title: Send a Newsletter Campaign
+title: Send a Newsletter
 description: Broadcast an email to your audience
 icon: Send
 ---
 
-## Overview
+## 1. Create a campaign
 
-Campaigns let you send one-time broadcasts to your contacts from the dashboard. No code required.
+1. Go to **Campaigns → Create Campaign**
+2. Name: `March Newsletter`
 
-## Create a campaign
+## 2. Write your email
 
-1. Go to **Campaigns** → **Create Campaign**
-2. Fill in basic info:
-   - Name: `March Product Update`
-   - Description: `Monthly newsletter for March 2024`
+- **From:** Your verified domain
+- **Subject:** `March updates you'll love`
+- Write your content
 
-## Write your email
+## 3. Select audience
 
-### Email settings
+Choose one:
+- **All contacts:** Everyone subscribed
+- **Segment:** A saved segment
+- **Filtered:** Custom filters for this campaign
 
-- **From**: Your email or verified domain
-- **Subject**: `March product updates you'll love`
-- **Preview text**: Shows in inbox preview
-
-### Email content
-
-Use the visual editor or write HTML:
-
-```html
-<h1>What's new in March</h1>
-
-<p>Hi {{firstName ?? 'there'}},</p>
-
-<p>We've been busy this month. Here's what's new:</p>
-
-<h2>🚀 New Feature: Team Collaboration</h2>
-<p>Invite team members and collaborate in real-time.</p>
-
-<h2>⚡ Improved Performance</h2>
-<p>Everything is now 2x faster.</p>
-
-<h2>📊 New Analytics Dashboard</h2>
-<p>Better insights into your data.</p>
-
-<p><a href="https://yourapp.com/changelog">View Full Changelog</a></p>
-
-<p>Thanks,<br>The Team</p>
-
-<p><small>
-  You're receiving this because you subscribed to updates.
-  <a href="{{unsubscribeUrl}}">Unsubscribe</a>
-</small></p>
-```
-
-### Use variables
-
-Available variables:
-- `{{firstName}}` - Contact's first name
-- `{{email}}` - Contact's email
-- `{{id}}` - Contact ID
-- `{{unsubscribeUrl}}` - Auto-generated unsubscribe link
-- Any custom contact data fields
-
-**Fallback values:**
-```html
-<p>Hi {{firstName ?? 'there'}},</p>
-<!-- Shows "Hi John," or "Hi there," if firstName is missing -->
-```
-
-## Select your audience
-
-### All contacts
-
-Sends to everyone subscribed in your account.
-
-### Specific segment
-
-1. Select **Segment** audience type
-2. Choose a segment (e.g., "Premium Users")
-3. Campaign sends to all contacts in that segment
-
-### Filtered audience
-
-Create custom filters for this campaign only:
-
-**Example filters:**
-- `plan` equals `premium`
-- `lastLoginAt` within `30` days
-- `country` equals `United States`
-
-Combine with AND/OR logic.
-
-## Preview and test
-
-### Send test email
+## 4. Test
 
 1. Click **Send Test**
-2. Enter your email address
-3. Check your inbox
+2. Check your inbox
+3. Verify links and content
 
-Verify:
-- Subject line
-- Email content
-- Variables are replaced
-- Links work
-- Unsubscribe link present
+## 5. Send
 
-## Send or schedule
+- **Send Now:** Starts immediately
+- **Schedule:** Pick date and time
 
-### Send now
+## 6. Monitor
 
-1. Click **Send Now**
-2. Confirm
-3. Campaign starts sending immediately
-
-### Schedule for later
-
-1. Click **Schedule**
-2. Select date and time
-3. Confirm
-
-Campaign will send automatically at scheduled time.
-
-## Monitor performance
-
-### Real-time stats
-
-Go to **Campaigns** → Your campaign to see:
-
-- **Recipients**: Total contacts targeted
-- **Sent**: How many emails sent
-- **Delivered**: Successfully delivered
-- **Opened**: Unique opens
-- **Clicked**: Unique clicks
-- **Bounced**: Failed deliveries
-
-### Open and click rates
-
-- **Open rate** = Opened / Delivered × 100%
-- **Click rate** = Clicked / Delivered × 100%
-
-**Good benchmarks:**
-- Open rate: 15-25%
-- Click rate: 2-5%
-
-### View in activity
-
-Go to **Activity** to see:
-- Individual email opens
-- Link clicks
-- Delivery timeline
-
-## Campaign best practices
-
-**Subject lines:**
-- Keep under 50 characters
-- Avoid spam words (FREE, $$, URGENT)
-- Personalize: `{{name}}, check out our new feature`
-- A/B test different subject lines
-
-**Send timing:**
-- Tuesday-Thursday perform best
-- 10am-2pm in recipient's timezone
-- Avoid Mondays and Fridays
-- Test what works for your audience
-
-**Content:**
-- One clear call-to-action
-- Mobile-friendly design
-- Keep under 500 words
-- Use images sparingly (slow loading)
-- Always include unsubscribe link
-
-**Frequency:**
-- Weekly: Maximum for engaged audiences
-- Monthly: Safe default
-- Quarterly: Minimum to stay top-of-mind
-- Don't email too often - causes unsubscribes
-
-## Advanced: Segment-based campaigns
-
-### Example: Product announcement to paying customers
-
-1. Create segment "Paying Customers":
-   - Filter: `plan` is not `free`
-   - Filter: `subscribed` equals `true`
-
-2. Create campaign:
-   - Subject: `New premium features just for you`
-   - Audience: Segment "Paying Customers"
-
-3. Send campaign - only goes to paying customers
-
-### Example: Re-engagement campaign
-
-1. Create segment "Inactive Users":
-   - Filter: `lastLoginAt` within `90` days is `false`
-   - Filter: `subscribed` equals `true`
-
-2. Create campaign:
-   - Subject: `We miss you! Here's what's new`
-   - Content: Highlight recent updates
-   - Special offer: 20% off upgrade
-
-3. Send or schedule
-
-## Campaign vs workflow
-
-**Use Campaign when:**
-- One-time send (newsletter, announcement)
-- Manual timing
-- Same message to everyone
-- No automation needed
-
-**Use Workflow when:**
-- Multi-email sequence needed
-- Trigger on user action
-- Delays between emails
-- Personalized paths (if/then logic)
-
-See [Campaigns vs Workflows](/concepts/campaigns-vs-workflows) for full comparison.
-
-## Duplicate and reuse
-
-### Duplicate a campaign
-
-1. Go to campaign
-2. Click **Duplicate**
-3. Edit content
-4. Send to same or different audience
-
-Useful for monthly newsletters - duplicate last month's, update content.
-
-### Save as template
-
-If you'll reuse the design:
-
-1. **Templates** → **Create Template**
-2. Paste your campaign HTML
-3. Save
-
-Now you can create campaigns faster using the template.
-
-## Cancel a campaign
-
-### Before sending
-
-1. Go to campaign (status: Draft or Scheduled)
-2. Click **Delete**
-
-### While sending
-
-1. Go to campaign (status: Sending)
-2. Click **Cancel**
-3. Stops queuing new emails (already sent emails can't be recalled)
-
-### After sending
-
-Cannot cancel or recall. Sent emails are delivered.
-
-## Troubleshooting
-
-**Campaign not sending**
-- Check campaign status (Draft needs to be sent)
-- Verify audience has contacts
-- Ensure contacts are subscribed
-- Custom domain must be verified
-
-**Low open rate**
-- Improve subject line
-- Check spam folder placement
-- Verify sender email/domain
-- Review send time
-
-**High unsubscribe rate**
-- Sending too frequently
-- Content not relevant
-- Set better expectations at signup
-- Review targeting
-
-**Emails going to spam**
-- Verify custom domain
-- Avoid spam trigger words
-- Don't use all caps or excessive punctuation
-- Warm up new sending domain
-
-## Next steps
-
-- [Build a workflow](/tutorials/welcome-series-workflow) for automated sequences
-- [Create segments](/tutorials/segment-based-targeting) for better targeting
-- [Set up custom domain](/guides/custom-domains) for better deliverability
+View stats at **Campaigns → Your campaign**:
+- Sent, delivered, opened, clicked, bounced

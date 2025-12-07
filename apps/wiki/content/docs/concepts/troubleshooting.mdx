@@ -1,0 +1,44 @@
+---
+title: Troubleshooting
+description: Common issues and solutions
+icon: Bug
+---
+
+## Authentication
+
+**Invalid API key:**
+- Secret keys start with `sk_`, public keys with `pk_`
+- Use `Authorization: Bearer sk_your_secret_key`
+
+**Wrong key type:**
+- Public keys (`pk_`) only work with `/v1/track`
+- All other endpoints require secret keys (`sk_`)
+
+## Emails not sending
+
+1. **Billing limit reached** — Check Settings → Billing
+2. **Template not found** — Verify template ID exists
+3. **Contact unsubscribed** — Marketing templates skip unsubscribed contacts
+
+## Emails going to spam
+
+1. Set up a custom domain
+2. Clean your list (remove bounces)
+3. Warm up new domains gradually
+
+## Workflows not triggering
+
+1. **Workflow not enabled** — Check toggle is ON
+2. **Wrong event name** — Names are case-sensitive
+3. **Already entered** — If re-entry disabled, contact can only enter once
+
+## Rate limiting (429)
+
+- Wait and retry
+- Batch multiple recipients in one request
+- Spread requests over time
+
+## Request IDs
+
+Every API response includes `X-Request-ID` header. Include this when contacting support.
+

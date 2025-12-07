@@ -1,151 +1,35 @@
 ---
-title: Self-Hosting Introduction
+title: Self-Hosting
 description: Deploy Plunk on your own infrastructure
 ---
 
-## Overview
-
-Plunk is fully open-source and can be self-hosted on your own infrastructure. This gives you complete control over your data, email delivery, and infrastructure costs.
-
 ## Requirements
 
-### System Requirements
-
-- **Node.js**: Version 20 or higher
-- **PostgreSQL**: Version 14 or higher
-- **Redis**: Version 6 or higher
-- **Docker** (recommended): For easy deployment
-
-### AWS Services
-
-- **AWS SES** (Required): For email sending
-- **AWS S3** (Optional): For asset storage (Minio is included by default)
-
-### Minimum Server Specs
-
-For small to medium usage (up to 100K contacts):
-- **CPU**: 1-2 cores
-- **RAM**: 2GB
-- **Storage**: 10GB (grows with contact data)
-
-For larger scale (1M+ contacts):
-- **CPU**: 2-4 cores
-- **RAM**: 4GB
-- **Storage**: 50GB+
-
-## Architecture Components
-
-Plunk uses a containerized architecture with the following components:
-
-### 1. Plunk Application Container
-Single container running all application services (API, Worker, Web, Landing, Wiki) with nginx reverse proxy for subdomain-based routing.
-
-**Resources**: 1GB RAM, 1 CPU core (can scale up as needed)
-
-**Services included**:
-- **API Server**: Express.js application handling HTTP requests
-- **Worker Process**: BullMQ worker processing background jobs
-- **Web Dashboard**: Next.js application for the UI
-- **Landing Page**: Marketing website
-- **Documentation**: Wiki/docs site
-- **SMTP Relay**: Email relay server (ports 465, 587)
-
-**Note**: Services can be run separately by setting the `SERVICE` environment variable (`api`, `worker`, `web`, `landing`, `wiki`, or `all`).
-
-### 2. PostgreSQL Database
-Stores all data (contacts, campaigns, workflows, etc.).
-
-**Resources**: 512MB-1GB RAM, SSD storage recommended
-
-### 3. Redis
-Queue system for background jobs (BullMQ).
-
-**Resources**: 256MB-512MB RAM
-
-### 4. Minio (S3-compatible Storage)
-Object storage for file uploads and assets.
-
-**Resources**: 256MB-512MB RAM, storage for uploaded files
-
-## Deployment Options
-
-### Docker Compose (Recommended)
-
-Easiest way to get started. Includes all services pre-configured.
-
-[View Docker Guide](/self-hosting/docker)
-
-### Kubernetes
-
-For production deployments at scale.
-
-### Manual Deployment
-
-Deploy each component separately on your infrastructure.
+- Docker and Docker Compose
+- AWS SES account (for sending emails)
+- Domain name (for production)
 
 ## Quick Start
 
-1. Clone the repository
-2. Copy `.env.self-host.example` to `.env`
-3. Configure environment variables (see [Environment Variables](/self-hosting/environment-variables))
-4. Run `docker compose up -d`
-5. Access dashboard at `http://app.localhost` (or your configured domain)
+```bash
+git clone https://github.com/useplunk/plunk.git
+cd plunk
+cp .env.self-host.example .env
+# Edit .env with your settings
+docker compose up -d
+```
 
-## What's Included
+## Access
 
-- ✅ Full API server
-- ✅ Worker process
-- ✅ Web dashboard
-- ✅ PostgreSQL database
-- ✅ Redis queue
-- ✅ All features (campaigns, workflows, segments)
-- ✅ No feature limitations
-- ✅ No phone-home telemetry
-
-## What's Not Included
-
-- ❌ Managed infrastructure
-- ❌ Automatic updates
-- ❌ Support (community only)
-- ❌ SLA guarantees
-
-## Cost Considerations
-
-### AWS SES Costs
-
-- First 62,000 emails/month: **FREE** (when sent from EC2)
-- Additional emails: **$0.10 per 1,000 emails**
-
-### Infrastructure Costs
-
-**All-in-One VPS** (recommended for small to medium usage):
-- **Single VPS**: $5-12/month (2GB RAM, services like DigitalOcean, Hetzner, Vultr)
-  - Runs all containers (Plunk, PostgreSQL, Redis, Minio)
-- **AWS SES**: $0-10/month (depends on volume)
-- **Storage**: Included in VPS
-
-**Total**: ~$5-20/month for self-hosting
-
-**Managed Services** (for larger scale or production):
-- **VPS**: $10-20/month (4GB RAM for Plunk application)
-- **Managed PostgreSQL**: $10-15/month (512MB-1GB)
-- **Managed Redis**: $5-10/month (256MB-512MB)
-- **AWS SES**: $10-50/month (depends on volume)
-- **AWS S3**: $1-5/month (if not using Minio)
-
-**Total**: ~$35-100/month for production with managed services
-
-## Support
-
-### Community Support
-
-- GitHub Issues
-- Community Forum
-- Documentation
+| Service | URL |
+|---------|-----|
+| Dashboard | http://app.localhost |
+| API | http://api.localhost |
+| Docs | http://docs.localhost |
+| Minio Console | http://localhost:9001 |
 
 ## Next Steps
 
-- [Deploy with Docker](/self-hosting/docker)
-- [Configure environment variables](/self-hosting/environment-variables)
-- [Set up database](/self-hosting/database-setup)
-- [Configure email delivery](/self-hosting/email-setup)
+- [Docker Deployment](/self-hosting/docker) — Configuration details
+- [Environment Variables](/self-hosting/environment-variables) — All settings
+- [AWS SES Setup](/self-hosting/email-setup) — Email configuration

@@ -1,4 +1,4 @@
 {
   "title": "Self-Hosting",
-  "pages": ["introduction", "docker", "environment-variables", "database-setup", "email-setup"]
+  "pages": ["introduction", "docker", "environment-variables", "email-setup"]
 }

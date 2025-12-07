@@ -1,13 +1,4 @@
 {
   "title": "Tutorials",
-  "pages": [
-    "index",
-    "first-transactional-email",
-    "welcome-series-workflow",
-    "newsletter-campaign",
-    "segment-based-targeting",
-    "cart-abandonment-automation",
-    "user-lifecycle-emails",
-    "event-tracking-integration"
-  ]
+  "pages": ["first-transactional-email", "welcome-series-workflow", "newsletter-campaign", "segment-based-targeting"]
 }

@@ -1,182 +1,66 @@
 ---
 title: Environment Variables
-description: Complete environment variable reference
+description: Configuration reference
 ---
 
-## Required Variables
-
-### Database
+## Required
 
 ```bash
-# PostgreSQL connection string
-DATABASE_URL="postgresql://user:password@host:5432/plunk"
-
-# Direct connection (for Prisma migrations)
-DIRECT_DATABASE_URL="postgresql://user:password@host:5432/plunk"
-```
-
-### Redis
-
-```bash
-# Redis connection URL
-REDIS_URL="redis://host:6379"
-```
-
-### Security
-
-```bash
-# JWT signing secret (generate with: openssl rand -base64 32)
-JWT_SECRET="your-secret-here"
-```
-
-### AWS SES (Email Delivery)
-
-```bash
-AWS_SES_REGION="us-east-1"
-AWS_SES_ACCESS_KEY_ID="your-access-key"
-AWS_SES_SECRET_ACCESS_KEY="your-secret-key"
-
-# SES Configuration Sets
-SES_CONFIGURATION_SET="plunk-tracking"
-SES_CONFIGURATION_SET_NO_TRACKING="plunk-no-tracking"
-```
-
-### Application URLs
-
-```bash
-# Protocol configuration (auto-generates URIs with http:// or https://)
-USE_HTTPS="false"  # Set to "true" for HTTPS in production
-
-# Application URIs (auto-generated from domains if not set)
-API_URI="https://api.yourdomain.com"
-DASHBOARD_URI="https://app.yourdomain.com"
-LANDING_URI="https://www.yourdomain.com"
-
-# For Next.js (build time)
-NEXT_PUBLIC_API_URI="https://api.yourdomain.com"
-NEXT_PUBLIC_DASHBOARD_URI="https://app.yourdomain.com"
-NEXT_PUBLIC_LANDING_URI="https://www.yourdomain.com"
-```
-
-**Note**: When using domain-based configuration (e.g., `API_DOMAIN=api.yourdomain.com`), the application URIs are automatically generated. Set `USE_HTTPS=true` to use HTTPS protocol, otherwise HTTP will be used by default. You can also manually set the full URIs to override the auto-generation.
-
-## Optional Variables
-
-### Plunk API
-
-If you're using the email package's `sendEmail` function to send emails via the Plunk API:
-
-```bash
-# Plunk API Key (obtained from dashboard)
-PLUNK_API_KEY="sk_your_secret_key"
-```
-
-### S3-Compatible Storage (Minio)
-
-**Note**: When using Docker Compose, Minio is included and these variables are automatically configured with defaults. You typically don't need to set these unless you want to use external S3 storage.
-
-```bash
-# Only configure if NOT using the bundled Minio
-S3_ENDPOINT="http://minio:9000"              # Default: uses bundled Minio
-S3_ACCESS_KEY_ID="plunk"                     # Default: plunk
-S3_ACCESS_KEY_SECRET="plunkminiopass"        # Default: plunkminiopass
-S3_BUCKET="uploads"                          # Default: uploads
-S3_PUBLIC_URL="http://localhost:9000/uploads" # Default: Minio URL
-S3_FORCE_PATH_STYLE="true"                   # Required for Minio
-```
-
-### OAuth Providers
-
-```bash
-# GitHub OAuth
-GITHUB_OAUTH_CLIENT="your-client-id"
-GITHUB_OAUTH_SECRET="your-client-secret"
-
-# Google OAuth
-GOOGLE_OAUTH_CLIENT="your-client-id"
-GOOGLE_OAUTH_SECRET="your-client-secret"
-```
-
-### Stripe Billing
-
-```bash
-STRIPE_SK="sk_test_..."
-STRIPE_WEBHOOK_SECRET="whsec_..."
-
-# Stripe Products
-STRIPE_PRICE_ONBOARDING="price_..."
-STRIPE_PRICE_EMAIL_USAGE="price_..."
-
-# Stripe Metering
-STRIPE_METER_EVENT_NAME="email_sent"
-```
-
-### Internal
-
-```bash
-# Node environment
-NODE_ENV="production"
-```
-
-## Example .env File
-
-```bash
-# Database
-DATABASE_URL="postgresql://postgres:password@localhost:5432/plunk"
-DIRECT_DATABASE_URL="postgresql://postgres:password@localhost:5432/plunk"
-
-# Redis
-REDIS_URL="redis://localhost:6379"
-
 # Security
-JWT_SECRET="generated-secret-here"
+JWT_SECRET="your-secret"  # openssl rand -base64 32
+DB_PASSWORD="your-password"
+
+# Database (auto-configured in Docker)
+DATABASE_URL="postgresql://plunk:password@postgres:5432/plunk"
+REDIS_URL="redis://redis:6379"
 
 # AWS SES
 AWS_SES_REGION="us-east-1"
-AWS_SES_ACCESS_KEY_ID="AKIAIOSFODNN7EXAMPLE"
-AWS_SES_SECRET_ACCESS_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+AWS_SES_ACCESS_KEY_ID="your-key"
+AWS_SES_SECRET_ACCESS_KEY="your-secret"
 SES_CONFIGURATION_SET="plunk-tracking"
-SES_CONFIGURATION_SET_NO_TRACKING="plunk-no-tracking"
-
-# Protocol & URLs
-USE_HTTPS="false"
-API_URI="http://localhost:3001"
-DASHBOARD_URI="http://localhost:3000"
-LANDING_URI="http://localhost:3002"
-
-# Next.js Public URLs
-NEXT_PUBLIC_API_URI="http://localhost:3001"
-NEXT_PUBLIC_DASHBOARD_URI="http://localhost:3000"
-NEXT_PUBLIC_LANDING_URI="http://localhost:3002"
-
-# Node Environment
-NODE_ENV="development"
 ```
 
-## Generating Secrets
-
-### JWT Secret
+## Domains
 
 ```bash
-openssl rand -base64 32
+# Subdomains for routing
+API_DOMAIN="api.yourdomain.com"
+DASHBOARD_DOMAIN="app.yourdomain.com"
+LANDING_DOMAIN="www.yourdomain.com"
+WIKI_DOMAIN="docs.yourdomain.com"
+SMTP_DOMAIN="smtp.yourdomain.com"
+
+# Protocol
+USE_HTTPS="true"  # false for local dev
 ```
 
-### Strong Passwords
+## Storage (Minio)
+
+Defaults work with bundled Minio. Only set for external S3:
 
 ```bash
-openssl rand -base64 24
+S3_ENDPOINT="http://minio:9000"
+S3_ACCESS_KEY_ID="plunk"
+S3_ACCESS_KEY_SECRET="plunkminiopass"
+S3_BUCKET="uploads"
+S3_PUBLIC_URL="http://localhost:9000/uploads"
+S3_FORCE_PATH_STYLE="true"
 ```
 
-## Security Best Practices
+## Optional
 
-1. **Never commit secrets** to version control
-2. **Use environment-specific files** (.env.production, .env.development)
-3. **Rotate secrets regularly**
-4. **Use secret management** (AWS Secrets Manager, HashiCorp Vault) in production
-5. **Limit access** to production environment variables
+```bash
+# OAuth
+GITHUB_OAUTH_CLIENT="client-id"
+GITHUB_OAUTH_SECRET="client-secret"
+GOOGLE_OAUTH_CLIENT="client-id"
+GOOGLE_OAUTH_SECRET="client-secret"
 
-## Next Steps
+# Stripe
+STRIPE_SK="sk_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
 
-- [Set up database](/self-hosting/database-setup)
-- [Configure email delivery](/self-hosting/email-setup)
-- [Deploy with Docker](/self-hosting/docker)
+# Notifications
+NTFY_URL="http://ntfy/plunk-notifications"
+```

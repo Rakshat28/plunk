@@ -1,258 +1,37 @@
 ---
-title: Visual Workflow Builder
+title: Visual Builder
 description: Build workflows with drag-and-drop
 icon: Workflow
 ---
 
-## Overview
-
-The workflow builder is a node-based visual editor for creating email automation. Each node is a step (send email, delay, condition, etc.) and connections define the flow.
-
 ## Canvas controls
 
-- **-** / **+** - Zoom out/in
-- **Fit** - Center and zoom to show entire workflow
-- **Auto-Layout** - Automatically arrange nodes
-- **Minimap** - Toggle overview map (bottom right)
+- **+/-** — Zoom in/out
+- **Fit** — Center workflow
+- **Auto-Layout** — Arrange nodes
 
 ## Step types
 
-### Trigger
-
-The starting point. Every workflow has one trigger.
-
-**Types:**
-- Event (e.g., `user_signed_up`)
-- Segment entry/exit
-- Schedule (cron)
-
-Cannot be deleted.
-
-### Send Email
-
-Sends an email to the contact.
-
-**Configuration:**
-- Template (required)
-- Variables (optional overrides)
-
-Contact must be subscribed for marketing templates. Transactional templates send regardless.
-
-### Delay
-
-Pauses execution for a specified time.
-
-**Configuration:**
-- Duration: Number
-- Unit: Minutes, Hours, or Days
-
-**Example:** Delay 24 hours before next email.
-
-### Wait for Event
-
-Pauses until an event occurs or timeout is reached.
-
-**Configuration:**
-- Event name
-- Timeout duration (optional)
-
-**Requires two outgoing connections:**
-- Event triggered path
-- Timeout path
-
-**Example:**
-```
-[Wait for: purchase_completed, timeout: 48h]
-├─ Purchased → Send thank you
-└─ Timeout → Send discount reminder
-```
-
-### Condition
-
-Branches workflow based on contact data.
-
-**Configuration:**
-- Field to check
-- Operator (equals, contains, greaterThan, etc.)
-- Value to compare
-
-**Requires two outgoing connections:**
-- True path
-- False path
-
-**Example:**
-```
-[Condition: plan equals "premium"]
-├─ True → Send premium features
-└─ False → Send upgrade offer
-```
-
-### Webhook
-
-Sends HTTP request to external URL.
-
-**Configuration:**
-- URL
-- Method (GET, POST, PUT, DELETE)
-- Headers (optional)
-- Body (JSON, optional)
-
-**Example:** Update CRM when workflow completes.
-
-### Update Contact
-
-Updates contact data fields.
-
-**Configuration:**
-- Fields: Key-value pairs
-
-**Example:**
-```
-Fields:
-  onboardingCompleted: true
-  lastWorkflowStep: "welcome_series_done"
-```
-
-### Exit
-
-Ends workflow execution. Can have multiple exit points for different paths.
-
-## Building a workflow
-
-### Add a step
-
-**Method 1:** Click **+** button below any node
-
-**Method 2:** Drag step type from sidebar onto canvas
-
-### Configure a step
-
-1. Click node to select
-2. Right panel opens
-3. Fill required fields
-4. Save
-
-### Connect steps
-
-Connections auto-create when using + button. To manually connect:
-1. Drag from node's bottom handle
-2. Drop on another node's top handle
-
-### Arrange layout
-
-Click **Auto-Layout** for automatic top-to-bottom arrangement.
-
-## Example workflows
-
-### Linear sequence
-
-```
-[Trigger: user_signed_up]
-    ↓
-[Send: Welcome]
-    ↓
-[Delay: 24h]
-    ↓
-[Send: Feature tour]
-    ↓
-[Exit]
-```
-
-### With condition
-
-```
-[Trigger: trial_started]
-    ↓
-[Send: Welcome]
-    ↓
-[Condition: plan equals "enterprise"]
-    ├─ True → [Send: Enterprise onboarding]
-    └─ False → [Send: Standard onboarding]
-```
-
-### With event wait
-
-```
-[Trigger: cart_abandoned]
-    ↓
-[Delay: 1h]
-    ↓
-[Send: First reminder]
-    ↓
-[Wait for: purchase_completed, timeout: 23h]
-    ├─ Purchased → [Exit]
-    └─ Timeout → [Send: Discount offer] → [Exit]
-```
-
-## Validation
-
-The builder validates in real-time. Red border = error.
-
-**Common errors:**
-- "No outgoing connections" → Add connection to next step
-- "Wait for Event requires two paths" → Add event + timeout paths
-- "Condition requires true and false paths" → Add both paths
-- "Template not found" → Select valid template
-
-## Testing
-
-### Manual execution
-
-1. **Workflows** → Your workflow → **Executions**
-2. **Create Execution**
-3. Select test contact
-4. Provide test data (JSON)
-5. **Start**
-
-Watch execution progress in real-time.
-
-### Faster testing
-
-For testing delays:
-- Temporarily change to 5 minutes instead of days
-- Test the flow
-- Change back to real durations
-
-## Keyboard shortcuts
-
-| Key | Action |
-|-----|--------|
-| Delete | Delete selected node |
-| Cmd/Ctrl + Z | Undo |
-| Cmd/Ctrl + Shift + Z | Redo |
-| + / - | Zoom |
-| F | Fit to screen |
-| Esc | Deselect |
-
-## Troubleshooting
-
-**Workflow not triggering**
-- Workflow is enabled (toggle ON)
-- Event name matches exactly (case-sensitive)
-- Contact exists and is subscribed
-
-**Execution stuck**
-- Check delay configuration
-- Verify wait timeout hasn't expired
-- No circular references
-
-**Email not sending**
-- Template exists
-- Contact is subscribed
-- Variables in data match template
-
-## Best practices
-
-**Keep it simple** - 5-10 steps per workflow. Break complex flows into multiple workflows.
-
-**Descriptive names** - "Send Welcome Email - Day 0" not "Email 1"
-
-**Test first** - Always test with a test contact before enabling.
-
-**Space emails** - Minimum 12-24 hours between emails to avoid fatigue.
-
-## Next steps
-
-- [Build your first workflow](/tutorials/welcome-series-workflow)
-- [Workflow patterns](/automation-patterns/workflow-patterns)
-- [Conditional branching](/automation-patterns/conditional-branching)
+| Step | Description |
+|------|-------------|
+| **Trigger** | Starting point (event, segment, schedule) |
+| **Send Email** | Send a template |
+| **Delay** | Wait minutes, hours, or days |
+| **Wait for Event** | Pause until event or timeout |
+| **Condition** | Branch based on contact data |
+| **Webhook** | Send HTTP request |
+| **Update Contact** | Modify contact fields |
+| **Exit** | End workflow |
+
+## Building
+
+1. Click step to configure
+2. Connect steps by dragging
+3. Conditions require both true/false paths
+
+## Tips
+
+- Keep workflows to 5-10 steps
+- Use descriptive step names
+- Test with a test contact before enabling
+- Space emails 12-24 hours apart

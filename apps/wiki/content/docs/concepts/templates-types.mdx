@@ -1,112 +1,36 @@
 ---
 title: Template Types
-description: Marketing vs Transactional templates
+description: Marketing vs Transactional
 icon: Mail
 ---
 
-## Two template types
+## Two types
 
-| Template Type | Sends to Unsubscribed? | Use For |
-|--------------|------------------------|---------|
-| **Marketing** | No | Newsletters, promotions, announcements |
-| **Transactional** | Yes | Receipts, confirmations, password resets |
+| Type | Sends to Unsubscribed? | Use For |
+|------|------------------------|---------|
+| **Marketing** | No | Newsletters, promotions |
+| **Transactional** | Yes | Receipts, password resets |
 
-## Marketing templates
+## Marketing
 
-Only sends to subscribed contacts.
+Only sends to subscribed contacts. Automatically includes unsubscribe link.
 
-**Use for:** Newsletters, product updates, promotional emails.
+## Transactional
 
-**Behavior:**
-```javascript
-// Contact is unsubscribed
-POST /v1/send { to: "user@example.com", template: "newsletter" }
-// → Email NOT sent
-```
+Sends regardless of subscription status. Use only for essential emails.
 
-## Transactional templates
-
-Sends regardless of subscription status.
-
-**Use for:** Order confirmations, password resets, account alerts.
-
-**Behavior:**
-```javascript
-// Contact is unsubscribed
-POST /v1/send { to: "user@example.com", template: "receipt" }
-// → Email sent
-```
-
-## Setting template type
-
-### In dashboard
-
-**Templates** → Create/Edit → **Type** dropdown
-
-### Via API
-
-```bash
-curl -X POST {{API_URL}}/templates \
-  -H "Authorization: Bearer sk_your_secret_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Password Reset",
-    "type": "TRANSACTIONAL",
-    "subject": "Reset your password",
-    "body": "<p>Click: {{resetLink}}</p>"
-  }'
-```
-
-Type: `MARKETING` or `TRANSACTIONAL`
-
-## Changing type
-
-Update anytime:
-
-```bash
-curl -X PATCH {{API_URL}}/templates/template_id \
-  -H "Authorization: Bearer sk_your_secret_key" \
-  -H "Content-Type: application/json" \
-  -d '{"type": "MARKETING"}'
-```
-
-**Warning:** Changing transactional → marketing stops sending to unsubscribed contacts.
-
-## Unsubscribe links
-
-Marketing templates auto-include unsubscribe link in footer.
-
-Custom placement:
-```html
-<a href="{{unsubscribeUrl}}">Unsubscribe</a>
-```
-
-Transactional templates don't need unsubscribe links.
-
-## Choosing the right type
+## Choosing
 
 Ask: "Would user be frustrated if they didn't receive this after unsubscribing?"
 
-**If yes → Transactional**
-- Password resets
-- Order confirmations
-- Account alerts
+- **Yes → Transactional** (password resets, order confirmations)
+- **No → Marketing** (newsletters, promotions)
 
-**If no → Marketing**
-- Newsletters
-- Product announcements
-- Promotions
+## Variables
 
-## Best practices
+```html
+<h1>Hello {{firstName}}!</h1>
+<p>Your {{plan}} plan renews on {{renewalDate}}.</p>
+```
 
-**Default to marketing** — Only use transactional for truly necessary emails.
-
-**Don't abuse transactional** — Sending marketing content via transactional templates violates regulations and damages reputation.
-
-**Test both states** — Verify behavior with subscribed and unsubscribed contacts.
-
-## Next steps
-
-- [Create templates](/guides/templates)
-- [Manage subscriptions](/concepts/contacts-and-data)
-- [Send emails](/tutorials/first-transactional-email)
+**Fallback:** `{{firstName ?? 'there'}}`

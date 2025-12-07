@@ -1,0 +1,43 @@
+---
+title: Custom Domains
+description: Send from your own domain
+icon: Globe
+---
+
+## Why use custom domains
+
+- Better deliverability
+- Brand consistency
+- Builds sender reputation
+
+## Setup
+
+1. Go to **Settings → Domains**
+2. Click **Add Domain**
+3. Enter your domain
+4. Add the provided DNS records (DKIM, MX, TXT)
+5. Wait for verification (usually 10-30 minutes, up to 48 hours)
+
+## Using your domain
+
+Specify in the `from` field when sending:
+
+```json
+{
+  "to": "customer@example.com",
+  "from": "orders@yourdomain.com",
+  "subject": "Order confirmed",
+  "body": "<p>Your order has been confirmed.</p>"
+}
+```
+
+## Troubleshooting
+
+**Domain won't verify:**
+- Check DNS records are correct
+- Wait for DNS propagation (up to 48 hours)
+- Remove conflicting DKIM records from other services
+
+**Emails going to spam:**
+- Warm up new domains with small volumes first
+- Monitor bounce and complaint rates

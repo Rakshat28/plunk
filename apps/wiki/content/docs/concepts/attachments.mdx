@@ -1,0 +1,46 @@
+---
+title: Email Attachments
+description: Send files with emails
+icon: Paperclip
+---
+
+## Limits
+
+- Max 10 attachments per email
+- Max 10MB total size
+- Any file type supported
+
+## API usage
+
+```json
+{
+  "to": "user@example.com",
+  "subject": "Your Invoice",
+  "body": "<p>Invoice attached.</p>",
+  "attachments": [
+    {
+      "filename": "invoice.pdf",
+      "content": "JVBERi0xLjQK...",
+      "contentType": "application/pdf"
+    }
+  ]
+}
+```
+
+## Attachment fields
+
+| Field | Description |
+|-------|-------------|
+| `filename` | Display name (max 255 chars) |
+| `content` | Base64-encoded file content |
+| `contentType` | MIME type (e.g., `application/pdf`) |
+
+## Base64 encoding
+
+```javascript
+import fs from 'fs';
+
+const fileBuffer = fs.readFileSync('invoice.pdf');
+const base64Content = fileBuffer.toString('base64');
+```
+

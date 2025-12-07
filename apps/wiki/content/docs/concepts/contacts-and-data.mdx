@@ -1,18 +1,10 @@
 ---
-title: Contacts and Data
+title: Contacts
 description: Store and manage your audience
 icon: Users
 ---
 
-## What are contacts
-
-Contacts are people in your email list. Each contact has:
-
-- **Email** — Unique identifier
-- **Subscription status** — Subscribed or unsubscribed
-- **Custom data** — Any fields you need
-
-## Data structure
+## Structure
 
 ```json
 {
@@ -27,188 +19,42 @@ Contacts are people in your email list. Each contact has:
 }
 ```
 
-The `data` field stores custom information as key-value pairs.
+## Adding contacts
 
-## Data types
+- **Dashboard:** Contacts → Add Contact
+- **CSV import:** Contacts → Import
+- **API:** `POST /contacts`
+- **Events:** Auto-created when tracking events
 
-**Strings:**
-```json
-{ "firstName": "Sarah", "company": "Acme Inc" }
+## Contact data
+
+The `data` field stores custom key-value pairs.
+
+**Best practices:**
+- Use consistent naming (camelCase or snake_case)
+- Store dates as ISO strings: `"2024-03-15T10:30:00Z"`
+- Use numbers for numeric values (enables comparisons)
+
+## Template variables
+
+Use `{{fieldName}}` in emails:
+
+```html
+<p>Hello {{firstName}}!</p>
 ```
 
-**Numbers:**
-```json
-{ "mrr": 99, "loginCount": 15 }
-```
+**Fallback:** `{{firstName ?? 'there'}}`
 
-Store as numbers for `greaterThan`/`lessThan` comparisons.
+**Reserved:** `{{email}}`, `{{id}}`
 
-**Booleans:**
-```json
-{ "verified": true, "newsletter": false }
-```
+## Temporary data
 
-**Dates:**
-```json
-{ "signupDate": "2024-03-15T10:30:00Z" }
-```
+Data that won't save to contact:
 
-Use ISO 8601 format.
-
-**Arrays:**
-```json
-{ "tags": ["vip", "enterprise"] }
-```
-
-**Objects:**
-```json
-{
-  "address": {
-    "city": "San Francisco",
-    "country": "US"
-  }
+```javascript
+data: {
+  resetCode: { value: 'ABC123', persistent: false }
 }
 ```
 
-Access nested fields: `address.country`
-
-## Creating contacts
-
-### Via API
-
-```bash
-curl -X POST {{API_URL}}/contacts \
-  -H "Authorization: Bearer sk_your_secret_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "subscribed": true,
-    "data": {
-      "firstName": "Sarah",
-      "plan": "pro"
-    }
-  }'
-```
-
-### Automatic upsert
-
-If email exists, updates instead of creating duplicate.
-
-```javascript
-// First call
-POST /contacts { email: "user@example.com", data: { plan: "free" } }
-
-// Second call - updates same contact
-POST /contacts { email: "user@example.com", data: { mrr: 99 } }
-
-// Result: { plan: "free", mrr: 99 }
-```
-
-Data merges automatically.
-
-### Via event tracking
-
-```bash
-curl -X POST {{API_URL}}/v1/track \
-  -H "Authorization: Bearer pk_your_public_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "event": "signed_up",
-    "data": {
-      "plan": "pro",
-      "source": "landing"
-    }
-  }'
-```
-
-Creates contact if doesn't exist, updates if does.
-
-## Updating contacts
-
-```bash
-curl -X PATCH {{API_URL}}/contacts/contact_id \
-  -H "Authorization: Bearer sk_your_secret_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "data": {
-      "plan": "premium",
-      "mrr": 199
-    }
-  }'
-```
-
-New fields added, existing fields overwritten, unmentioned fields preserved.
-
-### Remove fields
-
-Set to `null`:
-
-```json
-{ "data": { "temporaryToken": null } }
-```
-
-## Subscription status
-
-**Subscribed (true):**
-- Receives marketing emails
-- Receives transactional emails
-
-**Unsubscribed (false):**
-- Does NOT receive marketing emails
-- Still receives transactional emails
-
-Template type controls this behavior. See [Template Types](/concepts/templates-types).
-
-## Using contact data
-
-### In templates
-
-```html
-<h1>Hi {{firstName}}!</h1>
-<p>Your {{plan}} plan renews on {{renewalDate}}.</p>
-```
-
-### In segments
-
-Filter by data fields:
-- `plan equals "premium"`
-- `mrr greaterThan 100`
-- `loginCount lessThan 5`
-
-### In workflows
-
-```
-[Condition: plan equals "enterprise"]
-    ├─ True → [Send: Enterprise content]
-    └─ False → [Send: Standard content]
-```
-
-## Best practices
-
-**Consistent naming** — Use camelCase or snake_case, not both.
-
-**Correct types** — Use `99` not `"99"` for numbers.
-
-**ISO dates** — `"2024-03-15T10:30:00Z"` for date fields.
-
-**Sync critical fields only** — Don't mirror entire database. Only fields used in emails, segments, or workflows.
-
-**Update in real-time** — When user data changes, update contact immediately.
-
-**Respect unsubscribes** — Never re-subscribe automatically.
-
-## Deleting contacts
-
-```bash
-curl -X DELETE {{API_URL}}/contacts/contact_id \
-  -H "Authorization: Bearer sk_your_secret_key"
-```
-
-Permanent deletion. Consider unsubscribing instead to preserve history.
-
-## Next steps
-
-- [Create segments](/concepts/segments-and-filters)
-- [Track events](/concepts/events-and-triggers)
-- [Use templates](/concepts/templates-types)
+Use for: one-time codes, tokens, session data.

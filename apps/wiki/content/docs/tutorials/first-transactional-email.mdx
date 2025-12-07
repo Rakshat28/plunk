@@ -4,14 +4,12 @@ description: Send a transactional email in 5 minutes
 icon: Mail
 ---
 
-## Get your API key
+## 1. Get your API key
 
-1. Go to [Settings → General]({{DASHBOARD_URL}}/settings)
+1. Go to **Settings → General**
 2. Copy your **Secret Key** (starts with `sk_`)
 
-**Important:** Use Secret Key server-side only. Never expose it in client code.
-
-## Send an email
+## 2. Send the email
 
 ```bash
 curl -X POST {{API_URL}}/v1/send \
@@ -19,55 +17,12 @@ curl -X POST {{API_URL}}/v1/send \
   -H "Content-Type: application/json" \
   -d '{
     "to": "user@example.com",
-    "subject": "Reset your password",
-    "body": "<p>Click here to reset: <a href=\"https://app.com/reset/abc123\">Reset Password</a></p>",
-    "subscribed": true
+    "subject": "Hello from Plunk",
+    "body": "<p>Your first email!</p>"
   }'
 ```
 
-Replace `sk_your_secret_key` and `user@example.com` with your values.
-
-### With JavaScript
-
-```javascript
-await fetch('{{API_URL}}/v1/send', {
-  method: 'POST',
-  headers: {
-    'Authorization': `Bearer ${process.env.PLUNK_SECRET_KEY}`,
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    to: user.email,
-    subject: 'Reset your password',
-    body: `<p>Click here: <a href="${resetLink}">Reset Password</a></p>`,
-    subscribed: true
-  })
-});
-```
-
-### With Python
-
-```python
-import requests
-import os
-
-requests.post('{{API_URL}}/v1/send',
-  headers={
-    'Authorization': f'Bearer {os.environ["PLUNK_SECRET_KEY"]}',
-    'Content-Type': 'application/json'
-  },
-  json={
-    'to': user.email,
-    'subject': 'Reset your password',
-    'body': f'<p>Click here: <a href="{reset_link}">Reset Password</a></p>',
-    'subscribed': True
-  }
-)
-```
-
-## Use variables
-
-Make emails dynamic with variables:
+## 3. With variables
 
 ```javascript
 await fetch('{{API_URL}}/v1/send', {
@@ -81,97 +36,21 @@ await fetch('{{API_URL}}/v1/send', {
     subject: 'Reset your password',
     body: '<p>Hi {{name}}, click here: <a href="{{resetLink}}">Reset</a></p>',
     name: user.name,
-    resetLink: `https://app.com/reset/${token}`,
-    subscribed: true
+    resetLink: `https://app.com/reset/${token}`
   })
 });
 ```
 
-Variables in the body (`{{name}}`, `{{resetLink}}`) are replaced with the values you provide.
+## 4. Using a template
 
-## Use templates
-
-Instead of passing HTML every time, create reusable templates.
-
-### Create a template
-
-1. Go to **Templates** → **Create Template**
-2. Name: `Password Reset`
-3. Type: `Transactional`
-4. Subject: `Reset your password`
-5. Body:
-```html
-<p>Hi {{name}},</p>
-<p>Click here to reset your password:</p>
-<p><a href="{{resetLink}}">Reset Password</a></p>
-<p>This link expires in 1 hour.</p>
-```
-
-### Send with template
+1. Create template in **Templates → Create Template**
+2. Send using template ID:
 
 ```javascript
-await fetch('{{API_URL}}/v1/send', {
-  method: 'POST',
-  headers: {
-    'Authorization': `Bearer ${process.env.PLUNK_SECRET_KEY}`,
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    to: user.email,
-    template: 'password-reset', // Use template slug
-    name: user.name,
-    resetLink: `https://app.com/reset/${token}`,
-    subscribed: true
-  })
-});
+{
+  to: user.email,
+  template: 'clx123abc456',
+  name: user.name,
+  resetLink: resetUrl
+}
 ```
-
-No need to pass `subject` or `body` - they come from the template.
-
-## Integration example
-
-```javascript
-// Express.js password reset endpoint
-app.post('/forgot-password', async (req, res) => {
-  const { email } = req.body;
-
-  const user = await db.users.findOne({ email });
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
-  }
-
-  const token = crypto.randomBytes(32).toString('hex');
-  await db.resetTokens.create({ userId: user.id, token, expiresAt: Date.now() + 3600000 });
-
-  // Send email via Plunk
-  await fetch('{{API_URL}}/v1/send', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.PLUNK_SECRET_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      to: user.email,
-      subject: 'Reset your password',
-      body: `<p>Click here: <a href="https://app.com/reset/${token}">Reset Password</a></p>`,
-      subscribed: true
-    })
-  });
-
-  res.json({ success: true });
-});
-```
-
-## Troubleshooting
-
-**"Unauthorized" error** — Check your API key. Must be Secret Key (starts with `sk_`).
-
-**Email not received** — Check spam folder. If using custom domain, verify it in Settings → Domains.
-
-**Variables not replaced** — Ensure variable names match exactly (case-sensitive).
-
-## Next steps
-
-- [Build a workflow](/tutorials/welcome-series-workflow) for automated sequences
-- [Set up custom domain](/guides/custom-domains) for better deliverability
-- [Track events](/tutorials/event-tracking-integration) to trigger workflows

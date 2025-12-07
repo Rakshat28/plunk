@@ -1,37 +1,26 @@
 ---
 title: Campaigns vs Workflows
-description: Choose the right tool for sending emails
+description: Choose the right sending method
 icon: GitCompare
 ---
 
-## When to use each
+## Quick comparison
 
-**Transactional API** (`/v1/send`) — Immediate one-off emails from your code
-- Password resets, confirmations, receipts
-- Triggered directly by user actions
-- Instant delivery
-
-**Campaigns** — One-time broadcasts to many contacts
-- Newsletters, announcements, promotions
-- Created in dashboard, send now or schedule
-- No code required
-
-**Workflows** — Automated multi-email sequences
-- Onboarding series, abandoned cart, trial reminders
-- Triggered by events, segment changes, or schedules
-- Delays, conditions, multiple emails
+| Need | Use |
+|------|-----|
+| Password reset now | **API** `/v1/send` |
+| Monthly newsletter | **Campaign** |
+| Welcome series over 3 days | **Workflow** |
+| Order confirmation | **API** `/v1/send` |
+| Abandoned cart recovery | **Workflow** |
 
 ## Transactional API
 
-Send emails directly from your application code.
+Immediate one-off emails from your code.
 
 ```javascript
-await fetch('{{API_URL}}/v1/send', {
+await fetch('/v1/send', {
   method: 'POST',
-  headers: {
-    'Authorization': `Bearer ${PLUNK_SECRET_KEY}`,
-    'Content-Type': 'application/json'
-  },
   body: JSON.stringify({
     to: user.email,
     subject: 'Reset your password',
@@ -40,90 +29,19 @@ await fetch('{{API_URL}}/v1/send', {
 });
 ```
 
-**Use for:**
-- Emails that must send immediately
-- One-to-one triggered emails
-- Context-specific data (reset tokens, order IDs)
-
 ## Campaigns
 
-Create and send broadcasts in the dashboard.
+One-time broadcasts to many contacts. Created in dashboard.
 
-1. Create campaign
-2. Write email content
-3. Select audience (all contacts, segment, or filter)
-4. Send now or schedule
-
-**Use for:**
-- One-time sends to many people
-- Scheduled announcements
-- Manual email sends
-
-**Can't do:**
-- Automation or triggers
-- Multi-step sequences
-- Delays between emails
+- Send now or schedule
+- Target all contacts, segments, or filters
+- No code required
 
 ## Workflows
 
-Build automated sequences with the visual workflow builder.
+Automated multi-email sequences.
 
-**Example workflow:**
-```
-[Trigger: user_signed_up]
-    ↓
-[Send Email: Welcome]
-    ↓
-[Delay: 24 hours]
-    ↓
-[Send Email: Feature tour]
-    ↓
-[Delay: 48 hours]
-    ↓
-[Send Email: Help offer]
-```
-
-**Use for:**
-- Multi-email sequences
-- Time-delayed follow-ups
-- Event-triggered automation
+- Triggered by events or segment changes
+- Delays between emails
 - Conditional logic (if/then)
-
-**Setup required:**
-- Track events from your app via `/v1/track`
-- Create workflow in dashboard
-- Enable workflow
-
-## Decision matrix
-
-| Need | Use |
-|------|-----|
-| Send password reset now | Transactional API |
-| Send monthly newsletter | Campaign |
-| Send welcome series over 3 days | Workflow |
-| Send order confirmation | Transactional API |
-| Send announcement to all users | Campaign |
-| Send trial reminder 3 days before expiration | Workflow |
-| Send receipt after payment | Transactional API |
-| Send seasonal promotion | Campaign |
-| Send abandoned cart recovery (1hr + 24hr) | Workflow |
-
-## Using them together
-
-Most apps use all three:
-
-**SaaS example:**
-- **Transactional**: Password resets, email verification
-- **Campaigns**: Monthly product updates
-- **Workflows**: Trial onboarding, churn prevention
-
-**E-commerce example:**
-- **Transactional**: Order confirmations, shipping updates
-- **Campaigns**: Weekly deals newsletter
-- **Workflows**: Abandoned cart, review requests
-
-## Next steps
-
-- [Send a transactional email](/tutorials/first-transactional-email)
-- [Create your first workflow](/tutorials/welcome-series-workflow)
-- [Build a campaign](/tutorials/newsletter-campaign)
+- Re-entry control

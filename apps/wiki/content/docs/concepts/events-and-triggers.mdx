@@ -1,180 +1,53 @@
 ---
-title: Events and Triggers
-description: Track behavior and trigger workflows
+title: Events
+description: Track actions and trigger workflows
 icon: Activity
 ---
 
-## What are events
+## Overview
 
-Events track user actions from your application. Use them to update contact data, trigger workflows, and build segments.
+Events track user actions. Use them to trigger workflows and update contact data.
 
-## Tracking events
-
-### Basic event
+## Tracking
 
 ```javascript
-await fetch('{{API_URL}}/v1/track', {
+await fetch('/v1/track', {
   method: 'POST',
   headers: {
-    'Authorization': `Bearer ${PLUNK_PUBLIC_KEY}`,
-    'Content-Type': 'application/json'
+    'Authorization': 'Bearer pk_your_public_key'
   },
   body: JSON.stringify({
     event: 'signed_up',
-    email: user.email
-  })
-});
-```
-
-Creates or updates contact. Event is recorded.
-
-### Event with data
-
-```javascript
-await fetch('{{API_URL}}/v1/track', {
-  method: 'POST',
-  headers: {
-    'Authorization': `Bearer ${PLUNK_PUBLIC_KEY}`,
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    event: 'purchase_completed',
     email: user.email,
-    data: {
-      plan: 'premium',
-      mrr: 99
-    }
+    data: { plan: 'pro' }
   })
 });
 ```
 
-Updates contact data fields. Data persists on contact record.
+Creates/updates contact and records the event.
 
-## Public vs Secret keys
+## Keys
 
-### Public Key (pk_*)
+- **Public key (pk_*):** Safe for client-side, only works with `/v1/track`
+- **Secret key (sk_*):** Server-side only, full API access
 
-- Safe for client-side code
-- Only works with `/v1/track`
-- Use in browser/mobile apps
+## Event data
 
-### Secret Key (sk_*)
-
-- Server-side only
-- Works with all endpoints
-- Full API access
-
-## Event naming
-
-Use clear, past-tense verbs with underscores:
-
-✅ `signed_up`, `purchase_completed`, `feature_activated`
-❌ `signup`, `buy`, `feature`
-
-## Workflow triggers
-
-### Event trigger
-
-Workflow starts when event is tracked.
-
-```
-Trigger: event = "signed_up"
-```
-
-Track event:
+**Persistent (default):** Saved to contact
 ```javascript
-track('signed_up', 'user@example.com');
+data: { plan: 'premium' }
 ```
 
-Workflow starts for that contact.
-
-### Wait for event
-
-Workflow pauses until event occurs.
-
-```
-[Wait for Event: purchase_completed, timeout: 7 days]
-    ├─ Event occurred → [Send: Thank you]
-    └─ Timeout → [Send: Discount offer]
-```
-
-## Common patterns
-
-### User lifecycle
-
+**Non-persistent:** Available only to workflow
 ```javascript
-// Signup
-track('signed_up', email, { source: 'landing' });
-
-// First login
-track('first_login', email, { lastLoginAt: new Date().toISOString() });
-
-// Subscription
-track('subscription_created', email, { plan: 'premium', mrr: 99 });
+data: {
+  orderId: { value: 'order-123', persistent: false }
+}
 ```
 
-### E-commerce
+## Automatic events
 
-```javascript
-// Cart abandonment
-track('cart_abandoned', email, {
-  cartTotal: 149.99,
-  cartUrl: `https://store.com/cart/${cartId}`
-});
-
-// Purchase
-track('purchase_completed', email, {
-  orderId: order.id,
-  orderTotal: order.total
-});
-```
-
-## Event-based segments
-
-Track events to update contact data, then segment on that data.
-
-1. Track login:
-```javascript
-track('login', email, {
-  lastLoginAt: new Date().toISOString()
-});
-```
-
-2. Create segment:
-```
-Field: lastLoginAt
-Operator: greaterThan
-Value: {{7_days_ago}}
-```
-
-Contacts auto-join segment when they log in.
-
-## Testing events
-
-**Dashboard:** Contacts → Search email → Events tab
-
-Shows all events for that contact.
-
-**Workflows:** Check executions after tracking event to verify workflow triggered.
-
-## Rate limits
-
-- Public key: 100 requests/minute
-- Secret key: 1000 requests/minute
-
-## Common issues
-
-**Workflow not triggering:**
-- Workflow is enabled
-- Event name matches exactly (case-sensitive)
-- Contact email is correct
-
-**Contact data not updating:**
-- Field names are case-sensitive
-- Values are correct type (number vs string)
-
-## Next steps
-
-- [Build event-triggered workflows](/tutorials/welcome-series-workflow)
-- [Create event-based segments](/concepts/segments-and-filters)
-- [Track events from your app](/tutorials/event-tracking-integration)
+Plunk tracks these automatically:
+- `email.sent`, `email.opened`, `email.clicked`
+- `email.bounced`, `email.complained`
+- `segment.entered`, `segment.exited`
