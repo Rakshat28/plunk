@@ -1,0 +1,13 @@
+{
+  "title": "Core Concepts",
+  "pages": [
+    "index",
+    "contacts-and-data",
+    "templates-types",
+    "campaigns-vs-workflows",
+    "segments-and-filters",
+    "events-and-triggers",
+    "email-deliverability",
+    "scale-and-performance"
+  ]
+}

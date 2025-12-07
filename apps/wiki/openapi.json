@@ -251,7 +251,7 @@
                   },
                   "template": {
                     "type": "string",
-                    "description": "Template identifier to use"
+                    "description": "Template ID to use for this email. When provided, uses the template's subject, body, from, and reply-to settings. You can override these by explicitly providing subject, body, from, or reply fields in the request. Template variables are populated from the data field."
                   },
                   "from": {
                     "oneOf": [
@@ -384,13 +384,30 @@
                   }
                 },
                 "withTemplate": {
-                  "summary": "Using template",
+                  "summary": "Using a template",
+                  "description": "Send email using a template. Provide the template ID and any data for template variables. The template's subject, body, from address, and reply-to will be used automatically.",
                   "value": {
                     "to": "user@example.com",
-                    "template": "welcome-email",
+                    "template": "clx123abc456",
                     "data": {
                       "firstName": "John",
-                      "lastName": "Doe"
+                      "lastName": "Doe",
+                      "resetCode": {
+                        "value": "ABC123",
+                        "persistent": false
+                      }
+                    }
+                  }
+                },
+                "withTemplateOverride": {
+                  "summary": "Using template with overrides",
+                  "description": "You can override template values by providing subject, body, from, or reply fields. This example overrides the template's subject line.",
+                  "value": {
+                    "to": "user@example.com",
+                    "template": "clx123abc456",
+                    "subject": "Custom Subject Override",
+                    "data": {
+                      "firstName": "Jane"
                     }
                   }
                 },

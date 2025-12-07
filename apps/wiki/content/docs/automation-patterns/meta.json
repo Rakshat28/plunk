@@ -1,0 +1,15 @@
+{
+  "title": "Automation Patterns",
+  "pages": [
+    "index",
+    "visual-builder-guide",
+    "workflow-patterns",
+    "onboarding-sequences",
+    "engagement-campaigns",
+    "retention-automation",
+    "transactional-workflows",
+    "conditional-branching",
+    "advanced-execution-context",
+    "troubleshooting-workflows"
+  ]
+}

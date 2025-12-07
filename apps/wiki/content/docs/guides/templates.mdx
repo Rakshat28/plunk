@@ -148,16 +148,47 @@ Access nested objects with dot notation:
 
 ### Transactional emails
 
+Use the `template` field with the **template ID** (not the template name):
+
 ```bash
 curl -X POST {{API_URL}}/v1/send \
   -H "Authorization: Bearer sk_your_secret_key" \
   -H "Content-Type: application/json" \
   -d '{
     "to": "user@example.com",
-    "template": "order-confirmation",
+    "template": "clx123abc456",
     "data": {
       "orderNumber": "12345",
       "deliveryDate": "March 20"
+    }
+  }'
+```
+
+**Finding your template ID:**
+- In the dashboard: Go to Templates → Click on your template → Copy the ID from the URL or template details
+- Via API: Use `GET /templates` to list all templates with their IDs
+
+When using a template:
+- **Subject, body, from, and reply-to** are automatically taken from the template
+- **Template variables** (e.g., `{{orderNumber}}`) are populated from the `data` field
+- You can **override** any template value by explicitly providing it in the request (see example below)
+
+### Overriding template values
+
+```bash
+curl -X POST {{API_URL}}/v1/send \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "user@example.com",
+    "template": "clx123abc456",
+    "subject": "Custom Subject (overrides template)",
+    "from": {
+      "name": "Custom Sender",
+      "email": "custom@example.com"
+    },
+    "data": {
+      "orderNumber": "12345"
     }
   }'
 ```

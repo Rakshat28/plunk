@@ -1,0 +1,156 @@
+---
+title: Build a Welcome Series
+description: Create a 3-email onboarding workflow
+icon: Workflow
+---
+
+## What you'll build
+
+An automated workflow that sends 3 emails when users sign up:
+- Day 0: Welcome email (immediate)
+- Day 1: Feature tour (24 hours later)
+- Day 3: Help offer (48 hours after that)
+
+## Create the workflow
+
+1. **Workflows** → **Create Workflow**
+2. Name: `Welcome Series`
+3. Trigger Event: `user_signed_up`
+4. Allow Re-entry: `No` (users get this once)
+5. Click **Create**
+
+## Build the flow
+
+In the visual editor:
+
+1. **Add Send Email** step → Select your welcome template
+2. **Add Delay** step → 1 day
+3. **Add Send Email** step → Select your feature tour template
+4. **Add Delay** step → 2 days
+5. **Add Send Email** step → Select your help offer template
+6. **Add Exit** step
+
+Your flow:
+```
+[Trigger: user_signed_up]
+    ↓
+[Send: Welcome]
+    ↓
+[Delay: 1 day]
+    ↓
+[Send: Feature Tour]
+    ↓
+[Delay: 2 days]
+    ↓
+[Send: Help Offer]
+    ↓
+[Exit]
+```
+
+7. **Enable** the workflow (toggle switch)
+
+## Track the signup event
+
+Add event tracking to your app when users sign up.
+
+### JavaScript
+
+```javascript
+// After successful signup
+await fetch('{{API_URL}}/v1/track', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${process.env.NEXT_PUBLIC_PLUNK_PUBLIC_KEY}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    event: 'user_signed_up',
+    email: user.email,
+    data: {
+      name: user.name,
+      dashboardUrl: 'https://app.yourapp.com/dashboard',
+      docsUrl: 'https://docs.yourapp.com'
+    }
+  })
+});
+```
+
+### Python
+
+```python
+import requests
+
+requests.post('{{API_URL}}/v1/track',
+  headers={
+    'Authorization': f'Bearer {os.environ["PLUNK_PUBLIC_KEY"]}',
+    'Content-Type': 'application/json'
+  },
+  json={
+    'event': 'user_signed_up',
+    'email': user.email,
+    'data': {
+      'name': user.name,
+      'dashboardUrl': 'https://app.yourapp.com/dashboard',
+      'docsUrl': 'https://docs.yourapp.com'
+    }
+  }
+)
+```
+
+**Important:** Use your **Public Key** (starts with `pk_`) for event tracking.
+
+## Test the workflow
+
+### Manual test
+
+1. Go to **Workflows** → Your workflow → **Executions** tab
+2. Click **Create Execution**
+3. Select a test contact
+4. Add test data:
+```json
+{
+  "name": "Test User",
+  "dashboardUrl": "https://app.yourapp.com",
+  "docsUrl": "https://docs.yourapp.com"
+}
+```
+5. **Start Execution**
+
+Check your email - you should receive the welcome email immediately. The workflow will pause at the delay steps.
+
+### Faster testing
+
+For testing, temporarily change delays to 5 minutes instead of days. Test the flow, then change back.
+
+## Monitor performance
+
+1. **Workflows** → Your workflow
+2. Check **Executions** to see who's in the workflow
+3. Go to **Activity** to see email opens/clicks
+4. Track open rates for each email
+
+Typical good rates:
+- Email 1: 60-80% open rate
+- Email 2: 40-60% open rate
+- Email 3: 30-50% open rate
+
+## Troubleshooting
+
+**Workflow not triggering** — Check:
+- Workflow is enabled (toggle ON)
+- Event name matches exactly: `user_signed_up`
+- Using Public Key for tracking
+- Contact exists and is subscribed
+
+**Email not sending** — Check:
+- Template exists
+- Contact is subscribed
+- Variables in event data match template variables
+
+**Duplicate emails** — Ensure `Allow Re-entry` is `No`.
+
+## Next steps
+
+- [Add conditional logic](/automation-patterns/conditional-branching) for different user types
+- [Track more events](/tutorials/event-tracking-integration) to trigger workflows
+- [Build cart abandonment](/tutorials/cart-abandonment-automation) workflow

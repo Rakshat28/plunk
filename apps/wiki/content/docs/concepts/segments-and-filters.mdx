@@ -1,0 +1,150 @@
+---
+title: Segments and Filters
+description: Create dynamic audience groups
+icon: Filter
+---
+
+## What are segments
+
+Segments are dynamic groups of contacts based on data filters. They update automatically when contact data changes.
+
+Use segments to:
+- Target specific audiences in campaigns
+- Trigger workflows when contacts enter/exit
+- Filter contacts in dashboard
+
+## Creating segments
+
+### In dashboard
+
+**Contacts** → **Segments** → **Create Segment**
+
+1. Name your segment
+2. Add filters
+3. Save
+
+### Via API
+
+```bash
+curl -X POST {{API_URL}}/segments \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Premium Users",
+    "filters": [
+      {
+        "field": "plan",
+        "operator": "equals",
+        "value": "premium"
+      }
+    ]
+  }'
+```
+
+## Filter operators
+
+| Operator | Use | Example |
+|----------|-----|---------|
+| `equals` | Exact match | `plan equals "pro"` |
+| `notEquals` | Not matching | `plan notEquals "free"` |
+| `contains` | Substring (case-insensitive) | `email contains "@company.com"` |
+| `greaterThan` | Number comparison | `mrr greaterThan 100` |
+| `lessThan` | Number comparison | `loginCount lessThan 5` |
+| `greaterThanOrEqual` | Inclusive comparison | `age greaterThanOrEqual 18` |
+| `lessThanOrEqual` | Inclusive comparison | `daysInactive lessThanOrEqual 30` |
+| `exists` | Field has value | `company exists` |
+| `notExists` | Field missing/null | `lastName notExists` |
+| `startsWith` | String prefix | `coupon startsWith "SAVE"` |
+| `endsWith` | String suffix | `email endsWith ".edu"` |
+
+## Multiple filters (AND logic)
+
+All filters must match.
+
+```json
+{
+  "name": "Active Premium Users",
+  "filters": [
+    { "field": "plan", "operator": "equals", "value": "premium" },
+    { "field": "loginCount", "operator": "greaterThan", "value": 5 }
+  ]
+}
+```
+
+Contact matches only if: `plan = "premium"` AND `loginCount > 5`
+
+## Dynamic updates
+
+Segments update automatically.
+
+**Example:**
+1. Segment: `plan equals "premium"`
+2. User upgrades: `plan` changes from "free" to "premium"
+3. Contact auto-added to segment
+
+No manual refresh needed.
+
+## Workflow triggers
+
+Trigger workflows when contacts enter/exit segments.
+
+### Enable tracking
+
+```bash
+curl -X PATCH {{API_URL}}/segments/segment_id \
+  -H "Authorization: Bearer sk_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{"trackMembership": true}'
+```
+
+Only enable for segments used as triggers.
+
+### Entry trigger
+
+```
+[Trigger: contact enters "Premium Users"]
+    ↓
+[Send: Welcome to premium]
+```
+
+### Exit trigger
+
+```
+[Trigger: contact exits "Trial Users"]
+    ↓
+[Send: Trial ended offer]
+```
+
+## Nested fields
+
+Access nested data with dot notation.
+
+```json
+{
+  "field": "preferences.newsletter",
+  "operator": "equals",
+  "value": true
+}
+```
+
+## Best practices
+
+**Store correct types** — Use `99` not `"99"` for numbers. Use `true` not `"true"` for booleans.
+
+**Track membership sparingly** — Only enable on segments used as workflow triggers.
+
+**Name descriptively** — "High-Value Customers (MRR >$200)" not "Segment 3"
+
+## Common issues
+
+**Numeric filters not working** — Ensure field is stored as number, not string.
+
+**Case-sensitive matching** — `equals "Pro"` doesn't match `plan = "pro"`. Use `contains` for case-insensitive.
+
+**Missing field** — If field doesn't exist on contact, filter won't match.
+
+## Next steps
+
+- [Use segments in campaigns](/guides/campaigns)
+- [Trigger workflows on segment entry](/guides/workflows)
+- [Store contact data](/concepts/contacts-and-data)

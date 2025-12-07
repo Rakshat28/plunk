@@ -1,0 +1,294 @@
+---
+title: Common Workflow Patterns
+description: Reusable workflow templates
+icon: Layers
+---
+
+## Linear sequence
+
+Send a series of emails with delays between them.
+
+```
+[Trigger: event]
+    ↓
+[Send Email 1]
+    ↓
+[Delay]
+    ↓
+[Send Email 2]
+    ↓
+[Delay]
+    ↓
+[Send Email 3]
+    ↓
+[Exit]
+```
+
+**Use for:**
+- Onboarding series
+- Educational drip campaigns
+- Feature introduction sequences
+
+**Example timing:**
+- Day 0: Welcome
+- Day 1: Getting started guide
+- Day 3: Tips and tricks
+- Day 7: Feature deep dive
+
+## Wait and branch
+
+Pause for an event, then branch based on outcome.
+
+```
+[Trigger: event]
+    ↓
+[Wait for Event: timeout X days]
+    ├─ Event occurred → [Send success email] → [Exit]
+    └─ Timeout → [Send reminder email] → [Exit]
+```
+
+**Use for:**
+- Trial conversion (waiting for subscription)
+- Activation campaigns (waiting for key action)
+- Re-engagement (waiting for login)
+
+**Example:**
+```
+[Trigger: trial_started]
+    ↓
+[Send: Welcome to trial]
+    ↓
+[Wait for: subscription_created, timeout: 7 days]
+    ├─ Subscribed → [Send: Thanks for subscribing] → [Exit]
+    └─ Timeout → [Send: Last chance offer] → [Exit]
+```
+
+## Conditional branch
+
+Split workflow based on contact data.
+
+```
+[Trigger: event]
+    ↓
+[Condition: check contact field]
+    ├─ True → [Send email A] → [Exit]
+    └─ False → [Send email B] → [Exit]
+```
+
+**Use for:**
+- Personalization by plan/tier
+- Segmented messaging
+- Feature availability checks
+
+**Example:**
+```
+[Trigger: signed_up]
+    ↓
+[Condition: plan equals "enterprise"]
+    ├─ True → [Send: Enterprise onboarding] → [Exit]
+    └─ False → [Send: Standard onboarding] → [Exit]
+```
+
+## Multi-condition cascade
+
+Chain multiple conditions for complex logic.
+
+```
+[Trigger: event]
+    ↓
+[Condition: is premium?]
+    ├─ True → [Send: Premium content] → [Exit]
+    └─ False ↓
+        [Condition: trial active?]
+            ├─ True → [Send: Trial content] → [Exit]
+            └─ False → [Send: Free content] → [Exit]
+```
+
+**Use for:**
+- Tiered content delivery
+- Progressive feature reveals
+- Access-based messaging
+
+## Wait chain
+
+Multiple wait steps with progressive urgency.
+
+```
+[Trigger: cart_abandoned]
+    ↓
+[Delay: 1 hour]
+    ↓
+[Send: Gentle reminder]
+    ↓
+[Wait for: purchase, timeout: 23 hours]
+    ├─ Purchased → [Exit]
+    └─ Timeout ↓
+        [Send: Discount offer]
+        ↓
+        [Wait for: purchase, timeout: 48 hours]
+            ├─ Purchased → [Exit]
+            └─ Timeout → [Send: Final reminder] → [Exit]
+```
+
+**Use for:**
+- Cart abandonment
+- Multi-touch re-engagement
+- Escalating incentives
+
+## Segment entry drip
+
+Triggered when contact joins segment.
+
+```
+[Trigger: enters "Inactive Users" segment]
+    ↓
+[Send: We miss you]
+    ↓
+[Delay: 3 days]
+    ↓
+[Condition: still in segment?]
+    ├─ Yes → [Send: Special offer] → [Exit]
+    └─ No → [Exit]
+```
+
+**Use for:**
+- Churn prevention
+- Win-back campaigns
+- Behavior-based sequences
+
+**Important:** Segment must have `trackMembership: true` enabled.
+
+## Schedule with filter
+
+Runs on schedule, filtered by conditions.
+
+```
+[Trigger: daily at 9am]
+    ↓
+[Condition: trial expires in 3 days]
+    ├─ True → [Send: Trial expiring] → [Exit]
+    └─ False → [Exit]
+```
+
+**Use for:**
+- Trial expiration reminders
+- Subscription renewal notices
+- Scheduled checks with conditional sends
+
+## Update and continue
+
+Modify contact data mid-workflow.
+
+```
+[Trigger: signed_up]
+    ↓
+[Send: Welcome]
+    ↓
+[Update Contact: onboardingStep = 1]
+    ↓
+[Delay: 1 day]
+    ↓
+[Send: Getting started]
+    ↓
+[Update Contact: onboardingStep = 2]
+    ↓
+[Exit]
+```
+
+**Use for:**
+- Tracking workflow progress
+- Triggering other systems via segment changes
+- Marking completion milestones
+
+## Webhook integration
+
+Call external API during workflow.
+
+```
+[Trigger: purchase_completed]
+    ↓
+[Send: Order confirmation]
+    ↓
+[Delay: 7 days]
+    ↓
+[Webhook: Create review request in external system]
+    ↓
+[Send: Review request]
+    ↓
+[Exit]
+```
+
+**Use for:**
+- Syncing with CRM
+- Triggering other automation tools
+- Logging workflow events
+
+## Complex multi-path
+
+Combine patterns for sophisticated flows.
+
+```
+[Trigger: trial_started]
+    ↓
+[Send: Welcome]
+    ↓
+[Delay: 1 day]
+    ↓
+[Send: Feature tour]
+    ↓
+[Wait for: feature_used, timeout: 3 days]
+    ├─ Used ↓
+    │   [Send: Great job]
+    │   ↓
+    │   [Delay: 3 days]
+    │   ↓
+    │   [Condition: trial ending in 1 day]
+    │       ├─ True → [Send: Upgrade reminder] → [Exit]
+    │       └─ False → [Exit]
+    │
+    └─ Timeout ↓
+        [Send: Help offer]
+        ↓
+        [Wait for: feature_used, timeout: 3 days]
+            ├─ Used → [Send: Nice work] → [Exit]
+            └─ Timeout → [Update Contact: needs_help = true] → [Exit]
+```
+
+**Use for:**
+- Advanced onboarding
+- Complex user journeys
+- Adaptive content delivery
+
+## Best practices
+
+**Keep it simple** — Start with 3-5 steps. Add complexity only when needed.
+
+**Exit explicitly** — Every path should end at an Exit step.
+
+**Handle both outcomes** — Conditions and waits need success + failure paths.
+
+**Test incrementally** — Build and test each section before adding more.
+
+**Use meaningful delays** — Don't spam. Minimum 12-24 hours between emails.
+
+**Name clearly** — "Send Welcome Email - Day 0" not "Email 1".
+
+**Monitor drop-off** — Check execution stats to see where contacts exit.
+
+**Prevent loops** — Never create circular paths. Workflow should always progress forward.
+
+## Performance tips
+
+**Batch schedule triggers** — If using schedules, run at off-peak hours to spread load.
+
+**Limit concurrent waits** — Long waits (weeks/months) keep executions in memory. Use scheduled workflows for very long delays.
+
+**Avoid deep nesting** — More than 3-4 condition levels becomes hard to maintain.
+
+**Use segments over conditions** — If filtering many contacts, segment-based triggers are more efficient than in-workflow conditions.
+
+## Next steps
+
+- [Build conditional logic](/automation-patterns/conditional-branching)
+- [Understand execution context](/automation-patterns/advanced-execution-context)
+- [Troubleshoot workflows](/automation-patterns/troubleshooting-workflows)

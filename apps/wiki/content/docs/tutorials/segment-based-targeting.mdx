@@ -1,0 +1,298 @@
+---
+title: Segment-Based Targeting
+description: Target specific audiences with filters
+icon: Users
+---
+
+## Overview
+
+Segments are dynamic groups of contacts based on filters. Use them to send targeted campaigns or trigger workflows when contacts enter/exit segments.
+
+## Create a segment
+
+1. Go to **Segments** → **Create Segment**
+2. Name: `Premium Users`
+3. Description: `Users on premium or enterprise plan`
+
+## Add filters
+
+### Simple filter
+
+Filter by a single field:
+
+- Field: `plan`
+- Operator: `equals`
+- Value: `premium`
+
+All contacts where `plan` equals `premium` are in this segment.
+
+### Multiple filters (AND logic)
+
+All conditions must be true:
+
+- `plan` equals `premium`
+- **AND** `subscribed` equals `true`
+- **AND** `lastLoginAt` within `30` days
+
+Only premium users who are subscribed AND logged in recently.
+
+### Multiple filters (OR logic)
+
+Any condition can be true:
+
+- `plan` equals `premium`
+- **OR** `plan` equals `enterprise`
+
+Users on either premium or enterprise plan.
+
+### Complex filters (AND + OR)
+
+Combine both:
+
+- `subscribed` equals `true`
+- **AND** (`plan` equals `premium` **OR** `plan` equals `enterprise`)
+
+Subscribed users on premium OR enterprise plans.
+
+## Filter operators
+
+### Equals
+
+Exact match:
+- `plan` equals `premium`
+- `country` equals `United States`
+
+### Not equals
+
+Everything except:
+- `plan` not equals `free`
+- `status` not equals `cancelled`
+
+### Contains
+
+Partial text match:
+- `email` contains `@gmail.com`
+- `companyName` contains `Inc`
+
+### Greater than / Less than
+
+Numeric comparisons:
+- `mrr` greater than `100`
+- `age` less than `30`
+- `loginCount` greater than `10`
+
+### Exists / Does not exist
+
+Field has any value:
+- `phoneNumber` exists
+- `referralCode` does not exist
+
+### Within
+
+Time-based (requires ISO date):
+- `signupDate` within `7` days
+- `lastLoginAt` within `30` days
+- `trialExpiresAt` within `3` days
+
+## Example segments
+
+### Active users
+
+Users who logged in recently:
+
+- `lastLoginAt` within `7` days
+- **AND** `subscribed` equals `true`
+
+### High-value customers
+
+Users spending over $100/month:
+
+- `mrr` greater than `100`
+- **AND** `plan` is not `free`
+
+### Trial expiring soon
+
+Users whose trial ends in 3 days:
+
+- `trialExpiresAt` within `3` days
+- **AND** `plan` equals `trial`
+
+### Inactive users
+
+Haven't logged in for 30+ days:
+
+- `lastLoginAt` within `30` days is `false`
+- **AND** `subscribed` equals `true`
+- **AND** `status` equals `active`
+
+**Note:** To check "NOT within", set the within filter and toggle the NOT operator.
+
+### Power users
+
+High engagement score:
+
+- `loginCount` greater than `50`
+- **AND** `featureUsageCount` greater than `100`
+
+### Geographic targeting
+
+Specific country or region:
+
+- `country` equals `United States`
+- **AND** `state` equals `California`
+
+### Feature adopters
+
+Used a specific feature:
+
+- Custom event filter: `feature_used` triggered
+- **AND** event data: `featureName` equals `advanced_analytics`
+
+## Use segments in campaigns
+
+### Target a segment
+
+1. Create campaign
+2. Audience: Select **Segment**
+3. Choose your segment
+4. Campaign sends only to contacts in that segment
+
+### Preview count
+
+Before sending, see how many contacts match:
+- Shows estimated recipient count
+- Updates in real-time as you adjust filters
+
+## Use segments in workflows
+
+### Trigger on segment entry
+
+Create workflow that runs when contacts enter a segment:
+
+1. **Workflows** → **Create Workflow**
+2. Trigger: Segment `trial_expiring_soon`
+3. Trigger condition: Contact **enters** segment
+4. Add email: Trial expiration reminder
+
+When a contact enters "trial_expiring_soon" segment, workflow triggers.
+
+### Trigger on segment exit
+
+Run workflow when contacts leave a segment:
+
+1. Trigger: Segment `active_users`
+2. Trigger condition: Contact **exits** segment
+3. Add workflow: Re-engagement sequence
+
+When user becomes inactive (exits "active_users"), re-engagement starts.
+
+## Track membership changes
+
+Enable to trigger events when contacts enter/exit:
+
+1. Edit segment
+2. Toggle **Track Membership**
+3. Save
+
+Now when contacts move in/out of the segment:
+- Event `segment_entry_[segment_id]` is tracked
+- Event `segment_exit_[segment_id]` is tracked
+- Can use these events in other workflows
+
+**Performance note:** Only enable for segments you'll use for triggers. Adds processing overhead.
+
+## Segment best practices
+
+**Keep it simple**
+- 3-5 filters per segment max
+- Avoid deeply nested conditions
+- Test with expected contacts
+
+**Use consistent data**
+- Store dates as ISO strings
+- Use numbers for numeric values
+- Consistent field naming
+
+**Name clearly**
+- ✅ `Premium Users - Active`
+- ❌ `Segment 1`
+
+**Monitor size**
+- Check segment count regularly
+- Too large = slow processing
+- Too small = not enough data
+
+## Update segments
+
+Segments update automatically:
+- When contact data changes
+- When contacts are added/removed
+- Typically updates within minutes
+
+Force refresh:
+1. Go to segment
+2. Click **Refresh Count**
+
+## Advanced: Multi-level targeting
+
+### Premium users in specific region
+
+- `plan` equals `premium`
+- **AND** `country` equals `United States`
+- **AND** `lastLoginAt` within `7` days
+
+### Churn risk scoring
+
+- `lastLoginAt` within `30` days is `false`
+- **AND** `supportTickets` greater than `3`
+- **AND** `npsScore` less than `7`
+
+### Upsell targeting
+
+- `plan` equals `free`
+- **AND** `featureUsageCount` greater than `50`
+- **AND** `teamSize` greater than `5`
+
+Users on free plan who are power users with teams (good upsell candidates).
+
+## Performance at scale
+
+Segments work efficiently with millions of contacts:
+
+- Indexed queries for fast filtering
+- Cursor-based pagination
+- Background count computation
+
+**Tips for large segments:**
+- Use specific filters (avoid `contains` on large text fields)
+- Store commonly queried data as top-level fields
+- Use numeric comparisons when possible (faster than text)
+
+## Troubleshooting
+
+**Segment count is 0 but should have contacts**
+- Check filter logic (AND vs OR)
+- Verify field names match exactly (case-sensitive)
+- Ensure contacts have the required fields
+- Try simpler filters to debug
+
+**Segment not updating**
+- Click **Refresh Count** to force update
+- Check that contact data was actually updated
+- Segments typically update within 5 minutes
+
+**Workflow not triggering on segment entry**
+- Workflow is enabled
+- Track Membership is enabled on segment
+- Trigger is set to segment entry (not exit)
+
+**Too many contacts in segment**
+- Filters too broad
+- Add more specific conditions
+- Use AND logic instead of OR
+
+## Next steps
+
+- [Send a campaign](/tutorials/newsletter-campaign) to a segment
+- [Build a workflow](/tutorials/welcome-series-workflow) triggered by segment changes
+- [Track events](/tutorials/event-tracking-integration) to update contact data

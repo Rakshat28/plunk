@@ -1,0 +1,475 @@
+---
+title: Event Tracking Integration
+description: Track user behavior to trigger workflows
+icon: Activity
+---
+
+## Overview
+
+Track events from your application to trigger workflows and update contact data. Events like `user_signed_up`, `purchase_completed`, `feature_used` can start automated email sequences.
+
+## Get your public key
+
+1. Go to [Settings → General]({{DASHBOARD_URL}}/settings)
+2. Copy your **Public Key** (starts with `pk_`)
+
+Public keys are safe to use in client-side code.
+
+## Basic event tracking
+
+### JavaScript (client-side)
+
+```javascript
+await fetch('{{API_URL}}/v1/track', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${PLUNK_PUBLIC_KEY}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    event: 'button_clicked',
+    email: user.email,
+    data: {
+      buttonName: 'Get Started',
+      page: '/pricing'
+    }
+  })
+});
+```
+
+### Node.js (server-side)
+
+```javascript
+await fetch('{{API_URL}}/v1/track', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${process.env.PLUNK_PUBLIC_KEY}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    event: 'user_signed_up',
+    email: user.email,
+    data: {
+      name: user.name,
+      plan: 'free',
+      signupDate: new Date().toISOString()
+    }
+  })
+});
+```
+
+### Python
+
+```python
+import requests
+import os
+
+requests.post('{{API_URL}}/v1/track',
+  headers={
+    'Authorization': f'Bearer {os.environ["PLUNK_PUBLIC_KEY"]}',
+    'Content-Type': 'application/json'
+  },
+  json={
+    'event': 'purchase_completed',
+    'email': user.email,
+    'data': {
+      'orderId': order.id,
+      'total': order.total,
+      'items': order.items
+    }
+  }
+)
+```
+
+## Common events to track
+
+### User lifecycle
+
+```javascript
+// Signup
+await trackEvent('user_signed_up', user.email, {
+  name: user.name,
+  source: 'google',
+  plan: 'free'
+});
+
+// Activation
+await trackEvent('first_value_achieved', user.email, {
+  action: 'created_first_project',
+  timestamp: new Date().toISOString()
+});
+
+// Upgrade
+await trackEvent('subscription_upgraded', user.email, {
+  fromPlan: 'free',
+  toPlan: 'premium',
+  mrr: 99
+});
+
+// Churn
+await trackEvent('subscription_cancelled', user.email, {
+  reason: user.cancellationReason,
+  cancelledAt: new Date().toISOString()
+});
+```
+
+### Product engagement
+
+```javascript
+// Feature usage
+await trackEvent('feature_used', user.email, {
+  featureName: 'data_export',
+  timestamp: new Date().toISOString()
+});
+
+// Content interaction
+await trackEvent('video_watched', user.email, {
+  videoId: 'intro-101',
+  duration: 300,
+  completed: true
+});
+
+// Settings changes
+await trackEvent('settings_updated', user.email, {
+  setting: 'notifications',
+  value: 'enabled'
+});
+```
+
+### E-commerce
+
+```javascript
+// Cart
+await trackEvent('cart_abandoned', user.email, {
+  cartId: cart.id,
+  cartTotal: cart.total,
+  items: cart.items.map(i => i.name)
+});
+
+// Purchase
+await trackEvent('purchase_completed', user.email, {
+  orderId: order.id,
+  total: order.total,
+  paymentMethod: 'credit_card'
+});
+
+// Review
+await trackEvent('review_submitted', user.email, {
+  productId: product.id,
+  rating: 5
+});
+```
+
+## Event naming conventions
+
+**Use lowercase with underscores:**
+- ✅ `user_signed_up`
+- ✅ `purchase_completed`
+- ❌ `UserSignedUp`
+- ❌ `purchase-completed`
+
+**Be specific:**
+- ✅ `trial_started`
+- ❌ `event`
+
+**Use past tense:**
+- ✅ `email_opened`
+- ❌ `email_open`
+
+## Event data best practices
+
+**Keep data flat when possible:**
+
+```javascript
+// Good
+{
+  name: 'John',
+  plan: 'premium',
+  mrr: 99
+}
+
+// Works but harder to use
+{
+  user: {
+    profile: {
+      name: 'John'
+    }
+  }
+}
+```
+
+**Use consistent types:**
+
+```javascript
+// Good - number for numeric values
+{ total: 99.99 }
+
+// Bad - string for numeric values
+{ total: "99.99" }
+```
+
+**Use ISO dates:**
+
+```javascript
+// Good
+{ signupDate: new Date().toISOString() }
+
+// Okay but less flexible
+{ signupDate: '2024-03-15' }
+```
+
+## Integrate with React
+
+### Context provider
+
+```javascript
+// EventTrackingContext.js
+import { createContext, useContext } from 'react';
+
+const EventTrackingContext = createContext();
+
+export function EventTrackingProvider({ children }) {
+  const trackEvent = async (event, data = {}) => {
+    const user = getCurrentUser(); // Your auth logic
+
+    if (!user?.email) return;
+
+    await fetch('{{API_URL}}/v1/track', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_PLUNK_PUBLIC_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        event,
+        email: user.email,
+        data: {
+          name: user.name,
+          ...data
+        }
+      })
+    });
+  };
+
+  return (
+    <EventTrackingContext.Provider value={{ trackEvent }}>
+      {children}
+    </EventTrackingContext.Provider>
+  );
+}
+
+export const useEventTracking = () => useContext(EventTrackingContext);
+```
+
+### Use in components
+
+```javascript
+import { useEventTracking } from './EventTrackingContext';
+
+function UpgradeButton() {
+  const { trackEvent } = useEventTracking();
+
+  const handleUpgrade = async () => {
+    await upgradePlan('premium');
+
+    await trackEvent('plan_upgraded', {
+      plan: 'premium',
+      source: 'pricing_page'
+    });
+  };
+
+  return <button onClick={handleUpgrade}>Upgrade</button>;
+}
+```
+
+## Integrate with Next.js
+
+### Client component
+
+```javascript
+'use client';
+
+import { trackEvent } from '@/lib/plunk';
+
+export function SignupForm() {
+  const handleSubmit = async (data) => {
+    const user = await createUser(data);
+
+    // Track event
+    await trackEvent('user_signed_up', user.email, {
+      name: user.name,
+      source: 'homepage'
+    });
+  };
+
+  return <form onSubmit={handleSubmit}>...</form>;
+}
+```
+
+### Server action
+
+```javascript
+'use server';
+
+import { trackEvent } from '@/lib/plunk';
+
+export async function createProject(formData) {
+  const user = await getCurrentUser();
+  const project = await db.projects.create({
+    name: formData.get('name'),
+    userId: user.id
+  });
+
+  await trackEvent('project_created', user.email, {
+    projectId: project.id,
+    projectName: project.name
+  });
+
+  return project;
+}
+```
+
+## Create a helper function
+
+```javascript
+// lib/plunk.js
+const PLUNK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PLUNK_PUBLIC_KEY;
+
+export async function trackEvent(event, email, data = {}) {
+  try {
+    const response = await fetch('{{API_URL}}/v1/track', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${PLUNK_PUBLIC_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        event,
+        email,
+        data
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to track event:', error);
+    // Don't throw - tracking shouldn't break your app
+  }
+}
+```
+
+## Testing events
+
+### View tracked events
+
+1. Go to **Activity** in Plunk dashboard
+2. Filter by event type
+3. View event data payloads
+
+### Test locally
+
+```javascript
+// Track a test event
+await fetch('{{API_URL}}/v1/track', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer pk_your_key',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    event: 'test_event',
+    email: 'your-email@example.com',
+    data: {
+      test: true,
+      timestamp: new Date().toISOString()
+    }
+  })
+});
+```
+
+Check Plunk Activity - event should appear within seconds.
+
+## Connect to workflows
+
+Once events are tracked, create workflows that trigger on them:
+
+1. **Workflows** → **Create Workflow**
+2. Trigger: Event `user_signed_up`
+3. Build your automation
+4. Enable workflow
+
+Now when you track `user_signed_up`, the workflow runs automatically.
+
+## Performance considerations
+
+**Don't block user actions:**
+
+```javascript
+// Good - fire and forget
+handleClick() {
+  trackEvent('button_clicked', user.email);
+  // Don't await
+}
+
+// Bad - user waits for tracking
+async handleClick() {
+  await trackEvent('button_clicked', user.email);
+  // User has to wait
+}
+```
+
+**Batch events for bulk operations:**
+
+```javascript
+// If importing 1000 users, track events in background
+async function importUsers(users) {
+  const imported = await db.users.bulkCreate(users);
+
+  // Queue for background processing
+  await queue.add('track-events', {
+    event: 'user_imported',
+    users: imported
+  });
+}
+```
+
+**Add retry logic:**
+
+```javascript
+async function trackEventWithRetry(event, email, data, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await trackEvent(event, email, data);
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+    }
+  }
+}
+```
+
+## Common issues
+
+**Event tracked but workflow not triggering**
+- Workflow is enabled
+- Event name matches exactly (case-sensitive)
+- Contact exists in Plunk
+- Contact is subscribed
+
+**CORS errors in browser**
+- Use public key (not secret key)
+- Plunk API allows CORS from all origins
+
+**Contact not created**
+- Email must be valid
+- Contact is created automatically when event is tracked
+
+## Next steps
+
+- [Build a workflow](/tutorials/welcome-series-workflow) triggered by events
+- [Campaigns vs Workflows](/concepts/campaigns-vs-workflows) decision guide
+- [Stripe integration](/integrations/stripe-billing) for billing events

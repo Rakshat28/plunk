@@ -1,0 +1,135 @@
+---
+title: Conditional Branching
+description: If/then logic in workflows
+icon: GitBranch
+---
+
+## Overview
+
+Conditions split workflows into two paths based on contact data.
+
+```
+[Condition: plan equals "premium"]
+    ├─ True → [Send: Premium features]
+    └─ False → [Send: Upgrade offer]
+```
+
+Both paths required.
+
+## Operators
+
+| Operator | Use | Example |
+|----------|-----|---------|
+| `equals` | Exact match | `plan equals "pro"` |
+| `notEquals` | Not matching | `plan notEquals "free"` |
+| `contains` | Substring | `company contains "tech"` |
+| `greaterThan` | Greater than | `mrr greaterThan 100` |
+| `lessThan` | Less than | `loginCount lessThan 5` |
+| `greaterThanOrEqual` | Greater than or equal | `age greaterThanOrEqual 18` |
+| `lessThanOrEqual` | Less than or equal | `daysInactive lessThanOrEqual 30` |
+| `exists` | Has value | `company exists` |
+| `notExists` | Missing/null | `lastName notExists` |
+| `startsWith` | Prefix | `coupon startsWith "SAVE"` |
+| `endsWith` | Suffix | `email endsWith "@company.com"` |
+
+**Important:** Numeric operators require field stored as number, not string.
+
+## Common patterns
+
+### Filter by plan
+
+```
+[Condition: plan equals "enterprise"]
+    ├─ True → [Send: Enterprise onboarding]
+    └─ False → [Send: Standard onboarding]
+```
+
+### Activity check
+
+```
+[Condition: loginCount greaterThan 10]
+    ├─ True → [Send: Power user tips]
+    └─ False → [Send: Getting started]
+```
+
+### Nested conditions
+
+Chain for multi-tier logic:
+
+```
+[Condition: plan equals "enterprise"]
+    ├─ True → [Send: Enterprise email]
+    └─ False ↓
+        [Condition: plan equals "pro"]
+            ├─ True → [Send: Pro email]
+            └─ False → [Send: Free email]
+```
+
+### Multiple field checks (AND)
+
+Nest conditions:
+
+```
+[Condition: plan equals "pro"]
+    ├─ True ↓
+    │   [Condition: trialDaysLeft lessThan 3]
+    │       ├─ True → [Send: Trial ending]
+    │       └─ False → [Exit]
+    └─ False → [Exit]
+```
+
+Matches: `plan = "pro"` AND `trialDaysLeft < 3`
+
+## Nested data
+
+Access with dot notation:
+
+```json
+{
+  "field": "preferences.newsletter",
+  "operator": "equals",
+  "value": true
+}
+```
+
+## Best practices
+
+**Store correct types** — `99` (number) not `"99"` (string) for numeric comparisons.
+
+**Check existence first** — If field might not exist:
+
+```
+[Condition: mrr exists]
+    ├─ True → [Condition: mrr greaterThan 100]
+    └─ False → [Exit]
+```
+
+**Limit nesting** — More than 3 levels gets hard to maintain. Use separate workflows.
+
+**Test both paths** — Verify true and false outcomes work.
+
+**Use segments when filtering many** — Segment-based triggers more efficient than in-workflow conditions for large audiences.
+
+## Common mistakes
+
+**Case sensitivity** — `equals "Pro"` doesn't match `"pro"`
+
+**Type mismatch** — `"100" greaterThan 50` fails (string vs number)
+
+**Missing both paths** — Every condition needs true AND false connections
+
+## Debugging
+
+Check contact data first:
+
+```bash
+curl -X GET {{API_URL}}/contacts/contact_id \
+  -H "Authorization: Bearer sk_your_secret_key"
+```
+
+Verify field names and types match your condition.
+
+## Next steps
+
+- [See workflow patterns](/automation-patterns/workflow-patterns)
+- [Build segments](/guides/segments) for trigger filtering
