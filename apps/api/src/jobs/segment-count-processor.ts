@@ -44,9 +44,16 @@ async function processProjectSegments(projectId: string, projectName?: string): 
           `[SEGMENT-COUNT-WORKER] Segment "${segment.name}": +${result.added} entries, -${result.removed} exits, ${result.total} total members`,
         );
 
-        // Notify about segment membership update (only for tracked segments)
-        if (projectName) {
-          await NtfyService.notifySegmentMembershipComputed(segment.name, projectName, projectId, result.total);
+        // Notify about segment membership update only if there were actual changes
+        if (projectName && (result.added > 0 || result.removed > 0)) {
+          await NtfyService.notifySegmentMembershipComputed(
+            segment.name,
+            projectName,
+            projectId,
+            result.total,
+            result.added,
+            result.removed,
+          );
         }
       } catch (error) {
         signale.error(`[SEGMENT-COUNT-WORKER] Failed to compute membership for segment ${segment.id}:`, error);

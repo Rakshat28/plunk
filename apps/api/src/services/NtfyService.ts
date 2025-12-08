@@ -44,24 +44,6 @@ export class NtfyService {
   private static isConfigured = false;
 
   /**
-   * Initialize the ntfy service with the configured URL
-   */
-  private static initialize(): void {
-    if (this.isConfigured) {
-      return;
-    }
-
-    this.ntfyUrl = process.env.NTFY_URL || null;
-    this.isConfigured = true;
-
-    if (!this.ntfyUrl) {
-      signale.warn('[NTFY] NTFY_URL not configured - notifications will be skipped');
-    } else {
-      signale.info(`[NTFY] Initialized with URL: ${this.ntfyUrl}`);
-    }
-  }
-
-  /**
    * Send a notification to ntfy
    * @param notification - The notification details
    * @returns Promise<void>
@@ -77,7 +59,7 @@ export class NtfyService {
     try {
       const headers: Record<string, string> = {
         'Content-Type': 'text/plain',
-        Title: notification.title,
+        'Title': notification.title,
       };
 
       if (notification.priority) {
@@ -153,8 +135,6 @@ export class NtfyService {
     });
   }
 
-  // ===== Event-specific notification helpers =====
-
   /**
    * Notify about a new project creation
    */
@@ -165,6 +145,8 @@ export class NtfyService {
       [NtfyTag.ROCKET, NtfyTag.SUCCESS],
     );
   }
+
+  // ===== Event-specific notification helpers =====
 
   /**
    * Notify about subscription started
@@ -216,11 +198,10 @@ export class NtfyService {
    * Notify about payment failure
    */
   public static async notifyPaymentFailed(projectName: string, projectId: string): Promise<void> {
-    await this.sendHigh(
-      'Payment Failed',
-      `Payment failed for project "${projectName}" (${projectId})`,
-      [NtfyTag.WARNING, NtfyTag.MONEY],
-    );
+    await this.sendHigh('Payment Failed', `Payment failed for project "${projectName}" (${projectId})`, [
+      NtfyTag.WARNING,
+      NtfyTag.MONEY,
+    ]);
   }
 
   /**
@@ -251,21 +232,15 @@ export class NtfyService {
    * Notify about project deletion - DEFAULT priority
    */
   public static async notifyProjectDeleted(projectName: string, projectId: string, userId: string): Promise<void> {
-    await this.sendDefault(
-      'Project Deleted',
-      `Project "${projectName}" (${projectId}) was deleted by user ${userId}`,
-      [NtfyTag.WARNING],
-    );
+    await this.sendDefault('Project Deleted', `Project "${projectName}" (${projectId}) was deleted by user ${userId}`, [
+      NtfyTag.WARNING,
+    ]);
   }
 
   /**
    * Notify about security warning (non-critical)
    */
-  public static async notifySecurityWarning(
-    projectName: string,
-    projectId: string,
-    warnings: string[],
-  ): Promise<void> {
+  public static async notifySecurityWarning(projectName: string, projectId: string, warnings: string[]): Promise<void> {
     const warningText = warnings.join(', ');
     await this.sendDefault(
       'Security Warning',
@@ -338,9 +313,7 @@ export class NtfyService {
       projectCounts.sort((a, b) => b.count - a.count);
 
       // Build breakdown message
-      const breakdown = projectCounts
-        .map((p) => `  • ${p.name} (${p.projectId}): ${p.count}`)
-        .join('\n');
+      const breakdown = projectCounts.map(p => `  • ${p.name} (${p.projectId}): ${p.count}`).join('\n');
 
       const bounceInfo = bounceType ? ` (${bounceType})` : '';
       await this.send({
@@ -395,8 +368,6 @@ export class NtfyService {
     });
   }
 
-  // ===== Campaign event notifications =====
-
   /**
    * Notify about campaign created (draft) - LOW priority
    */
@@ -412,6 +383,8 @@ export class NtfyService {
       tags: [NtfyTag.ROCKET],
     });
   }
+
+  // ===== Campaign event notifications =====
 
   /**
    * Notify about campaign scheduled - DEFAULT priority
@@ -495,8 +468,6 @@ export class NtfyService {
     });
   }
 
-  // ===== Workflow event notifications =====
-
   /**
    * Notify about workflow created - LOW priority
    */
@@ -512,6 +483,8 @@ export class NtfyService {
       tags: [NtfyTag.ROCKET],
     });
   }
+
+  // ===== Workflow event notifications =====
 
   /**
    * Notify about workflow enabled
@@ -576,8 +549,6 @@ export class NtfyService {
     );
   }
 
-  // ===== Domain verification notifications =====
-
   /**
    * Notify about domain added
    */
@@ -588,6 +559,8 @@ export class NtfyService {
       [NtfyTag.INFO],
     );
   }
+
+  // ===== Domain verification notifications =====
 
   /**
    * Notify about domain verified
@@ -626,8 +599,6 @@ export class NtfyService {
     );
   }
 
-  // ===== Billing and usage limit notifications =====
-
   /**
    * Notify about billing limit approaching (80% threshold)
    */
@@ -646,6 +617,8 @@ export class NtfyService {
     );
   }
 
+  // ===== Billing and usage limit notifications =====
+
   /**
    * Notify about billing limit exceeded - MAX priority (blocks operations)
    */
@@ -663,16 +636,10 @@ export class NtfyService {
     );
   }
 
-  // ===== API key notifications =====
-
   /**
    * Notify about API keys regenerated
    */
-  public static async notifyApiKeysRegenerated(
-    projectName: string,
-    projectId: string,
-    userId: string,
-  ): Promise<void> {
+  public static async notifyApiKeysRegenerated(projectName: string, projectId: string, userId: string): Promise<void> {
     await this.sendHigh(
       'API Keys Regenerated',
       `API keys for project "${projectName}" (${projectId}) were regenerated by user ${userId}`,
@@ -680,7 +647,7 @@ export class NtfyService {
     );
   }
 
-  // ===== Contact import notifications =====
+  // ===== API key notifications =====
 
   /**
    * Notify about contact import started - MIN priority (routine, high volume)
@@ -698,6 +665,8 @@ export class NtfyService {
       tags: [NtfyTag.ROCKET],
     });
   }
+
+  // ===== Contact import notifications =====
 
   /**
    * Notify about contact import completed
@@ -734,16 +703,10 @@ export class NtfyService {
     );
   }
 
-  // ===== Segment notifications =====
-
   /**
    * Notify about segment created - MIN priority
    */
-  public static async notifySegmentCreated(
-    segmentName: string,
-    projectName: string,
-    projectId: string,
-  ): Promise<void> {
+  public static async notifySegmentCreated(segmentName: string, projectName: string, projectId: string): Promise<void> {
     await this.send({
       title: 'Segment Created',
       message: `Segment "${segmentName}" created in project "${projectName}" (${projectId})`,
@@ -751,6 +714,8 @@ export class NtfyService {
       tags: [NtfyTag.INFO],
     });
   }
+
+  // ===== Segment notifications =====
 
   /**
    * Notify about segment membership computed - LOW priority
@@ -760,10 +725,23 @@ export class NtfyService {
     projectName: string,
     projectId: string,
     memberCount: number,
+    added?: number,
+    removed?: number,
   ): Promise<void> {
+    let message = `Segment "${segmentName}" in project "${projectName}" (${projectId}) now has ${memberCount} members`;
+
+    if (added !== undefined && removed !== undefined) {
+      const changes: string[] = [];
+      if (added > 0) changes.push(`+${added} added`);
+      if (removed > 0) changes.push(`-${removed} removed`);
+      if (changes.length > 0) {
+        message += ` (${changes.join(', ')})`;
+      }
+    }
+
     await this.send({
       title: 'Segment Membership Updated',
-      message: `Segment "${segmentName}" in project "${projectName}" (${projectId}) now has ${memberCount} members`,
+      message,
       priority: NtfyPriority.LOW,
       tags: [NtfyTag.CHART],
     });
@@ -772,16 +750,30 @@ export class NtfyService {
   /**
    * Notify about segment deleted - MIN priority
    */
-  public static async notifySegmentDeleted(
-    segmentName: string,
-    projectName: string,
-    projectId: string,
-  ): Promise<void> {
+  public static async notifySegmentDeleted(segmentName: string, projectName: string, projectId: string): Promise<void> {
     await this.send({
       title: 'Segment Deleted',
       message: `Segment "${segmentName}" was deleted from project "${projectName}" (${projectId})`,
       priority: NtfyPriority.MIN,
       tags: [NtfyTag.INFO],
     });
+  }
+
+  /**
+   * Initialize the ntfy service with the configured URL
+   */
+  private static initialize(): void {
+    if (this.isConfigured) {
+      return;
+    }
+
+    this.ntfyUrl = process.env.NTFY_URL || null;
+    this.isConfigured = true;
+
+    if (!this.ntfyUrl) {
+      signale.warn('[NTFY] NTFY_URL not configured - notifications will be skipped');
+    } else {
+      signale.info(`[NTFY] Initialized with URL: ${this.ntfyUrl}`);
+    }
   }
 }
