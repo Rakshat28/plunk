@@ -40,6 +40,10 @@ export class Github {
     }
     const {code} = req.query;
 
+    if (!code || typeof code !== 'string') {
+      return res.redirect(DASHBOARD_URI + '/auth/login?message=Invalid OAuth callback');
+    }
+
     const data = new URLSearchParams({
       client_id: GITHUB_OAUTH_CLIENT,
       client_secret: GITHUB_OAUTH_SECRET,
@@ -47,19 +51,33 @@ export class Github {
       redirect_uri: `${API_URI}/oauth/github/callback`,
     });
 
-    const {access_token, token_type} = await fetch('https://github.com/login/oauth/access_token', {
+    const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
       headers: {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'},
       body: data,
     }).then(res => res.json());
 
+    if (!tokenResponse.access_token || !tokenResponse.token_type) {
+      return res.redirect(DASHBOARD_URI + '/auth/login?message=Failed to authenticate with GitHub');
+    }
+
     const emails = await fetch(`https://api.github.com/user/emails`, {
-      headers: {Authorization: `${token_type} ${access_token}`},
+      headers: {Authorization: `${tokenResponse.token_type} ${tokenResponse.access_token}`},
     }).then(res => res.json());
 
-    const email = emails.find((e: {primary: boolean; email: string}) => e.primary).email;
+    if (!Array.isArray(emails) || emails.length === 0) {
+      return res.redirect(DASHBOARD_URI + '/auth/login?message=Failed to retrieve emails from GitHub');
+    }
 
-    let user = await UserService.email(email as string);
+    const primaryEmail = emails.find((e: {primary: boolean; email: string}) => e.primary);
+
+    if (!primaryEmail || !primaryEmail.email || typeof primaryEmail.email !== 'string') {
+      return res.redirect(DASHBOARD_URI + '/auth/login?message=Failed to retrieve primary email from GitHub');
+    }
+
+    const email = primaryEmail.email;
+
+    let user = await UserService.email(email);
     let isNewUser = false;
 
     if (!user) {

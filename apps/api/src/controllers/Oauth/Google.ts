@@ -35,6 +35,10 @@ export class Google {
     }
     const {code} = req.query;
 
+    if (!code || typeof code !== 'string') {
+      return res.redirect(DASHBOARD_URI + '/auth/login?message=Invalid OAuth callback');
+    }
+
     const data = new URLSearchParams({
       client_id: GOOGLE_OAUTH_CLIENT,
       client_secret: GOOGLE_OAUTH_SECRET,
@@ -43,15 +47,25 @@ export class Google {
       grant_type: 'authorization_code',
     });
 
-    const {access_token} = await fetch('https://oauth2.googleapis.com/token', {
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: {'Content-type': 'application/x-www-form-urlencoded'},
       body: data,
     }).then(res => res.json());
 
-    const {email} = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`).then(
-      res => res.json(),
-    );
+    if (!tokenResponse.access_token) {
+      return res.redirect(DASHBOARD_URI + '/auth/login?message=Failed to authenticate with Google');
+    }
+
+    const userInfoResponse = await fetch(
+      `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${tokenResponse.access_token}`,
+    ).then(res => res.json());
+
+    if (!userInfoResponse.email || typeof userInfoResponse.email !== 'string') {
+      return res.redirect(DASHBOARD_URI + '/auth/login?message=Failed to retrieve email from Google');
+    }
+
+    const email = userInfoResponse.email;
 
     let user = await UserService.email(email);
     let isNewUser = false;

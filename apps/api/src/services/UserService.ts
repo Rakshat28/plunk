@@ -52,6 +52,10 @@ export class UserService {
   }
 
   public static async email(email: string) {
+    if (!email) {
+      return null;
+    }
+
     return wrapRedis(Keys.User.email(email), async () => {
       return prisma.user.findFirst({
         where: {
