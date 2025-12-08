@@ -1,4 +1,6 @@
 import Image from 'next/image';
+import {useEffect, useState} from 'react';
+import {useRouter} from 'next/router';
 
 export interface LoaderProps {
   message?: string;
@@ -9,6 +11,28 @@ export interface LoaderProps {
  * Full-screen loader component with animated logo and spinner
  */
 export function Loader({message = 'Loading...', showLogo = true}: LoaderProps) {
+  const [showClearCache, setShowClearCache] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowClearCache(true);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleClearCache = () => {
+    document.cookie.split(';').forEach(c => {
+      document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
+    });
+
+    localStorage.clear();
+    sessionStorage.clear();
+
+    void router.push('/auth/login');
+  };
+
   return (
     <div className="h-screen flex items-center justify-center bg-white">
       <div className="text-center animate-in fade-in duration-500">
@@ -48,6 +72,19 @@ export function Loader({message = 'Loading...', showLogo = true}: LoaderProps) {
 
         {/* Loading message */}
         {message && <p className="text-sm font-medium text-neutral-700 animate-in fade-in duration-1000">{message}</p>}
+
+        {/* Clear cache button - appears after 5 seconds */}
+        {showClearCache && (
+          <div className="mt-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <p className="text-xs text-neutral-500 mb-3">Taking too long?</p>
+            <button
+              onClick={handleClearCache}
+              className="px-4 py-2 text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg transition-colors duration-200"
+            >
+              Clear cache and reload
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
