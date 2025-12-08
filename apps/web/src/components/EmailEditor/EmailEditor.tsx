@@ -5,6 +5,7 @@ import {TextAlign} from '@tiptap/extension-text-align';
 import {Color} from '@tiptap/extension-color';
 import {TextStyle} from '@tiptap/extension-text-style';
 import {Link} from '@tiptap/extension-link';
+import Placeholder from '@tiptap/extension-placeholder';
 import {Variable} from './VariableExtension';
 import {setAvailableVariables, VariableMention} from './VariableMention';
 import {Toolbar} from './Toolbar';
@@ -25,7 +26,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from '@plunk/ui';
 import {Code2, Eye, Monitor, Smartphone, Tablet, Upload, X} from 'lucide-react';
 import {network} from '../../lib/network';
@@ -153,6 +154,9 @@ export function EmailEditor({value, onChange, placeholder, subject, from, replyT
       ResizableImage,
       Variable,
       VariableMention,
+      Placeholder.configure({
+        placeholder: placeholder || 'Your next email starts here!',
+      }),
     ],
     // Only initialize with content if starting in visual mode
     // If starting in HTML mode (due to custom HTML), keep editor empty
@@ -556,7 +560,7 @@ export function EmailEditor({value, onChange, placeholder, subject, from, replyT
             <textarea
               value={htmlContent}
               onChange={e => handleHtmlChange(e.target.value)}
-              placeholder={placeholder || '<h1>Welcome!</h1><p>Your email content here...</p>'}
+              placeholder={placeholder || 'Your next email starts here!'}
               className="w-full h-full px-4 py-3 text-sm font-mono resize-none min-h-[400px] focus:outline-none"
             />
           </div>

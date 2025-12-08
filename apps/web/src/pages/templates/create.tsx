@@ -185,11 +185,7 @@ export default function CreateTemplatePage() {
                 <CardDescription>Create your email using the visual editor or paste custom HTML</CardDescription>
               </CardHeader>
               <CardContent>
-                <EmailEditor
-                  value={body}
-                  onChange={setBody}
-                  placeholder="<h1>Welcome!</h1><p>Thanks for subscribing to our newsletter.</p>"
-                />
+                <EmailEditor value={body} onChange={setBody} />
               </CardContent>
             </Card>
           </form>

@@ -288,7 +288,6 @@ export default function TemplateEditorPage() {
                 <EmailEditor
                   value={editedTemplate.body || ''}
                   onChange={body => setEditedTemplate({...editedTemplate, body})}
-                  placeholder="<h1>Welcome!</h1><p>Thanks for subscribing to our newsletter.</p>"
                 />
               </CardContent>
             </Card>
