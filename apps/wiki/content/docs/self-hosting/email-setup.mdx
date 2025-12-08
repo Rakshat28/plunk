@@ -33,28 +33,7 @@ description: Configure email delivery
 }
 ```
 
-## 2. Request Production Access
-
-SES starts in sandbox mode (verified addresses only).
-
-1. Go to SES Console
-2. Click "Request production access"
-3. Wait for approval (24-48 hours)
-
-## 3. Verify Domain
-
-1. SES Console → Verified Identities → Create identity
-2. Choose "Domain" → Enter your domain
-3. Add DNS records provided by AWS
-4. Wait for verification
-
-## 4. Enable DKIM (Recommended)
-
-1. SES Console → Verified Identities → Your domain
-2. Enable "Easy DKIM"
-3. Add the 3 CNAME records to your DNS
-
-## 5. Create SNS Topic
+## 2. Create SNS Topic
 
 1. Go to SNS Console → Topics → Create topic
 2. Type: Standard
@@ -65,7 +44,7 @@ SES starts in sandbox mode (verified addresses only).
    - Endpoint: `https://api.yourdomain.com/webhooks/sns`
 6. Plunk automatically confirms the subscription. If it fails, check your logs for the confirmation URL.
 
-## 6. Create Configuration Sets
+## 3. Create Configuration Sets
 
 ### Tracking Configuration Set
 
@@ -81,7 +60,7 @@ SES starts in sandbox mode (verified addresses only).
 1. Create another set named `plunk-no-tracking`
 2. Add event destination with only: **Sends, Deliveries, Bounces, Complaints**
 
-## 7. Configure Environment
+## 4. Configure Environment
 
 ```bash
 AWS_SES_REGION="us-east-1"
@@ -90,3 +69,8 @@ AWS_SES_SECRET_ACCESS_KEY="your-secret-key"
 SES_CONFIGURATION_SET="plunk-tracking"
 SES_CONFIGURATION_SET_NO_TRACKING="plunk-no-tracking"
 ```
+
+## 5. Add Your Domain in Plunk
+
+Once you have configured AWS SES with the above settings, you can add and verify your domain directly through the Plunk dashboard. Plunk will handle the domain verification and DKIM setup with AWS SES automatically and show you the right records to add to your DNS.
+
