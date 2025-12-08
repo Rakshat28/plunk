@@ -65,7 +65,7 @@ export const jwt = {
  * @param request The express request object
  */
 export function parseJwt(request: Request): string {
-  const token: string | undefined = request.cookies.token;
+  const token: string | undefined = request.cookies.next_token;
 
   if (!token) {
     throw new NotAuthenticated();

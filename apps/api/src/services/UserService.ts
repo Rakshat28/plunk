@@ -43,7 +43,7 @@ function getCookieDomain(): string | undefined {
 }
 
 export class UserService {
-  public static readonly COOKIE_NAME = 'token';
+  public static readonly COOKIE_NAME = 'next_token';
 
   public static async id(id: string) {
     return wrapRedis(Keys.User.id(id), async () => {
