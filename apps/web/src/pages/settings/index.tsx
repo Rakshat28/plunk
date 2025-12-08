@@ -368,9 +368,9 @@ export default function Settings() {
               {buildTabs({billingEnabled, smtpEnabled}).map(tab => {
                 const Icon = tab.icon;
                 return (
-                  <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
+                  <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2" title={tab.label}>
                     <Icon className="h-4 w-4" />
-                    {tab.label}
+                    <span className="hidden md:inline">{tab.label}</span>
                   </TabsTrigger>
                 );
               })}
