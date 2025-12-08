@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.1](https://github.com/useplunk/plunk/compare/v0.1.0...v0.1.1) (2025-12-08)
+
+
+### Bug Fixes
+
+* Add additional verification in Oauth controllers ([53ecda9](https://github.com/useplunk/plunk/commit/53ecda9f7a34111785ac3ea3af18cb33460a44af))
+* add clear cache button on full-screen loader ([60804c1](https://github.com/useplunk/plunk/commit/60804c12b0b4c4c3ef97e730e4857d41fa1fd021))
+* Dedicated token name for next version ([fc535a5](https://github.com/useplunk/plunk/commit/fc535a558fab28045dae9ce978f483e58c72a24f))
+* only mark releases as latest ([9d8b4a5](https://github.com/useplunk/plunk/commit/9d8b4a59fbd42420bb595d2a44df93a29214121a))
+
+
+### Documentation
+
+* dynamic link to Docker Compose for self-hosting ([90f8170](https://github.com/useplunk/plunk/commit/90f8170efbad0cec981a24e7831840aac65d8d70))
+* Update AWS setup docs ([f7ac25f](https://github.com/useplunk/plunk/commit/f7ac25f91f4e1dcce301fb325801a67f2a9dee07))
+
 ## [0.1.0](https://github.com/useplunk/plunk/compare/v0.0.1...v0.1.0) (2025-12-08)
 
 
