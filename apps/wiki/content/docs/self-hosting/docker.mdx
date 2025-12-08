@@ -5,15 +5,32 @@ description: Deploy with Docker Compose
 
 ## Quick Start
 
+1. Download [docker-compose.yml](https://raw.githubusercontent.com/useplunk/plunk/next/docker-compose.yml)
+2. Configure environment variables
+3. Run `docker compose up -d`
+
+## Minimal .env
+
 ```bash
-git clone https://github.com/useplunk/plunk.git
-cd plunk
-cp .env.self-host.example .env
-# Edit .env (see Environment Variables)
-docker compose up -d
+# Required
+JWT_SECRET="$(openssl rand -base64 32)"
+DB_PASSWORD="your-secure-password"
+
+# Domains (point these to your server)
+API_DOMAIN="api.yourdomain.com"
+DASHBOARD_DOMAIN="app.yourdomain.com"
+LANDING_DOMAIN="www.yourdomain.com"
+WIKI_DOMAIN="docs.yourdomain.com"
+USE_HTTPS="true"
+
+# AWS SES
+AWS_SES_REGION="us-east-1"
+AWS_SES_ACCESS_KEY_ID="your-key"
+AWS_SES_SECRET_ACCESS_KEY="your-secret"
+SES_CONFIGURATION_SET="plunk-tracking"
 ```
 
-See [Environment Variables](/self-hosting/environment-variables) for all configuration options.
+See [Environment Variables](/self-hosting/environment-variables) for all options.
 
 ## Services
 
@@ -33,7 +50,6 @@ See [Environment Variables](/self-hosting/environment-variables) for all configu
 | 465 | SMTP (implicit TLS) |
 | 587 | SMTP (STARTTLS) |
 | 9000 | Minio API |
-| 9001 | Minio Console |
 
 ## Running Individual Services
 
