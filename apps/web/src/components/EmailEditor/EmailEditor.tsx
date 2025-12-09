@@ -10,6 +10,7 @@ import {Variable} from './VariableExtension';
 import {setAvailableVariables, VariableMention} from './VariableMention';
 import {Toolbar} from './Toolbar';
 import {ResizableImage} from './ResizableImage';
+import {HtmlEditor} from './HtmlEditor';
 import {useContactFields, useContacts} from '../../lib/hooks/useContacts';
 import {useConfig} from '../../lib/hooks/useConfig';
 import {useEffect, useRef, useState} from 'react';
@@ -556,12 +557,11 @@ export function EmailEditor({value, onChange, placeholder, subject, from, replyT
         </>
       ) : (
         <>
-          <div className="min-h-[400px] max-h-[600px] overflow-y-auto">
-            <textarea
+          <div className="min-h-[400px] max-h-[600px] overflow-hidden">
+            <HtmlEditor
               value={htmlContent}
-              onChange={e => handleHtmlChange(e.target.value)}
+              onChange={handleHtmlChange}
               placeholder={placeholder || 'Your next email starts here!'}
-              className="w-full h-full px-4 py-3 text-sm font-mono resize-none min-h-[400px] focus:outline-none"
             />
           </div>
           {selectedContactId && (

@@ -577,7 +577,6 @@ export default function CampaignDetailsPage() {
                   setEditedCampaign({...editedCampaign, body});
                   setHasChanges(true);
                 }}
-                placeholder="<h1>Welcome!</h1><p>Your email content here...</p>"
               />
             </CardContent>
           </Card>

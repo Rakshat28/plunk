@@ -197,11 +197,7 @@ export default function CreateCampaignPage() {
                       <Label htmlFor="body">
                         Email Body <span className="text-red-500">*</span>
                       </Label>
-                      <EmailEditor
-                        value={body}
-                        onChange={setBody}
-                        placeholder="<h1>Welcome!</h1><p>Your email content here...</p>"
-                      />
+                      <EmailEditor value={body} onChange={setBody} />
                     </div>
                   </CardContent>
                 </Card>
