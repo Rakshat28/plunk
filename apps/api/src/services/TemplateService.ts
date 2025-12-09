@@ -88,8 +88,8 @@ export class TemplateService {
       subject: string;
       body: string;
       from: string;
-      fromName?: string;
-      replyTo?: string;
+      fromName?: string | null;
+      replyTo?: string | null;
       type?: Template['type'];
     },
   ): Promise<Template> {
@@ -120,8 +120,8 @@ export class TemplateService {
       subject?: string;
       body?: string;
       from?: string;
-      fromName?: string;
-      replyTo?: string;
+      fromName?: string | null;
+      replyTo?: string | null;
       type?: Template['type'];
     },
   ): Promise<Template> {

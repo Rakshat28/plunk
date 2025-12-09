@@ -93,8 +93,8 @@ export default function TemplateEditorPage() {
         subject: editedTemplate.subject,
         body: editedTemplate.body,
         from: editedTemplate.from,
-        fromName: editedTemplate.fromName || undefined,
-        replyTo: editedTemplate.replyTo || undefined,
+        fromName: editedTemplate.fromName || null,
+        replyTo: editedTemplate.replyTo || null,
         type: editedTemplate.type,
       });
 

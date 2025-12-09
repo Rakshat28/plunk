@@ -213,8 +213,8 @@ export default function CampaignDetailsPage() {
         subject: editedCampaign.subject,
         body: editedCampaign.body,
         from: editedCampaign.from,
-        fromName: editedCampaign.fromName || undefined,
-        replyTo: editedCampaign.replyTo || undefined,
+        fromName: editedCampaign.fromName || null,
+        replyTo: editedCampaign.replyTo || null,
         audienceType: editedCampaign.audienceType,
         segmentId: editedCampaign.segmentId || undefined,
       });

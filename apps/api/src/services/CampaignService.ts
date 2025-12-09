@@ -22,8 +22,8 @@ export interface CreateCampaignData {
   subject: string;
   body: string;
   from: string;
-  fromName?: string;
-  replyTo?: string;
+  fromName?: string | null;
+  replyTo?: string | null;
   audienceType: CampaignAudienceType;
   audienceCondition?: FilterCondition;
   segmentId?: string;
@@ -35,8 +35,8 @@ export interface UpdateCampaignData {
   subject?: string;
   body?: string;
   from?: string;
-  fromName?: string;
-  replyTo?: string;
+  fromName?: string | null;
+  replyTo?: string | null;
   audienceType?: CampaignAudienceType;
   audienceCondition?: FilterCondition;
   segmentId?: string;

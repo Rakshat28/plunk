@@ -34,8 +34,8 @@ export function buildEmailFieldsUpdate(data: {
   subject?: string;
   body?: string;
   from?: string;
-  fromName?: string;
-  replyTo?: string;
+  fromName?: string | null;
+  replyTo?: string | null;
 }): Prisma.CampaignUpdateInput | Prisma.TemplateUpdateInput {
   return buildUpdateData(data) as Prisma.CampaignUpdateInput | Prisma.TemplateUpdateInput;
 }

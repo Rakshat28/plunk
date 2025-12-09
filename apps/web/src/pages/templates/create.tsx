@@ -58,8 +58,8 @@ export default function CreateTemplatePage() {
         subject,
         body,
         from,
-        fromName: fromName || undefined,
-        replyTo: replyTo || undefined,
+        fromName: fromName || null,
+        replyTo: replyTo || null,
         type,
       });
 
