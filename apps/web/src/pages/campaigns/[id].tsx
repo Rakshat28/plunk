@@ -220,7 +220,21 @@ export default function CampaignDetailsPage() {
       });
       // Silent save - no toast notification
       setHasChanges(false);
-      void mutate();
+      // Refetch and re-sync the edited campaign with fresh data
+      const updated = await mutate();
+      if (updated?.data) {
+        setEditedCampaign({
+          name: updated.data.name,
+          description: updated.data.description || '',
+          subject: updated.data.subject,
+          body: updated.data.body,
+          from: updated.data.from,
+          fromName: updated.data.fromName || '',
+          replyTo: updated.data.replyTo || '',
+          audienceType: updated.data.audienceType,
+          segmentId: updated.data.segmentId || undefined,
+        });
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to update campaign');
     } finally {
@@ -496,11 +510,6 @@ export default function CampaignDetailsPage() {
                         value={CampaignAudienceType.SEGMENT}
                         title="Segment"
                         description="Target a defined group of contacts"
-                      />
-                      <SelectItemWithDescription
-                        value={CampaignAudienceType.FILTERED}
-                        title="Filtered"
-                        description="Use advanced filter conditions"
                       />
                     </SelectContent>
                   </Select>
