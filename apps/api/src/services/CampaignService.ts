@@ -71,7 +71,7 @@ export class CampaignService {
       SegmentService.validateCondition(data.audienceCondition);
     }
 
-    // Create campaign
+    // Create campaign with initial recipient count of 0
     const campaign = await prisma.campaign.create({
       data: {
         projectId,
@@ -86,6 +86,7 @@ export class CampaignService {
         audienceCondition: (data.audienceCondition || null) as unknown as Prisma.InputJsonValue,
         segmentId: data.segmentId,
         status: CampaignStatus.DRAFT,
+        totalRecipients: 0, // Will be updated below
       },
       include: {
         project: {
@@ -94,10 +95,17 @@ export class CampaignService {
       },
     });
 
+    // Calculate and update recipient count for the draft
+    const recipientCount = await this.getRecipientCount(projectId, campaign);
+    const updatedCampaign = await prisma.campaign.update({
+      where: {id: campaign.id},
+      data: {totalRecipients: recipientCount},
+    });
+
     // Send notification about campaign creation
     await NtfyService.notifyCampaignCreated(campaign.name, campaign.project.name, projectId);
 
-    return campaign;
+    return updatedCampaign;
   }
 
   /**
@@ -147,10 +155,25 @@ export class CampaignService {
       delete (updateData as Record<string, unknown>).segmentId;
     }
 
-    return prisma.campaign.update({
+    // Update the campaign first
+    const updatedCampaign = await prisma.campaign.update({
       where: {id: campaignId},
       data: updateData,
     });
+
+    // If audience-related fields changed and campaign is still a draft, recalculate totalRecipients
+    const audienceChanged =
+      data.audienceType !== undefined || data.segmentId !== undefined || data.audienceCondition !== undefined;
+
+    if (audienceChanged && updatedCampaign.status === CampaignStatus.DRAFT) {
+      const recipientCount = await this.getRecipientCount(projectId, updatedCampaign);
+      return prisma.campaign.update({
+        where: {id: campaignId},
+        data: {totalRecipients: recipientCount},
+      });
+    }
+
+    return updatedCampaign;
   }
 
   /**
@@ -252,7 +275,7 @@ export class CampaignService {
     const campaign = await this.get(projectId, campaignId);
 
     // Create a new campaign with the same data but reset status and stats
-    return prisma.campaign.create({
+    const duplicatedCampaign = await prisma.campaign.create({
       data: {
         projectId,
         name: `${campaign.name} (Copy)`,
@@ -266,13 +289,20 @@ export class CampaignService {
         audienceCondition: campaign.audienceCondition as Prisma.InputJsonValue,
         segmentId: campaign.segmentId,
         status: CampaignStatus.DRAFT,
-        totalRecipients: 0,
+        totalRecipients: 0, // Will be updated below
         sentCount: 0,
         deliveredCount: 0,
         openedCount: 0,
         clickedCount: 0,
         bouncedCount: 0,
       },
+    });
+
+    // Calculate and update recipient count
+    const recipientCount = await this.getRecipientCount(projectId, duplicatedCampaign);
+    return prisma.campaign.update({
+      where: {id: duplicatedCampaign.id},
+      data: {totalRecipients: recipientCount},
     });
   }
 
