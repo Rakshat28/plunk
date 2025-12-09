@@ -5,14 +5,27 @@ import {EmailService} from '../EmailService';
 import {factories, getPrismaClient} from '../../../../../test/helpers';
 import {redis} from '../../database/redis';
 
-// Mock STRIPE_ENABLED to be true for free tier tests
+// Mock STRIPE_ENABLED and STRIPE_SK for free tier tests
 vi.mock('../../app/constants.js', async () => {
   const actual = await vi.importActual('../../app/constants.js');
   return {
     ...actual,
     STRIPE_ENABLED: true,
+    STRIPE_SK: 'sk_test_mock_key_for_testing',
   };
 });
+
+// Mock the stripe client to avoid actual Stripe API calls
+vi.mock('../../app/stripe.js', () => ({
+  stripe: {
+    customers: {
+      retrieve: vi.fn().mockResolvedValue({
+        deleted: false,
+        currency: 'usd',
+      }),
+    },
+  },
+}));
 
 describe('BillingLimitService - Critical Enforcement', () => {
   let projectId: string;
