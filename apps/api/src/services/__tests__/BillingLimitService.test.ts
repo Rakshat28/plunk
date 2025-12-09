@@ -5,6 +5,15 @@ import {EmailService} from '../EmailService';
 import {factories, getPrismaClient} from '../../../../../test/helpers';
 import {redis} from '../../database/redis';
 
+// Mock STRIPE_ENABLED to be true for free tier tests
+vi.mock('../../app/constants.js', async () => {
+  const actual = await vi.importActual('../../app/constants.js');
+  return {
+    ...actual,
+    STRIPE_ENABLED: true,
+  };
+});
+
 describe('BillingLimitService - Critical Enforcement', () => {
   let projectId: string;
   let contactId: string;
