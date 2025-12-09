@@ -6,7 +6,8 @@ import {
   AWS_SES_SECRET_ACCESS_KEY,
   DASHBOARD_URI,
   SES_CONFIGURATION_SET,
-  SES_CONFIGURATION_SET_NO_TRACKING
+  SES_CONFIGURATION_SET_NO_TRACKING,
+  TRACKING_TOGGLE_ENABLED
 } from '../app/constants.js';
 
 /**
@@ -160,10 +161,15 @@ ${breakLongLines(attachment.content, 76, true)}`,
     : ''
 }${mixedBoundary ? `\n--${mixedBoundary}--` : ''}`;
 
+  // Determine which configuration set to use
+  // Only use NO_TRACKING if tracking toggle is enabled AND tracking is disabled
+  const configurationSetName =
+    TRACKING_TOGGLE_ENABLED && !tracking ? SES_CONFIGURATION_SET_NO_TRACKING : SES_CONFIGURATION_SET;
+
   // Send via SES
   const response = await ses.sendRawEmail({
     Destinations: destinations,
-    ConfigurationSetName: tracking ? SES_CONFIGURATION_SET : SES_CONFIGURATION_SET_NO_TRACKING,
+    ConfigurationSetName: configurationSetName,
     RawMessage: {
       Data: new TextEncoder().encode(rawMessage),
     },
