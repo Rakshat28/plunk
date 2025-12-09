@@ -97,7 +97,7 @@ export default function CampaignDetailsPage() {
 
   // Fetch project members for test email
   const {data: projectMembers} = useSWR<{data: Array<{userId: string; email: string; role: string}>}>(
-    id ? `/projects/${campaign?.data.projectId}/members` : null,
+    id && campaign?.data.projectId ? `/projects/${campaign.data.projectId}/members` : null,
     {revalidateOnFocus: false},
   );
 
