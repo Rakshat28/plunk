@@ -28,10 +28,15 @@ export function EmailSettings({
   onReplyToChange,
   fromPlaceholder = 'hello',
   fromNamePlaceholder = 'Your Company',
-  replyToPlaceholder = 'support',
+  replyToPlaceholder,
   showFromNameHelpText = false,
   layout = 'grid',
 }: EmailSettingsProps) {
+  // Use from email's local part as the reply-to placeholder if not provided
+  // Extract local part (before @) since the domain is shown in a dropdown
+  // Fall back to fromPlaceholder when from is empty (since reply-to defaults to from)
+  const fromLocalPart = from.includes('@') ? from.split('@')[0] : from;
+  const effectiveReplyToPlaceholder = replyToPlaceholder || fromLocalPart || fromPlaceholder;
   const GridWrapper = layout === 'grid' ? 'div' : 'div';
   const gridClassName = layout === 'grid' ? 'grid gap-4 md:grid-cols-2' : 'space-y-4';
 
@@ -73,7 +78,7 @@ export function EmailSettings({
             label="Reply-To Email"
             value={replyTo}
             onChange={onReplyToChange}
-            placeholder={replyToPlaceholder}
+            placeholder={effectiveReplyToPlaceholder}
           />
         </div>
       </GridWrapper>
