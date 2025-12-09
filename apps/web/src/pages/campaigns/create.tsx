@@ -284,11 +284,9 @@ export default function CreateCampaignPage() {
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
                         <Users className="h-5 w-5 text-blue-600 mt-0.5" />
                         <div>
-                          <p className="text-sm font-medium text-blue-900">
-                            All subscribed contacts
-                          </p>
+                          <p className="text-sm font-medium text-blue-900">All subscribed contacts</p>
                           <p className="text-xs text-blue-700 mt-1">
-                            This campaign will be sent to all contacts who haven't unsubscribed
+                            This campaign will be sent to all contacts who haven&#39;t unsubscribed
                           </p>
                         </div>
                       </div>
