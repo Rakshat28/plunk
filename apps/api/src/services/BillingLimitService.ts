@@ -1,6 +1,7 @@
 import {EmailSourceType} from '@plunk/db';
 import signale from 'signale';
 
+import {STRIPE_ENABLED} from '../app/constants.js';
 import {stripe} from '../app/stripe.js';
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
@@ -221,7 +222,8 @@ export class BillingLimitService {
         project.billingLimitTransactional !== null;
 
       // Free tier projects (no subscription and no custom limits): enforce total 1000 email/month limit
-      if (!project.subscription && !hasCustomLimits) {
+      // Only enforce free tier limits if billing is enabled
+      if (STRIPE_ENABLED && !project.subscription && !hasCustomLimits) {
         const totalUsage = await this.getTotalUsage(projectId);
         const freeLimit = this.FREE_TIER_TOTAL_LIMIT;
         const percentage = (totalUsage / freeLimit) * 100;
@@ -415,7 +417,8 @@ export class BillingLimitService {
         project.billingLimitTransactional !== null;
 
       // Free tier projects (no subscription and no custom limits): show total usage with shared limit
-      if (!project.subscription && !hasCustomLimits) {
+      // Only show free tier limits if billing is enabled
+      if (STRIPE_ENABLED && !project.subscription && !hasCustomLimits) {
         const totalUsage = workflowUsage + campaignUsage + transactionalUsage;
         const limit = this.FREE_TIER_TOTAL_LIMIT;
         const percentage = (totalUsage / limit) * 100;
