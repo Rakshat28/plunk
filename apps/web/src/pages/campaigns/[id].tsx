@@ -326,19 +326,9 @@ export default function CampaignDetailsPage() {
   const c = campaign.data;
   const s = stats?.data;
 
-  // Get recipient count for draft campaigns
-  const getDraftRecipientCount = () => {
-    if (!campaign?.data) return 0;
-    const c = campaign.data;
-
-    if (c.audienceType === CampaignAudienceType.SEGMENT && c.segmentId && segments) {
-      const segment = segments.find(s => s.id === c.segmentId);
-      return segment?.memberCount || 0;
-    }
-    return 0; // We'd need total contact count for ALL audience type
-  };
-
-  const draftRecipientCount = isEditMode ? getDraftRecipientCount() : 0;
+  // Get recipient count for draft campaigns from the campaign's totalRecipients field
+  // The backend calculates this for all audience types when the campaign is created/updated
+  const draftRecipientCount = isEditMode && campaign?.data ? campaign.data.totalRecipients : 0;
 
   // Render edit form for drafts
   if (isEditMode) {
