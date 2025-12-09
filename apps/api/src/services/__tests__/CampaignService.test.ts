@@ -356,4 +356,227 @@ describe('CampaignService', () => {
       expect(matching).toBe(5);
     });
   });
+
+  describe('send', () => {
+    it('should throw error when campaign has no recipients', async () => {
+      // Create campaign with no contacts in project
+      const campaign = await factories.createCampaign({
+        projectId,
+        status: CampaignStatus.DRAFT,
+      });
+
+      await expect(CampaignService.send(projectId, campaign.id)).rejects.toThrow('Campaign has no recipients');
+    });
+
+    it('should send campaign successfully when recipients are under billing limit', async () => {
+      // Set billing limit for campaigns
+      await prisma.project.update({
+        where: {id: projectId},
+        data: {billingLimitCampaigns: 100},
+      });
+
+      // Create 5 subscribed contacts
+      for (let i = 0; i < 5; i++) {
+        await factories.createContact({
+          projectId,
+          subscribed: true,
+        });
+      }
+
+      // Create campaign targeting all contacts
+      const campaign = await factories.createCampaign({
+        projectId,
+        status: CampaignStatus.DRAFT,
+        audienceType: CampaignAudienceType.ALL,
+      });
+
+      // Should send successfully (5 recipients < 100 limit)
+      const sentCampaign = await CampaignService.send(projectId, campaign.id);
+
+      expect(sentCampaign.status).toBe(CampaignStatus.SENDING);
+      expect(sentCampaign.totalRecipients).toBe(5);
+    });
+
+    it('should throw 403 error when campaign would exceed billing limit', async () => {
+      // Set billing limit for campaigns to 10
+      await prisma.project.update({
+        where: {id: projectId},
+        data: {billingLimitCampaigns: 10},
+      });
+
+      // Create 5 existing campaign emails (usage = 5)
+      const contact = await factories.createContact({projectId, subscribed: true});
+      for (let i = 0; i < 5; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: 'CAMPAIGN',
+        });
+      }
+
+      // Create campaign with 10 subscribed contacts (would result in 15 total)
+      for (let i = 0; i < 10; i++) {
+        await factories.createContact({
+          projectId,
+          subscribed: true,
+        });
+      }
+
+      const campaign = await factories.createCampaign({
+        projectId,
+        status: CampaignStatus.DRAFT,
+        audienceType: CampaignAudienceType.ALL,
+      });
+
+      // Should throw error because 5 + 11 = 16 > 10 limit (11 contacts: 1 from email creation + 10 new)
+      await expect(CampaignService.send(projectId, campaign.id)).rejects.toThrow(/exceed billing limit/i);
+    });
+
+    it('should throw 403 error when scheduled campaign would exceed billing limit', async () => {
+      // Set billing limit for campaigns to 20
+      await prisma.project.update({
+        where: {id: projectId},
+        data: {billingLimitCampaigns: 20},
+      });
+
+      // Create 15 existing campaign emails
+      const contact = await factories.createContact({projectId, subscribed: true});
+      for (let i = 0; i < 15; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: 'CAMPAIGN',
+        });
+      }
+
+      // Create campaign with 10 subscribed contacts (would result in 25 total)
+      for (let i = 0; i < 10; i++) {
+        await factories.createContact({
+          projectId,
+          subscribed: true,
+        });
+      }
+
+      const campaign = await factories.createCampaign({
+        projectId,
+        status: CampaignStatus.DRAFT,
+        audienceType: CampaignAudienceType.ALL,
+      });
+
+      const scheduledFor = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+      // Should throw error when scheduling because 15 + 10 = 25 > 20 limit
+      await expect(CampaignService.send(projectId, campaign.id, scheduledFor)).rejects.toThrow(
+        /Cannot schedule campaign.*exceed billing limit/i,
+      );
+    });
+
+    it('should send campaign successfully when billing limit is null (unlimited)', async () => {
+      // Set billing limit to null (unlimited)
+      await prisma.project.update({
+        where: {id: projectId},
+        data: {billingLimitCampaigns: null},
+      });
+
+      // Create 1000 subscribed contacts
+      for (let i = 0; i < 1000; i++) {
+        await factories.createContact({
+          projectId,
+          subscribed: true,
+        });
+      }
+
+      const campaign = await factories.createCampaign({
+        projectId,
+        status: CampaignStatus.DRAFT,
+        audienceType: CampaignAudienceType.ALL,
+      });
+
+      // Should send successfully (no limit)
+      const sentCampaign = await CampaignService.send(projectId, campaign.id);
+
+      expect(sentCampaign.status).toBe(CampaignStatus.SENDING);
+      expect(sentCampaign.totalRecipients).toBe(1000);
+    });
+
+    it('should allow campaign that exactly reaches billing limit', async () => {
+      // Set billing limit for campaigns to 10
+      await prisma.project.update({
+        where: {id: projectId},
+        data: {billingLimitCampaigns: 10},
+      });
+
+      // Create 5 existing campaign emails
+      const contact = await factories.createContact({projectId, subscribed: true});
+      for (let i = 0; i < 5; i++) {
+        await factories.createEmail({
+          projectId,
+          contactId: contact.id,
+          sourceType: 'CAMPAIGN',
+        });
+      }
+
+      // Create 4 more subscribed contacts (total of 5 with the one above: 1 + 4 = 5)
+      for (let i = 0; i < 4; i++) {
+        await factories.createContact({
+          projectId,
+          subscribed: true,
+        });
+      }
+
+      const campaign = await factories.createCampaign({
+        projectId,
+        status: CampaignStatus.DRAFT,
+        audienceType: CampaignAudienceType.ALL,
+      });
+
+      // Should send successfully because 5 + 5 = 10 (exactly at limit)
+      const sentCampaign = await CampaignService.send(projectId, campaign.id);
+
+      expect(sentCampaign.status).toBe(CampaignStatus.SENDING);
+      expect(sentCampaign.totalRecipients).toBe(5);
+    });
+
+    it('should throw error when campaign has already been sent', async () => {
+      const campaign = await factories.createCampaign({
+        projectId,
+        status: CampaignStatus.SENT,
+      });
+
+      await expect(CampaignService.send(projectId, campaign.id)).rejects.toThrow(
+        'Campaign has already been sent or is currently sending',
+      );
+    });
+
+    it('should schedule campaign successfully when recipients are under billing limit', async () => {
+      // Set billing limit for campaigns
+      await prisma.project.update({
+        where: {id: projectId},
+        data: {billingLimitCampaigns: 50},
+      });
+
+      // Create 10 subscribed contacts
+      for (let i = 0; i < 10; i++) {
+        await factories.createContact({
+          projectId,
+          subscribed: true,
+        });
+      }
+
+      const campaign = await factories.createCampaign({
+        projectId,
+        status: CampaignStatus.DRAFT,
+        audienceType: CampaignAudienceType.ALL,
+      });
+
+      const scheduledFor = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+      // Should schedule successfully (10 recipients < 50 limit)
+      const scheduledCampaign = await CampaignService.send(projectId, campaign.id, scheduledFor);
+
+      expect(scheduledCampaign.status).toBe(CampaignStatus.SCHEDULED);
+      expect(scheduledCampaign.scheduledFor).toEqual(scheduledFor);
+      expect(scheduledCampaign.totalRecipients).toBe(10);
+    });
+  });
 });
