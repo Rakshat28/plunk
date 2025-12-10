@@ -647,7 +647,8 @@ export default function Settings() {
                               <span className="font-medium">No Active Subscription</span>
                             </div>
                             <p className="text-sm text-neutral-600">
-                              Start a subscription to unlock premium features and support the development of Plunk.
+                              Start a subscription and support the development of Plunk. You will be charged a one-time
+                              onboarding fee which will be credited to your first invoice.
                             </p>
                           </div>
 
