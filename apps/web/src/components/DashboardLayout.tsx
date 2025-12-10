@@ -192,7 +192,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
                   <div className="h-6 w-6 rounded bg-neutral-900 text-white flex items-center justify-center text-xs font-medium">
                     {project.name.charAt(0).toUpperCase()}
                   </div>
-                  <span className="text-neutral-900">{project.name}</span>
+                  <span className="text-neutral-900 text-left flex-1">{project.name}</span>
                   {activeProject?.id === project.id && (
                     <div className="ml-auto h-1.5 w-1.5 rounded-full bg-neutral-900" />
                   )}
