@@ -7,19 +7,26 @@ import {
   CardHeader,
   CardTitle,
   ConfirmDialog,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@plunk/ui';
-import type {Campaign} from '@plunk/db';
+import type {Campaign, Template} from '@plunk/db';
 import {CampaignStatus} from '@plunk/db';
 import {DashboardLayout} from '../../components/DashboardLayout';
+import {TemplateSelectionDialog} from '../../components/TemplateSelectionDialog';
+import {CampaignSelectionDialog} from '../../components/CampaignSelectionDialog';
 import {network} from '../../lib/network';
-import {Calendar, Copy, Info, Mail, Plus, Trash2, Users} from 'lucide-react';
+import {Calendar, ChevronDown, Copy, FileText, Info, Mail, Plus, RefreshCw, Trash2, Users} from 'lucide-react';
 import {NextSeo} from 'next-seo';
 import Link from 'next/link';
+import {useRouter} from 'next/router';
 import {useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
@@ -33,12 +40,15 @@ interface PaginatedCampaigns {
 }
 
 export default function CampaignsPage() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [campaignToCancel, setCampaignToCancel] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  const [showCampaignDialog, setShowCampaignDialog] = useState(false);
 
   const {data, mutate, isLoading} = useSWR<PaginatedCampaigns>(
     `/campaigns?page=${page}&pageSize=20${statusFilter !== 'ALL' ? `&status=${statusFilter}` : ''}`,
@@ -103,6 +113,93 @@ export default function CampaignsPage() {
     }
   };
 
+  const handleSelectTemplate = (
+    template: Template,
+    selectedFields: {
+      subject: boolean;
+      body: boolean;
+      from: boolean;
+      fromName: boolean;
+      replyTo: boolean;
+    },
+  ) => {
+    // Navigate to create page with template data as query params
+    const query: Record<string, string> = {
+      name: `${template.name}`,
+    };
+
+    // Only include templateId if body is selected (needed to fetch body content)
+    if (selectedFields.body) {
+      query.templateId = template.id;
+    }
+
+    // Add selected fields to query params
+    if (selectedFields.subject) {
+      query.subject = template.subject;
+    }
+    if (selectedFields.from) {
+      query.from = template.from;
+    }
+    if (selectedFields.fromName && template.fromName) {
+      query.fromName = template.fromName;
+    }
+    if (selectedFields.replyTo && template.replyTo) {
+      query.replyTo = template.replyTo;
+    }
+
+    void router.push({
+      pathname: '/campaigns/create',
+      query,
+    });
+  };
+
+  const handleSelectCampaign = (
+    campaign: Campaign,
+    selectedFields: {
+      subject: boolean;
+      body: boolean;
+      from: boolean;
+      fromName: boolean;
+      replyTo: boolean;
+      audience: boolean;
+    },
+  ) => {
+    // Navigate to create page with campaign data as query params
+    const query: Record<string, string> = {
+      name: `${campaign.name}`,
+    };
+
+    // Only include campaignId if body is selected (needed to fetch body content)
+    if (selectedFields.body) {
+      query.campaignId = campaign.id;
+    }
+
+    // Add selected fields to query params
+    if (selectedFields.subject) {
+      query.subject = campaign.subject;
+    }
+    if (selectedFields.from) {
+      query.from = campaign.from;
+    }
+    if (selectedFields.fromName && campaign.fromName) {
+      query.fromName = campaign.fromName;
+    }
+    if (selectedFields.replyTo && campaign.replyTo) {
+      query.replyTo = campaign.replyTo;
+    }
+    if (selectedFields.audience) {
+      query.audienceType = campaign.audienceType;
+      if (campaign.segmentId) {
+        query.segmentId = campaign.segmentId;
+      }
+    }
+
+    void router.push({
+      pathname: '/campaigns/create',
+      query,
+    });
+  };
+
   return (
     <>
       <NextSeo title="Campaigns" />
@@ -116,13 +213,51 @@ export default function CampaignsPage() {
                 Send one-time email broadcasts to your contacts. {data?.total ? `${data.total} total campaigns` : ''}
               </p>
             </div>
-            <Link href="/campaigns/create" className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto">
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Create Campaign</span>
-                <span className="sm:hidden">Create</span>
-              </Button>
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="w-full sm:w-auto">
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Create Campaign</span>
+                  <span className="sm:hidden">Create</span>
+                  <ChevronDown className="h-4 w-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80">
+                <DropdownMenuItem asChild className="py-3 cursor-pointer">
+                  <Link href="/campaigns/create" className="flex items-start gap-3">
+                    <Mail className="h-4 w-4 mt-0.5 text-neutral-700" />
+                    <div className="flex flex-col gap-0.5 flex-1">
+                      <span className="font-medium text-sm">Empty Campaign</span>
+                      <span className="text-xs text-neutral-500 leading-snug">
+                        Start from scratch with a blank canvas
+                      </span>
+                    </div>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowTemplateDialog(true)} className="py-3 cursor-pointer">
+                  <div className="flex items-start gap-3">
+                    <FileText className="h-4 w-4 mt-0.5 text-neutral-700" />
+                    <div className="flex flex-col gap-0.5 flex-1">
+                      <span className="font-medium text-sm">From Template</span>
+                      <span className="text-xs text-neutral-500 leading-snug">
+                        Use an existing template as a starting point
+                      </span>
+                    </div>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowCampaignDialog(true)} className="py-3 cursor-pointer">
+                  <div className="flex items-start gap-3">
+                    <RefreshCw className="h-4 w-4 mt-0.5 text-neutral-700" />
+                    <div className="flex flex-col gap-0.5 flex-1">
+                      <span className="font-medium text-sm">From Previous Campaign</span>
+                      <span className="text-xs text-neutral-500 leading-snug">
+                        Copy content and settings from an existing campaign
+                      </span>
+                    </div>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Filters */}
@@ -171,12 +306,60 @@ export default function CampaignsPage() {
                         ? 'Try adjusting your filters or create a new campaign.'
                         : 'Create your first campaign to send emails to your contacts.'}
                     </p>
-                    <Link href="/campaigns/create">
-                      <Button size="lg">
-                        <Plus className="h-4 w-4" />
-                        Create Your First Campaign
-                      </Button>
-                    </Link>
+                    {statusFilter === 'ALL' && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="lg">
+                            <Plus className="h-4 w-4" />
+                            Create Your First Campaign
+                            <ChevronDown className="h-4 w-4 ml-1" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="center" className="w-80">
+                          <DropdownMenuItem asChild className="py-3 cursor-pointer">
+                            <Link href="/campaigns/create" className="flex items-start gap-3">
+                              <Mail className="h-4 w-4 mt-0.5 text-neutral-700" />
+                              <div className="flex flex-col gap-0.5 flex-1">
+                                <span className="font-medium text-sm">Empty Campaign</span>
+                                <span className="text-xs text-neutral-500 leading-snug">
+                                  Start from scratch with a blank canvas
+                                </span>
+                              </div>
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setShowTemplateDialog(true)} className="py-3 cursor-pointer">
+                            <div className="flex items-start gap-3">
+                              <FileText className="h-4 w-4 mt-0.5 text-neutral-700" />
+                              <div className="flex flex-col gap-0.5 flex-1">
+                                <span className="font-medium text-sm">From Template</span>
+                                <span className="text-xs text-neutral-500 leading-snug">
+                                  Use an existing template as a starting point
+                                </span>
+                              </div>
+                            </div>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setShowCampaignDialog(true)} className="py-3 cursor-pointer">
+                            <div className="flex items-start gap-3">
+                              <RefreshCw className="h-4 w-4 mt-0.5 text-neutral-700" />
+                              <div className="flex flex-col gap-0.5 flex-1">
+                                <span className="font-medium text-sm">From Previous Campaign</span>
+                                <span className="text-xs text-neutral-500 leading-snug">
+                                  Copy content and settings from an existing campaign
+                                </span>
+                              </div>
+                            </div>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                    {statusFilter !== 'ALL' && (
+                      <Link href="/campaigns/create">
+                        <Button size="lg">
+                          <Plus className="h-4 w-4" />
+                          Create Campaign
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -229,9 +412,7 @@ export default function CampaignsPage() {
                         {campaign.totalRecipients > 0 && campaign.status !== 'DRAFT' && (
                           <p className="text-xs text-blue-700 mt-1">{deliveryProgress.toFixed(0)}% sent</p>
                         )}
-                        {campaign.status === 'DRAFT' && (
-                          <p className="text-xs text-blue-600 mt-1">Estimated</p>
-                        )}
+                        {campaign.status === 'DRAFT' && <p className="text-xs text-blue-600 mt-1">Estimated</p>}
                       </div>
 
                       {/* Open Rate */}
@@ -366,6 +547,18 @@ export default function CampaignsPage() {
           description="Are you sure you want to delete this draft campaign? This action cannot be undone."
           confirmText="Delete Campaign"
           variant="destructive"
+        />
+
+        <TemplateSelectionDialog
+          open={showTemplateDialog}
+          onOpenChange={setShowTemplateDialog}
+          onSelectTemplate={handleSelectTemplate}
+        />
+
+        <CampaignSelectionDialog
+          open={showCampaignDialog}
+          onOpenChange={setShowCampaignDialog}
+          onSelectCampaign={handleSelectCampaign}
         />
       </DashboardLayout>
     </>

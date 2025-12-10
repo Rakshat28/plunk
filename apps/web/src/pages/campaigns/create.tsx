@@ -25,7 +25,7 @@ import {EmailFormValidator} from '../../lib/validation';
 import {ArrowLeft, Save, Users} from 'lucide-react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
 import {useActiveProject} from '../../lib/contexts/ActiveProjectProvider';
@@ -43,8 +43,91 @@ export default function CreateCampaignPage() {
   const [audienceType, setAudienceType] = useState<CampaignAudienceType>(CampaignAudienceType.ALL);
   const [segmentId, setSegmentId] = useState('');
   const [saving, setSaving] = useState(false);
+  const [loadingTemplate, setLoadingTemplate] = useState(false);
 
   const {data: segments} = useSWR<Segment[]>('/segments', {revalidateOnFocus: false});
+
+  // Load template or campaign data if provided in query params
+  useEffect(() => {
+    const loadData = async () => {
+      const {
+        templateId,
+        campaignId,
+        name: queryName,
+        subject: querySubject,
+        from: queryFrom,
+        fromName: queryFromName,
+        replyTo: queryReplyTo,
+        audienceType: queryAudienceType,
+        segmentId: querySegmentId,
+      } = router.query;
+
+      // Handle template loading
+      if (templateId && typeof templateId === 'string') {
+        setLoadingTemplate(true);
+        try {
+          // Fetch the full template to get the body content
+          const template = await network.fetch<{data: {body: string}}>('GET', `/templates/${templateId}`);
+
+          // Pre-fill form with template data
+          if (queryName && typeof queryName === 'string') setName(queryName);
+          if (querySubject && typeof querySubject === 'string') setSubject(querySubject);
+          if (queryFrom && typeof queryFrom === 'string') setFrom(queryFrom);
+          if (queryFromName && typeof queryFromName === 'string') setFromName(queryFromName);
+          if (queryReplyTo && typeof queryReplyTo === 'string') setReplyTo(queryReplyTo);
+          setBody(template.data.body);
+
+          toast.success('Template loaded successfully');
+        } catch (error) {
+          toast.error('Failed to load template');
+        } finally {
+          setLoadingTemplate(false);
+        }
+      }
+      // Handle campaign loading
+      else if (campaignId && typeof campaignId === 'string') {
+        setLoadingTemplate(true);
+        try {
+          // Fetch the full campaign to get the body content
+          const campaign = await network.fetch<{data: {body: string}}>('GET', `/campaigns/${campaignId}`);
+
+          // Pre-fill form with campaign data
+          if (queryName && typeof queryName === 'string') setName(queryName);
+          if (querySubject && typeof querySubject === 'string') setSubject(querySubject);
+          if (queryFrom && typeof queryFrom === 'string') setFrom(queryFrom);
+          if (queryFromName && typeof queryFromName === 'string') setFromName(queryFromName);
+          if (queryReplyTo && typeof queryReplyTo === 'string') setReplyTo(queryReplyTo);
+          if (queryAudienceType && typeof queryAudienceType === 'string') {
+            setAudienceType(queryAudienceType as CampaignAudienceType);
+          }
+          if (querySegmentId && typeof querySegmentId === 'string') setSegmentId(querySegmentId);
+          setBody(campaign.data.body);
+
+          toast.success('Campaign loaded successfully');
+        } catch (error) {
+          toast.error('Failed to load campaign');
+        } finally {
+          setLoadingTemplate(false);
+        }
+      }
+      // Handle query params without template/campaign ID (direct field values)
+      else {
+        if (queryName && typeof queryName === 'string') setName(queryName);
+        if (querySubject && typeof querySubject === 'string') setSubject(querySubject);
+        if (queryFrom && typeof queryFrom === 'string') setFrom(queryFrom);
+        if (queryFromName && typeof queryFromName === 'string') setFromName(queryFromName);
+        if (queryReplyTo && typeof queryReplyTo === 'string') setReplyTo(queryReplyTo);
+        if (queryAudienceType && typeof queryAudienceType === 'string') {
+          setAudienceType(queryAudienceType as CampaignAudienceType);
+        }
+        if (querySegmentId && typeof querySegmentId === 'string') setSegmentId(querySegmentId);
+      }
+    };
+
+    if (router.isReady) {
+      void loadData();
+    }
+  }, [router.isReady, router.query]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,6 +177,26 @@ export default function CreateCampaignPage() {
     <>
       <NextSeo title="Create Campaign" />
       <DashboardLayout>
+        {loadingTemplate && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+            <div className="bg-white rounded-lg p-6 text-center">
+              <svg
+                className="h-8 w-8 animate-spin mx-auto text-neutral-900 mb-3"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              <p className="text-sm text-neutral-700">Loading template...</p>
+            </div>
+          </div>
+        )}
         <div className="space-y-6">
           {/* Header */}
           <div className="flex items-center gap-3 sm:gap-4">

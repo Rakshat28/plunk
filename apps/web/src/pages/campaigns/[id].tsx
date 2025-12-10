@@ -391,18 +391,33 @@ export default function CampaignDetailsPage() {
                       <ChevronDown className="h-4 w-4 sm:ml-1" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setIsTestEmailDialogOpen(true)}>
-                      <TestTube className="h-4 w-4 mr-2" />
-                      Send Test Email
+                  <DropdownMenuContent align="end" className="w-72">
+                    <DropdownMenuItem onClick={() => setIsTestEmailDialogOpen(true)} className="py-3 cursor-pointer">
+                      <div className="flex items-start gap-3">
+                        <TestTube className="h-4 w-4 mt-0.5 text-neutral-700" />
+                        <div className="flex flex-col gap-0.5 flex-1">
+                          <span className="font-medium text-sm">Send Test Email</span>
+                          <span className="text-xs text-neutral-500 leading-snug">Preview in your inbox before sending</span>
+                        </div>
+                      </div>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setShowSendDialog(true)}>
-                      <Send className="h-4 w-4 mr-2" />
-                      Send Now
+                    <DropdownMenuItem onClick={() => setShowSendDialog(true)} className="py-3 cursor-pointer">
+                      <div className="flex items-start gap-3">
+                        <Send className="h-4 w-4 mt-0.5 text-neutral-700" />
+                        <div className="flex flex-col gap-0.5 flex-1">
+                          <span className="font-medium text-sm">Send Now</span>
+                          <span className="text-xs text-neutral-500 leading-snug">Send immediately to all recipients</span>
+                        </div>
+                      </div>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsScheduleDialogOpen(true)}>
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Schedule for Later
+                    <DropdownMenuItem onClick={() => setIsScheduleDialogOpen(true)} className="py-3 cursor-pointer">
+                      <div className="flex items-start gap-3">
+                        <Calendar className="h-4 w-4 mt-0.5 text-neutral-700" />
+                        <div className="flex flex-col gap-0.5 flex-1">
+                          <span className="font-medium text-sm">Schedule for Later</span>
+                          <span className="text-xs text-neutral-500 leading-snug">Choose a specific date and time</span>
+                        </div>
+                      </div>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
