@@ -17,7 +17,7 @@ import type {Campaign} from '@plunk/db';
 import {CampaignStatus} from '@plunk/db';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {network} from '../../lib/network';
-import {Calendar, Copy, Mail, Plus, Trash2, Users} from 'lucide-react';
+import {Calendar, Copy, Info, Mail, Plus, Trash2, Users} from 'lucide-react';
 import {NextSeo} from 'next-seo';
 import Link from 'next/link';
 import {useState} from 'react';
@@ -216,10 +216,21 @@ export default function CampaignsPage() {
                         <div className="flex items-center gap-2 mb-1">
                           <Users className="h-3.5 w-3.5 text-blue-600" />
                           <span className="text-xs font-medium text-blue-900">Recipients</span>
+                          {(campaign.status === 'DRAFT' || campaign.status === 'SCHEDULED') && (
+                            <div className="group relative">
+                              <Info className="h-3 w-3 text-blue-600 cursor-help" />
+                              <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-1/2 transform -translate-x-1/2 mb-1">
+                                This count will be recalculated before sending
+                              </div>
+                            </div>
+                          )}
                         </div>
                         <p className="text-lg font-bold text-blue-900">{campaign.totalRecipients.toLocaleString()}</p>
-                        {campaign.totalRecipients > 0 && (
+                        {campaign.totalRecipients > 0 && campaign.status !== 'DRAFT' && (
                           <p className="text-xs text-blue-700 mt-1">{deliveryProgress.toFixed(0)}% sent</p>
+                        )}
+                        {campaign.status === 'DRAFT' && (
+                          <p className="text-xs text-blue-600 mt-1">Estimated</p>
                         )}
                       </div>
 

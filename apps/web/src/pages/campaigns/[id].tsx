@@ -41,6 +41,7 @@ import {
   ArrowLeft,
   Calendar,
   ChevronDown,
+  Info,
   Mail,
   MousePointer,
   Save,
@@ -550,12 +551,18 @@ export default function CampaignDetailsPage() {
 
                 {/* Show recipient count */}
                 {draftRecipientCount > 0 && (
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg space-y-2">
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4 text-blue-600" />
                       <span className="text-sm font-medium text-blue-900">
                         {draftRecipientCount.toLocaleString()} recipients
                       </span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Info className="h-3.5 w-3.5 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <p className="text-xs text-blue-800">
+                        This count will be recalculated right before sending to ensure accuracy. The final number may differ if contacts subscribe, unsubscribe, or segment membership changes.
+                      </p>
                     </div>
                   </div>
                 )}
@@ -970,13 +977,23 @@ export default function CampaignDetailsPage() {
                   <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">Scheduled For</p>
                   <div className="flex items-start gap-2">
                     <Calendar className="h-4 w-4 text-neutral-400 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-neutral-900">
-                        {formatFullDateTime(new Date(c.scheduledFor))}
-                      </p>
-                      <p className="text-xs text-neutral-500 mt-1">
-                        UTC: {formatUTCDateTime(new Date(c.scheduledFor))}
-                      </p>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-sm font-medium text-neutral-900">
+                          {formatFullDateTime(new Date(c.scheduledFor))}
+                        </p>
+                        <p className="text-xs text-neutral-500 mt-1">
+                          UTC: {formatUTCDateTime(new Date(c.scheduledFor))}
+                        </p>
+                      </div>
+                      {c.status === CampaignStatus.SCHEDULED && (
+                        <div className="flex items-start gap-1.5 p-2 bg-blue-50 border border-blue-200 rounded">
+                          <Info className="h-3 w-3 text-blue-600 mt-0.5 flex-shrink-0" />
+                          <p className="text-xs text-blue-800">
+                            Recipient count will be recalculated at send time
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
