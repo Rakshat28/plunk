@@ -25,7 +25,7 @@ async function startWorkers() {
 
   try {
     // Start email worker
-    const emailWorker = createEmailWorker();
+    const emailWorker = await createEmailWorker();
     workers.push({name: 'email', worker: emailWorker});
     signale.success('[WORKER] Email worker started');
 

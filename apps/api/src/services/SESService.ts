@@ -256,3 +256,26 @@ export const disableFeedbackForwarding = async (domain: string): Promise<void> =
     ForwardingEnabled: false,
   });
 };
+
+/**
+ * Get AWS SES account sending quota and rate limit
+ * @returns MaxSendRate (emails per second) or null if the call fails
+ */
+export const getSendingQuota = async (): Promise<{
+  maxSendRate: number;
+  max24HourSend: number;
+  sentLast24Hours: number;
+} | null> => {
+  try {
+    const quota = await ses.getSendQuota({});
+
+    return {
+      maxSendRate: quota.MaxSendRate ?? 14, // Default to sandbox limit if not provided
+      max24HourSend: quota.Max24HourSend ?? 200, // Default sandbox daily limit
+      sentLast24Hours: quota.SentLast24Hours ?? 0,
+    };
+  } catch (error) {
+    console.error('[SES] Failed to fetch sending quota:', error);
+    return null;
+  }
+};

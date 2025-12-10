@@ -45,6 +45,13 @@ export const AWS_SES_REGION = validateEnv('AWS_SES_REGION');
 export const AWS_SES_ACCESS_KEY_ID = validateEnv('AWS_SES_ACCESS_KEY_ID');
 export const AWS_SES_SECRET_ACCESS_KEY = validateEnv('AWS_SES_SECRET_ACCESS_KEY');
 
+// Email Processing Rate Limit (optional override)
+// If not set, will automatically fetch from AWS SES account quota
+// Set this to override AWS quota (useful for setting lower limits or testing)
+export const EMAIL_RATE_LIMIT_PER_SECOND = process.env.EMAIL_RATE_LIMIT_PER_SECOND
+  ? Number(process.env.EMAIL_RATE_LIMIT_PER_SECOND)
+  : undefined;
+
 // Storage
 export const REDIS_URL = validateEnv('REDIS_URL');
 export const DATABASE_URL = validateEnv('DATABASE_URL');

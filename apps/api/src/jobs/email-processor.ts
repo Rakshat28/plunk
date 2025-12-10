@@ -11,10 +11,41 @@ import {EmailService} from '../services/EmailService.js';
 import {EventService} from '../services/EventService.js';
 import {MeterService} from '../services/MeterService.js';
 import {emailQueue, type SendEmailJobData} from '../services/QueueService.js';
-import {sendRawEmail} from '../services/SESService.js';
-import {DASHBOARD_URI} from '../app/constants.js';
+import {getSendingQuota, sendRawEmail} from '../services/SESService.js';
+import {DASHBOARD_URI, EMAIL_RATE_LIMIT_PER_SECOND} from '../app/constants.js';
 
-export function createEmailWorker() {
+/**
+ * Determine the email sending rate limit (emails per second)
+ * Priority: ENV variable > AWS SES quota > Safe default (14)
+ */
+async function getEmailRateLimit(): Promise<number> {
+  const DEFAULT_RATE_LIMIT = 14; // AWS SES sandbox limit - safe default
+
+  // If env variable is set, use it (override)
+  if (EMAIL_RATE_LIMIT_PER_SECOND !== undefined) {
+    console.log(`[EMAIL-PROCESSOR] Using rate limit from environment: ${EMAIL_RATE_LIMIT_PER_SECOND} emails/second`);
+    return EMAIL_RATE_LIMIT_PER_SECOND;
+  }
+
+  // Try to fetch from AWS SES
+  console.log('[EMAIL-PROCESSOR] Fetching rate limit from AWS SES...');
+  const quota = await getSendingQuota();
+
+  if (quota) {
+    console.log(
+      `[EMAIL-PROCESSOR] AWS SES quota: ${quota.maxSendRate} emails/second (${quota.sentLast24Hours}/${quota.max24HourSend} emails sent today)`,
+    );
+    return quota.maxSendRate;
+  }
+
+  // Fallback to safe default
+  console.warn(`[EMAIL-PROCESSOR] Failed to fetch AWS quota, using safe default: ${DEFAULT_RATE_LIMIT} emails/second`);
+  return DEFAULT_RATE_LIMIT;
+}
+
+export async function createEmailWorker() {
+  // Fetch the rate limit (from env, AWS, or default)
+  const rateLimit = await getEmailRateLimit();
   const worker = new Worker<SendEmailJobData>(
     emailQueue.name,
     async (job: Job<SendEmailJobData>) => {
@@ -157,7 +188,7 @@ export function createEmailWorker() {
       connection: emailQueue.opts.connection,
       concurrency: 10, // Process up to 10 emails concurrently
       limiter: {
-        max: 25, // Max 25 emails per second
+        max: rateLimit, // Max emails per second (from env, AWS SES quota, or default)
         duration: 1000,
       },
     },
