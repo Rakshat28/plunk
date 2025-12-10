@@ -1,5 +1,6 @@
 import type {Workflow, WorkflowExecution, WorkflowStep, WorkflowStepExecution, WorkflowTransition} from '@plunk/db';
 import {Prisma, WorkflowExecutionStatus} from '@plunk/db';
+import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
@@ -786,7 +787,7 @@ export class WorkflowService {
     // Start executing the workflow asynchronously
     // Don't await - let it run in background
     WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id).catch(error => {
-      console.error('Error executing workflow:', error);
+      signale.error('Error executing workflow:', error);
     });
 
     return execution;

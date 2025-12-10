@@ -1,6 +1,7 @@
 import {Controller, Middleware, Post} from '@overnightjs/core';
 import type {NextFunction, Request, Response} from 'express';
 import multer from 'multer';
+import signale from 'signale';
 
 import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth} from '../middleware/auth.js';
@@ -66,7 +67,7 @@ export class Uploads {
         size: req.file.size,
       });
     } catch (error) {
-      console.error('[UPLOADS] Failed to upload image:', error);
+      signale.error('[UPLOADS] Failed to upload image:', error);
       return res.status(500).json({
         error: error instanceof Error ? error.message : 'Failed to upload image',
       });

@@ -1,5 +1,6 @@
 import {type Contact, Prisma, type Segment} from '@plunk/db';
 import type {FilterCondition, FilterGroup, SegmentFilter} from '@plunk/types';
+import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
@@ -276,7 +277,7 @@ export class SegmentService {
               data: {memberCount},
             });
           } catch (error) {
-            console.error(`Failed to update count for segment ${segment.id}:`, error);
+            signale.error(`Failed to update count for segment ${segment.id}:`, error);
           }
         }),
       );
@@ -383,7 +384,7 @@ export class SegmentService {
             segmentName: segment.name,
           });
         } catch (error) {
-          console.error(`[SEGMENT] Failed to track segment entry event for contact ${contactId}:`, error);
+          signale.error(`[SEGMENT] Failed to track segment entry event for contact ${contactId}:`, error);
         }
       }
     }
@@ -414,7 +415,7 @@ export class SegmentService {
             segmentName: segment.name,
           });
         } catch (error) {
-          console.error(`[SEGMENT] Failed to track segment exit event for contact ${contactId}:`, error);
+          signale.error(`[SEGMENT] Failed to track segment exit event for contact ${contactId}:`, error);
         }
       }
     }
@@ -425,7 +426,7 @@ export class SegmentService {
       data: {memberCount: matchingContactIds.size},
     });
 
-    console.log(
+    signale.info(
       `[SEGMENT] Computed membership for segment ${segmentId}: added ${toAdd.length}, removed ${toRemove.length}, total ${matchingContactIds.size}`,
     );
 

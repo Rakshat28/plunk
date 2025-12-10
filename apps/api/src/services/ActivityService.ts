@@ -1,4 +1,5 @@
 import type {Prisma} from '@plunk/db';
+import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
@@ -178,7 +179,7 @@ export class ActivityService {
         return JSON.parse(cached);
       }
     } catch (error) {
-      console.warn('[ACTIVITY] Failed to get stats from cache:', error);
+      signale.warn('[ACTIVITY] Failed to get stats from cache:', error);
     }
 
     // Default date range to last 30 days if not specified
@@ -241,7 +242,7 @@ export class ActivityService {
     try {
       await redis.setex(cacheKey, this.STATS_CACHE_TTL, JSON.stringify(stats));
     } catch (error) {
-      console.warn('[ACTIVITY] Failed to cache stats:', error);
+      signale.warn('[ACTIVITY] Failed to cache stats:', error);
     }
 
     return stats;
@@ -261,7 +262,7 @@ export class ActivityService {
         await redis.del(...keys);
       }
     } catch (error) {
-      console.warn('[ACTIVITY] Failed to invalidate stats cache:', error);
+      signale.warn('[ACTIVITY] Failed to invalidate stats cache:', error);
     }
   }
 

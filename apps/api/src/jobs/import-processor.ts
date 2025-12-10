@@ -5,6 +5,7 @@
 
 import {type Job, Worker} from 'bullmq';
 import {parse} from 'csv-parse/sync';
+import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {ContactService} from '../services/ContactService.js';
@@ -28,7 +29,7 @@ export function createImportWorker() {
     async (job: Job<ContactImportJobData>) => {
       const {projectId, csvData, filename} = job.data;
 
-      console.log(`[IMPORT-PROCESSOR] Processing import for project ${projectId} (${filename})`);
+      signale.info(`[IMPORT-PROCESSOR] Processing import for project ${projectId} (${filename})`);
 
       // Fetch project information for notifications
       const project = await prisma.project.findUnique({
@@ -66,7 +67,7 @@ export function createImportWorker() {
           throw new Error('CSV file is empty');
         }
 
-        console.log(`[IMPORT-PROCESSOR] Parsed ${records.length} rows from CSV`);
+        signale.info(`[IMPORT-PROCESSOR] Parsed ${records.length} rows from CSV`);
 
         // Notify that import has started
         await NtfyService.notifyContactImportStarted(projectName, projectId, filename, result.totalRows);
@@ -151,7 +152,7 @@ export function createImportWorker() {
           await job.updateProgress(progress);
         }
 
-        console.log(
+        signale.info(
           `[IMPORT-PROCESSOR] Import completed: ${result.createdCount} created, ${result.updatedCount} updated, ${result.failureCount} failed`,
         );
 
@@ -168,7 +169,7 @@ export function createImportWorker() {
 
         return result;
       } catch (error) {
-        console.error(`[IMPORT-PROCESSOR] Failed to process import:`, error);
+        signale.error(`[IMPORT-PROCESSOR] Failed to process import:`, error);
 
         // Notify that import has failed
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -191,15 +192,15 @@ export function createImportWorker() {
   );
 
   worker.on('completed', job => {
-    console.log(`[IMPORT-PROCESSOR] Job ${job.id} completed`);
+    signale.info(`[IMPORT-PROCESSOR] Job ${job.id} completed`);
   });
 
   worker.on('failed', (job, err) => {
-    console.error(`[IMPORT-PROCESSOR] Job ${job?.id} failed:`, err.message);
+    signale.error(`[IMPORT-PROCESSOR] Job ${job?.id} failed:`, err.message);
   });
 
   worker.on('error', err => {
-    console.error('[IMPORT-PROCESSOR] Worker error:', err);
+    signale.error('[IMPORT-PROCESSOR] Worker error:', err);
   });
 
   return worker;

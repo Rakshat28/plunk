@@ -1,6 +1,7 @@
 import type {Event} from '@plunk/db';
 import {Prisma} from '@plunk/db';
 import type {FilterCondition, FilterGroup} from '@plunk/types';
+import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
@@ -52,7 +53,7 @@ export class EventService {
     try {
       await redis.del(cacheKey);
     } catch (error) {
-      console.warn('[EVENT] Failed to invalidate workflow cache:', error);
+      signale.warn('[EVENT] Failed to invalidate workflow cache:', error);
     }
   }
 
@@ -331,7 +332,7 @@ export class EventService {
         workflows = JSON.parse(cached);
       }
     } catch (error) {
-      console.warn('[EVENT] Failed to get workflows from cache:', error);
+      signale.warn('[EVENT] Failed to get workflows from cache:', error);
     }
 
     // If not in cache, fetch from database
@@ -353,7 +354,7 @@ export class EventService {
       try {
         await redis.setex(cacheKey, 300, JSON.stringify(workflows));
       } catch (error) {
-        console.warn('[EVENT] Failed to cache workflows:', error);
+        signale.warn('[EVENT] Failed to cache workflows:', error);
       }
     }
 
@@ -368,7 +369,7 @@ export class EventService {
         } else {
           // If event is not contact-specific, you might want different logic
           // For example, trigger for all contacts, or skip
-          console.log(`[EVENT] Event ${eventName} triggered workflow ${workflow.id}, but no contact specified`);
+          signale.info(`[EVENT] Event ${eventName} triggered workflow ${workflow.id}, but no contact specified`);
         }
       }
     }
@@ -394,7 +395,7 @@ export class EventService {
       });
 
       if (!workflow || workflow.steps.length === 0) {
-        console.error(`[EVENT] Workflow ${workflowId} has no trigger step`);
+        signale.error(`[EVENT] Workflow ${workflowId} has no trigger step`);
         return;
       }
 
@@ -429,7 +430,7 @@ export class EventService {
       const triggerStep = workflow.steps[0];
 
       if (!triggerStep) {
-        console.error(`[EVENT] Workflow ${workflowId} trigger step not found`);
+        signale.error(`[EVENT] Workflow ${workflowId} trigger step not found`);
         return;
       }
 
@@ -444,14 +445,14 @@ export class EventService {
         },
       });
 
-      console.log(
+      signale.info(
         `[EVENT] Started workflow ${workflowId} execution ${execution.id} for contact ${contactId}${workflow.allowReentry ? ' (re-entry allowed)' : ''}`,
       );
 
       // Start executing the workflow
       await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
     } catch (error) {
-      console.error(`[EVENT] Error starting workflow ${workflowId}:`, error);
+      signale.error(`[EVENT] Error starting workflow ${workflowId}:`, error);
     }
   }
 

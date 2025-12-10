@@ -6,6 +6,8 @@ import {
   PutBucketPolicyCommand,
 } from '@aws-sdk/client-s3';
 import crypto from 'crypto';
+import signale from 'signale';
+
 import {
   S3_ENDPOINT,
   S3_ACCESS_KEY_ID,
@@ -69,13 +71,13 @@ export async function initializeBucket(): Promise<void> {
             Bucket: S3_BUCKET,
           }),
         );
-        console.log(`[S3] Created bucket: ${S3_BUCKET}`);
+        signale.info(`[S3] Created bucket: ${S3_BUCKET}`);
       } catch (createError) {
-        console.error('[S3] Failed to create bucket:', createError);
+        signale.error('[S3] Failed to create bucket:', createError);
         throw createError;
       }
     } else {
-      console.error('[S3] Failed to check bucket:', error);
+      signale.error('[S3] Failed to check bucket:', error);
       throw error;
     }
   }
@@ -103,10 +105,10 @@ export async function initializeBucket(): Promise<void> {
     );
 
     if (!bucketExists) {
-      console.log(`[S3] Set public read policy for bucket: ${S3_BUCKET}`);
+      signale.info(`[S3] Set public read policy for bucket: ${S3_BUCKET}`);
     }
   } catch (policyError) {
-    console.error('[S3] Failed to set bucket policy:', policyError);
+    signale.error('[S3] Failed to set bucket policy:', policyError);
     // Don't throw - bucket was created but policy failed
   }
 }

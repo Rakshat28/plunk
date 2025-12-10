@@ -5,6 +5,7 @@
 
 import {CampaignStatus} from '@plunk/db';
 import {type Job, Worker} from 'bullmq';
+import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {CampaignService} from '../services/CampaignService.js';
@@ -16,7 +17,7 @@ export function createScheduledCampaignWorker() {
     async (job: Job<ScheduledCampaignJobData>) => {
       const {campaignId} = job.data;
 
-      console.log(`[SCHEDULED-PROCESSOR] Processing scheduled campaign ${campaignId}`);
+      signale.info(`[SCHEDULED-PROCESSOR] Processing scheduled campaign ${campaignId}`);
 
       // Get campaign with project
       const campaign = await prisma.campaign.findUnique({
@@ -29,13 +30,13 @@ export function createScheduledCampaignWorker() {
       });
 
       if (!campaign) {
-        console.warn(`[SCHEDULED-PROCESSOR] Campaign ${campaignId} not found, skipping`);
+        signale.warn(`[SCHEDULED-PROCESSOR] Campaign ${campaignId} not found, skipping`);
         return;
       }
 
       // Check if project is disabled
       if (campaign.project.disabled) {
-        console.warn(
+        signale.warn(
           `[SCHEDULED-PROCESSOR] Project ${campaign.projectId} (${campaign.project.name}) is disabled, cancelling campaign ${campaignId}`,
         );
         await prisma.campaign.update({
@@ -47,7 +48,7 @@ export function createScheduledCampaignWorker() {
 
       // Verify campaign is still in SCHEDULED status
       if (campaign.status !== CampaignStatus.SCHEDULED) {
-        console.warn(
+        signale.warn(
           `[SCHEDULED-PROCESSOR] Campaign ${campaignId} is not in SCHEDULED status (${campaign.status}), skipping`,
         );
         return;
@@ -56,7 +57,7 @@ export function createScheduledCampaignWorker() {
       // Start sending the campaign
       await CampaignService.startSending(campaign.projectId, campaignId);
 
-      console.log(`[SCHEDULED-PROCESSOR] Started sending campaign ${campaignId}`);
+      signale.info(`[SCHEDULED-PROCESSOR] Started sending campaign ${campaignId}`);
     },
     {
       connection: scheduledQueue.opts.connection,
@@ -65,15 +66,15 @@ export function createScheduledCampaignWorker() {
   );
 
   worker.on('completed', job => {
-    console.log(`[SCHEDULED-PROCESSOR] Job ${job.id} completed`);
+    signale.info(`[SCHEDULED-PROCESSOR] Job ${job.id} completed`);
   });
 
   worker.on('failed', (job, err) => {
-    console.error(`[SCHEDULED-PROCESSOR] Job ${job?.id} failed:`, err.message);
+    signale.error(`[SCHEDULED-PROCESSOR] Job ${job?.id} failed:`, err.message);
   });
 
   worker.on('error', err => {
-    console.error('[SCHEDULED-PROCESSOR] Worker error:', err);
+    signale.error('[SCHEDULED-PROCESSOR] Worker error:', err);
   });
 
   return worker;

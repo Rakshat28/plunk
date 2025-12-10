@@ -1,4 +1,5 @@
 import {SES} from '@aws-sdk/client-ses';
+import signale from 'signale';
 
 import {
   AWS_SES_ACCESS_KEY_ID,
@@ -275,7 +276,7 @@ export const getSendingQuota = async (): Promise<{
       sentLast24Hours: quota.SentLast24Hours ?? 0,
     };
   } catch (error) {
-    console.error('[SES] Failed to fetch sending quota:', error);
+    signale.error('[SES] Failed to fetch sending quota:', error);
     return null;
   }
 };

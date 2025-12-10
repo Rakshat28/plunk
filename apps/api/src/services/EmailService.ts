@@ -407,7 +407,7 @@ export class EmailService {
         sentAt: new Date().toISOString(),
       });
     } catch (error) {
-      console.error(`[EMAIL] Failed to send email ${emailId}:`, error);
+      signale.error(`[EMAIL] Failed to send email ${emailId}:`, error);
 
       // Mark as failed
       await prisma.email.update({

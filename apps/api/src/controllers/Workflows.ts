@@ -1,6 +1,7 @@
 import {Controller, Delete, Get, Middleware, Patch, Post} from '@overnightjs/core';
 import {WorkflowExecutionStatus} from '@plunk/db';
 import type {NextFunction, Request, Response} from 'express';
+import signale from 'signale';
 
 import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth} from '../middleware/auth.js';
@@ -45,7 +46,7 @@ export class Workflows {
 
       return res.status(200).json(result);
     } catch (error) {
-      console.error('[WORKFLOWS] Failed to get available fields:', error);
+      signale.error('[WORKFLOWS] Failed to get available fields:', error);
       return res.status(500).json({
         error: error instanceof Error ? error.message : 'Failed to get available fields',
       });

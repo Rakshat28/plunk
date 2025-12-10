@@ -1,6 +1,7 @@
 import type {Campaign, Contact, Prisma} from '@plunk/db';
 import {CampaignAudienceType, CampaignStatus, EmailSourceType} from '@plunk/db';
 import type {FilterCondition} from '@plunk/types';
+import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
@@ -461,7 +462,7 @@ export class CampaignService {
     }
 
     if (campaign.status !== CampaignStatus.SENDING) {
-      console.warn(`[CAMPAIGN] Campaign ${campaignId} is not in SENDING status, skipping batch ${batchNumber}`);
+      signale.warn(`[CAMPAIGN] Campaign ${campaignId} is not in SENDING status, skipping batch ${batchNumber}`);
       return;
     }
 
@@ -507,7 +508,7 @@ export class CampaignService {
           replyTo: campaign.replyTo || undefined,
         });
       } catch (error) {
-        console.error(`[CAMPAIGN] Failed to queue email for contact ${contact.id}:`, error);
+        signale.error(`[CAMPAIGN] Failed to queue email for contact ${contact.id}:`, error);
         // Continue with other contacts even if one fails
       }
     }

@@ -4,6 +4,7 @@
  */
 
 import {type Job, Worker} from 'bullmq';
+import signale from 'signale';
 
 import {workflowQueue, type WorkflowStepJobData} from '../services/QueueService.js';
 import {WorkflowExecutionService} from '../services/WorkflowExecutionService.js';
@@ -33,15 +34,15 @@ export function createWorkflowWorker() {
   );
 
   worker.on('completed', job => {
-    console.log(`[WORKFLOW-PROCESSOR] Job ${job.id} completed`);
+    signale.info(`[WORKFLOW-PROCESSOR] Job ${job.id} completed`);
   });
 
   worker.on('failed', (job, err) => {
-    console.error(`[WORKFLOW-PROCESSOR] Job ${job?.id} failed:`, err.message);
+    signale.error(`[WORKFLOW-PROCESSOR] Job ${job?.id} failed:`, err.message);
   });
 
   worker.on('error', err => {
-    console.error('[WORKFLOW-PROCESSOR] Worker error:', err);
+    signale.error('[WORKFLOW-PROCESSOR] Worker error:', err);
   });
 
   return worker;

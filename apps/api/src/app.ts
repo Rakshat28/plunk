@@ -309,7 +309,7 @@ server.app.use((error: Error, req: Request, res: Response, _next: NextFunction) 
 // Global error handlers to prevent server crashes
 process.on('unhandledRejection', (reason, promise) => {
   signale.error('Unhandled Promise Rejection:', reason);
-  console.error('Promise:', promise);
+  signale.error('Promise:', promise);
   // Don't exit the process - just log the error
 });
 

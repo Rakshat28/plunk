@@ -1,5 +1,6 @@
 import {Controller, Delete, Get, Middleware, Post} from '@overnightjs/core';
 import type {NextFunction, Request, Response} from 'express';
+import signale from 'signale';
 
 import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth} from '../middleware/auth.js';
@@ -118,7 +119,7 @@ export class Events {
       const usage = await EventService.getEventUsage(auth.projectId!, eventName);
       return res.status(200).json(usage);
     } catch (error) {
-      console.error('[EVENTS] Failed to get event usage:', error);
+      signale.error('[EVENTS] Failed to get event usage:', error);
       return res.status(500).json({
         error: error instanceof Error ? error.message : 'Failed to get event usage',
       });
@@ -145,7 +146,7 @@ export class Events {
       const result = await EventService.deleteEvent(auth.projectId!, eventName);
       return res.status(200).json(result);
     } catch (error) {
-      console.error('[EVENTS] Failed to delete event:', error);
+      signale.error('[EVENTS] Failed to delete event:', error);
       return res.status(error instanceof Error && error.message.includes('Cannot delete') ? 400 : 500).json({
         error: error instanceof Error ? error.message : 'Failed to delete event',
       });

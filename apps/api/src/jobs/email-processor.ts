@@ -5,6 +5,7 @@
 
 import {EmailSourceType, EmailStatus} from '@plunk/db';
 import {type Job, Worker} from 'bullmq';
+import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {EmailService} from '../services/EmailService.js';
@@ -23,23 +24,23 @@ async function getEmailRateLimit(): Promise<number> {
 
   // If env variable is set, use it (override)
   if (EMAIL_RATE_LIMIT_PER_SECOND !== undefined) {
-    console.log(`[EMAIL-PROCESSOR] Using rate limit from environment: ${EMAIL_RATE_LIMIT_PER_SECOND} emails/second`);
+    signale.info(`[EMAIL-PROCESSOR] Using rate limit from environment: ${EMAIL_RATE_LIMIT_PER_SECOND} emails/second`);
     return EMAIL_RATE_LIMIT_PER_SECOND;
   }
 
   // Try to fetch from AWS SES
-  console.log('[EMAIL-PROCESSOR] Fetching rate limit from AWS SES...');
+  signale.info('[EMAIL-PROCESSOR] Fetching rate limit from AWS SES...');
   const quota = await getSendingQuota();
 
   if (quota) {
-    console.log(
+    signale.info(
       `[EMAIL-PROCESSOR] AWS SES quota: ${quota.maxSendRate} emails/second (${quota.sentLast24Hours}/${quota.max24HourSend} emails sent today)`,
     );
     return quota.maxSendRate;
   }
 
   // Fallback to safe default
-  console.warn(`[EMAIL-PROCESSOR] Failed to fetch AWS quota, using safe default: ${DEFAULT_RATE_LIMIT} emails/second`);
+  signale.warn(`[EMAIL-PROCESSOR] Failed to fetch AWS quota, using safe default: ${DEFAULT_RATE_LIMIT} emails/second`);
   return DEFAULT_RATE_LIMIT;
 }
 
@@ -69,7 +70,7 @@ export async function createEmailWorker() {
 
       // Check if project is disabled
       if (email.project.disabled) {
-        console.warn(`[EMAIL-PROCESSOR] Project ${email.projectId} is disabled, cancelling email ${emailId}`);
+        signale.warn(`[EMAIL-PROCESSOR] Project ${email.projectId} is disabled, cancelling email ${emailId}`);
         await prisma.email.update({
           where: {id: emailId},
           data: {
@@ -170,7 +171,7 @@ export async function createEmailWorker() {
           sentAt: new Date().toISOString(),
         });
       } catch (error) {
-        console.error(`[EMAIL-PROCESSOR] Failed to send email ${emailId}:`, error);
+        signale.error(`[EMAIL-PROCESSOR] Failed to send email ${emailId}:`, error);
 
         // Mark as failed
         await prisma.email.update({
@@ -195,15 +196,15 @@ export async function createEmailWorker() {
   );
 
   worker.on('completed', job => {
-    console.log(`[EMAIL-PROCESSOR] Job ${job.id} completed`);
+    signale.info(`[EMAIL-PROCESSOR] Job ${job.id} completed`);
   });
 
   worker.on('failed', (job, err) => {
-    console.error(`[EMAIL-PROCESSOR] Job ${job?.id} failed:`, err.message);
+    signale.error(`[EMAIL-PROCESSOR] Job ${job?.id} failed:`, err.message);
   });
 
   worker.on('error', err => {
-    console.error('[EMAIL-PROCESSOR] Worker error:', err);
+    signale.error('[EMAIL-PROCESSOR] Worker error:', err);
   });
 
   return worker;

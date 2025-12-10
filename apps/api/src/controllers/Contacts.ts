@@ -1,6 +1,7 @@
 import {Controller, Delete, Get, Middleware, Patch, Post} from '@overnightjs/core';
 import type {NextFunction, Request, Response} from 'express';
 import multer from 'multer';
+import signale from 'signale';
 
 import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth} from '../middleware/auth.js';
@@ -63,7 +64,7 @@ export class Contacts {
         count: fieldsWithTypes.length,
       });
     } catch (error) {
-      console.error('[CONTACTS] Failed to get available fields:', error);
+      signale.error('[CONTACTS] Failed to get available fields:', error);
       return res.status(500).json({
         error: error instanceof Error ? error.message : 'Failed to get available fields',
       });
@@ -97,7 +98,7 @@ export class Contacts {
         limit,
       });
     } catch (error) {
-      console.error('[CONTACTS] Failed to get field values:', error);
+      signale.error('[CONTACTS] Failed to get field values:', error);
       return res.status(500).json({
         error: error instanceof Error ? error.message : 'Failed to get field values',
       });
@@ -288,7 +289,7 @@ export class Contacts {
         jobId: job.id,
       });
     } catch (error) {
-      console.error('[CONTACTS] Failed to queue import:', error);
+      signale.error('[CONTACTS] Failed to queue import:', error);
       return res.status(500).json({
         error: error instanceof Error ? error.message : 'Failed to queue import',
       });
@@ -318,7 +319,7 @@ export class Contacts {
 
       return res.status(200).json(status);
     } catch (error) {
-      console.error('[CONTACTS] Failed to get import status:', error);
+      signale.error('[CONTACTS] Failed to get import status:', error);
       return res.status(500).json({
         error: error instanceof Error ? error.message : 'Failed to get import status',
       });
@@ -345,7 +346,7 @@ export class Contacts {
       const usage = await ContactService.getFieldUsage(auth.projectId!, field);
       return res.status(200).json(usage);
     } catch (error) {
-      console.error('[CONTACTS] Failed to get field usage:', error);
+      signale.error('[CONTACTS] Failed to get field usage:', error);
       return res.status(500).json({
         error: error instanceof Error ? error.message : 'Failed to get field usage',
       });
@@ -372,7 +373,7 @@ export class Contacts {
       const result = await ContactService.deleteField(auth.projectId!, field);
       return res.status(200).json(result);
     } catch (error) {
-      console.error('[CONTACTS] Failed to delete field:', error);
+      signale.error('[CONTACTS] Failed to delete field:', error);
       return res.status(error instanceof Error && error.message.includes('Cannot delete') ? 400 : 500).json({
         error: error instanceof Error ? error.message : 'Failed to delete field',
       });
