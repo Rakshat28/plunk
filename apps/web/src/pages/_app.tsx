@@ -19,7 +19,7 @@ dayjs.extend(relativeTime);
 dayjs.extend(advancedFormat);
 
 // Routes that don't require authentication
-const PUBLIC_ROUTES = ['/auth/login', '/auth/signup', '/auth/reset'];
+const PUBLIC_ROUTES = ['/auth/login', '/auth/signup', '/auth/reset', '/unsubscribe', '/subscribe', '/manage'];
 
 // Routes that don't require a project
 const NO_PROJECT_ROUTES = ['/projects/create'];
@@ -35,7 +35,9 @@ function App({Component, pageProps}: AppProps) {
 function AuthGuard({children}: {children: React.ReactNode}) {
   const {data: user, isLoading} = useUser();
   const router = useRouter();
-  const isPublicRoute = PUBLIC_ROUTES.includes(router.pathname);
+  const isPublicRoute = PUBLIC_ROUTES.some(route =>
+    router.pathname === route || router.pathname.startsWith(`${route}/`)
+  );
 
   useEffect(() => {
     // If not loading, no user, and trying to access a protected route, redirect to login
@@ -109,7 +111,9 @@ export default function WithProviders(props: AppProps) {
 
 function Root(props: AppProps) {
   const router = useRouter();
-  const isPublicRoute = PUBLIC_ROUTES.includes(router.pathname);
+  const isPublicRoute = PUBLIC_ROUTES.some(route =>
+    router.pathname === route || router.pathname.startsWith(`${route}/`)
+  );
 
   return (
     <>
