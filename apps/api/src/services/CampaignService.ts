@@ -513,16 +513,6 @@ export class CampaignService {
       }
     }
 
-    // Update sent count
-    await prisma.campaign.update({
-      where: {id: campaignId},
-      data: {
-        sentCount: {
-          increment: contacts.length,
-        },
-      },
-    });
-
     // Queue next batch if there are more contacts
     if (hasMore && nextCursor) {
       await QueueService.queueCampaignBatch({
@@ -532,27 +522,6 @@ export class CampaignService {
         limit,
         cursor: nextCursor,
       });
-    } else {
-      // All batches processed, mark campaign as SENT
-      const completedCampaign = await prisma.campaign.update({
-        where: {id: campaignId},
-        data: {
-          status: CampaignStatus.SENT,
-        },
-        include: {
-          project: {
-            select: {name: true},
-          },
-        },
-      });
-
-      // Send notification about campaign send completed
-      await NtfyService.notifyCampaignSendCompleted(
-        completedCampaign.name,
-        completedCampaign.project.name,
-        completedCampaign.projectId,
-        completedCampaign.totalRecipients || 0,
-      );
     }
   }
 

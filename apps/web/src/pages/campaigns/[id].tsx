@@ -87,7 +87,7 @@ export default function CampaignDetailsPage() {
     id && campaign?.data.status !== CampaignStatus.DRAFT ? `/campaigns/${id}/stats` : null,
     {
       revalidateOnFocus: false,
-      refreshInterval: campaign?.data.status === CampaignStatus.SENDING ? 5000 : 0, // Refresh every 5s if sending
+      refreshInterval: campaign?.data.status === CampaignStatus.SENDING ? 15000 : 0, // Refresh every 15s while sending
     },
   );
 

@@ -3,7 +3,7 @@
  * Processes individual emails from the queue (for all sources: transactional, campaign, workflow)
  */
 
-import {EmailSourceType, EmailStatus} from '@plunk/db';
+import {CampaignStatus, EmailSourceType, EmailStatus} from '@plunk/db';
 import {type Job, Worker} from 'bullmq';
 import signale from 'signale';
 
@@ -170,6 +170,57 @@ export async function createEmailWorker() {
           sourceType: email.sourceType,
           sentAt: new Date().toISOString(),
         });
+
+        // If this email belongs to a campaign, check if all campaign emails have been sent
+        if (email.campaignId) {
+          const campaign = await prisma.campaign.findUnique({
+            where: {id: email.campaignId},
+            select: {
+              id: true,
+              name: true,
+              status: true,
+              totalRecipients: true,
+              projectId: true,
+              project: {
+                select: {name: true},
+              },
+            },
+          });
+
+          // Only check if campaign is still in SENDING status
+          if (campaign && campaign.status === CampaignStatus.SENDING) {
+            // Count how many emails have been sent for this campaign
+            const sentCount = await prisma.email.count({
+              where: {
+                campaignId: email.campaignId,
+                sentAt: {not: null},
+              },
+            });
+
+            // If all emails have been sent, mark campaign as SENT
+            if (sentCount >= campaign.totalRecipients) {
+              await prisma.campaign.update({
+                where: {id: email.campaignId},
+                data: {
+                  status: CampaignStatus.SENT,
+                },
+              });
+
+              signale.success(
+                `[EMAIL-PROCESSOR] Campaign ${campaign.name} completed: ${sentCount}/${campaign.totalRecipients} emails sent`,
+              );
+
+              // Send notification about campaign send completed
+              const {NtfyService} = await import('../services/NtfyService.js');
+              await NtfyService.notifyCampaignSendCompleted(
+                campaign.name,
+                campaign.project.name,
+                campaign.projectId,
+                campaign.totalRecipients,
+              );
+            }
+          }
+        }
       } catch (error) {
         signale.error(`[EMAIL-PROCESSOR] Failed to send email ${emailId}:`, error);
 
