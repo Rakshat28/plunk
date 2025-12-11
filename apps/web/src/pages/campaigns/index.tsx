@@ -30,6 +30,7 @@ import {useRouter} from 'next/router';
 import {useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
+import dayjs from 'dayjs';
 
 interface PaginatedCampaigns {
   campaigns: Campaign[];
@@ -463,6 +464,25 @@ export default function CampaignsPage() {
                           </p>
                         </div>
                       )}
+                    </div>
+
+                    {/* Metadata */}
+                    <div className="flex items-center gap-4 text-xs text-neutral-500 pt-3 border-t border-neutral-100">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="h-3 w-3" />
+                        <div className="group relative inline-block cursor-help">
+                          <span>Created {dayjs(campaign.createdAt).fromNow()}</span>
+                          <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                            {dayjs(campaign.createdAt).format('DD MMMM YYYY, hh:mm')}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="group relative inline-block cursor-help">
+                        <span>• Updated {dayjs(campaign.updatedAt).fromNow()}</span>
+                        <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                          {dayjs(campaign.updatedAt).format('DD MMMM YYYY, hh:mm')}
+                        </div>
+                      </div>
                     </div>
 
                     {/* Actions */}

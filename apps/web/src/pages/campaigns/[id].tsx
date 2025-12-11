@@ -397,7 +397,9 @@ export default function CampaignDetailsPage() {
                         <TestTube className="h-4 w-4 mt-0.5 text-neutral-700" />
                         <div className="flex flex-col gap-0.5 flex-1">
                           <span className="font-medium text-sm">Send Test Email</span>
-                          <span className="text-xs text-neutral-500 leading-snug">Preview in your inbox before sending</span>
+                          <span className="text-xs text-neutral-500 leading-snug">
+                            Preview in your inbox before sending
+                          </span>
                         </div>
                       </div>
                     </DropdownMenuItem>
@@ -406,7 +408,9 @@ export default function CampaignDetailsPage() {
                         <Send className="h-4 w-4 mt-0.5 text-neutral-700" />
                         <div className="flex flex-col gap-0.5 flex-1">
                           <span className="font-medium text-sm">Send Now</span>
-                          <span className="text-xs text-neutral-500 leading-snug">Send immediately to all recipients</span>
+                          <span className="text-xs text-neutral-500 leading-snug">
+                            Send immediately to all recipients
+                          </span>
                         </div>
                       </div>
                     </DropdownMenuItem>
@@ -576,7 +580,8 @@ export default function CampaignDetailsPage() {
                     <div className="flex items-start gap-2">
                       <Info className="h-3.5 w-3.5 text-blue-600 mt-0.5 flex-shrink-0" />
                       <p className="text-xs text-blue-800">
-                        This count will be recalculated right before sending to ensure accuracy. The final number may differ if contacts subscribe, unsubscribe, or segment membership changes.
+                        This count will be recalculated right before sending to ensure accuracy. The final number may
+                        differ if contacts subscribe, unsubscribe, or segment membership changes.
                       </p>
                     </div>
                   </div>
@@ -1004,9 +1009,7 @@ export default function CampaignDetailsPage() {
                       {c.status === CampaignStatus.SCHEDULED && (
                         <div className="flex items-start gap-1.5 p-2 bg-blue-50 border border-blue-200 rounded">
                           <Info className="h-3 w-3 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <p className="text-xs text-blue-800">
-                            Recipient count will be recalculated at send time
-                          </p>
+                          <p className="text-xs text-blue-800">Recipient count will be recalculated at send time</p>
                         </div>
                       )}
                     </div>
@@ -1026,12 +1029,6 @@ export default function CampaignDetailsPage() {
                   </div>
                 </div>
               )}
-
-              {/* Created */}
-              <div>
-                <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">Created</p>
-                <p className="text-sm text-neutral-900">{new Date(c.createdAt).toLocaleDateString()}</p>
-              </div>
             </CardContent>
           </Card>
         </div>

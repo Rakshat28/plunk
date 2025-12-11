@@ -57,6 +57,7 @@ import useSWR from 'swr';
 import {WorkflowBuilder} from '../../components/WorkflowBuilder';
 import {ReactFlowProvider} from '@xyflow/react';
 import {WorkflowSchemas} from '@plunk/shared';
+import dayjs from 'dayjs';
 
 interface WorkflowWithDetails extends Workflow {
   steps: (WorkflowStep & {
@@ -611,7 +612,12 @@ export default function WorkflowEditorPage() {
                             {execution.currentStep?.name ?? '-'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
-                            {new Date(execution.startedAt).toLocaleString()}
+                            <div className="group relative inline-block cursor-help">
+                              {dayjs(execution.startedAt).fromNow()}
+                              <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-1/2 transform -translate-x-1/2 mb-1 whitespace-nowrap">
+                                {dayjs(execution.startedAt).format('DD MMMM YYYY, hh:mm')}
+                              </div>
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             {(execution.status === 'RUNNING' || execution.status === 'WAITING') && (

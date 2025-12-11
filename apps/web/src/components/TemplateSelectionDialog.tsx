@@ -13,10 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
   Input,
-  Label,
+  Label
 } from '@plunk/ui';
 import type {Template} from '@plunk/db';
-import {network} from '../lib/network';
 import {ArrowLeft, FileText, Search} from 'lucide-react';
 import {useState} from 'react';
 import useSWR from 'swr';
@@ -127,168 +126,168 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
 
         {step === 'select' ? (
           <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
-          {/* Search & Filters */}
-          <div className="space-y-3">
-            <form onSubmit={handleSearch} className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
-                <Input
-                  type="text"
-                  placeholder="Search templates..."
-                  value={searchInput}
-                  onChange={e => setSearchInput(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Button type="submit" size="sm">
-                Search
-              </Button>
-              {search && (
+            {/* Search & Filters */}
+            <div className="space-y-3">
+              <form onSubmit={handleSearch} className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
+                  <Input
+                    type="text"
+                    placeholder="Search templates..."
+                    value={searchInput}
+                    onChange={e => setSearchInput(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Button type="submit" size="sm">
+                  Search
+                </Button>
+                {search && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSearch('');
+                      setSearchInput('');
+                      setPage(1);
+                    }}
+                  >
+                    Clear
+                  </Button>
+                )}
+              </form>
+
+              {/* Type Filter */}
+              <div className="flex gap-2">
                 <Button
                   type="button"
-                  variant="outline"
-                  size="sm"
                   onClick={() => {
-                    setSearch('');
-                    setSearchInput('');
+                    setTypeFilter('ALL');
                     setPage(1);
                   }}
+                  variant={typeFilter === 'ALL' ? 'default' : 'secondary'}
+                  size="sm"
                 >
-                  Clear
+                  All Templates
                 </Button>
-              )}
-            </form>
-
-            {/* Type Filter */}
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                onClick={() => {
-                  setTypeFilter('ALL');
-                  setPage(1);
-                }}
-                variant={typeFilter === 'ALL' ? 'default' : 'secondary'}
-                size="sm"
-              >
-                All Templates
-              </Button>
-              <Button
-                type="button"
-                onClick={() => {
-                  setTypeFilter('MARKETING');
-                  setPage(1);
-                }}
-                variant={typeFilter === 'MARKETING' ? 'default' : 'secondary'}
-                size="sm"
-              >
-                Marketing
-              </Button>
-              <Button
-                type="button"
-                onClick={() => {
-                  setTypeFilter('TRANSACTIONAL');
-                  setPage(1);
-                }}
-                variant={typeFilter === 'TRANSACTIONAL' ? 'default' : 'secondary'}
-                size="sm"
-              >
-                Transactional
-              </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setTypeFilter('MARKETING');
+                    setPage(1);
+                  }}
+                  variant={typeFilter === 'MARKETING' ? 'default' : 'secondary'}
+                  size="sm"
+                >
+                  Marketing
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setTypeFilter('TRANSACTIONAL');
+                    setPage(1);
+                  }}
+                  variant={typeFilter === 'TRANSACTIONAL' ? 'default' : 'secondary'}
+                  size="sm"
+                >
+                  Transactional
+                </Button>
+              </div>
             </div>
-          </div>
 
-          {/* Templates List */}
-          <div className="flex-1 overflow-y-auto space-y-3">
-            {isLoading && (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-center">
-                  <svg
-                    className="h-8 w-8 animate-spin mx-auto text-neutral-900"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
+            {/* Templates List */}
+            <div className="flex-1 overflow-y-auto space-y-3">
+              {isLoading && (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <svg
+                      className="h-8 w-8 animate-spin mx-auto text-neutral-900"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    <p className="mt-2 text-sm text-neutral-500">Loading templates...</p>
+                  </div>
+                </div>
+              )}
+
+              {!isLoading && data?.templates.length === 0 && (
+                <div className="text-center py-12">
+                  <FileText className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-neutral-900 mb-2">No templates found</h3>
+                  <p className="text-neutral-500">
+                    {search ? 'Try adjusting your search terms' : 'Create a template first to use this feature'}
+                  </p>
+                </div>
+              )}
+
+              {data?.templates.map(template => (
+                <Card
+                  key={template.id}
+                  className="cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
+                  onClick={() => handleTemplateClick(template)}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <CardTitle className="text-base truncate">{template.name}</CardTitle>
+                          <Badge className="capitalize" variant={template.type === 'MARKETING' ? 'info' : 'success'}>
+                            {template.type.toLowerCase()}
+                          </Badge>
+                        </div>
+                        {template.description && (
+                          <CardDescription className="text-xs line-clamp-1">{template.description}</CardDescription>
+                        )}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="space-y-2 text-xs">
+                      <div>
+                        <span className="text-neutral-500">Subject:</span>{' '}
+                        <span className="font-medium text-neutral-900">{template.subject}</span>
+                      </div>
+                      <div>
+                        <span className="text-neutral-500">From:</span>{' '}
+                        <span className="text-neutral-700">{template.from}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {data && data.totalPages > 1 && (
+              <div className="flex items-center justify-between pt-3 border-t">
+                <p className="text-sm text-neutral-500">
+                  Page {page} of {data.totalPages}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setPage(p => p - 1)} disabled={page === 1}>
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => p + 1)}
+                    disabled={page === data.totalPages}
                   >
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  <p className="mt-2 text-sm text-neutral-500">Loading templates...</p>
+                    Next
+                  </Button>
                 </div>
               </div>
             )}
-
-            {!isLoading && data?.templates.length === 0 && (
-              <div className="text-center py-12">
-                <FileText className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-neutral-900 mb-2">No templates found</h3>
-                <p className="text-neutral-500">
-                  {search ? 'Try adjusting your search terms' : 'Create a template first to use this feature'}
-                </p>
-              </div>
-            )}
-
-            {data?.templates.map(template => (
-              <Card
-                key={template.id}
-                className="cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
-                onClick={() => handleTemplateClick(template)}
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <CardTitle className="text-base truncate">{template.name}</CardTitle>
-                        <Badge className="capitalize" variant={template.type === 'MARKETING' ? 'info' : 'success'}>
-                          {template.type.toLowerCase()}
-                        </Badge>
-                      </div>
-                      {template.description && (
-                        <CardDescription className="text-xs line-clamp-1">{template.description}</CardDescription>
-                      )}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-2 text-xs">
-                    <div>
-                      <span className="text-neutral-500">Subject:</span>{' '}
-                      <span className="font-medium text-neutral-900">{template.subject}</span>
-                    </div>
-                    <div>
-                      <span className="text-neutral-500">From:</span>{' '}
-                      <span className="text-neutral-700">{template.from}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
           </div>
-
-          {/* Pagination */}
-          {data && data.totalPages > 1 && (
-            <div className="flex items-center justify-between pt-3 border-t">
-              <p className="text-sm text-neutral-500">
-                Page {page} of {data.totalPages}
-              </p>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setPage(p => p - 1)} disabled={page === 1}>
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage(p => p + 1)}
-                  disabled={page === data.totalPages}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
         ) : (
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Scrollable Content */}
@@ -411,11 +410,7 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
               <Button variant="outline" onClick={handleBack} className="flex-1">
                 Back
               </Button>
-              <Button
-                onClick={handleConfirm}
-                className="flex-1"
-                disabled={!Object.values(selectedFields).some(v => v)}
-              >
+              <Button onClick={handleConfirm} className="flex-1" disabled={!Object.values(selectedFields).some(v => v)}>
                 Create Campaign
               </Button>
             </div>

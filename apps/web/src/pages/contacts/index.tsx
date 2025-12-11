@@ -13,7 +13,7 @@ import {
   DialogTitle,
   Input,
   Label,
-  Switch,
+  Switch
 } from '@plunk/ui';
 import type {Contact} from '@plunk/db';
 import {DashboardLayout} from '../../components/DashboardLayout';
@@ -32,7 +32,7 @@ import {
   Search,
   Trash2,
   Upload,
-  XCircle,
+  XCircle
 } from 'lucide-react';
 import {NextSeo} from 'next-seo';
 import Link from 'next/link';
@@ -40,6 +40,7 @@ import {useEffect, useRef, useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
 import {ContactSchemas} from '@plunk/shared';
+import dayjs from 'dayjs';
 
 interface PaginatedContacts {
   contacts: Contact[];
@@ -279,7 +280,12 @@ export default function ContactsPage() {
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
-                              {new Date(contact.createdAt).toLocaleDateString()}
+                              <div className="group relative inline-block cursor-help">
+                                {dayjs(contact.createdAt).fromNow()}
+                                <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-1/2 transform -translate-x-1/2 mb-1 whitespace-nowrap">
+                                  {dayjs(contact.createdAt).format('DD MMMM YYYY, hh:mm')}
+                                </div>
+                              </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                               <div className="flex items-center justify-end gap-2">
@@ -324,9 +330,12 @@ export default function ContactsPage() {
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-neutral-500">
-                            {new Date(contact.createdAt).toLocaleDateString()}
-                          </span>
+                          <div className="group relative inline-block cursor-help">
+                            <span className="text-xs text-neutral-500">{dayjs(contact.createdAt).fromNow()}</span>
+                            <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                              {dayjs(contact.createdAt).format('Do MMMM YYYY, h:mm A')}
+                            </div>
+                          </div>
                           <div className="flex items-center gap-1">
                             <Link href={`/contacts/${contact.id}`}>
                               <Button variant="ghost" size="sm">

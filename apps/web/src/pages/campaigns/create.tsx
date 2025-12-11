@@ -78,7 +78,7 @@ export default function CreateCampaignPage() {
           setBody(template.data.body);
 
           toast.success('Template loaded successfully');
-        } catch (error) {
+        } catch {
           toast.error('Failed to load template');
         } finally {
           setLoadingTemplate(false);
@@ -104,7 +104,7 @@ export default function CreateCampaignPage() {
           setBody(campaign.data.body);
 
           toast.success('Campaign loaded successfully');
-        } catch (error) {
+        } catch {
           toast.error('Failed to load campaign');
         } finally {
           setLoadingTemplate(false);

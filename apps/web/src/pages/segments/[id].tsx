@@ -12,7 +12,7 @@ import {
 import type {Contact, Segment} from '@plunk/db';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {network} from '../../lib/network';
-import {ArrowLeft, Calendar, Database, Filter, MailCheck, MailX, RefreshCw, Save, Trash2, Users} from 'lucide-react';
+import {ArrowLeft, Database, Filter, MailCheck, MailX, RefreshCw, Save, Trash2, Users} from 'lucide-react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
@@ -21,6 +21,7 @@ import useSWR from 'swr';
 import type {FilterCondition} from '@plunk/types';
 import {SegmentSchemas} from '@plunk/shared';
 import {SegmentFilterBuilder} from '../../components/SegmentFilterBuilder';
+import dayjs from 'dayjs';
 
 interface PaginatedContacts {
   contacts: Contact[];
@@ -389,26 +390,30 @@ export default function SegmentDetailPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <Calendar className="h-5 w-5 text-neutral-500 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-neutral-900">Created</p>
-                    <p className="text-sm text-neutral-500">{new Date(segment.createdAt).toLocaleDateString()}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Calendar className="h-5 w-5 text-neutral-500 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-neutral-900">Last Updated</p>
-                    <p className="text-sm text-neutral-500">{new Date(segment.updatedAt).toLocaleDateString()}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
                   <Database className="h-5 w-5 text-neutral-500 mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-neutral-900">Segment ID</p>
                     <p className="text-xs text-neutral-500 font-mono break-all">{segment.id}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-neutral-900">Created</p>
+                  <div className="group relative inline-block cursor-help">
+                    <p className="text-sm text-neutral-500">{dayjs(segment.createdAt).fromNow()}</p>
+                    <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                      {dayjs(segment.createdAt).format('DD MMMM YYYY, hh:mm')}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-neutral-900">Last Updated</p>
+                  <div className="group relative inline-block cursor-help">
+                    <p className="text-sm text-neutral-500">{dayjs(segment.updatedAt).fromNow()}</p>
+                    <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                      {dayjs(segment.updatedAt).format('DD MMMM YYYY, hh:mm')}
+                    </div>
                   </div>
                 </div>
               </CardContent>

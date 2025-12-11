@@ -23,13 +23,14 @@ import {
 import type {Workflow} from '@plunk/db';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {network} from '../../lib/network';
-import {Edit, Plus, Power, PowerOff, Search, Trash2, Workflow as WorkflowIcon} from 'lucide-react';
+import {Calendar, Edit, Plus, Power, PowerOff, Search, Trash2, Workflow as WorkflowIcon} from 'lucide-react';
 import {NextSeo} from 'next-seo';
 import Link from 'next/link';
 import {useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
 import {WorkflowSchemas} from '@plunk/shared';
+import dayjs from 'dayjs';
 
 interface PaginatedWorkflows {
   workflows: (Workflow & {_count?: {steps: number; executions: number}})[];
@@ -252,7 +253,23 @@ export default function WorkflowsPage() {
                           <span className="font-medium text-neutral-900">{workflow._count?.executions ?? 0}</span>{' '}
                           executions
                         </div>
-                        <div>Created {new Date(workflow.createdAt).toLocaleDateString()}</div>
+                      </div>
+                      <div className="flex items-center gap-4 text-xs text-neutral-500 pt-3 border-t border-neutral-100">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="h-3 w-3" />
+                          <div className="group relative inline-block cursor-help">
+                            <span>Created {dayjs(workflow.createdAt).fromNow()}</span>
+                            <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                              {dayjs(workflow.createdAt).format('DD MMMM YYYY, hh:mm')}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="group relative inline-block cursor-help">
+                          <span>• Updated {dayjs(workflow.updatedAt).fromNow()}</span>
+                          <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                            {dayjs(workflow.updatedAt).format('DD MMMM YYYY, hh:mm')}
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

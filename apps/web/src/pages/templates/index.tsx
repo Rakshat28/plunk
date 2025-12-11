@@ -12,12 +12,13 @@ import {
 import type {Template} from '@plunk/db';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {network} from '../../lib/network';
-import {Copy, Edit, FileText, Plus, Search, Trash2} from 'lucide-react';
+import {Calendar, Copy, Edit, FileText, Plus, Search, Trash2} from 'lucide-react';
 import {NextSeo} from 'next-seo';
 import Link from 'next/link';
 import {useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
+import dayjs from 'dayjs';
 
 interface PaginatedTemplates {
   templates: Template[];
@@ -252,8 +253,22 @@ export default function TemplatesPage() {
                           <p className="text-xs text-neutral-500 mb-1">From</p>
                           <p className="text-sm text-neutral-700">{template.from}</p>
                         </div>
-                        <div className="flex items-center gap-6 text-sm text-neutral-500 pt-2 border-t border-neutral-100">
-                          <div>Created {new Date(template.createdAt).toLocaleDateString()}</div>
+                        <div className="flex items-center gap-4 text-xs text-neutral-500 pt-3 border-t border-neutral-100">
+                          <div className="flex items-center gap-1.5">
+                            <Calendar className="h-3 w-3" />
+                            <div className="group relative inline-block cursor-help">
+                              <span>Created {dayjs(template.createdAt).fromNow()}</span>
+                              <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                                {dayjs(template.createdAt).format('DD MMMM YYYY, hh:mm')}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="group relative inline-block cursor-help">
+                            <span>• Updated {dayjs(template.updatedAt).fromNow()}</span>
+                            <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                              {dayjs(template.updatedAt).format('DD MMMM YYYY, hh:mm')}
+                            </div>
+                          </div>
                           {template.replyTo && (
                             <div>
                               Reply to: <span className="text-neutral-700">{template.replyTo}</span>

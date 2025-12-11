@@ -1,4 +1,4 @@
-import {memo, useCallback, useEffect, useMemo, useState} from 'react';
+import {memo, useEffect, useMemo, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {BillingLimitSchemas} from '@plunk/shared';
@@ -23,7 +23,7 @@ import {
 import {AlertCircle, AlertTriangle, Check} from 'lucide-react';
 import {AnimatePresence, motion} from 'framer-motion';
 import type {z} from 'zod';
-import {useBillingLimits, type BillingLimitsData, type CategoryLimit} from '../lib/hooks/useBillingLimits';
+import {type BillingLimitsData, type CategoryLimit, useBillingLimits} from '../lib/hooks/useBillingLimits';
 import {network} from '../lib/network';
 
 // Price per email in the smallest currency unit (e.g., cents for USD/EUR)
@@ -50,7 +50,7 @@ const formatEmailCost = (emailCount: number, currency: string | null): string =>
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(costInCents / 100);
-  } catch (error) {
+  } catch {
     // Fallback if currency is invalid
     return `${(costInCents / 100).toFixed(2)} ${currency.toUpperCase()}`;
   }
@@ -167,8 +167,8 @@ export function BillingLimits({projectId, hasSubscription, billingEnabled}: Bill
               <AlertCircle className="h-4 w-4" />
               <div className="ml-2">
                 <p className="text-sm">
-                  You&apos;re on the free tier with 1,000 emails per month. Upgrade to a paid subscription for
-                  unlimited emails or custom limits.
+                  You&apos;re on the free tier with 1,000 emails per month. Upgrade to a paid subscription for unlimited
+                  emails or custom limits.
                 </p>
               </div>
             </Alert>
@@ -254,9 +254,7 @@ export function BillingLimits({projectId, hasSubscription, billingEnabled}: Bill
                         </FormControl>
                         <FormDescription>
                           Maximum workflow emails per month. Leave empty for unlimited.
-                          {estimatedCost && (
-                            <span className="text-neutral-500"> ≈ {estimatedCost}/month</span>
-                          )}
+                          {estimatedCost && <span className="text-neutral-500"> ≈ {estimatedCost}/month</span>}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -286,9 +284,7 @@ export function BillingLimits({projectId, hasSubscription, billingEnabled}: Bill
                         </FormControl>
                         <FormDescription>
                           Maximum campaign emails per month. Leave empty for unlimited.
-                          {estimatedCost && (
-                            <span className="text-neutral-500"> ≈ {estimatedCost}/month</span>
-                          )}
+                          {estimatedCost && <span className="text-neutral-500"> ≈ {estimatedCost}/month</span>}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -318,9 +314,7 @@ export function BillingLimits({projectId, hasSubscription, billingEnabled}: Bill
                         </FormControl>
                         <FormDescription>
                           Maximum transactional emails per month. Leave empty for unlimited.
-                          {estimatedCost && (
-                            <span className="text-neutral-500"> ≈ {estimatedCost}/month</span>
-                          )}
+                          {estimatedCost && <span className="text-neutral-500"> ≈ {estimatedCost}/month</span>}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

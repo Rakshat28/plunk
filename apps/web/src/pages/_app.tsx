@@ -10,6 +10,13 @@ import {ActiveProjectProvider} from '../lib/contexts/ActiveProjectProvider';
 import {useProjects} from '../lib/hooks/useProject';
 import {useUser} from '../lib/hooks/useUser';
 import {network} from '../lib/network';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
+
+// Configure dayjs plugins globally
+dayjs.extend(relativeTime);
+dayjs.extend(advancedFormat);
 
 // Routes that don't require authentication
 const PUBLIC_ROUTES = ['/auth/login', '/auth/signup', '/auth/reset'];

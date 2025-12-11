@@ -19026,6 +19026,7 @@ __metadata:
     "@uiw/react-codemirror": "npm:^4.25.3"
     "@xyflow/react": "npm:^12.9.3"
     dagre: "npm:^0.8.5"
+    dayjs: "npm:^1.11.19"
     framer-motion: "npm:^12.23.24"
     juice: "npm:^11.0.3"
     lucide-react: "npm:^0.553.0"
