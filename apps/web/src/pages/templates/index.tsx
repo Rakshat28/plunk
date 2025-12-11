@@ -12,6 +12,7 @@ import {
 import type {Template} from '@plunk/db';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {network} from '../../lib/network';
+import {formatRelativeTime} from '../../lib/dateUtils';
 import {Calendar, Copy, Edit, FileText, Plus, Search, Trash2} from 'lucide-react';
 import {NextSeo} from 'next-seo';
 import Link from 'next/link';
@@ -257,14 +258,14 @@ export default function TemplatesPage() {
                           <div className="flex items-center gap-1.5">
                             <Calendar className="h-3 w-3" />
                             <div className="group relative inline-block cursor-help">
-                              <span>Created {dayjs(template.createdAt).fromNow()}</span>
+                              <span>Created {formatRelativeTime(template.createdAt)}</span>
                               <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
                                 {dayjs(template.createdAt).format('DD MMMM YYYY, hh:mm')}
                               </div>
                             </div>
                           </div>
                           <div className="group relative inline-block cursor-help">
-                            <span>• Updated {dayjs(template.updatedAt).fromNow()}</span>
+                            <span>• Updated {formatRelativeTime(template.updatedAt)}</span>
                             <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
                               {dayjs(template.updatedAt).format('DD MMMM YYYY, hh:mm')}
                             </div>

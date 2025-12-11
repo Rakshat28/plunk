@@ -23,6 +23,7 @@ import {
 import type {Workflow} from '@plunk/db';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {network} from '../../lib/network';
+import {formatRelativeTime} from '../../lib/dateUtils';
 import {Calendar, Edit, Plus, Power, PowerOff, Search, Trash2, Workflow as WorkflowIcon} from 'lucide-react';
 import {NextSeo} from 'next-seo';
 import Link from 'next/link';
@@ -258,14 +259,14 @@ export default function WorkflowsPage() {
                         <div className="flex items-center gap-1.5">
                           <Calendar className="h-3 w-3" />
                           <div className="group relative inline-block cursor-help">
-                            <span>Created {dayjs(workflow.createdAt).fromNow()}</span>
+                            <span>Created {formatRelativeTime(workflow.createdAt)}</span>
                             <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
                               {dayjs(workflow.createdAt).format('DD MMMM YYYY, hh:mm')}
                             </div>
                           </div>
                         </div>
                         <div className="group relative inline-block cursor-help">
-                          <span>• Updated {dayjs(workflow.updatedAt).fromNow()}</span>
+                          <span>• Updated {formatRelativeTime(workflow.updatedAt)}</span>
                           <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
                             {dayjs(workflow.updatedAt).format('DD MMMM YYYY, hh:mm')}
                           </div>

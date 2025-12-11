@@ -2,6 +2,8 @@
  * Shared date formatting and manipulation utilities
  */
 
+import dayjs from 'dayjs';
+
 /**
  * Get the user's timezone
  */
@@ -105,4 +107,22 @@ export function formatUTCDateTime(date: Date): string {
     timeStyle: 'short',
     timeZone: 'UTC',
   });
+}
+
+/**
+ * Format a date as relative time with short format for very recent updates
+ * Returns "just now" for updates within the last minute to avoid text wrapping
+ */
+export function formatRelativeTime(date: Date | string): string {
+  const now = dayjs();
+  const then = dayjs(date);
+  const secondsAgo = now.diff(then, 'second');
+
+  // If less than 60 seconds, show "just now"
+  if (secondsAgo < 60) {
+    return 'just now';
+  }
+
+  // Otherwise use standard relative time
+  return then.fromNow();
 }

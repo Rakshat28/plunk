@@ -19,6 +19,7 @@ import type {Contact} from '@plunk/db';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {KeyValueEditor} from '../../components/KeyValueEditor';
 import {network} from '../../lib/network';
+import {formatRelativeTime} from '../../lib/dateUtils';
 import {
   CheckCircle,
   ChevronLeft,
@@ -281,7 +282,7 @@ export default function ContactsPage() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
                               <div className="group relative inline-block cursor-help">
-                                {dayjs(contact.createdAt).fromNow()}
+                                {formatRelativeTime(contact.createdAt)}
                                 <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-1/2 transform -translate-x-1/2 mb-1 whitespace-nowrap">
                                   {dayjs(contact.createdAt).format('DD MMMM YYYY, hh:mm')}
                                 </div>
@@ -331,7 +332,7 @@ export default function ContactsPage() {
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="group relative inline-block cursor-help">
-                            <span className="text-xs text-neutral-500">{dayjs(contact.createdAt).fromNow()}</span>
+                            <span className="text-xs text-neutral-500">{formatRelativeTime(contact.createdAt)}</span>
                             <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
                               {dayjs(contact.createdAt).format('Do MMMM YYYY, h:mm A')}
                             </div>
