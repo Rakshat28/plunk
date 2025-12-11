@@ -1020,11 +1020,11 @@ export default function CampaignDetailsPage() {
               {/* Sent At */}
               {c.sentAt && (
                 <div className="pb-3 border-b border-neutral-100">
-                  <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">Sent At</p>
+                  <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">Sent On</p>
                   <div className="flex items-center gap-2">
                     <Send className="h-4 w-4 text-neutral-400" />
                     <p className="text-sm font-medium text-neutral-900">
-                      {new Date(c.sentAt).toLocaleDateString()} at {new Date(c.sentAt).toLocaleTimeString()}
+                      {formatFullDateTime(new Date(c.sentAt))}
                     </p>
                   </div>
                 </div>
