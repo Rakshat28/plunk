@@ -15,15 +15,18 @@ import Link from 'next/link';
 import {ApiKeyDisplay} from '../components/ApiKeyDisplay';
 import {DashboardLayout} from '../components/DashboardLayout';
 import {QuickStart} from '../components/QuickStart';
+import {SecurityWarningBanner} from '../components/SecurityWarningBanner';
 import {useActiveProject} from '../lib/contexts/ActiveProjectProvider';
 import {useDashboardStats} from '../lib/hooks/useDashboardStats';
 import {useProjectSetupState} from '../lib/hooks/useProjectSetupState';
+import {useProjectSecurity} from '../lib/hooks/useProjectSecurity';
 import {useConfig} from '../lib/hooks/useConfig';
 
 export default function Index() {
   const {activeProject} = useActiveProject();
   const {totalContacts, totalEmailsSent, totalCampaigns, openRate, isLoading} = useDashboardStats();
   const {setupState, isLoading: isLoadingSetupState} = useProjectSetupState(activeProject?.id);
+  const {securityMetrics} = useProjectSecurity(activeProject?.id);
   const {data: config} = useConfig();
 
   const stats = [
@@ -66,6 +69,11 @@ export default function Index() {
                 issue.
               </AlertDescription>
             </Alert>
+          )}
+
+          {/* Security Warning Banner */}
+          {activeProject && !activeProject.disabled && securityMetrics && (
+            <SecurityWarningBanner status={securityMetrics.status} />
           )}
 
           {/* Subscription Warning Banner */}

@@ -37,7 +37,16 @@ import {
 } from '@plunk/ui';
 import {AnimatePresence, motion} from 'framer-motion';
 import {NextSeo} from 'next-seo';
-import {AlertTriangle, CreditCard, Database, Globe, Mail, Settings as SettingsIcon, Users} from 'lucide-react';
+import {
+  AlertTriangle,
+  CreditCard,
+  Database,
+  Globe,
+  Mail,
+  Settings as SettingsIcon,
+  Shield,
+  Users,
+} from 'lucide-react';
 import type {z} from 'zod';
 import {useRouter} from 'next/router';
 import {DashboardLayout} from '../../components/DashboardLayout';
@@ -50,14 +59,16 @@ import {ApiKeyDisplay} from '../../components/ApiKeyDisplay';
 import {SmtpSettings} from '../../components/SmtpSettings';
 import {DataManagementSettings} from '../../components/DataManagementSettings';
 import {TeamSettings} from '../../components/TeamSettings';
+import {SecuritySettings} from '../../components/SecuritySettings';
 import {useActiveProject} from '../../lib/contexts/ActiveProjectProvider';
 import {network} from '../../lib/network';
 import {useProjects} from '../../lib/hooks/useProject';
 import {useConfig} from '../../lib/hooks/useConfig';
 import {useUser} from '../../lib/hooks/useUser';
+import {useProjectSecurity} from '../../lib/hooks/useProjectSecurity';
 import useSWR from 'swr';
 
-type TabId = 'general' | 'billing' | 'domains' | 'smtp' | 'data' | 'team';
+type TabId = 'general' | 'billing' | 'domains' | 'smtp' | 'data' | 'team' | 'security';
 
 interface Tab {
   id: TabId;
@@ -71,6 +82,7 @@ const buildTabs = (options: {billingEnabled: boolean; smtpEnabled: boolean}): Ta
   const allTabs: Tab[] = [
     {id: 'general', label: 'General', icon: SettingsIcon},
     {id: 'team', label: 'Team', icon: Users},
+    {id: 'security', label: 'Security', icon: Shield},
     {id: 'billing', label: 'Billing', icon: CreditCard, condition: billingEnabled},
     {id: 'domains', label: 'Domains', icon: Globe},
     {id: 'smtp', label: 'SMTP', icon: Mail, condition: smtpEnabled},
@@ -102,6 +114,8 @@ export default function Settings() {
 
   const currentUserMembership = membershipData?.data.find(m => m.userId === user?.id);
   const currentUserRole = currentUserMembership?.role || 'MEMBER';
+
+  const {securityMetrics, isLoading: isLoadingSecurityMetrics} = useProjectSecurity(activeProject?.id);
 
   const billingEnabled = config?.features.billing.enabled ?? false;
   const smtpEnabled = config?.features.smtp.enabled ?? false;
@@ -689,6 +703,24 @@ export default function Settings() {
                 currentUserRole={currentUserRole}
                 currentUserId={user?.id || ''}
               />
+            </TabsContent>
+
+            {/* Security Tab */}
+            <TabsContent value="security">
+              {securityMetrics ? (
+                <SecuritySettings metrics={securityMetrics} isLoading={isLoadingSecurityMetrics} />
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Security Overview</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-neutral-500">
+                      {isLoadingSecurityMetrics ? 'Loading...' : 'Unable to load security metrics'}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             {/* Domains Tab */}

@@ -1,6 +1,6 @@
 import {Controller, Delete, Get, Middleware, Post, Put} from '@overnightjs/core';
 import {CampaignAudienceType, CampaignStatus} from '@plunk/db';
-import {CampaignSchemas} from '@plunk/shared';
+import {CampaignSchemas, UtilitySchemas} from '@plunk/shared';
 import type {NextFunction, Request, Response} from 'express';
 
 import {HttpException} from '../exceptions/index.js';
@@ -97,7 +97,7 @@ export class Campaigns {
   @CatchAsync
   private async get(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     const campaign = await CampaignService.get(auth.projectId, id!);
 
@@ -116,7 +116,7 @@ export class Campaigns {
   @CatchAsync
   private async update(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
     const {name, description, subject, body, from, fromName, replyTo, audienceType, audienceCondition, segmentId} =
       req.body;
 
@@ -162,7 +162,7 @@ export class Campaigns {
   @CatchAsync
   private async delete(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     await CampaignService.delete(auth.projectId, id!);
 
@@ -181,7 +181,7 @@ export class Campaigns {
   @CatchAsync
   private async duplicate(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     const campaign = await CampaignService.duplicate(auth.projectId, id!);
 
@@ -201,7 +201,7 @@ export class Campaigns {
   @CatchAsync
   private async send(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
     const scheduledFor = req.body?.scheduledFor;
 
     // Parse scheduledFor if provided
@@ -232,7 +232,7 @@ export class Campaigns {
   @CatchAsync
   private async cancel(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     const campaign = await CampaignService.cancel(auth.projectId, id!);
 
@@ -252,7 +252,7 @@ export class Campaigns {
   @CatchAsync
   private async stats(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     const stats = await CampaignService.getStats(auth.projectId, id!);
 
@@ -271,7 +271,7 @@ export class Campaigns {
   @CatchAsync
   private async sendTest(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
     const {email} = CampaignSchemas.sendTest.parse(req.body);
 
     await CampaignService.sendTest(auth.projectId, id!, email);

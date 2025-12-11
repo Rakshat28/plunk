@@ -1,11 +1,12 @@
 import {Controller, Delete, Get, Middleware, Patch, Post} from '@overnightjs/core';
 import type {NextFunction, Request, Response} from 'express';
-import {MembershipSchemas} from '@plunk/shared';
+import {MembershipSchemas, UtilitySchemas} from '@plunk/shared';
 
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
 import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth} from '../middleware/auth.js';
+import {SecurityService} from '../services/SecurityService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
 
 @Controller('projects')
@@ -19,7 +20,7 @@ export class Projects {
   @CatchAsync
   private async getSetupState(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     // Verify user has access to this project
     const membership = await prisma.membership.findFirst({
@@ -84,6 +85,38 @@ export class Projects {
   }
 
   /**
+   * Get project security metrics
+   * GET /projects/:id/security
+   */
+  @Get(':id/security')
+  @Middleware([requireAuth])
+  @CatchAsync
+  private async getSecurityMetrics(req: Request, res: Response, _next: NextFunction) {
+    const auth = res.locals.auth as AuthResponse;
+    const {id} = UtilitySchemas.id.parse(req.params);
+
+    // Verify user has access to this project
+    const membership = await prisma.membership.findFirst({
+      where: {
+        userId: auth.userId,
+        projectId: id,
+      },
+    });
+
+    if (!membership) {
+      throw new HttpException(404, 'Project not found or you do not have access');
+    }
+
+    // Use existing SecurityService
+    const metrics = await SecurityService.getProjectSecurityMetrics(id);
+
+    return res.json({
+      success: true,
+      data: metrics,
+    });
+  }
+
+  /**
    * Get all members of a project
    * GET /projects/:id/members
    */
@@ -92,7 +125,7 @@ export class Projects {
   @CatchAsync
   private async getMembers(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     // Verify user has access to this project
     const membership = await prisma.membership.findFirst({
@@ -141,7 +174,7 @@ export class Projects {
   @CatchAsync
   private async addMember(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     // Validate params
     if (!id) {

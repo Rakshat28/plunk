@@ -1,7 +1,7 @@
 import {randomBytes} from 'node:crypto';
 
 import {Controller, Delete, Get, Middleware, Patch, Post, Put} from '@overnightjs/core';
-import {BillingLimitSchemas, ProjectSchemas} from '@plunk/shared';
+import {BillingLimitSchemas, ProjectSchemas, UtilitySchemas} from '@plunk/shared';
 import type {NextFunction, Request, Response} from 'express';
 
 import {DASHBOARD_URI, STRIPE_ENABLED, STRIPE_PRICE_EMAIL_USAGE, STRIPE_PRICE_ONBOARDING} from '../app/constants.js';
@@ -95,7 +95,7 @@ export class Users {
   @CatchAsync
   public async updateProject(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
     const data = ProjectSchemas.update.parse(req.body);
 
     // Verify user has access to this project
@@ -127,7 +127,7 @@ export class Users {
   @CatchAsync
   public async regenerateProjectKeys(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     // Verify user has admin/owner access to this project
     const membership = await prisma.membership.findFirst({
@@ -179,7 +179,7 @@ export class Users {
   @CatchAsync
   public async createCheckoutSession(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     // Check if billing is enabled
     if (!STRIPE_ENABLED || !stripe) {
@@ -258,7 +258,7 @@ export class Users {
   @CatchAsync
   public async createBillingPortalSession(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     // Check if billing is enabled
     if (!STRIPE_ENABLED || !stripe) {
@@ -308,7 +308,7 @@ export class Users {
   @CatchAsync
   public async getBillingLimits(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     if (!auth.userId) {
       throw new NotAuthenticated();
@@ -341,7 +341,7 @@ export class Users {
   @CatchAsync
   public async updateBillingLimits(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     if (!auth.userId) {
       throw new NotAuthenticated();
@@ -408,7 +408,7 @@ export class Users {
   @CatchAsync
   public async getBillingConsumption(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     // Check if billing is enabled
     if (!STRIPE_ENABLED || !stripe) {
@@ -534,7 +534,7 @@ export class Users {
   @CatchAsync
   public async getBillingInvoices(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     // Check if billing is enabled
     if (!STRIPE_ENABLED || !stripe) {
@@ -622,7 +622,7 @@ export class Users {
   @CatchAsync
   public async getSecurityHealth(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     if (!auth.userId) {
       throw new NotAuthenticated();
@@ -655,7 +655,7 @@ export class Users {
   @CatchAsync
   public async resetProject(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     if (!auth.userId) {
       throw new NotAuthenticated();
@@ -731,7 +731,7 @@ export class Users {
   @CatchAsync
   public async deleteProject(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
-    const {id} = req.params;
+    const {id} = UtilitySchemas.id.parse(req.params);
 
     if (!auth.userId) {
       throw new NotAuthenticated();
