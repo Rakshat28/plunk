@@ -611,6 +611,8 @@ model Event {
   @@index([createdAt])
   @@index([projectId, contactId, name, createdAt]) // For event-based segment queries (fast!)
   @@index([contactId, name, createdAt]) // For per-contact event lookups
+  @@index([projectId, name, createdAt]) // For event stats and analytics by type over time
+  @@index([contactId, createdAt]) // For contact activity timeline (recent events)
   @@index([data(ops: JsonbOps)], type: Gin) // GIN index for event data queries
   @@map("events")
 }
