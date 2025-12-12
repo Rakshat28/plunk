@@ -183,6 +183,10 @@ services:
       # If using PEM files, SMTP_DOMAIN is optional
       SMTP_DOMAIN: ${SMTP_DOMAIN:-}
 
+      # Platform emails
+      PLUNK_API_KEY: ${PLUNK_API_KEY:-}
+      PLUNK_FROM_ADDRESS: ${PLUNK_FROM_ADDRESS:-}
+
     volumes:
       # Persistent storage for application data
       - plunk_data:/app/data

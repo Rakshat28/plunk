@@ -65,7 +65,9 @@
         "NEXT_PUBLIC_API_URI",
         "NEXT_PUBLIC_LANDING_URI",
         "NEXT_PUBLIC_DASHBOARD_URI",
-        "NEXT_PUBLIC_WIKI_URI"
+        "NEXT_PUBLIC_WIKI_URI",
+        "PLUNK_API_KEY",
+        "PLUNK_FROM_ADDRESS"
       ],
       "inputs": ["$TURBO_DEFAULT$", ".env*"]
     },
@@ -113,7 +115,9 @@
         "NEXT_PUBLIC_API_URI",
         "NEXT_PUBLIC_LANDING_URI",
         "NEXT_PUBLIC_DASHBOARD_URI",
-        "NEXT_PUBLIC_WIKI_URI"
+        "NEXT_PUBLIC_WIKI_URI",
+        "PLUNK_API_KEY",
+        "PLUNK_FROM_ADDRESS"
       ]
     },
     "dev:worker": {
@@ -152,7 +156,9 @@
         "NEXT_PUBLIC_API_URI",
         "NEXT_PUBLIC_LANDING_URI",
         "NEXT_PUBLIC_DASHBOARD_URI",
-        "NEXT_PUBLIC_WIKI_URI"
+        "NEXT_PUBLIC_WIKI_URI",
+        "PLUNK_API_KEY",
+        "PLUNK_FROM_ADDRESS"
       ]
     },
     "clean": {
