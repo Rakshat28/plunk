@@ -2,6 +2,9 @@
   "name": "@plunk/email",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "email dev -p 1001 --dir=src/emails",
     "clean": "rimraf node_modules .turbo dist",

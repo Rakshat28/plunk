@@ -47,6 +47,7 @@ export default defineConfig({
       '@plunk/db': path.resolve(__dirname, './packages/db/src'),
       '@plunk/shared': path.resolve(__dirname, './packages/shared/src'),
       '@plunk/types': path.resolve(__dirname, './packages/types/src'),
+      '@plunk/email': path.resolve(__dirname, './packages/email/src'),
     },
   },
 });
