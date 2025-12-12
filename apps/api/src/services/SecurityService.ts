@@ -1,9 +1,13 @@
+import {ProjectDisabledEmail, sendPlatformEmail} from '@plunk/email';
+import React from 'react';
 import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
+import {Keys} from './keys.js';
 import {NtfyService} from './NtfyService.js';
 import {QueueService} from './QueueService.js';
+import {DASHBOARD_URI, LANDING_URI} from '../app/constants.js';
 
 /**
  * Security thresholds for bounce and complaint rates
@@ -45,7 +49,6 @@ interface SecurityStatus {
 }
 
 export class SecurityService {
-  private static readonly CACHE_PREFIX = 'security';
   private static readonly CACHE_TTL = 300; // 5 minutes
 
   /**
@@ -54,7 +57,7 @@ export class SecurityService {
   public static async getSecurityStatus(projectId: string): Promise<SecurityStatus> {
     try {
       // Try to get from cache first
-      const cacheKey = this.getCacheKey(projectId, 'rates');
+      const cacheKey = Keys.Security.rates(projectId);
       const cached = await redis.get(cacheKey);
 
       if (cached) {
@@ -137,7 +140,7 @@ export class SecurityService {
    */
   public static async invalidateCache(projectId: string): Promise<void> {
     try {
-      const cacheKey = this.getCacheKey(projectId, 'rates');
+      const cacheKey = Keys.Security.rates(projectId);
       await redis.del(cacheKey);
     } catch (error) {
       signale.error(`[SECURITY] Failed to invalidate cache for project ${projectId}:`, error);
@@ -165,13 +168,6 @@ export class SecurityService {
       thresholds: SECURITY_THRESHOLDS,
       isDisabled: project?.disabled ?? false,
     };
-  }
-
-  /**
-   * Get cache key for security metrics
-   */
-  private static getCacheKey(projectId: string, type: 'rates'): string {
-    return `${this.CACHE_PREFIX}:${projectId}:${type}`;
   }
 
   /**
@@ -345,6 +341,29 @@ export class SecurityService {
 
       // Send urgent notification about project suspension
       await NtfyService.notifyProjectDisabledForSecurity(project.name, projectId, status.violations);
+
+      // Send email notification to project members
+      try {
+        const members = await prisma.membership.findMany({
+          where: {projectId},
+          include: {user: {select: {email: true}}},
+        });
+        const emails = members.map(m => m.user.email);
+        if (emails.length > 0) {
+          const template = React.createElement(ProjectDisabledEmail, {
+            projectName: project.name,
+            projectId,
+            violations: status.violations,
+            dashboardUrl: DASHBOARD_URI,
+            landingUrl: LANDING_URI,
+          });
+          await Promise.all(
+            emails.map(email => sendPlatformEmail(email, 'Project Disabled - Security Risk', template)),
+          );
+        }
+      } catch (emailError) {
+        signale.error(`[SECURITY] Failed to send project disabled email:`, emailError);
+      }
     } catch (error) {
       signale.error(`[SECURITY] Failed to disable project ${projectId}:`, error);
     }

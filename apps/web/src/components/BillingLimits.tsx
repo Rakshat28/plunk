@@ -406,7 +406,7 @@ const UsageDisplay = memo(function UsageDisplay({category, usage, currency}: Usa
             <Alert className="mt-3 bg-red-50 border-red-200 text-red-900">
               <AlertCircle className="h-4 w-4" />
               <div className="ml-2">
-                <p className="text-xs">
+                <p className={'text-sm'}>
                   <strong>Limit reached:</strong> No more {category.toLowerCase()} emails can be sent this month.
                 </p>
               </div>
@@ -417,7 +417,7 @@ const UsageDisplay = memo(function UsageDisplay({category, usage, currency}: Usa
             <Alert className="mt-3 bg-orange-50 border-orange-200 text-orange-900">
               <AlertTriangle className="h-4 w-4" />
               <div className="ml-2">
-                <p className="text-xs">
+                <p className="text-sm">
                   <strong>Warning:</strong> You&apos;ve used {Math.round(usage.percentage)}% of your{' '}
                   {category.toLowerCase()} email limit.
                 </p>

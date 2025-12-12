@@ -5,6 +5,7 @@ import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
+import {Keys} from './keys.js';
 
 import {WorkflowExecutionService} from './WorkflowExecutionService.js';
 
@@ -49,7 +50,7 @@ export class EventService {
    * Should be called when workflows are enabled/disabled or updated
    */
   public static async invalidateWorkflowCache(projectId: string): Promise<void> {
-    const cacheKey = `workflows:enabled:${projectId}`;
+    const cacheKey = Keys.Workflow.enabled(projectId);
     try {
       await redis.del(cacheKey);
     } catch (error) {
@@ -323,7 +324,7 @@ export class EventService {
     data?: Record<string, unknown>,
   ): Promise<void> {
     // Try to get workflows from cache
-    const cacheKey = `workflows:enabled:${projectId}`;
+    const cacheKey = Keys.Workflow.enabled(projectId);
     let workflows;
 
     try {

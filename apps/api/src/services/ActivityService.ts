@@ -3,6 +3,7 @@ import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
+import {Keys} from './keys.js';
 
 /**
  * Activity types that can be tracked
@@ -171,7 +172,7 @@ export class ActivityService {
    */
   public static async getStats(projectId: string, startDate?: Date, endDate?: Date): Promise<ActivityStats> {
     // Try to get from cache
-    const cacheKey = `activity:stats:${projectId}:${startDate?.getTime() || 'all'}:${endDate?.getTime() || 'now'}`;
+    const cacheKey = Keys.Activity.stats(projectId, startDate?.getTime() || 'all', endDate?.getTime() || 'now');
 
     try {
       const cached = await redis.get(cacheKey);

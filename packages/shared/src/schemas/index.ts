@@ -340,16 +340,14 @@ export const ActionSchemas = {
       template: uuid.optional(),
       subscribed: z.boolean().optional().default(false),
       name: z.string().optional(),
-      from: z
-        .union([
-          email, // Simple email string (backward compatible)
-          z.object({
-            // Object with name and email
-            name: z.string().optional(),
-            email: email,
-          }),
-        ])
-        .optional(),
+      from: z.union([
+        email, // Simple email string (backward compatible)
+        z.object({
+          // Object with name and email
+          name: z.string().optional(),
+          email: email,
+        }),
+      ]),
       reply: email.optional(),
       headers: z.record(z.string().max(998)).optional(),
       data: jsonSchema.optional(),

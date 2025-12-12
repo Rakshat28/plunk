@@ -80,6 +80,7 @@ describe('Actions API Integration Tests', () => {
     it('should validate subject and body required when no template', () => {
       const result = ActionSchemas.send.safeParse({
         to: 'test@example.com',
+        from: 'test@example.com',
         // Missing subject, body, and template
       });
 
@@ -169,6 +170,7 @@ describe('Actions API Integration Tests', () => {
     it('should accept to as string (backward compatible)', () => {
       const result = ActionSchemas.send.safeParse({
         to: 'test@example.com',
+        from: 'test@example.com',
         subject: 'Test',
         body: 'Test',
       });
@@ -182,6 +184,7 @@ describe('Actions API Integration Tests', () => {
           name: 'Jane Doe',
           email: 'test@example.com',
         },
+        from: 'test@example.com',
         subject: 'Test',
         body: 'Test',
       });
@@ -194,6 +197,7 @@ describe('Actions API Integration Tests', () => {
         to: {
           email: 'test@example.com',
         },
+        from: 'test@example.com',
         subject: 'Test',
         body: 'Test',
       });
@@ -204,6 +208,7 @@ describe('Actions API Integration Tests', () => {
     it('should accept to as array of strings', () => {
       const result = ActionSchemas.send.safeParse({
         to: ['test1@example.com', 'test2@example.com'],
+        from: 'test@example.com',
         subject: 'Test',
         body: 'Test',
       });
@@ -217,6 +222,7 @@ describe('Actions API Integration Tests', () => {
           {name: 'Jane Doe', email: 'test1@example.com'},
           {name: 'John Smith', email: 'test2@example.com'},
         ],
+        from: 'test@example.com',
         subject: 'Test',
         body: 'Test',
       });
@@ -227,6 +233,7 @@ describe('Actions API Integration Tests', () => {
     it('should accept to as mixed array of strings and objects', () => {
       const result = ActionSchemas.send.safeParse({
         to: ['test1@example.com', {name: 'John Smith', email: 'test2@example.com'}],
+        from: 'test@example.com',
         subject: 'Test',
         body: 'Test',
       });

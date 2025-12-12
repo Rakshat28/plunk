@@ -1,6 +1,7 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {WorkflowExecutionStatus, WorkflowTriggerType} from '@plunk/db';
 import {EventService} from '../EventService';
+import {Keys} from '../keys';
 import {factories, getPrismaClient} from '../../../../../test/helpers';
 
 // Mock Redis for caching tests - must be inline to avoid hoisting issues
@@ -503,7 +504,7 @@ describe('EventService', () => {
       const {redis} = await import('../../database/redis');
 
       // Set cache
-      const cacheKey = `workflows:enabled:${projectId}`;
+      const cacheKey = Keys.Workflow.enabled(projectId);
       await redis.set(cacheKey, JSON.stringify([{id: 'test'}]));
 
       // Verify cache exists

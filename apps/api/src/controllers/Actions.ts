@@ -9,7 +9,7 @@ import {ContactService} from '../services/ContactService.js';
 import {DomainService} from '../services/DomainService.js';
 import {EmailService} from '../services/EmailService.js';
 import {EventService} from '../services/EventService.js';
-import {NotFound} from '../exceptions/index.js';
+import {NotFound, ValidationError} from '../exceptions/index.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
 
 /**
@@ -223,13 +223,20 @@ export class Actions {
       templateId = templateRecord.id;
     }
 
-    // Verify 'from' domain is verified if provided
-    const senderEmail = emailFrom || 'noreply@useplunk.com'; // Default sender
-
-    // Only verify custom domains (not the default noreply@useplunk.com)
-    if (emailFrom && emailFrom !== 'noreply@useplunk.com') {
-      await DomainService.verifyEmailDomain(emailFrom, auth.projectId);
+    if (!emailFrom) {
+      throw new ValidationError(
+        [
+          {
+            field: 'from',
+            message: 'Sender email is required either in request or template',
+            code: 'required',
+          },
+        ],
+        'Could not parse sender email',
+      );
     }
+
+    await DomainService.verifyEmailDomain(emailFrom, auth.projectId);
 
     const replyToEmail = emailReplyTo;
 
@@ -281,7 +288,7 @@ export class Actions {
         contactId: contact.id,
         subject: renderedSubject,
         body: renderedBody,
-        from: senderEmail,
+        from: emailFrom,
         fromName: emailFromName,
         toName: recipient.name,
         replyTo: replyToEmail,

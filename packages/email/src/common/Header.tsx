@@ -1,10 +1,16 @@
-import {Img} from '@react-email/components';
+import {Img, Section} from '@react-email/components';
 import * as React from 'react';
 
 export function Header() {
   return (
-    <>
-      <Img src="https://www.swyp.be/favicon/web-app-manifest-192x192.png" alt="Swyp Logo" width="40" height="40" />
-    </>
+    <Section className="border-b border-gray-100 bg-white px-8 py-8">
+      <Img
+        src="https://next.useplunk.com/assets/logo.png"
+        alt="Plunk"
+        width="40"
+        height="40"
+        className="mx-auto"
+      />
+    </Section>
   );
 }

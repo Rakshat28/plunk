@@ -1,6 +1,7 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {WorkflowExecutionStatus, WorkflowStepType, WorkflowTriggerType} from '@plunk/db';
 import {WorkflowService} from '../WorkflowService';
+import {Keys} from '../keys';
 import {factories, getPrismaClient} from '../../../../../test/helpers';
 
 // Mock Redis for caching tests - must be inline to avoid hoisting issues
@@ -130,7 +131,7 @@ describe('WorkflowService', () => {
 
     it('should invalidate cache when creating enabled workflow', async () => {
       const {redis} = await import('../../database/redis');
-      const cacheKey = `workflows:enabled:${projectId}`;
+      const cacheKey = Keys.Workflow.enabled(projectId);
 
       // Set cache
       await redis.set(cacheKey, JSON.stringify([{id: 'old'}]));
@@ -286,7 +287,7 @@ describe('WorkflowService', () => {
 
     it('should invalidate cache when enabling workflow', async () => {
       const {redis} = await import('../../database/redis');
-      const cacheKey = `workflows:enabled:${projectId}`;
+      const cacheKey = Keys.Workflow.enabled(projectId);
 
       const workflow = await factories.createWorkflow({
         projectId,
@@ -326,7 +327,7 @@ describe('WorkflowService', () => {
 
     it('should invalidate cache when deleting enabled workflow', async () => {
       const {redis} = await import('../../database/redis');
-      const cacheKey = `workflows:enabled:${projectId}`;
+      const cacheKey = Keys.Workflow.enabled(projectId);
 
       const workflow = await factories.createWorkflow({
         projectId,

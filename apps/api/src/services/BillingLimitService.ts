@@ -1,10 +1,13 @@
 import {EmailSourceType} from '@plunk/db';
+import {BillingLimitExceededEmail, BillingLimitWarningEmail, sendPlatformEmail} from '@plunk/email';
+import React from 'react';
 import signale from 'signale';
 
-import {STRIPE_ENABLED} from '../app/constants.js';
+import {DASHBOARD_URI, LANDING_URI, STRIPE_ENABLED} from '../app/constants.js';
 import {stripe} from '../app/stripe.js';
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
+import {Keys} from './keys.js';
 import {NtfyService} from './NtfyService.js';
 
 /**
@@ -238,6 +241,9 @@ export class BillingLimitService {
             EmailSourceType.TRANSACTIONAL, // Use generic type for notification
           );
 
+          // Send email notification
+          await this.sendLimitExceededEmail(projectId, project.name, totalUsage, freeLimit, 'Free Tier (All Types)');
+
           return {
             allowed: false,
             warning: false,
@@ -258,6 +264,16 @@ export class BillingLimitService {
             freeLimit,
             percentage,
             EmailSourceType.TRANSACTIONAL, // Use generic type for notification
+          );
+
+          // Send email notification (only once per month)
+          await this.sendWarningEmail(
+            projectId,
+            project.name,
+            totalUsage,
+            freeLimit,
+            percentage,
+            'Free Tier (All Types)',
           );
         }
 
@@ -299,6 +315,9 @@ export class BillingLimitService {
         if (project) {
           // Send notification about limit exceeded
           await NtfyService.notifyBillingLimitExceeded(project.name, projectId, usage, limit, sourceType);
+
+          // Send email notification
+          await this.sendLimitExceededEmail(projectId, project.name, usage, limit, sourceType);
         }
 
         return {
@@ -322,7 +341,17 @@ export class BillingLimitService {
         });
 
         if (project) {
-          await NtfyService.notifyBillingLimitApproaching(project.name, projectId, usage, limit, percentage, sourceType);
+          await NtfyService.notifyBillingLimitApproaching(
+            project.name,
+            projectId,
+            usage,
+            limit,
+            percentage,
+            sourceType,
+          );
+
+          // Send email notification (only once per month)
+          await this.sendWarningEmail(projectId, project.name, usage, limit, percentage, sourceType);
         }
       }
 
@@ -484,7 +513,7 @@ export class BillingLimitService {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
-    return `billing:usage:${projectId}:${sourceType}:${year}-${month}`;
+    return Keys.Billing.usage(projectId, sourceType, year, month);
   }
 
   /**
@@ -495,5 +524,111 @@ export class BillingLimitService {
     const start = new Date(now.getFullYear(), now.getMonth(), 1);
     const end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
     return {start, end};
+  }
+
+  /**
+   * Send billing limit warning email to project members
+   */
+  private static async sendWarningEmail(
+    projectId: string,
+    projectName: string,
+    usage: number,
+    limit: number,
+    percentage: number,
+    sourceType: string,
+  ): Promise<void> {
+    try {
+      // Check if we've already sent this warning email this month
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const cacheKey = Keys.Billing.warningEmail(projectId, sourceType, year, month);
+
+      const alreadySent = await redis.get(cacheKey);
+      if (alreadySent === '1') {
+        return;
+      }
+
+      const members = await prisma.membership.findMany({
+        where: {projectId},
+        include: {user: {select: {email: true}}},
+      });
+      const emails = members.map(m => m.user.email);
+      if (emails.length === 0) {
+        return;
+      }
+
+      const template = React.createElement(BillingLimitWarningEmail, {
+        projectName,
+        projectId,
+        usage,
+        limit,
+        percentage,
+        sourceType,
+        dashboardUrl: DASHBOARD_URI,
+        landingUrl: LANDING_URI,
+      });
+
+      await Promise.all(emails.map(email => sendPlatformEmail(email, 'Billing Limit Warning', template)));
+
+      // Mark that we've sent the warning email (expires at end of month)
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      const ttl = Math.floor((endOfMonth.getTime() - now.getTime()) / 1000);
+      await redis.setex(cacheKey, ttl, '1');
+    } catch (error) {
+      signale.error(`[BILLING_LIMIT] Failed to send warning email:`, error);
+    }
+  }
+
+  /**
+   * Send billing limit exceeded email to project members
+   */
+  private static async sendLimitExceededEmail(
+    projectId: string,
+    projectName: string,
+    usage: number,
+    limit: number,
+    sourceType: string,
+  ): Promise<void> {
+    try {
+      // Check if we've already sent this warning email this month
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const cacheKey = Keys.Billing.limitEmail(projectId, sourceType, year, month);
+
+      const alreadySent = await redis.get(cacheKey);
+      if (alreadySent === '1') {
+        return;
+      }
+
+      const members = await prisma.membership.findMany({
+        where: {projectId},
+        include: {user: {select: {email: true}}},
+      });
+      const emails = members.map(m => m.user.email);
+      if (emails.length === 0) {
+        return;
+      }
+
+      const template = React.createElement(BillingLimitExceededEmail, {
+        projectName,
+        projectId,
+        usage,
+        limit,
+        sourceType,
+        dashboardUrl: DASHBOARD_URI,
+        landingUrl: LANDING_URI,
+      });
+
+      await Promise.all(emails.map(email => sendPlatformEmail(email, 'Billing Limit Exceeded', template)));
+
+      // Mark that we've sent the limit email (expires at end of month)
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      const ttl = Math.floor((endOfMonth.getTime() - now.getTime()) / 1000);
+      await redis.setex(cacheKey, ttl, '1');
+    } catch (error) {
+      signale.error(`[BILLING_LIMIT] Failed to send limit exceeded email:`, error);
+    }
   }
 }

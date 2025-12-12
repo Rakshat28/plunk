@@ -94,3 +94,7 @@ export const SMTP_PORT_SUBMISSION = Number(validateEnv('PORT_SUBMISSION', '587')
 // Enable SMTP features only when explicitly enabled via env or when a non-default domain is configured
 export const SMTP_ENABLED =
   process.env.SMTP_ENABLED === 'true' || (SMTP_DOMAIN !== 'localhost' && NODE_ENV !== 'development');
+
+export const PLUNK_API_KEY = validateEnv('PLUNK_API_KEY', '');
+export const PLUNK_FROM_ADDRESS = validateEnv('PLUNK_FROM_ADDRESS', '');
+export const PLUNK_ENABLED = PLUNK_API_KEY !== '' && PLUNK_FROM_ADDRESS !== '';

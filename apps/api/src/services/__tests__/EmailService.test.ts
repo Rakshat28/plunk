@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {EmailSourceType, EmailStatus} from '@plunk/db';
 import {ActionSchemas} from '@plunk/shared';
 import {EmailService} from '../EmailService';
@@ -669,7 +669,6 @@ describe('EmailService', () => {
   // ========================================
   describe('Attachment Schema Validation', () => {
     it('should validate attachment count limit (max 10)', () => {
-
       const tooManyAttachments = Array.from({length: 11}, (_, i) => ({
         filename: `file${i}.txt`,
         content: Buffer.from('content').toString('base64'),
@@ -690,7 +689,6 @@ describe('EmailService', () => {
     });
 
     it('should validate attachment size limit (10MB total)', () => {
-
       // Exceeds ~13.3M base64 chars limit
       const largeContent = 'A'.repeat(14000000);
 
@@ -711,11 +709,11 @@ describe('EmailService', () => {
     });
 
     it('should accept attachments within size limit', () => {
-
       const validContent = Buffer.from('Small file content').toString('base64');
 
       const result = ActionSchemas.send.safeParse({
         to: 'test@example.com',
+        from: 'test@example.com',
         subject: 'Test',
         body: 'Test',
         attachments: [
@@ -731,7 +729,6 @@ describe('EmailService', () => {
     });
 
     it('should reject attachment with missing required fields', () => {
-
       const result = ActionSchemas.send.safeParse({
         to: 'test@example.com',
         subject: 'Test',
@@ -748,7 +745,6 @@ describe('EmailService', () => {
     });
 
     it('should reject attachment with empty filename', () => {
-
       const result = ActionSchemas.send.safeParse({
         to: 'test@example.com',
         subject: 'Test',
@@ -766,7 +762,6 @@ describe('EmailService', () => {
     });
 
     it('should reject attachment with filename exceeding 255 chars', () => {
-
       const tooLongFilename = 'a'.repeat(256) + '.pdf';
 
       const result = ActionSchemas.send.safeParse({
@@ -786,18 +781,12 @@ describe('EmailService', () => {
     });
 
     it('should accept valid attachment with various content types', () => {
-
-      const contentTypes = [
-        'application/pdf',
-        'image/png',
-        'image/jpeg',
-        'text/plain',
-        'application/zip',
-      ];
+      const contentTypes = ['application/pdf', 'image/png', 'image/jpeg', 'text/plain', 'application/zip'];
 
       for (const contentType of contentTypes) {
         const result = ActionSchemas.send.safeParse({
           to: 'test@example.com',
+          from: 'test@example.com',
           subject: 'Test',
           body: 'Test',
           attachments: [

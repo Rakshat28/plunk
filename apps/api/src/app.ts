@@ -14,12 +14,13 @@ import {
   GOOGLE_OAUTH_ENABLED,
   LANDING_URI,
   NODE_ENV,
+  PLUNK_ENABLED,
   PORT,
   S3_ENABLED,
   SMTP_ENABLED,
   STRIPE_ENABLED,
   TRACKING_TOGGLE_ENABLED,
-  WIKI_URI,
+  WIKI_URI
 } from './app/constants.js';
 import {Actions} from './controllers/Actions.js';
 import {Activity} from './controllers/Activity.js';
@@ -350,6 +351,11 @@ void prisma.$connect().then(async () => {
       details: TRACKING_TOGGLE_ENABLED
         ? 'Per-project tracking toggle enabled'
         : 'Always tracking or always no-tracking',
+    },
+    {
+      name: 'Platform emails',
+      enabled: PLUNK_ENABLED,
+      details: PLUNK_ENABLED ? 'Platform email notifications enabled' : 'PLUNK_API_KEY not configured',
     },
   ];
 

@@ -21,7 +21,8 @@
   "dependencies": {
     "@plunk/db": "*",
     "@plunk/types": "*",
-    "@react-email/components": "^1.0.0"
+    "@react-email/components": "^1.0.0",
+    "@react-email/tailwind": "^2.0.1"
   },
   "exports": {
     ".": "./dist/index.js"

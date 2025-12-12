@@ -1,5 +1,6 @@
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
+import {Keys} from './keys.js';
 
 /**
  * Time series data point for analytics
@@ -57,7 +58,7 @@ export class AnalyticsService {
     const limitedStartDate = effectiveStartDate < maxStartDate ? maxStartDate : effectiveStartDate;
 
     // Check cache first
-    const cacheKey = `analytics:timeseries:${projectId}:${limitedStartDate.toISOString()}:${effectiveEndDate.toISOString()}`;
+    const cacheKey = Keys.Analytics.timeseries(projectId, limitedStartDate.toISOString(), effectiveEndDate.toISOString());
     const cached = await redis.get(cacheKey);
     if (cached) {
       return JSON.parse(cached);
@@ -190,7 +191,7 @@ export class AnalyticsService {
     const effectiveEndDate = endDate || now;
 
     // Check cache
-    const cacheKey = `analytics:campaignStats:${projectId}:${effectiveStartDate.toISOString()}:${effectiveEndDate.toISOString()}`;
+    const cacheKey = Keys.Analytics.campaignStats(projectId, effectiveStartDate.toISOString(), effectiveEndDate.toISOString());
     const cached = await redis.get(cacheKey);
     if (cached) {
       return JSON.parse(cached);
@@ -294,7 +295,7 @@ export class AnalyticsService {
     const effectiveEndDate = endDate || now;
 
     // Check cache
-    const cacheKey = `analytics:topEvents:${projectId}:${limit}:${effectiveStartDate.toISOString()}:${effectiveEndDate.toISOString()}`;
+    const cacheKey = Keys.Analytics.topEvents(projectId, limit, effectiveStartDate.toISOString(), effectiveEndDate.toISOString());
     const cached = await redis.get(cacheKey);
     if (cached) {
       return JSON.parse(cached);

@@ -1,11 +1,12 @@
 interface SendEmailParams {
   to: string;
+  from: string;
   subject: string;
   body: string;
 }
 
-export async function sendEmail({to, subject, body}: SendEmailParams) {
-  const apiUrl = process.env.API_URI ?? 'http://localhost:8080';
+export async function sendEmail({to, from, subject, body}: SendEmailParams) {
+  const apiUrl = process.env.API_URI;
   const res = await fetch(`${apiUrl}/v1/send`, {
     method: 'POST',
     headers: {
@@ -14,6 +15,7 @@ export async function sendEmail({to, subject, body}: SendEmailParams) {
     },
     body: JSON.stringify({
       to,
+      from,
       subject,
       body,
     }),
