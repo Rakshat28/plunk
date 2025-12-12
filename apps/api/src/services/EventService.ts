@@ -5,6 +5,7 @@ import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
+import {ValidationError} from '../exceptions/index.js';
 import {Keys} from './keys.js';
 
 import {WorkflowExecutionService} from './WorkflowExecutionService.js';
@@ -289,9 +290,9 @@ export class EventService {
    * @param eventName - The event name to delete
    */
   public static async deleteEvent(projectId: string, eventName: string): Promise<{deletedCount: number}> {
-    // Prevent deletion of system events
-    if (eventName.startsWith('email.') || eventName.startsWith('segment.')) {
-      throw new Error('Cannot delete system events (email.* or segment.*)');
+    // Prevent deletion of reserved system events
+    if (this.isReservedEvent(eventName)) {
+      throw new Error(`Cannot delete reserved system event: ${eventName}`);
     }
 
     // Check if event is in use
@@ -311,6 +312,36 @@ export class EventService {
     });
 
     return {deletedCount: result.count};
+  }
+
+  /**
+   * Check if an event name is reserved for system use
+   * Reserved patterns:
+   * - email.* (email.sent, email.delivery, email.open, email.click, email.bounce, email.complaint)
+   * - contact.subscribed, contact.unsubscribed
+   * - segment.*.entry, segment.*.exit
+   *
+   * @param eventName - The event name to check
+   * @returns true if the event is reserved, false otherwise
+   */
+  public static isReservedEvent(eventName: string): boolean {
+    // Email events: email.*
+    if (eventName.startsWith('email.')) {
+      return true;
+    }
+
+    // Contact events: contact.subscribed, contact.unsubscribed
+    if (eventName === 'contact.subscribed' || eventName === 'contact.unsubscribed') {
+      return true;
+    }
+
+    // Segment events: segment.*.entry, segment.*.exit
+    // Pattern: segment.<slug>.entry or segment.<slug>.exit
+    if (eventName.startsWith('segment.') && (eventName.endsWith('.entry') || eventName.endsWith('.exit'))) {
+      return true;
+    }
+
+    return false;
   }
 
   /**

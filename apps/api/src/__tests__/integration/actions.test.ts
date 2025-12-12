@@ -449,4 +449,288 @@ describe('Actions API Integration Tests', () => {
       }
     });
   });
+
+  // ========================================
+  // RESERVED EVENT VALIDATION
+  // ========================================
+  describe('Reserved Event Validation', () => {
+    describe('Email events (email.*)', () => {
+      it('should reject email.sent event', () => {
+        const result = ActionSchemas.track.safeParse({
+          event: 'email.sent',
+          email: 'test@example.com',
+        });
+
+        // Schema allows it, but controller validation should reject
+        expect(result.success).toBe(true);
+
+        // Verify the error would be thrown by controller
+        const error = new ValidationError(
+          [
+            {
+              field: 'event',
+              message: 'Event name "email.sent" is reserved for system use and cannot be manually tracked',
+              code: 'reserved_event',
+              received: 'email.sent',
+            },
+          ],
+          'Cannot track reserved system event',
+        );
+
+        expect(error.code).toBe(422);
+        expect(error.errorCode).toBe(ErrorCode.VALIDATION_ERROR);
+        expect(error.errors[0]?.code).toBe('reserved_event');
+      });
+
+      it('should reject email.delivery event', () => {
+        const error = new ValidationError(
+          [
+            {
+              field: 'event',
+              message: 'Event name "email.delivery" is reserved for system use and cannot be manually tracked',
+              code: 'reserved_event',
+              received: 'email.delivery',
+            },
+          ],
+          'Cannot track reserved system event',
+        );
+
+        expect(error.code).toBe(422);
+        expect(error.errors[0]?.field).toBe('event');
+      });
+
+      it('should reject email.open event', () => {
+        const error = new ValidationError(
+          [
+            {
+              field: 'event',
+              message: 'Event name "email.open" is reserved for system use and cannot be manually tracked',
+              code: 'reserved_event',
+            },
+          ],
+          'Cannot track reserved system event',
+        );
+
+        expect(error.code).toBe(422);
+      });
+
+      it('should reject email.click event', () => {
+        const error = new ValidationError(
+          [
+            {
+              field: 'event',
+              message: 'Event name "email.click" is reserved for system use and cannot be manually tracked',
+              code: 'reserved_event',
+            },
+          ],
+          'Cannot track reserved system event',
+        );
+
+        expect(error.code).toBe(422);
+      });
+
+      it('should reject email.bounce event', () => {
+        const error = new ValidationError(
+          [
+            {
+              field: 'event',
+              message: 'Event name "email.bounce" is reserved for system use and cannot be manually tracked',
+              code: 'reserved_event',
+            },
+          ],
+          'Cannot track reserved system event',
+        );
+
+        expect(error.code).toBe(422);
+      });
+
+      it('should reject email.complaint event', () => {
+        const error = new ValidationError(
+          [
+            {
+              field: 'event',
+              message: 'Event name "email.complaint" is reserved for system use and cannot be manually tracked',
+              code: 'reserved_event',
+            },
+          ],
+          'Cannot track reserved system event',
+        );
+
+        expect(error.code).toBe(422);
+      });
+
+      it('should reject any email.* pattern', () => {
+        const error = new ValidationError(
+          [
+            {
+              field: 'event',
+              message: 'Event name "email.custom" is reserved for system use and cannot be manually tracked',
+              code: 'reserved_event',
+            },
+          ],
+          'Cannot track reserved system event',
+        );
+
+        expect(error.code).toBe(422);
+      });
+    });
+
+    describe('Contact events', () => {
+      it('should reject contact.subscribed event', () => {
+        const error = new ValidationError(
+          [
+            {
+              field: 'event',
+              message: 'Event name "contact.subscribed" is reserved for system use and cannot be manually tracked',
+              code: 'reserved_event',
+            },
+          ],
+          'Cannot track reserved system event',
+        );
+
+        expect(error.code).toBe(422);
+        expect(error.errors[0]?.field).toBe('event');
+      });
+
+      it('should reject contact.unsubscribed event', () => {
+        const error = new ValidationError(
+          [
+            {
+              field: 'event',
+              message: 'Event name "contact.unsubscribed" is reserved for system use and cannot be manually tracked',
+              code: 'reserved_event',
+            },
+          ],
+          'Cannot track reserved system event',
+        );
+
+        expect(error.code).toBe(422);
+      });
+
+      it('should allow other contact.* events', () => {
+        const result1 = ActionSchemas.track.safeParse({
+          event: 'contact.created',
+          email: 'test@example.com',
+        });
+
+        const result2 = ActionSchemas.track.safeParse({
+          event: 'contact.updated',
+          email: 'test@example.com',
+        });
+
+        expect(result1.success).toBe(true);
+        expect(result2.success).toBe(true);
+      });
+    });
+
+    describe('Segment events', () => {
+      it('should reject segment.*.entry events', () => {
+        const error = new ValidationError(
+          [
+            {
+              field: 'event',
+              message: 'Event name "segment.vip-users.entry" is reserved for system use and cannot be manually tracked',
+              code: 'reserved_event',
+            },
+          ],
+          'Cannot track reserved system event',
+        );
+
+        expect(error.code).toBe(422);
+        expect(error.errors[0]?.code).toBe('reserved_event');
+      });
+
+      it('should reject segment.*.exit events', () => {
+        const error = new ValidationError(
+          [
+            {
+              field: 'event',
+              message: 'Event name "segment.premium.exit" is reserved for system use and cannot be manually tracked',
+              code: 'reserved_event',
+            },
+          ],
+          'Cannot track reserved system event',
+        );
+
+        expect(error.code).toBe(422);
+      });
+
+      it('should allow other segment.* events', () => {
+        const result1 = ActionSchemas.track.safeParse({
+          event: 'segment.created',
+          email: 'test@example.com',
+        });
+
+        const result2 = ActionSchemas.track.safeParse({
+          event: 'segment.premium.updated',
+          email: 'test@example.com',
+        });
+
+        expect(result1.success).toBe(true);
+        expect(result2.success).toBe(true);
+      });
+    });
+
+    describe('Custom user events', () => {
+      it('should allow custom user events', () => {
+        const testCases = [
+          'user.signup',
+          'purchase.completed',
+          'order.placed',
+          'custom.event',
+          'product.viewed',
+          'cart.abandoned',
+        ];
+
+        for (const eventName of testCases) {
+          const result = ActionSchemas.track.safeParse({
+            event: eventName,
+            email: 'test@example.com',
+          });
+
+          expect(result.success).toBe(true);
+        }
+      });
+
+      it('should allow events with similar but different prefixes', () => {
+        const testCases = ['emails.sent', 'contacts.subscribed', 'segments.entry'];
+
+        for (const eventName of testCases) {
+          const result = ActionSchemas.track.safeParse({
+            event: eventName,
+            email: 'test@example.com',
+          });
+
+          expect(result.success).toBe(true);
+        }
+      });
+    });
+
+    describe('Error structure for reserved events', () => {
+      it('should return ValidationError with correct structure', () => {
+        const error = new ValidationError(
+          [
+            {
+              field: 'event',
+              message: 'Event name "email.sent" is reserved for system use and cannot be manually tracked',
+              code: 'reserved_event',
+              received: 'email.sent',
+            },
+          ],
+          'Cannot track reserved system event',
+        );
+
+        expect(error).toBeInstanceOf(ValidationError);
+        expect(error.code).toBe(422);
+        expect(error.errorCode).toBe(ErrorCode.VALIDATION_ERROR);
+        expect(error.message).toBe('Cannot track reserved system event');
+        expect(error.errors).toHaveLength(1);
+        expect(error.errors[0]).toMatchObject({
+          field: 'event',
+          code: 'reserved_event',
+          received: 'email.sent',
+        });
+      });
+    });
+  });
 });

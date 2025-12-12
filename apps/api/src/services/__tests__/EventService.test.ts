@@ -853,4 +853,90 @@ describe('EventService', () => {
       });
     });
   });
+
+  // ========================================
+  // RESERVED EVENT VALIDATION
+  // ========================================
+  describe('isReservedEvent', () => {
+    describe('Email events (email.*)', () => {
+      it('should identify email.sent as reserved', () => {
+        expect(EventService.isReservedEvent('email.sent')).toBe(true);
+      });
+
+      it('should identify email.delivery as reserved', () => {
+        expect(EventService.isReservedEvent('email.delivery')).toBe(true);
+      });
+
+      it('should identify email.open as reserved', () => {
+        expect(EventService.isReservedEvent('email.open')).toBe(true);
+      });
+
+      it('should identify email.click as reserved', () => {
+        expect(EventService.isReservedEvent('email.click')).toBe(true);
+      });
+
+      it('should identify email.bounce as reserved', () => {
+        expect(EventService.isReservedEvent('email.bounce')).toBe(true);
+      });
+
+      it('should identify email.complaint as reserved', () => {
+        expect(EventService.isReservedEvent('email.complaint')).toBe(true);
+      });
+
+      it('should identify any email.* pattern as reserved', () => {
+        expect(EventService.isReservedEvent('email.custom')).toBe(true);
+        expect(EventService.isReservedEvent('email.anything')).toBe(true);
+      });
+    });
+
+    describe('Contact events', () => {
+      it('should identify contact.subscribed as reserved', () => {
+        expect(EventService.isReservedEvent('contact.subscribed')).toBe(true);
+      });
+
+      it('should identify contact.unsubscribed as reserved', () => {
+        expect(EventService.isReservedEvent('contact.unsubscribed')).toBe(true);
+      });
+
+      it('should not identify other contact.* events as reserved', () => {
+        expect(EventService.isReservedEvent('contact.created')).toBe(false);
+        expect(EventService.isReservedEvent('contact.updated')).toBe(false);
+      });
+    });
+
+    describe('Segment events (segment.*.entry, segment.*.exit)', () => {
+      it('should identify segment.*.entry as reserved', () => {
+        expect(EventService.isReservedEvent('segment.vip-users.entry')).toBe(true);
+        expect(EventService.isReservedEvent('segment.premium.entry')).toBe(true);
+        expect(EventService.isReservedEvent('segment.active-subscribers.entry')).toBe(true);
+      });
+
+      it('should identify segment.*.exit as reserved', () => {
+        expect(EventService.isReservedEvent('segment.vip-users.exit')).toBe(true);
+        expect(EventService.isReservedEvent('segment.premium.exit')).toBe(true);
+        expect(EventService.isReservedEvent('segment.active-subscribers.exit')).toBe(true);
+      });
+
+      it('should not identify other segment.* events as reserved', () => {
+        expect(EventService.isReservedEvent('segment.created')).toBe(false);
+        expect(EventService.isReservedEvent('segment.vip-users.updated')).toBe(false);
+        expect(EventService.isReservedEvent('segment.premium')).toBe(false);
+      });
+    });
+
+    describe('Non-reserved events', () => {
+      it('should not identify custom user events as reserved', () => {
+        expect(EventService.isReservedEvent('user.signup')).toBe(false);
+        expect(EventService.isReservedEvent('purchase.completed')).toBe(false);
+        expect(EventService.isReservedEvent('order.placed')).toBe(false);
+        expect(EventService.isReservedEvent('custom.event')).toBe(false);
+      });
+
+      it('should not identify events with similar prefixes as reserved', () => {
+        expect(EventService.isReservedEvent('emails.sent')).toBe(false);
+        expect(EventService.isReservedEvent('contacts.subscribed')).toBe(false);
+        expect(EventService.isReservedEvent('segments.entry')).toBe(false);
+      });
+    });
+  });
 });
