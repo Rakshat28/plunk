@@ -368,11 +368,14 @@ export class Users {
       throw new NotFound('Project not found or you do not have permission to update billing limits');
     }
 
-    // Get the project
+    // Get the project with current limits
     const project = await prisma.project.findUnique({
       where: {id},
       select: {
         subscription: true,
+        billingLimitWorkflows: true,
+        billingLimitCampaigns: true,
+        billingLimitTransactional: true,
       },
     });
 
@@ -395,8 +398,17 @@ export class Users {
       },
     });
 
-    // Invalidate cache so new limits take effect immediately
-    await BillingLimitService.invalidateCache(id);
+    // Clear notification cache keys for limits that changed
+    // This allows new warning/limit emails to be sent when the new limits are reached
+    await BillingLimitService.clearNotificationCacheForChangedLimits(
+      id,
+      {
+        workflows: project.billingLimitWorkflows,
+        campaigns: project.billingLimitCampaigns,
+        transactional: project.billingLimitTransactional,
+      },
+      data,
+    );
 
     const limitsAndUsage = await BillingLimitService.getLimitsAndUsage(id);
 

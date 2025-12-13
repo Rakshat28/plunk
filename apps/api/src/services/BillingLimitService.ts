@@ -487,7 +487,11 @@ export class BillingLimitService {
 
   /**
    * Invalidate usage cache for a project
-   * Call this when billing period resets or limits are changed
+   * Primarily used in tests to reset cache state between scenarios.
+   * In production, the cache naturally expires after 5 minutes.
+   *
+   * NOTE: Updating billing limits does NOT require clearing usage cache
+   * (use clearNotificationCacheForChangedLimits instead)
    *
    * @param projectId - Project ID
    */
@@ -503,6 +507,69 @@ export class BillingLimitService {
       signale.debug(`[BILLING_LIMIT] Invalidated cache for project ${projectId}`);
     } catch (error) {
       signale.warn(`[BILLING_LIMIT] Failed to invalidate cache for ${projectId}:`, error);
+    }
+  }
+
+  /**
+   * Clear notification cache keys for billing limits that have changed
+   * This allows new warning/limit emails to be sent when updated limits are reached
+   *
+   * @param projectId - Project ID
+   * @param oldLimits - Previous billing limits
+   * @param newLimits - New billing limits
+   */
+  public static async clearNotificationCacheForChangedLimits(
+    projectId: string,
+    oldLimits: {
+      workflows: number | null;
+      campaigns: number | null;
+      transactional: number | null;
+    },
+    newLimits: {
+      workflows: number | null;
+      campaigns: number | null;
+      transactional: number | null;
+    },
+  ): Promise<void> {
+    try {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+
+      const keysToDelete: string[] = [];
+
+      // Check workflows limit
+      if (oldLimits.workflows !== newLimits.workflows) {
+        keysToDelete.push(
+          Keys.Billing.warningEmail(projectId, EmailSourceType.WORKFLOW, year, month),
+          Keys.Billing.limitEmail(projectId, EmailSourceType.WORKFLOW, year, month),
+        );
+      }
+
+      // Check campaigns limit
+      if (oldLimits.campaigns !== newLimits.campaigns) {
+        keysToDelete.push(
+          Keys.Billing.warningEmail(projectId, EmailSourceType.CAMPAIGN, year, month),
+          Keys.Billing.limitEmail(projectId, EmailSourceType.CAMPAIGN, year, month),
+        );
+      }
+
+      // Check transactional limit
+      if (oldLimits.transactional !== newLimits.transactional) {
+        keysToDelete.push(
+          Keys.Billing.warningEmail(projectId, EmailSourceType.TRANSACTIONAL, year, month),
+          Keys.Billing.limitEmail(projectId, EmailSourceType.TRANSACTIONAL, year, month),
+        );
+      }
+
+      if (keysToDelete.length > 0) {
+        await Promise.all(keysToDelete.map(key => redis.del(key)));
+        signale.debug(
+          `[BILLING_LIMIT] Cleared notification cache for changed limits in project ${projectId} (${keysToDelete.length} keys)`,
+        );
+      }
+    } catch (error) {
+      signale.warn(`[BILLING_LIMIT] Failed to clear notification cache for ${projectId}:`, error);
     }
   }
 
