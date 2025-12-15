@@ -148,6 +148,48 @@ export class SecurityService {
   }
 
   /**
+   * Check if a user is a member of any disabled project
+   * Users with disabled projects cannot create new projects
+   */
+  public static async userHasDisabledProject(userId: string): Promise<{
+    hasDisabledProject: boolean;
+    disabledProjectNames: string[];
+  }> {
+    const disabledMemberships = await prisma.membership.findMany({
+      where: {
+        userId,
+        project: {
+          disabled: true,
+        },
+      },
+      include: {
+        project: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    return {
+      hasDisabledProject: disabledMemberships.length > 0,
+      disabledProjectNames: disabledMemberships.map(m => m.project.name),
+    };
+  }
+
+  /**
+   * Check if a specific project is disabled
+   */
+  public static async isProjectDisabled(projectId: string): Promise<boolean> {
+    const project = await prisma.project.findUnique({
+      where: {id: projectId},
+      select: {disabled: true},
+    });
+
+    return project?.disabled ?? false;
+  }
+
+  /**
    * Get a project's security metrics (for admin/dashboard display)
    */
   public static async getProjectSecurityMetrics(projectId: string): Promise<{

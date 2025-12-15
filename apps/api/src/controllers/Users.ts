@@ -7,7 +7,7 @@ import type {NextFunction, Request, Response} from 'express';
 import {DASHBOARD_URI, STRIPE_ENABLED, STRIPE_PRICE_EMAIL_USAGE, STRIPE_PRICE_ONBOARDING} from '../app/constants.js';
 import {stripe} from '../app/stripe.js';
 import {prisma} from '../database/prisma.js';
-import {NotAuthenticated, NotFound} from '../exceptions/index.js';
+import {ErrorCode, HttpException, NotAuthenticated, NotFound} from '../exceptions/index.js';
 import type {AuthResponse} from '../middleware/auth.js';
 import {isAuthenticated} from '../middleware/auth.js';
 import {BillingLimitService} from '../services/BillingLimitService.js';
@@ -61,6 +61,16 @@ export class Users {
 
     if (!auth.userId) {
       throw new NotAuthenticated();
+    }
+
+    // Check if user is a member of any disabled project
+    const {hasDisabledProject, disabledProjectNames} = await SecurityService.userHasDisabledProject(auth.userId);
+    if (hasDisabledProject) {
+      throw new HttpException(
+        403,
+        `You cannot create new projects while you are a member of disabled projects: ${disabledProjectNames.join(', ')}. Please contact support to resolve security violations.`,
+        ErrorCode.PROJECT_DISABLED,
+      );
     }
 
     const {name} = ProjectSchemas.create.parse(req.body);
@@ -692,6 +702,16 @@ export class Users {
       throw new NotFound('Project not found or you do not have permission to reset it');
     }
 
+    // Check if project is disabled - block reset operation
+    const isDisabled = await SecurityService.isProjectDisabled(id);
+    if (isDisabled) {
+      throw new HttpException(
+        403,
+        'Cannot reset a disabled project. Please contact support to resolve security violations before making changes.',
+        ErrorCode.PROJECT_DISABLED,
+      );
+    }
+
     // Delete all project data in a transaction
     await prisma.$transaction(async tx => {
       // Delete all emails
@@ -770,18 +790,28 @@ export class Users {
       );
     }
 
-    // Get project to check for active subscription
+    // Get project to check for active subscription and disabled status
     const project = await prisma.project.findUnique({
       where: {id},
       select: {
         name: true,
         subscription: true,
         customer: true,
+        disabled: true,
       },
     });
 
     if (!project) {
       throw new NotFound('Project not found');
+    }
+
+    // Check if project is disabled - block delete operation
+    if (project.disabled) {
+      throw new HttpException(
+        403,
+        'Cannot delete a disabled project. Please contact support to resolve security violations.',
+        ErrorCode.PROJECT_DISABLED,
+      );
     }
 
     // If project has an active subscription, cancel it first
