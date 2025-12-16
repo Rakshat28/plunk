@@ -1,5 +1,44 @@
 # Changelog
 
+## [0.2.0](https://github.com/useplunk/plunk/compare/v0.1.1...v0.2.0) (2025-12-16)
+
+
+### Features
+
+* ability to create new campaigns based on templates or previous campaigns ([6b25bbe](https://github.com/useplunk/plunk/commit/6b25bbe2f86e5dd6946ea38a9f34e9c7bdb5fb0f))
+* Add improved html editor using CodeMirror ([672f1e6](https://github.com/useplunk/plunk/commit/672f1e6657293860554be1f86167cf4f4403b0ff))
+* Add security center and warning for exceeding bounce/complaint rates ([fbd3038](https://github.com/useplunk/plunk/commit/fbd303801f9f1c260c5f8201bf218c9f277fe4d1))
+* Added platform emails for billing limits and disabled projects ([2485d2f](https://github.com/useplunk/plunk/commit/2485d2ff1db652e87f8f1307c8ef770edd19bbd1))
+* Automatically detect rate limit from AWS with ability to override in .env ([3225c50](https://github.com/useplunk/plunk/commit/3225c5005be42f1443fdca0f8233193ce029c890))
+* Improved createdAt and updatedAt visualisation ([1019ba0](https://github.com/useplunk/plunk/commit/1019ba0d82c7cb6a0d4cef5989841ccc28dae776))
+
+
+### Bug Fixes
+
+* ability to clear reply-to and from name from templates and campaigns ([badb035](https://github.com/useplunk/plunk/commit/badb035585561b276b6e82a363693918810c8214))
+* Add additional checks for disabled projects ([863e784](https://github.com/useplunk/plunk/commit/863e784e1c806118204acb3ba489322fe51498ad))
+* Add additional checks for disabled projects ([780741e](https://github.com/useplunk/plunk/commit/780741e37f7fec5b822b91c329ebe98428077ba0))
+* add additional indexes on event model ([1cd89d1](https://github.com/useplunk/plunk/commit/1cd89d137511ed4a8ae932a10f4f21487fbcee7c))
+* Allow changing audience type after creation of campaign ([85b9d7a](https://github.com/useplunk/plunk/commit/85b9d7afe718c803be147475d5fbe13dafd677bf))
+* Better highlight warnings in SecurityWarningBanner.tsx ([91eb0f3](https://github.com/useplunk/plunk/commit/91eb0f3a699eb7a51e87addfa122107ce74b4a39))
+* Clear notification cache keys when changing billing limits ([e50c33a](https://github.com/useplunk/plunk/commit/e50c33ae4b2d5144a1bfce72ae97d8ede0187d17))
+* Correctly show recipient count during creation and edit ([d0191be](https://github.com/useplunk/plunk/commit/d0191be31da8fc894269851a247746ce39a958b2))
+* custom relative time to shorten strings for better UI fit ([5e4adb7](https://github.com/useplunk/plunk/commit/5e4adb71ade38cf53e67776ae3524a381641fcfd))
+* display email progress instead of scheduling progress for campaigns ([07f875c](https://github.com/useplunk/plunk/commit/07f875c18c03a8d1766040bc40034c1023715fcd))
+* Hide upsell banner if billing is not configured ([433e796](https://github.com/useplunk/plunk/commit/433e796c041e8d65068084d5c7729c397956098e))
+* Increase z-index of color picker ([769e374](https://github.com/useplunk/plunk/commit/769e3748a0bbbcafdb1f79c9aea22d282e39b513))
+* Move react and react-dom to dependencies instead of peerDependency for API ([a555a12](https://github.com/useplunk/plunk/commit/a555a127366f753130c765f9eb4700dc44a8cb7c))
+* Move react and react-dom to dependencies instead of peerDependency for API ([f37bfcc](https://github.com/useplunk/plunk/commit/f37bfccbc22a0c2672971ff0e174f49f31301876))
+* Only check free tier limits if billing is enabled ([1713b23](https://github.com/useplunk/plunk/commit/1713b2398d5c238058639ac5a0d5cef916a7a1e8))
+* Only fetch project members if project Id is defined ([5a0a41c](https://github.com/useplunk/plunk/commit/5a0a41c6bbbb9bd4eefd5ed62e02c0a7c00c1022))
+* Overflow of inputs in email editor ([3336fa1](https://github.com/useplunk/plunk/commit/3336fa1e38a29d9c1f69c62259662b1ff2ba6e61))
+* Prevent manual tracking of internal events that are automatically tracked ([f34052e](https://github.com/useplunk/plunk/commit/f34052ed73cd78db4e4bf39cab8740ce0b78e93c))
+* prevent scheduling of campaign if billing limit reached ([a3bbb1e](https://github.com/useplunk/plunk/commit/a3bbb1ed64ba461cb2f7170c1929f68f22b5bb4d))
+* show correct default value for placeholder ([04275e3](https://github.com/useplunk/plunk/commit/04275e3cf59f902d50acb84e756f1c7425171726))
+* Unauthenticated users are redirected to login on subscribe/unsubscribe/manage pages ([11ef47b](https://github.com/useplunk/plunk/commit/11ef47b576ec39209f2b9726c1027d06f8bbc03a))
+* Update recipient count on create/update of campaign ([ff5c79c](https://github.com/useplunk/plunk/commit/ff5c79cfcf0ac6b351af20345ec639110f206f4b))
+* Verify if sending without tracking is possible in SESService ([68f9979](https://github.com/useplunk/plunk/commit/68f99798f8c5944c18b438329b961fdec955ecef))
+
 ## [0.1.1](https://github.com/useplunk/plunk/compare/v0.1.0...v0.1.1) (2025-12-08)
 
 
