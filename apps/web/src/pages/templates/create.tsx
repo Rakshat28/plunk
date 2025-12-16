@@ -179,7 +179,7 @@ export default function CreateTemplatePage() {
             </Card>
 
             {/* Email Body */}
-            <Card>
+            <Card className="overflow-visible">
               <CardHeader>
                 <CardTitle>Email Body</CardTitle>
                 <CardDescription>Create your email using the visual editor or paste custom HTML</CardDescription>

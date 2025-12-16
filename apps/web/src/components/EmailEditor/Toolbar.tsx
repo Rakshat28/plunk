@@ -213,7 +213,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
   }
 
   return (
-    <div className="border-b border-neutral-200 bg-neutral-50 p-2 flex flex-wrap gap-1 sticky top-0 z-10">
+    <div className="border-b border-neutral-200 bg-neutral-50 p-2 flex flex-wrap gap-1 sticky top-0 z-40">
       {/* History */}
       <div className="flex gap-0.5 pr-2 border-r border-neutral-200">
         <Button

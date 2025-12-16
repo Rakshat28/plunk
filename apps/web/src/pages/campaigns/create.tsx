@@ -291,7 +291,7 @@ export default function CreateCampaignPage() {
                 </Card>
 
                 {/* Email Content */}
-                <Card>
+                <Card className="overflow-visible">
                   <CardHeader>
                     <StepHeader stepNumber={3} title="Email Content" description="Design your email message" />
                   </CardHeader>

@@ -591,7 +591,7 @@ export default function CampaignDetailsPage() {
           </div>
 
           {/* Email Editor - Full Width */}
-          <Card>
+          <Card className="overflow-visible">
             <CardHeader>
               <CardTitle>Email Content</CardTitle>
               <CardDescription>Design your email using the visual editor or paste custom HTML</CardDescription>
