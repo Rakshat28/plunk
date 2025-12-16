@@ -187,6 +187,9 @@ services:
       PLUNK_API_KEY: ${PLUNK_API_KEY:-}
       PLUNK_FROM_ADDRESS: ${PLUNK_FROM_ADDRESS:-}
 
+      # Security
+      AUTO_PROJECT_DISABLE: ${AUTO_PROJECT_DISABLE:-false}
+
     volumes:
       # Persistent storage for application data
       - plunk_data:/app/data

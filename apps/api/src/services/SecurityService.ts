@@ -7,7 +7,7 @@ import {redis} from '../database/redis.js';
 import {Keys} from './keys.js';
 import {NtfyService} from './NtfyService.js';
 import {QueueService} from './QueueService.js';
-import {DASHBOARD_URI, LANDING_URI} from '../app/constants.js';
+import {AUTO_PROJECT_DISABLE, DASHBOARD_URI, LANDING_URI} from '../app/constants.js';
 
 /**
  * Security thresholds for bounce and complaint rates
@@ -110,9 +110,31 @@ export class SecurityService {
       // Get current security status
       const status = await this.getSecurityStatus(projectId);
 
-      // If project should be disabled, disable it
-      if (status.shouldDisable) {
+      // If project should be disabled, disable it (only if auto-disable is enabled)
+      if (status.shouldDisable && AUTO_PROJECT_DISABLE) {
         await this.disableProject(projectId, status);
+      } else if (status.shouldDisable && !AUTO_PROJECT_DISABLE) {
+        // Log critical violations but don't auto-disable (self-hosted mode)
+        const project = await prisma.project.findUnique({
+          where: {id: projectId},
+          select: {name: true},
+        });
+
+        if (project) {
+          signale.error(
+            `[SECURITY] Project ${projectId} (${project.name}) has CRITICAL security violations but auto-disable is turned off:`,
+            status.violations,
+          );
+          signale.info(
+            `[SECURITY] 7-day stats: ${status.sevenDay.bounces} bounces, ${status.sevenDay.complaints} complaints out of ${status.sevenDay.total} emails`,
+          );
+          signale.info(
+            `[SECURITY] All-time stats: ${status.allTime.bounces} bounces, ${status.allTime.complaints} complaints out of ${status.allTime.total} emails`,
+          );
+
+          // Send notification about critical security violations
+          await NtfyService.notifySecurityWarning(project.name, projectId, status.violations);
+        }
       } else if (status.warnings.length > 0) {
         // Log warnings for monitoring
         signale.warn(`[SECURITY] Project ${projectId} has security warnings:`, status.warnings);

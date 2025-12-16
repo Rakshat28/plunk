@@ -98,3 +98,8 @@ export const SMTP_ENABLED =
 export const PLUNK_API_KEY = validateEnv('PLUNK_API_KEY', '');
 export const PLUNK_FROM_ADDRESS = validateEnv('PLUNK_FROM_ADDRESS', '');
 export const PLUNK_ENABLED = PLUNK_API_KEY !== '' && PLUNK_FROM_ADDRESS !== '';
+
+// Security (optional)
+// Controls whether projects are automatically disabled when bounce/complaint rate thresholds are exceeded
+// Useful for self-hosters who want to manage project status manually
+export const AUTO_PROJECT_DISABLE = validateEnv('AUTO_PROJECT_DISABLE', 'true') === 'true';
