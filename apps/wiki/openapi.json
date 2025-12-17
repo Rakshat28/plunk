@@ -458,17 +458,27 @@
                           "items": {
                             "type": "object",
                             "properties": {
-                              "id": {
-                                "type": "string"
+                              "contact": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "email": {
+                                    "type": "string"
+                                  }
+                                }
                               },
-                              "to": {
-                                "type": "string"
-                              },
-                              "status": {
-                                "type": "string"
+                              "email": {
+                                "type": "string",
+                                "description": "Email record ID"
                               }
                             }
                           }
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
                         }
                       }
                     }
@@ -561,26 +571,16 @@
                       "type": "object",
                       "properties": {
                         "contact": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "email": {
-                              "type": "string"
-                            }
-                          }
+                          "type": "string",
+                          "description": "Contact ID"
                         },
                         "event": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "event": {
-                              "type": "string"
-                            }
-                          }
+                          "type": "string",
+                          "description": "Event ID"
+                        },
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time"
                         }
                       }
                     }
@@ -599,9 +599,6 @@
         "description": "Get a paginated list of contacts with cursor-based pagination",
         "operationId": "listContacts",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/ProjectId"
-          },
           {
             "$ref": "#/components/parameters/Limit"
           },
@@ -633,29 +630,23 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
+                    "contacts": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Contact"
+                      }
+                    },
+                    "cursor": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Cursor for next page"
+                    },
+                    "hasMore": {
                       "type": "boolean"
                     },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/Contact"
-                          }
-                        },
-                        "nextCursor": {
-                          "type": "string",
-                          "nullable": true
-                        },
-                        "hasMore": {
-                          "type": "boolean"
-                        },
-                        "total": {
-                          "type": "integer"
-                        }
-                      }
+                    "total": {
+                      "type": "integer",
+                      "description": "Total count (only included on first page)"
                     }
                   }
                 }
@@ -669,11 +660,6 @@
         "summary": "Create or update contact",
         "description": "Create a new contact or update existing (upsert by email)",
         "operationId": "createContact",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/ProjectId"
-          }
-        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -710,19 +696,61 @@
         },
         "responses": {
           "200": {
-            "description": "Contact created/updated",
+            "description": "Contact updated",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "data": {
+                  "allOf": [
+                    {
                       "$ref": "#/components/schemas/Contact"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "_meta": {
+                          "type": "object",
+                          "properties": {
+                            "isNew": {
+                              "type": "boolean"
+                            },
+                            "isUpdate": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
                     }
-                  }
+                  ]
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Contact created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Contact"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "_meta": {
+                          "type": "object",
+                          "properties": {
+                            "isNew": {
+                              "type": "boolean"
+                            },
+                            "isUpdate": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -738,9 +766,6 @@
         "operationId": "getContact",
         "parameters": [
           {
-            "$ref": "#/components/parameters/ProjectId"
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -755,15 +780,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/Contact"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Contact"
                 }
               }
             }
@@ -779,9 +796,6 @@
         "description": "Update an existing contact",
         "operationId": "updateContact",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/ProjectId"
-          },
           {
             "name": "id",
             "in": "path",
@@ -816,15 +830,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/Contact"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Contact"
                 }
               }
             }
@@ -838,9 +844,6 @@
         "operationId": "deleteContact",
         "parameters": [
           {
-            "$ref": "#/components/parameters/ProjectId"
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -850,28 +853,11 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Contact deleted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Contact deleted successfully (no content returned)"
+          },
+          "404": {
+            "description": "Contact not found"
           }
         }
       }
@@ -883,9 +869,6 @@
         "description": "Get a paginated list of email templates",
         "operationId": "listTemplates",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/ProjectId"
-          },
           {
             "$ref": "#/components/parameters/Limit"
           },
@@ -916,19 +899,23 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/Template"
-                          }
-                        }
+                    "templates": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Template"
                       }
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "pageSize": {
+                      "type": "integer"
+                    },
+                    "totalPages": {
+                      "type": "integer"
                     }
                   }
                 }
@@ -942,11 +929,6 @@
         "summary": "Create template",
         "description": "Create a new email template",
         "operationId": "createTemplate",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/ProjectId"
-          }
-        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -974,20 +956,12 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Template created",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/Template"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Template"
                 }
               }
             }
@@ -1002,9 +976,6 @@
         "description": "Get a paginated list of email campaigns",
         "operationId": "listCampaigns",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/ProjectId"
-          },
           {
             "$ref": "#/components/parameters/Limit"
           },
@@ -1028,19 +999,23 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/Campaign"
-                          }
-                        }
+                    "campaigns": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Campaign"
                       }
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "pageSize": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "totalPages": {
+                      "type": "integer"
                     }
                   }
                 }
@@ -1054,11 +1029,6 @@
         "summary": "Create campaign",
         "description": "Create a new email campaign",
         "operationId": "createCampaign",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/ProjectId"
-          }
-        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1145,9 +1115,6 @@
         "operationId": "sendCampaign",
         "parameters": [
           {
-            "$ref": "#/components/parameters/ProjectId"
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -1186,28 +1153,15 @@
         "summary": "List segments",
         "description": "Get all audience segments",
         "operationId": "listSegments",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/ProjectId"
-          }
-        ],
         "responses": {
           "200": {
             "description": "List of segments",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Segment"
-                      }
-                    }
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Segment"
                   }
                 }
               }
@@ -1220,11 +1174,6 @@
         "summary": "Create segment",
         "description": "Create a new audience segment",
         "operationId": "createSegment",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/ProjectId"
-          }
-        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1264,20 +1213,12 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Segment created",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/Segment"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Segment"
                 }
               }
             }
