@@ -11,6 +11,7 @@ import {EmailService} from '../services/EmailService.js';
 import {EventService} from '../services/EventService.js';
 import {NotFound, ValidationError} from '../exceptions/index.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
+import {DASHBOARD_URI} from '../app/constants.js';
 
 /**
  * Public API Actions Controller
@@ -271,12 +272,23 @@ export class Actions {
       // Get merged data including non-persistent fields for template rendering
       const mergedData = ContactService.getMergedData(contact, data as Record<string, unknown> | undefined);
 
+      // Add system variables (email, unsubscribe URLs, etc.) to merged data
+      // These are always available for template rendering
+      const dataWithSystemVars = {
+        ...mergedData,
+        email: contact.email,
+        data: mergedData, // Also available as nested data for {{data.fieldName}} syntax
+        unsubscribeUrl: `${DASHBOARD_URI}/unsubscribe/${contact.id}`,
+        subscribeUrl: `${DASHBOARD_URI}/subscribe/${contact.id}`,
+        manageUrl: `${DASHBOARD_URI}/manage/${contact.id}`,
+      };
+
       // Render template with contact data
       // Simple template variable replacement: {{fieldname}}
       let renderedSubject = emailSubject!;
       let renderedBody = emailBody!;
 
-      for (const [key, value] of Object.entries(mergedData)) {
+      for (const [key, value] of Object.entries(dataWithSystemVars)) {
         const placeholder = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g');
         const fallbackPlaceholder = new RegExp(`\\{\\{\\s*${key}\\s*\\?\\?\\s*([^}]+)\\}\\}`, 'g');
 
