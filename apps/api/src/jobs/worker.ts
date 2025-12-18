@@ -10,6 +10,7 @@ import {Worker} from 'bullmq';
 import signale from 'signale';
 
 import {createApiRequestCleanupWorker} from './api-request-cleanup-processor.js';
+import {createBulkContactWorker} from './bulk-contact-processor.js';
 import {createCampaignWorker} from './campaign-processor.js';
 import {createDomainVerificationWorker} from './domain-verification-processor.js';
 import {createEmailWorker} from './email-processor.js';
@@ -48,6 +49,11 @@ async function startWorkers() {
     const importWorker = createImportWorker();
     workers.push({name: 'import', worker: importWorker});
     signale.success('[WORKER] Import worker started');
+
+    // Start bulk contact action worker
+    const bulkContactWorker = createBulkContactWorker();
+    workers.push({name: 'bulk-contact-actions', worker: bulkContactWorker});
+    signale.success('[WORKER] Bulk contact action worker started');
 
     // Start segment count worker
     const segmentCountWorker = createSegmentCountWorker();

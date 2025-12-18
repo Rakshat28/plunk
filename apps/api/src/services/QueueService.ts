@@ -52,6 +52,12 @@ export interface ApiRequestCleanupJobData {
   // Empty - cleans up old API request logs
 }
 
+export interface BulkContactActionJobData {
+  projectId: string;
+  contactIds: string[];
+  operation: 'subscribe' | 'unsubscribe' | 'delete';
+}
+
 /**
  * Queue Configuration
  */
@@ -178,6 +184,19 @@ export const apiRequestCleanupQueue = new Queue<ApiRequestCleanupJobData>('api-r
     },
     removeOnComplete: 5, // Keep last 5 completed jobs
     removeOnFail: 20, // Keep last 20 failed jobs
+  },
+});
+
+export const bulkContactQueue = new Queue<BulkContactActionJobData>('bulk-contact-actions', {
+  connection: redisConnection,
+  defaultJobOptions: {
+    attempts: 2, // Limited retries for bulk operations
+    backoff: {
+      type: 'exponential',
+      delay: 5000,
+    },
+    removeOnComplete: 50, // Keep last 50 completed bulk operations
+    removeOnFail: 100, // Keep last 100 failed bulk operations
   },
 });
 
@@ -329,6 +348,48 @@ export class QueueService {
   }
 
   /**
+   * Queue bulk contact action job
+   */
+  public static async queueBulkContactAction(
+    projectId: string,
+    contactIds: string[],
+    operation: 'subscribe' | 'unsubscribe' | 'delete',
+  ): Promise<Job<BulkContactActionJobData>> {
+    return bulkContactQueue.add(
+      'bulk-contact-action',
+      {projectId, contactIds, operation},
+      {
+        jobId: `bulk-${operation}-${projectId}-${Date.now()}`,
+      },
+    );
+  }
+
+  /**
+   * Get bulk action job status and progress
+   */
+  public static async getBulkActionJobStatus(jobId: string) {
+    const job = await bulkContactQueue.getJob(jobId);
+
+    if (!job) {
+      return null;
+    }
+
+    const state = await job.getState();
+    const progress = job.progress;
+    const returnValue = job.returnvalue;
+    const failedReason = job.failedReason;
+
+    return {
+      id: job.id,
+      state,
+      progress,
+      result: returnValue,
+      data: job.data,
+      failedReason,
+    };
+  }
+
+  /**
    * Queue segment count update job
    */
   public static async queueSegmentCountUpdate(projectId?: string): Promise<Job<SegmentCountJobData>> {
@@ -354,6 +415,7 @@ export class QueueService {
       segmentCountCounts,
       domainVerificationCounts,
       apiRequestCleanupCounts,
+      bulkContactCounts,
     ] = await Promise.all([
       emailQueue.getJobCounts('waiting', 'active', 'completed', 'failed', 'delayed'),
       campaignQueue.getJobCounts('waiting', 'active', 'completed', 'failed', 'delayed'),
@@ -363,6 +425,7 @@ export class QueueService {
       segmentCountQueue.getJobCounts('waiting', 'active', 'completed', 'failed', 'delayed'),
       domainVerificationQueue.getJobCounts('waiting', 'active', 'completed', 'failed', 'delayed'),
       apiRequestCleanupQueue.getJobCounts('waiting', 'active', 'completed', 'failed', 'delayed'),
+      bulkContactQueue.getJobCounts('waiting', 'active', 'completed', 'failed', 'delayed'),
     ]);
 
     return {
@@ -374,6 +437,7 @@ export class QueueService {
       segmentCount: segmentCountCounts,
       domainVerification: domainVerificationCounts,
       apiRequestCleanup: apiRequestCleanupCounts,
+      bulkContact: bulkContactCounts,
     };
   }
 
@@ -390,6 +454,7 @@ export class QueueService {
       segmentCountQueue.pause(),
       domainVerificationQueue.pause(),
       apiRequestCleanupQueue.pause(),
+      bulkContactQueue.pause(),
     ]);
   }
 
@@ -406,6 +471,7 @@ export class QueueService {
       segmentCountQueue.resume(),
       domainVerificationQueue.resume(),
       apiRequestCleanupQueue.resume(),
+      bulkContactQueue.resume(),
     ]);
   }
 
@@ -430,6 +496,8 @@ export class QueueService {
       segmentCountQueue.clean(gracePeriod * 7, 50, 'failed'),
       domainVerificationQueue.clean(gracePeriod, 10, 'completed'),
       domainVerificationQueue.clean(gracePeriod * 7, 50, 'failed'),
+      bulkContactQueue.clean(gracePeriod, 50, 'completed'),
+      bulkContactQueue.clean(gracePeriod * 7, 100, 'failed'),
     ]);
   }
 
@@ -514,6 +582,7 @@ export class QueueService {
       segmentCountQueue.close(),
       domainVerificationQueue.close(),
       apiRequestCleanupQueue.close(),
+      bulkContactQueue.close(),
     ]);
   }
 }

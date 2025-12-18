@@ -439,4 +439,271 @@ describe('ContactService - Duplicate Prevention & Data Merging', () => {
       expect(unsubscribed?.subscribed).toBe(false);
     });
   });
+
+  describe('Bulk Contact Operations', () => {
+    describe('bulkSubscribe', () => {
+      it('should subscribe multiple unsubscribed contacts', async () => {
+        const contact1 = await factories.createContact({projectId, subscribed: false});
+        const contact2 = await factories.createContact({projectId, subscribed: false});
+        const contact3 = await factories.createContact({projectId, subscribed: false});
+
+        const result = await ContactService.bulkSubscribe(projectId, [contact1.id, contact2.id, contact3.id]);
+
+        expect(result.updated).toBe(3);
+
+        const contacts = await prisma.contact.findMany({
+          where: {id: {in: [contact1.id, contact2.id, contact3.id]}},
+        });
+
+        expect(contacts.every(c => c.subscribed)).toBe(true);
+      });
+
+      it('should only update unsubscribed contacts, not already subscribed ones', async () => {
+        const unsubscribed1 = await factories.createContact({projectId, subscribed: false});
+        const unsubscribed2 = await factories.createContact({projectId, subscribed: false});
+        const alreadySubscribed = await factories.createContact({projectId, subscribed: true});
+
+        const result = await ContactService.bulkSubscribe(projectId, [
+          unsubscribed1.id,
+          unsubscribed2.id,
+          alreadySubscribed.id,
+        ]);
+
+        expect(result.updated).toBe(2);
+      });
+
+      it('should return 0 if no contacts need updating', async () => {
+        const contact1 = await factories.createContact({projectId, subscribed: true});
+        const contact2 = await factories.createContact({projectId, subscribed: true});
+
+        const result = await ContactService.bulkSubscribe(projectId, [contact1.id, contact2.id]);
+
+        expect(result.updated).toBe(0);
+      });
+
+      it('should only update contacts belonging to the specified project', async () => {
+        const {project: otherProject} = await factories.createUserWithProject();
+        const ownContact = await factories.createContact({projectId, subscribed: false});
+        const otherContact = await factories.createContact({projectId: otherProject.id, subscribed: false});
+
+        const result = await ContactService.bulkSubscribe(projectId, [ownContact.id, otherContact.id]);
+
+        expect(result.updated).toBe(1);
+
+        const ownContactAfter = await prisma.contact.findUnique({where: {id: ownContact.id}});
+        const otherContactAfter = await prisma.contact.findUnique({where: {id: otherContact.id}});
+
+        expect(ownContactAfter?.subscribed).toBe(true);
+        expect(otherContactAfter?.subscribed).toBe(false);
+      });
+
+      it('should handle empty contact IDs array', async () => {
+        const result = await ContactService.bulkSubscribe(projectId, []);
+
+        expect(result.updated).toBe(0);
+      });
+
+      it('should handle non-existent contact IDs gracefully', async () => {
+        const result = await ContactService.bulkSubscribe(projectId, ['non-existent-1', 'non-existent-2']);
+
+        expect(result.updated).toBe(0);
+      });
+
+      it('should handle large batches efficiently', async () => {
+        const contacts = await Promise.all(
+          Array.from({length: 150}, () => factories.createContact({projectId, subscribed: false})),
+        );
+        const contactIds = contacts.map(c => c.id);
+
+        const result = await ContactService.bulkSubscribe(projectId, contactIds);
+
+        expect(result.updated).toBe(150);
+
+        const updatedContacts = await prisma.contact.findMany({
+          where: {id: {in: contactIds}},
+        });
+
+        expect(updatedContacts.every(c => c.subscribed)).toBe(true);
+      });
+    });
+
+    describe('bulkUnsubscribe', () => {
+      it('should unsubscribe multiple subscribed contacts', async () => {
+        const contact1 = await factories.createContact({projectId, subscribed: true});
+        const contact2 = await factories.createContact({projectId, subscribed: true});
+        const contact3 = await factories.createContact({projectId, subscribed: true});
+
+        const result = await ContactService.bulkUnsubscribe(projectId, [contact1.id, contact2.id, contact3.id]);
+
+        expect(result.updated).toBe(3);
+
+        const contacts = await prisma.contact.findMany({
+          where: {id: {in: [contact1.id, contact2.id, contact3.id]}},
+        });
+
+        expect(contacts.every(c => !c.subscribed)).toBe(true);
+      });
+
+      it('should only update subscribed contacts, not already unsubscribed ones', async () => {
+        const subscribed1 = await factories.createContact({projectId, subscribed: true});
+        const subscribed2 = await factories.createContact({projectId, subscribed: true});
+        const alreadyUnsubscribed = await factories.createContact({projectId, subscribed: false});
+
+        const result = await ContactService.bulkUnsubscribe(projectId, [
+          subscribed1.id,
+          subscribed2.id,
+          alreadyUnsubscribed.id,
+        ]);
+
+        expect(result.updated).toBe(2);
+      });
+
+      it('should return 0 if no contacts need updating', async () => {
+        const contact1 = await factories.createContact({projectId, subscribed: false});
+        const contact2 = await factories.createContact({projectId, subscribed: false});
+
+        const result = await ContactService.bulkUnsubscribe(projectId, [contact1.id, contact2.id]);
+
+        expect(result.updated).toBe(0);
+      });
+
+      it('should only update contacts belonging to the specified project', async () => {
+        const {project: otherProject} = await factories.createUserWithProject();
+        const ownContact = await factories.createContact({projectId, subscribed: true});
+        const otherContact = await factories.createContact({projectId: otherProject.id, subscribed: true});
+
+        const result = await ContactService.bulkUnsubscribe(projectId, [ownContact.id, otherContact.id]);
+
+        expect(result.updated).toBe(1);
+
+        const ownContactAfter = await prisma.contact.findUnique({where: {id: ownContact.id}});
+        const otherContactAfter = await prisma.contact.findUnique({where: {id: otherContact.id}});
+
+        expect(ownContactAfter?.subscribed).toBe(false);
+        expect(otherContactAfter?.subscribed).toBe(true);
+      });
+
+      it('should handle empty contact IDs array', async () => {
+        const result = await ContactService.bulkUnsubscribe(projectId, []);
+
+        expect(result.updated).toBe(0);
+      });
+
+      it('should handle non-existent contact IDs gracefully', async () => {
+        const result = await ContactService.bulkUnsubscribe(projectId, ['non-existent-1', 'non-existent-2']);
+
+        expect(result.updated).toBe(0);
+      });
+    });
+
+    describe('bulkDelete', () => {
+      it('should delete multiple contacts', async () => {
+        const contact1 = await factories.createContact({projectId});
+        const contact2 = await factories.createContact({projectId});
+        const contact3 = await factories.createContact({projectId});
+
+        const result = await ContactService.bulkDelete(projectId, [contact1.id, contact2.id, contact3.id]);
+
+        expect(result.deleted).toBe(3);
+
+        const contacts = await prisma.contact.findMany({
+          where: {id: {in: [contact1.id, contact2.id, contact3.id]}},
+        });
+
+        expect(contacts).toHaveLength(0);
+      });
+
+      it('should only delete contacts belonging to the specified project', async () => {
+        const {project: otherProject} = await factories.createUserWithProject();
+        const ownContact = await factories.createContact({projectId});
+        const otherContact = await factories.createContact({projectId: otherProject.id});
+
+        const result = await ContactService.bulkDelete(projectId, [ownContact.id, otherContact.id]);
+
+        expect(result.deleted).toBe(1);
+
+        const ownContactAfter = await prisma.contact.findUnique({where: {id: ownContact.id}});
+        const otherContactAfter = await prisma.contact.findUnique({where: {id: otherContact.id}});
+
+        expect(ownContactAfter).toBeNull();
+        expect(otherContactAfter).not.toBeNull();
+      });
+
+      it('should handle empty contact IDs array', async () => {
+        const result = await ContactService.bulkDelete(projectId, []);
+
+        expect(result.deleted).toBe(0);
+      });
+
+      it('should handle non-existent contact IDs gracefully', async () => {
+        const result = await ContactService.bulkDelete(projectId, ['non-existent-1', 'non-existent-2']);
+
+        expect(result.deleted).toBe(0);
+      });
+
+      it('should handle large batches efficiently', async () => {
+        const contacts = await Promise.all(Array.from({length: 200}, () => factories.createContact({projectId})));
+        const contactIds = contacts.map(c => c.id);
+
+        const result = await ContactService.bulkDelete(projectId, contactIds);
+
+        expect(result.deleted).toBe(200);
+
+        const remainingContacts = await prisma.contact.findMany({
+          where: {id: {in: contactIds}},
+        });
+
+        expect(remainingContacts).toHaveLength(0);
+      });
+
+      it('should delete both subscribed and unsubscribed contacts', async () => {
+        const subscribed = await factories.createContact({projectId, subscribed: true});
+        const unsubscribed = await factories.createContact({projectId, subscribed: false});
+
+        const result = await ContactService.bulkDelete(projectId, [subscribed.id, unsubscribed.id]);
+
+        expect(result.deleted).toBe(2);
+      });
+
+      it('should handle partial matches (some exist, some do not)', async () => {
+        const existingContact = await factories.createContact({projectId});
+
+        const result = await ContactService.bulkDelete(projectId, [existingContact.id, 'non-existent-id']);
+
+        expect(result.deleted).toBe(1);
+
+        const contact = await prisma.contact.findUnique({where: {id: existingContact.id}});
+        expect(contact).toBeNull();
+      });
+    });
+
+    describe('Bulk Operations - Project Isolation', () => {
+      it('should never leak contacts between projects in bulk operations', async () => {
+        const {project: project1} = await factories.createUserWithProject();
+        const {project: project2} = await factories.createUserWithProject();
+
+        const p1Contact1 = await factories.createContact({projectId: project1.id, subscribed: false});
+        const p1Contact2 = await factories.createContact({projectId: project1.id, subscribed: false});
+        const p2Contact1 = await factories.createContact({projectId: project2.id, subscribed: false});
+        const p2Contact2 = await factories.createContact({projectId: project2.id, subscribed: false});
+
+        await ContactService.bulkSubscribe(project1.id, [
+          p1Contact1.id,
+          p1Contact2.id,
+          p2Contact1.id,
+          p2Contact2.id,
+        ]);
+
+        const p1ContactsAfter = await prisma.contact.findMany({
+          where: {projectId: project1.id},
+        });
+        const p2ContactsAfter = await prisma.contact.findMany({
+          where: {projectId: project2.id},
+        });
+
+        expect(p1ContactsAfter.every(c => c.subscribed)).toBe(true);
+        expect(p2ContactsAfter.every(c => !c.subscribed)).toBe(true);
+      });
+    });
+  });
 });

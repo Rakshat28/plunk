@@ -679,4 +679,148 @@ export class ContactService {
 
     return false;
   }
+
+  /**
+   * Bulk subscribe contacts
+   * Updates multiple contacts to subscribed=true in batches
+   */
+  public static async bulkSubscribe(
+    projectId: string,
+    contactIds: string[],
+  ): Promise<{updated: number}> {
+    // Verify all contacts belong to this project
+    const contacts = await prisma.contact.findMany({
+      where: {
+        id: {in: contactIds},
+        projectId,
+      },
+      select: {id: true, subscribed: true},
+    });
+
+    const validIds = contacts.map(c => c.id);
+
+    if (validIds.length === 0) {
+      return {updated: 0};
+    }
+
+    // Only update contacts that are currently unsubscribed
+    const unsubscribedIds = contacts.filter(c => !c.subscribed).map(c => c.id);
+
+    if (unsubscribedIds.length === 0) {
+      return {updated: 0};
+    }
+
+    // Update in a single query for performance
+    const result = await prisma.contact.updateMany({
+      where: {
+        id: {in: unsubscribedIds},
+        projectId,
+      },
+      data: {
+        subscribed: true,
+      },
+    });
+
+    // Track events for changed contacts sequentially to avoid database deadlocks
+    // Process in background to avoid blocking the API response
+    this.trackEventsSequentially(projectId, 'contact.subscribed', unsubscribedIds).catch(error => {
+      // Silently ignore errors in tests due to cleanup race conditions
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('[ContactService] Failed to track bulk subscribe events:', error);
+      }
+    });
+
+    return {updated: result.count};
+  }
+
+  /**
+   * Bulk unsubscribe contacts
+   */
+  public static async bulkUnsubscribe(
+    projectId: string,
+    contactIds: string[],
+  ): Promise<{updated: number}> {
+    const contacts = await prisma.contact.findMany({
+      where: {
+        id: {in: contactIds},
+        projectId,
+      },
+      select: {id: true, subscribed: true},
+    });
+
+    const validIds = contacts.map(c => c.id);
+
+    if (validIds.length === 0) {
+      return {updated: 0};
+    }
+
+    // Only update contacts that are currently subscribed
+    const subscribedIds = contacts.filter(c => c.subscribed).map(c => c.id);
+
+    if (subscribedIds.length === 0) {
+      return {updated: 0};
+    }
+
+    const result = await prisma.contact.updateMany({
+      where: {
+        id: {in: subscribedIds},
+        projectId,
+      },
+      data: {
+        subscribed: false,
+      },
+    });
+
+    // Track events for changed contacts sequentially to avoid database deadlocks
+    // Process in background to avoid blocking the API response
+    this.trackEventsSequentially(projectId, 'contact.unsubscribed', subscribedIds).catch(error => {
+      // Silently ignore errors in tests due to cleanup race conditions
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('[ContactService] Failed to track bulk unsubscribe events:', error);
+      }
+    });
+
+    return {updated: result.count};
+  }
+
+  /**
+   * Bulk delete contacts
+   */
+  public static async bulkDelete(
+    projectId: string,
+    contactIds: string[],
+  ): Promise<{deleted: number}> {
+    const result = await prisma.contact.deleteMany({
+      where: {
+        id: {in: contactIds},
+        projectId,
+      },
+    });
+
+    return {deleted: result.count};
+  }
+
+  /**
+   * Track events sequentially to avoid database deadlocks
+   * Processes events one at a time with error handling
+   *
+   * @private
+   */
+  private static async trackEventsSequentially(
+    projectId: string,
+    eventName: string,
+    contactIds: string[],
+  ): Promise<void> {
+    for (const contactId of contactIds) {
+      try {
+        await EventService.trackEvent(projectId, eventName, contactId);
+      } catch (error) {
+        // Log error but continue processing remaining events
+        // Suppress logging in test environments to reduce noise from cleanup race conditions
+        if (process.env.NODE_ENV !== 'test') {
+          console.error(`[ContactService] Failed to track event ${eventName} for contact ${contactId}:`, error);
+        }
+      }
+    }
+  }
 }

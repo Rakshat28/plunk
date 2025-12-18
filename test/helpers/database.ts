@@ -63,54 +63,79 @@ class TestDatabase {
    * Clean up database after each test
    * Deletes all records in reverse order of dependencies
    * Uses batched deletes to prevent memory issues with large datasets
+   * Retries on deadlock to handle race conditions with background event tracking
    */
   async cleanup() {
     if (!this.prisma) return;
 
-    try {
-      // Use a transaction to ensure all deletes happen atomically
-      // This prevents foreign key constraint violations and race conditions
-      await this.prisma.$transaction([
-        // Level 1: Delete deepest dependencies first
-        this.prisma.event.deleteMany(),
-        this.prisma.workflowStepExecution.deleteMany(),
+    const maxRetries = 3;
+    let lastError: Error | null = null;
 
-        // Level 2: Delete entities that depend on Level 1
-        this.prisma.email.deleteMany(),
-        this.prisma.workflowExecution.deleteMany(),
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        // Use a transaction to ensure all deletes happen atomically
+        // This prevents foreign key constraint violations and race conditions
+        await this.prisma.$transaction([
+          // Level 1: Delete deepest dependencies first
+          this.prisma.event.deleteMany(),
+          this.prisma.workflowStepExecution.deleteMany(),
 
-        // Level 3: Delete workflow structure
-        this.prisma.workflowTransition.deleteMany(),
-        this.prisma.workflowStep.deleteMany(),
-        this.prisma.workflow.deleteMany(),
+          // Level 2: Delete entities that depend on Level 1
+          this.prisma.email.deleteMany(),
+          this.prisma.workflowExecution.deleteMany(),
 
-        // Level 4: Delete campaigns and templates
-        this.prisma.campaign.deleteMany(),
-        this.prisma.template.deleteMany(),
+          // Level 3: Delete workflow structure
+          this.prisma.workflowTransition.deleteMany(),
+          this.prisma.workflowStep.deleteMany(),
+          this.prisma.workflow.deleteMany(),
 
-        // Level 5: Delete segment relationships
-        this.prisma.segmentMembership.deleteMany(),
-        this.prisma.segment.deleteMany(),
+          // Level 4: Delete campaigns and templates
+          this.prisma.campaign.deleteMany(),
+          this.prisma.template.deleteMany(),
 
-        // Level 6: Delete contacts
-        this.prisma.contact.deleteMany(),
+          // Level 5: Delete segment relationships
+          this.prisma.segmentMembership.deleteMany(),
+          this.prisma.segment.deleteMany(),
 
-        // Level 7: Delete domains
-        this.prisma.domain.deleteMany(),
+          // Level 6: Delete contacts
+          this.prisma.contact.deleteMany(),
 
-        // Level 8: Delete memberships (has FK to both user and project)
-        this.prisma.membership.deleteMany(),
+          // Level 7: Delete domains
+          this.prisma.domain.deleteMany(),
 
-        // Level 9: Delete projects
-        this.prisma.project.deleteMany(),
+          // Level 8: Delete memberships (has FK to both user and project)
+          this.prisma.membership.deleteMany(),
 
-        // Level 10: Delete users last
-        this.prisma.user.deleteMany(),
-      ]);
-    } catch (error) {
-      console.error('Error cleaning up database:', error);
-      throw error;
+          // Level 9: Delete projects
+          this.prisma.project.deleteMany(),
+
+          // Level 10: Delete users last
+          this.prisma.user.deleteMany(),
+        ]);
+
+        // Success - exit retry loop
+        return;
+      } catch (error) {
+        lastError = error as Error;
+
+        // Check if this is a deadlock error (PostgreSQL error code 40P01)
+        const isDeadlock = error instanceof Error && error.message?.includes('deadlock detected');
+
+        if (isDeadlock && attempt < maxRetries) {
+          // Wait before retrying (exponential backoff)
+          const delay = Math.pow(2, attempt) * 50; // 100ms, 200ms, 400ms
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+
+        // Not a deadlock or out of retries
+        break;
+      }
     }
+
+    // If we get here, all retries failed
+    console.error(`Error cleaning up database after ${maxRetries} attempts:`, lastError);
+    throw lastError;
   }
 
   /**

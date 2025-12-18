@@ -69,7 +69,10 @@ export const ContactSchemas = {
     subscribed: z.boolean().default(true),
     data: jsonSchema.optional(),
   }),
-};
+  bulkAction: z.object({
+    contactIds: z.array(uuid).min(1).max(1000),
+  }),
+} as const;
 
 const segmentFilterSchema = z.object({
   field: z.string().min(1),

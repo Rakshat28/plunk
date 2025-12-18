@@ -379,4 +379,137 @@ export class Contacts {
       });
     }
   }
+
+  /**
+   * POST /contacts/bulk-subscribe
+   * Queue bulk subscribe operation
+   */
+  @Post('bulk-subscribe')
+  @Middleware([requireAuth])
+  @CatchAsync
+  public async bulkSubscribe(req: Request, res: Response, _next: NextFunction) {
+    const auth = res.locals.auth as AuthResponse;
+    const {contactIds} = req.body;
+
+    if (!Array.isArray(contactIds) || contactIds.length === 0) {
+      return res.status(400).json({error: 'contactIds array is required'});
+    }
+
+    // Validate limit
+    if (contactIds.length > 1000) {
+      return res.status(400).json({error: 'Maximum 1000 contacts can be processed at once'});
+    }
+
+    try {
+      const job = await QueueService.queueBulkContactAction(auth.projectId!, contactIds, 'subscribe');
+
+      return res.status(202).json({
+        message: 'Bulk subscribe queued successfully',
+        jobId: job.id,
+      });
+    } catch (error) {
+      signale.error('[CONTACTS] Failed to queue bulk subscribe:', error);
+      return res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to queue bulk subscribe',
+      });
+    }
+  }
+
+  /**
+   * POST /contacts/bulk-unsubscribe
+   * Queue bulk unsubscribe operation
+   */
+  @Post('bulk-unsubscribe')
+  @Middleware([requireAuth])
+  @CatchAsync
+  public async bulkUnsubscribe(req: Request, res: Response, _next: NextFunction) {
+    const auth = res.locals.auth as AuthResponse;
+    const {contactIds} = req.body;
+
+    if (!Array.isArray(contactIds) || contactIds.length === 0) {
+      return res.status(400).json({error: 'contactIds array is required'});
+    }
+
+    if (contactIds.length > 1000) {
+      return res.status(400).json({error: 'Maximum 1000 contacts can be processed at once'});
+    }
+
+    try {
+      const job = await QueueService.queueBulkContactAction(auth.projectId!, contactIds, 'unsubscribe');
+
+      return res.status(202).json({
+        message: 'Bulk unsubscribe queued successfully',
+        jobId: job.id,
+      });
+    } catch (error) {
+      signale.error('[CONTACTS] Failed to queue bulk unsubscribe:', error);
+      return res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to queue bulk unsubscribe',
+      });
+    }
+  }
+
+  /**
+   * POST /contacts/bulk-delete
+   * Queue bulk delete operation
+   */
+  @Post('bulk-delete')
+  @Middleware([requireAuth])
+  @CatchAsync
+  public async bulkDelete(req: Request, res: Response, _next: NextFunction) {
+    const auth = res.locals.auth as AuthResponse;
+    const {contactIds} = req.body;
+
+    if (!Array.isArray(contactIds) || contactIds.length === 0) {
+      return res.status(400).json({error: 'contactIds array is required'});
+    }
+
+    if (contactIds.length > 1000) {
+      return res.status(400).json({error: 'Maximum 1000 contacts can be processed at once'});
+    }
+
+    try {
+      const job = await QueueService.queueBulkContactAction(auth.projectId!, contactIds, 'delete');
+
+      return res.status(202).json({
+        message: 'Bulk delete queued successfully',
+        jobId: job.id,
+      });
+    } catch (error) {
+      signale.error('[CONTACTS] Failed to queue bulk delete:', error);
+      return res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to queue bulk delete',
+      });
+    }
+  }
+
+  /**
+   * GET /contacts/bulk/:jobId
+   * Get bulk action job status
+   */
+  @Get('bulk/:jobId')
+  @Middleware([requireAuth])
+  @CatchAsync
+  public async getBulkActionStatus(req: Request, res: Response, _next: NextFunction) {
+    const jobId = req.params.jobId;
+
+    if (!jobId) {
+      return res.status(400).json({error: 'Job ID is required'});
+    }
+
+    try {
+      const status = await QueueService.getBulkActionJobStatus(jobId);
+
+      if (!status) {
+        return res.status(404).json({error: 'Bulk action job not found'});
+      }
+
+      return res.status(200).json(status);
+    } catch (error) {
+      signale.error('[CONTACTS] Failed to get bulk action status:', error);
+      return res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to get bulk action status',
+      });
+    }
+  }
 }

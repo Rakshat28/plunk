@@ -5,6 +5,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Checkbox,
   ConfirmDialog,
   Dialog,
   DialogContent,
@@ -62,6 +63,9 @@ export default function ContactsPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [contactToDelete, setContactToDelete] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState<number>(0);
+  const [selectedContacts, setSelectedContacts] = useState<Set<string>>(new Set());
+  const [showBulkActionsDialog, setShowBulkActionsDialog] = useState(false);
+  const [bulkOperation, setBulkOperation] = useState<'subscribe' | 'unsubscribe' | 'delete' | null>(null);
   const pageSize = 50;
 
   const {data, mutate, isLoading} = useSWR<PaginatedContacts>(
@@ -93,6 +97,7 @@ export default function ContactsPage() {
       const newPage = currentPage + 1;
       setCursor(data.cursor);
       setCurrentPage(newPage);
+      setSelectedContacts(new Set()); // Clear selection on page change
 
       // Store cursor in history if not already there
       if (cursorHistory.length <= newPage) {
@@ -107,7 +112,35 @@ export default function ContactsPage() {
       const previousCursor = cursorHistory[newPage];
       setCursor(previousCursor);
       setCurrentPage(newPage);
+      setSelectedContacts(new Set()); // Clear selection on page change
     }
+  };
+
+  const handleSelectAll = () => {
+    if (selectedContacts.size === contacts.length && contacts.length > 0) {
+      setSelectedContacts(new Set());
+    } else {
+      setSelectedContacts(new Set(contacts.map(c => c.id)));
+    }
+  };
+
+  const handleSelectContact = (contactId: string) => {
+    const newSelected = new Set(selectedContacts);
+    if (newSelected.has(contactId)) {
+      newSelected.delete(contactId);
+    } else {
+      newSelected.add(contactId);
+    }
+    setSelectedContacts(newSelected);
+  };
+
+  const handleBulkAction = (operation: 'subscribe' | 'unsubscribe' | 'delete') => {
+    setBulkOperation(operation);
+    setShowBulkActionsDialog(true);
+  };
+
+  const clearSelection = () => {
+    setSelectedContacts(new Set());
   };
 
   const promptDelete = (contactId: string) => {
@@ -194,6 +227,50 @@ export default function ContactsPage() {
             </CardContent>
           </Card>
 
+          {/* Bulk Actions Toolbar */}
+          {selectedContacts.size > 0 && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm font-medium text-neutral-900">
+                      {selectedContacts.size} contact{selectedContacts.size !== 1 ? 's' : ''} selected
+                    </span>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleBulkAction('subscribe')}
+                      >
+                        <MailCheck className="h-4 w-4 mr-1.5" />
+                        Subscribe
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleBulkAction('unsubscribe')}
+                      >
+                        <MailX className="h-4 w-4 mr-1.5" />
+                        Unsubscribe
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleBulkAction('delete')}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1.5" />
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={clearSelection}>
+                    Clear Selection
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Contacts Table */}
           <Card>
             <CardHeader>
@@ -244,6 +321,12 @@ export default function ContactsPage() {
                     <table className="w-full">
                       <thead className="bg-neutral-50 border-b border-neutral-200">
                         <tr>
+                          <th className="px-6 py-3 text-left w-12">
+                            <Checkbox
+                              checked={selectedContacts.size === contacts.length && contacts.length > 0}
+                              onCheckedChange={handleSelectAll}
+                            />
+                          </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                             Email
                           </th>
@@ -261,6 +344,12 @@ export default function ContactsPage() {
                       <tbody className="bg-white divide-y divide-neutral-200">
                         {contacts.map(contact => (
                           <tr key={contact.id} className="hover:bg-neutral-50 transition-colors">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <Checkbox
+                                checked={selectedContacts.has(contact.id)}
+                                onCheckedChange={() => handleSelectContact(contact.id)}
+                              />
+                            </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center gap-2">
                                 {contact.subscribed ? (
@@ -398,6 +487,18 @@ export default function ContactsPage() {
 
         {/* Import Contacts Dialog */}
         <ImportContactsDialog open={showImportDialog} onOpenChange={setShowImportDialog} onSuccess={() => mutate()} />
+
+        {/* Bulk Actions Dialog */}
+        <BulkActionsDialog
+          open={showBulkActionsDialog}
+          onOpenChange={setShowBulkActionsDialog}
+          operation={bulkOperation}
+          contactIds={Array.from(selectedContacts)}
+          onSuccess={() => {
+            mutate();
+            clearSelection();
+          }}
+        />
 
         {/* Delete Confirmation Dialog */}
         <ConfirmDialog
@@ -853,6 +954,289 @@ function ImportContactsDialog({open, onOpenChange, onSuccess}: ImportContactsDia
         onConfirm={confirmClose}
         title="Close Import"
         description="Import is still in progress. Are you sure you want to close?"
+        confirmText="Close Anyway"
+        variant="destructive"
+      />
+    </>
+  );
+}
+
+interface BulkActionsDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  operation: 'subscribe' | 'unsubscribe' | 'delete' | null;
+  contactIds: string[];
+  onSuccess: () => void;
+}
+
+interface BulkActionResult {
+  operation: string;
+  totalRequested: number;
+  successCount: number;
+  failureCount: number;
+  errors: Array<{contactId: string; email: string; error: string}>;
+}
+
+function BulkActionsDialog({open, onOpenChange, operation, contactIds, onSuccess}: BulkActionsDialogProps) {
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [status, setStatus] = useState<'idle' | 'processing' | 'completed' | 'failed'>('idle');
+  const [result, setResult] = useState<BulkActionResult | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [showCloseConfirmDialog, setShowCloseConfirmDialog] = useState(false);
+
+  // Clean up polling on unmount or dialog close
+  useEffect(() => {
+    if (!open) {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+      setTimeout(() => {
+        setJobId(null);
+        setProgress(0);
+        setStatus('idle');
+        setResult(null);
+        setErrorMessage(null);
+      }, 300);
+    }
+  }, [open]);
+
+  const pollJobStatus = async (jobId: string) => {
+    try {
+      const response = await network.fetch<{
+        id: string;
+        state: string;
+        progress: number;
+        result: BulkActionResult | null;
+        failedReason?: string;
+      }>('GET', `/contacts/bulk/${jobId}`);
+
+      setProgress(response.progress || 0);
+
+      if (response.state === 'completed') {
+        setStatus('completed');
+        setResult(response.result);
+        if (pollIntervalRef.current) {
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+        }
+
+        if (response.result) {
+          const {successCount, failureCount} = response.result;
+          toast.success(`Completed: ${successCount} succeeded${failureCount > 0 ? `, ${failureCount} failed` : ''}`);
+        }
+
+        onSuccess();
+      } else if (response.state === 'failed') {
+        setStatus('failed');
+        if (pollIntervalRef.current) {
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+        }
+        const errorMsg = response.failedReason || 'Operation failed';
+        setErrorMessage(errorMsg);
+        toast.error(errorMsg);
+      } else if (response.state === 'active') {
+        setStatus('processing');
+      }
+    } catch (error) {
+      console.error('Failed to poll job status:', error);
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+      setStatus('failed');
+      toast.error('Failed to check operation status');
+    }
+  };
+
+  const handleConfirm = async () => {
+    if (!operation) return;
+
+    setIsProcessing(true);
+    setStatus('processing');
+
+    try {
+      const endpoint = `/contacts/bulk-${operation}`;
+      const data = await network.fetch<{jobId: string; message: string}, typeof ContactSchemas.bulkAction>(
+        'POST',
+        endpoint,
+        {contactIds},
+      );
+
+      setJobId(data.jobId);
+
+      // Start polling for job status
+      pollIntervalRef.current = setInterval(() => {
+        void pollJobStatus(data.jobId);
+      }, 1000);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Failed to start operation';
+      setErrorMessage(errorMsg);
+      toast.error(errorMsg);
+      setStatus('failed');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleClose = () => {
+    if (status === 'processing') {
+      setShowCloseConfirmDialog(true);
+      return;
+    }
+    onOpenChange(false);
+  };
+
+  const confirmClose = () => {
+    onOpenChange(false);
+  };
+
+  const getOperationLabel = () => {
+    switch (operation) {
+      case 'subscribe': return 'Subscribe';
+      case 'unsubscribe': return 'Unsubscribe';
+      case 'delete': return 'Delete';
+      default: return 'Process';
+    }
+  };
+
+  const getOperationColor = () => {
+    switch (operation) {
+      case 'subscribe': return 'green';
+      case 'unsubscribe': return 'yellow';
+      case 'delete': return 'red';
+      default: return 'blue';
+    }
+  };
+
+  return (
+    <>
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{getOperationLabel()} Contacts</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {status === 'idle' && (
+              <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-4">
+                <p className="text-sm text-neutral-900">
+                  Are you sure you want to {operation} {contactIds.length} contact
+                  {contactIds.length !== 1 ? 's' : ''}?
+                </p>
+                {operation === 'delete' && (
+                  <p className="text-sm text-red-600 mt-2 font-medium">
+                    This action cannot be undone.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {(status === 'processing') && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-neutral-600">Processing contacts...</span>
+                  <span className="text-neutral-900 font-medium">{progress}%</span>
+                </div>
+                <div className="w-full bg-neutral-200 rounded-full h-2">
+                  <div
+                    className={`bg-${getOperationColor()}-600 h-2 rounded-full transition-all duration-300`}
+                    style={{width: `${progress}%`}}
+                  />
+                </div>
+              </div>
+            )}
+
+            {status === 'completed' && result && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-green-50 rounded-lg p-4">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <div className="text-2xl font-bold text-green-900">{result.successCount}</div>
+                    </div>
+                    <div className="text-sm text-green-700">Succeeded</div>
+                  </div>
+                  {result.failureCount > 0 && (
+                    <div className="bg-red-50 rounded-lg p-4">
+                      <div className="flex items-center gap-2">
+                        <XCircle className="h-5 w-5 text-red-600" />
+                        <div className="text-2xl font-bold text-red-900">{result.failureCount}</div>
+                      </div>
+                      <div className="text-sm text-red-700">Failed</div>
+                    </div>
+                  )}
+                </div>
+
+                {result.errors && result.errors.length > 0 && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-h-48 overflow-y-auto">
+                    <h4 className="font-medium text-red-900 mb-2">Errors</h4>
+                    <div className="space-y-1 text-sm text-red-800">
+                      {result.errors.slice(0, 10).map((error, idx) => (
+                        <div key={idx}>{error.error}</div>
+                      ))}
+                      {result.errors.length > 10 && (
+                        <div className="text-red-700 font-medium mt-2">
+                          ...and {result.errors.length - 10} more errors
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {status === 'failed' && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 text-red-900">
+                  <XCircle className="h-5 w-5" />
+                  <span className="font-medium">Operation failed</span>
+                </div>
+                <p className="text-sm text-red-800 mt-1">
+                  {errorMessage || 'Please try again.'}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            {status === 'idle' ? (
+              <>
+                <Button type="button" variant="outline" onClick={handleClose}>
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleConfirm}
+                  disabled={isProcessing}
+                  variant={operation === 'delete' ? 'destructive' : 'default'}
+                >
+                  {isProcessing ? 'Starting...' : getOperationLabel()}
+                </Button>
+              </>
+            ) : status === 'completed' ? (
+              <Button type="button" onClick={handleClose}>
+                Close
+              </Button>
+            ) : (
+              <Button type="button" variant="outline" onClick={handleClose}>
+                Close
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={showCloseConfirmDialog}
+        onOpenChange={setShowCloseConfirmDialog}
+        onConfirm={confirmClose}
+        title="Close Operation"
+        description="Operation is still in progress. Are you sure you want to close?"
         confirmText="Close Anyway"
         variant="destructive"
       />
