@@ -733,4 +733,304 @@ describe('Actions API Integration Tests', () => {
       });
     });
   });
+
+  // ========================================
+  // SUBSCRIPTION STATUS PRESERVATION
+  // ========================================
+  describe('Subscription Status Preservation', () => {
+    describe('/v1/send endpoint', () => {
+      it('should NOT change subscription status when sending to subscribed contact without subscribed field', async () => {
+        // Create a subscribed contact
+        const contact = await factories.createContact({
+          projectId,
+          subscribed: true,
+          email: 'subscribed@example.com',
+        });
+
+        // Verify initial state
+        expect(contact.subscribed).toBe(true);
+
+        // Send transactional email without specifying subscribed field
+        await EmailService.sendTransactionalEmail({
+          projectId,
+          contactId: contact.id,
+          subject: 'Test',
+          body: 'Test',
+          from: 'test@example.com',
+        });
+
+        // Verify subscription status unchanged
+        const updatedContact = await prisma.contact.findUnique({
+          where: {id: contact.id},
+        });
+
+        expect(updatedContact?.subscribed).toBe(true);
+      });
+
+      it('should NOT change subscription status when sending to unsubscribed contact without subscribed field', async () => {
+        // Create an unsubscribed contact
+        const contact = await factories.createContact({
+          projectId,
+          subscribed: false,
+          email: 'unsubscribed@example.com',
+        });
+
+        // Verify initial state
+        expect(contact.subscribed).toBe(false);
+
+        // Send transactional email without specifying subscribed field
+        await EmailService.sendTransactionalEmail({
+          projectId,
+          contactId: contact.id,
+          subject: 'Test',
+          body: 'Test',
+          from: 'test@example.com',
+        });
+
+        // Verify subscription status unchanged (should still be false)
+        const updatedContact = await prisma.contact.findUnique({
+          where: {id: contact.id},
+        });
+
+        expect(updatedContact?.subscribed).toBe(false);
+      });
+
+      it('should allow explicit subscription when subscribed=true is provided', async () => {
+        // Create an unsubscribed contact
+        const contact = await factories.createContact({
+          projectId,
+          subscribed: false,
+          email: 'resubscribe@example.com',
+        });
+
+        // This test would need to be implemented at the controller level
+        // since EmailService.sendTransactionalEmail doesn't accept subscribed parameter
+        // For now, verify the schema allows it
+        const result = ActionSchemas.send.safeParse({
+          to: contact.email,
+          subject: 'Test',
+          body: 'Test',
+          from: 'test@example.com',
+          subscribed: true,
+        });
+
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.data.subscribed).toBe(true);
+        }
+      });
+
+      it('should allow explicit unsubscription when subscribed=false is provided', async () => {
+        // Verify the schema allows explicit false
+        const result = ActionSchemas.send.safeParse({
+          to: 'test@example.com',
+          subject: 'Test',
+          body: 'Test',
+          from: 'test@example.com',
+          subscribed: false,
+        });
+
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.data.subscribed).toBe(false);
+        }
+      });
+
+      it('should default to undefined when subscribed field is omitted', () => {
+        const result = ActionSchemas.send.safeParse({
+          to: 'test@example.com',
+          subject: 'Test',
+          body: 'Test',
+          from: 'test@example.com',
+        });
+
+        expect(result.success).toBe(true);
+        if (result.success) {
+          // Should be undefined, not false
+          expect(result.data.subscribed).toBeUndefined();
+        }
+      });
+    });
+
+    describe('/v1/track endpoint', () => {
+      it('should NOT change subscription status when tracking event for subscribed contact', async () => {
+        // Create a subscribed contact
+        const contact = await factories.createContact({
+          projectId,
+          subscribed: true,
+          email: 'track-subscribed@example.com',
+        });
+
+        // Verify initial state
+        expect(contact.subscribed).toBe(true);
+
+        // Track event without specifying subscribed field
+        // This would be done via ContactService.upsert in the track endpoint
+        const {ContactService} = await import('../../services/ContactService.js');
+        await ContactService.upsert(projectId, contact.email, {event: 'test'}, undefined);
+
+        // Verify subscription status unchanged
+        const updatedContact = await prisma.contact.findUnique({
+          where: {id: contact.id},
+        });
+
+        expect(updatedContact?.subscribed).toBe(true);
+      });
+
+      it('should NOT re-subscribe unsubscribed contact when tracking event', async () => {
+        // Create an unsubscribed contact
+        const contact = await factories.createContact({
+          projectId,
+          subscribed: false,
+          email: 'track-unsubscribed@example.com',
+        });
+
+        // Verify initial state
+        expect(contact.subscribed).toBe(false);
+
+        // Track event without specifying subscribed field
+        const {ContactService} = await import('../../services/ContactService.js');
+        await ContactService.upsert(projectId, contact.email, {event: 'test'}, undefined);
+
+        // Verify subscription status unchanged (should still be false, NOT re-subscribed)
+        const updatedContact = await prisma.contact.findUnique({
+          where: {id: contact.id},
+        });
+
+        expect(updatedContact?.subscribed).toBe(false);
+      });
+
+      it('should create new contacts as subscribed when subscribed is undefined', async () => {
+        const newEmail = 'new-track-contact@example.com';
+
+        // Track event for new contact without specifying subscribed
+        const {ContactService} = await import('../../services/ContactService.js');
+        const contact = await ContactService.upsert(projectId, newEmail, {event: 'test'}, undefined);
+
+        // New contacts should default to subscribed=true
+        expect(contact.subscribed).toBe(true);
+      });
+
+      it('should allow explicit subscription when subscribed=true is provided', async () => {
+        const result = ActionSchemas.track.safeParse({
+          event: 'test',
+          email: 'test@example.com',
+          subscribed: true,
+        });
+
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.data.subscribed).toBe(true);
+        }
+      });
+
+      it('should allow explicit unsubscription when subscribed=false is provided', async () => {
+        const result = ActionSchemas.track.safeParse({
+          event: 'test',
+          email: 'test@example.com',
+          subscribed: false,
+        });
+
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.data.subscribed).toBe(false);
+        }
+      });
+
+      it('should default to undefined when subscribed field is omitted', () => {
+        const result = ActionSchemas.track.safeParse({
+          event: 'test',
+          email: 'test@example.com',
+        });
+
+        expect(result.success).toBe(true);
+        if (result.success) {
+          // Should be undefined, not true
+          expect(result.data.subscribed).toBeUndefined();
+        }
+      });
+    });
+
+    describe('ContactService.upsert behavior', () => {
+      it('should preserve subscription status when undefined is passed for existing contact', async () => {
+        // Create a subscribed contact
+        const contact = await factories.createContact({
+          projectId,
+          subscribed: true,
+          email: 'upsert-test@example.com',
+        });
+
+        const {ContactService} = await import('../../services/ContactService.js');
+
+        // Update with undefined subscribed
+        await ContactService.upsert(projectId, contact.email, {firstName: 'John'}, undefined);
+
+        const updated = await prisma.contact.findUnique({
+          where: {id: contact.id},
+        });
+
+        expect(updated?.subscribed).toBe(true);
+      });
+
+      it('should preserve unsubscribed status when undefined is passed', async () => {
+        // Create an unsubscribed contact
+        const contact = await factories.createContact({
+          projectId,
+          subscribed: false,
+          email: 'upsert-unsub@example.com',
+        });
+
+        const {ContactService} = await import('../../services/ContactService.js');
+
+        // Update with undefined subscribed
+        await ContactService.upsert(projectId, contact.email, {firstName: 'Jane'}, undefined);
+
+        const updated = await prisma.contact.findUnique({
+          where: {id: contact.id},
+        });
+
+        expect(updated?.subscribed).toBe(false);
+      });
+
+      it('should allow explicit subscription change to true', async () => {
+        // Create an unsubscribed contact
+        const contact = await factories.createContact({
+          projectId,
+          subscribed: false,
+          email: 'explicit-sub@example.com',
+        });
+
+        const {ContactService} = await import('../../services/ContactService.js');
+
+        // Explicitly subscribe
+        await ContactService.upsert(projectId, contact.email, {}, true);
+
+        const updated = await prisma.contact.findUnique({
+          where: {id: contact.id},
+        });
+
+        expect(updated?.subscribed).toBe(true);
+      });
+
+      it('should allow explicit subscription change to false', async () => {
+        // Create a subscribed contact
+        const contact = await factories.createContact({
+          projectId,
+          subscribed: true,
+          email: 'explicit-unsub@example.com',
+        });
+
+        const {ContactService} = await import('../../services/ContactService.js');
+
+        // Explicitly unsubscribe
+        await ContactService.upsert(projectId, contact.email, {}, false);
+
+        const updated = await prisma.contact.findUnique({
+          where: {id: contact.id},
+        });
+
+        expect(updated?.subscribed).toBe(false);
+      });
+    });
+  });
 });

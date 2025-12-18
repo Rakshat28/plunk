@@ -315,7 +315,7 @@ export const ActionSchemas = {
   track: z.object({
     event: z.string().min(1),
     email,
-    subscribed: z.boolean().optional().default(true),
+    subscribed: z.boolean().optional(),
     data: jsonSchema.optional(),
   }),
   send: z
@@ -341,7 +341,7 @@ export const ActionSchemas = {
       subject: z.string().min(1).max(998).optional(),
       body: z.string().min(1).optional(),
       template: uuid.optional(),
-      subscribed: z.boolean().optional().default(false),
+      subscribed: z.boolean().optional(),
       name: z.string().optional(),
       from: z.union([
         email, // Simple email string (backward compatible)

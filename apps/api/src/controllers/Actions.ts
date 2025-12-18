@@ -26,7 +26,7 @@ export class Actions {
    * Request body:
    * - event: string (required) - Event name
    * - email: string (required) - Contact email
-   * - subscribed: boolean (optional, default: true) - Contact subscription status
+   * - subscribed: boolean (optional) - Contact subscription status (only updates if explicitly specified)
    * - data: object (optional) - Event and contact data
    *   - Simple values are saved to contact (persistent)
    *   - {value: any, persistent: false} are only available to workflows (non-persistent)
@@ -111,7 +111,7 @@ export class Actions {
    *   - Array: ["user1@example.com", {name: "Jane", email: "user2@example.com"}]
    * - subject: string (required) - Email subject
    * - body: string (required) - Email HTML body
-   * - subscribed: boolean (optional, default: false) - Contact subscription status
+   * - subscribed: boolean (optional) - Contact subscription status (only updates if explicitly specified)
    * - name: string (optional) - Sender name (alternative to from.name)
    * - from: string | object (optional) - Sender email or {name, email} object (must be from verified domain)
    * - reply: string (optional) - Reply-to email

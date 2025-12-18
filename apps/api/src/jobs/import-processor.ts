@@ -128,8 +128,10 @@ export function createImportWorker() {
               const existingContact = await ContactService.findByEmail(projectId, email);
               const isUpdate = !!existingContact;
 
-              // Upsert contact with subscribed value from CSV if provided, otherwise default to true
-              await ContactService.upsert(projectId, email, data, subscribed ?? true);
+              // Upsert contact with subscribed value from CSV if provided
+              // For new contacts, ContactService.upsert defaults to true
+              // For existing contacts, only update if explicitly provided in CSV
+              await ContactService.upsert(projectId, email, data, subscribed);
 
               result.successCount++;
               if (isUpdate) {
