@@ -38,9 +38,7 @@ export function HtmlEditor({value, onChange, placeholder}: HtmlEditorProps) {
       backgroundColor: '#f3f4f6',
       color: '#374151',
     },
-    '.cm-activeLine': {
-      backgroundColor: '#f9fafb',
-    },
+
     '.cm-selectionBackground, ::selection': {
       backgroundColor: '#dbeafe !important',
     },
