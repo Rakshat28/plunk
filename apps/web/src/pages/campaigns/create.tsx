@@ -11,7 +11,8 @@ import {
   SelectContent,
   SelectItemWithDescription,
   SelectTrigger,
-  SelectValue
+  SelectValue,
+  Textarea
 } from '@plunk/ui';
 import type {Segment} from '@plunk/db';
 import {CampaignAudienceType} from '@plunk/db';
@@ -243,13 +244,13 @@ export default function CreateCampaignPage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="description">Description (Optional)</Label>
-                      <textarea
+                      <Textarea
                         id="description"
                         placeholder="Internal notes about this campaign"
                         value={description}
                         onChange={e => setDescription(e.target.value)}
                         rows={2}
-                        className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="resize-none"
                       />
                     </div>
                   </CardContent>
