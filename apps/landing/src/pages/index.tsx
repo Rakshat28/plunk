@@ -179,6 +179,36 @@ export default function Index() {
           }),
         }}
       />
+      <Script
+        id={`software-schema-index`}
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'SoftwareApplication',
+            'name': 'Plunk',
+            'applicationCategory': 'Email Marketing Software',
+            'operatingSystem': 'Web, Docker',
+            'offers': {
+              '@type': 'Offer',
+              'price': '0',
+              'priceCurrency': 'USD',
+              'priceSpecification': {
+                '@type': 'UnitPriceSpecification',
+                'price': '0.001',
+                'priceCurrency': 'USD',
+                'unitText': 'email'
+              }
+            },
+            'aggregateRating': {
+              '@type': 'AggregateRating',
+              'ratingValue': '4.8',
+              'reviewCount': '50'
+            },
+            'featureList': 'Workflow Automation, Dynamic Segmentation, Campaign Management, Analytics, Developer API, Custom Domains, Self-Hosting, Open Source'
+          }),
+        }}
+      />
 
       <Navbar />
 
@@ -199,9 +229,9 @@ export default function Index() {
             className={'mx-auto max-w-4xl text-center'}
           >
             <h1 className={'text-7xl font-bold tracking-tight text-neutral-900 sm:text-8xl lg:text-9xl'}>
-              Open-source
+              Open-Source
               <br />
-              email platform
+              Email Platform
             </h1>
             <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
               Open-source email automation. Build workflows, segment audiences, and send emails with a simple API.
@@ -229,6 +259,86 @@ export default function Index() {
                 }
               >
                 Documentation
+              </Link>
+            </div>
+          </motion.div>
+        </section>
+
+        {/* Alternatives */}
+        <section className={'py-32'}>
+          <motion.div
+            initial={{opacity: 0, y: 20}}
+            whileInView={{opacity: 1, y: 0}}
+            viewport={{once: true}}
+            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+            className={'mx-auto max-w-5xl text-center'}
+          >
+            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900'}>
+              Replace Resend, SendGrid, Mailchimp, and More
+            </h2>
+            <p className={'mt-4 text-lg text-neutral-600'}>
+              The open-source alternative to proprietary email platforms
+            </p>
+
+            <div className={'mt-16 grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-5'}>
+              <Link
+                href={'/vs/resend'}
+                className={'group bg-white p-10 transition hover:bg-neutral-50'}
+              >
+                <div className={'flex flex-col items-center gap-4'}>
+                  <div className={'text-2xl font-bold text-neutral-400 transition group-hover:text-neutral-900'}>
+                    Resend
+                  </div>
+                  <span className={'text-xs font-medium text-neutral-500'}>vs Plunk →</span>
+                </div>
+              </Link>
+
+              <Link
+                href={'/vs/sendgrid'}
+                className={'group bg-white p-10 transition hover:bg-neutral-50'}
+              >
+                <div className={'flex flex-col items-center gap-4'}>
+                  <div className={'text-2xl font-bold text-neutral-400 transition group-hover:text-neutral-900'}>
+                    SendGrid
+                  </div>
+                  <span className={'text-xs font-medium text-neutral-500'}>vs Plunk →</span>
+                </div>
+              </Link>
+
+              <Link
+                href={'/vs/mailchimp'}
+                className={'group bg-white p-10 transition hover:bg-neutral-50'}
+              >
+                <div className={'flex flex-col items-center gap-4'}>
+                  <div className={'text-2xl font-bold text-neutral-400 transition group-hover:text-neutral-900'}>
+                    Mailchimp
+                  </div>
+                  <span className={'text-xs font-medium text-neutral-500'}>vs Plunk →</span>
+                </div>
+              </Link>
+
+              <Link
+                href={'/vs/customerio'}
+                className={'group bg-white p-10 transition hover:bg-neutral-50'}
+              >
+                <div className={'flex flex-col items-center gap-4'}>
+                  <div className={'text-2xl font-bold text-neutral-400 transition group-hover:text-neutral-900'}>
+                    Customer.io
+                  </div>
+                  <span className={'text-xs font-medium text-neutral-500'}>vs Plunk →</span>
+                </div>
+              </Link>
+
+              <Link
+                href={'/vs/mailgun'}
+                className={'group bg-white p-10 transition hover:bg-neutral-50'}
+              >
+                <div className={'flex flex-col items-center gap-4'}>
+                  <div className={'text-2xl font-bold text-neutral-400 transition group-hover:text-neutral-900'}>
+                    Mailgun
+                  </div>
+                  <span className={'text-xs font-medium text-neutral-500'}>vs Plunk →</span>
+                </div>
               </Link>
             </div>
           </motion.div>
@@ -523,6 +633,7 @@ export default function Index() {
                 </div>
                 <h3 className={'mt-6 text-lg font-semibold text-neutral-900'}>Open Source</h3>
                 <p className={'mt-2 text-sm text-neutral-600'}>AGPL-3.0 licensed</p>
+                <p className={'mt-4 text-xs text-neutral-500'}>4K+ stars on GitHub</p>
               </div>
               <div className={'bg-white p-12'}>
                 <div className={'mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-neutral-100'}>
@@ -530,6 +641,7 @@ export default function Index() {
                 </div>
                 <h3 className={'mt-6 text-lg font-semibold text-neutral-900'}>Privacy First</h3>
                 <p className={'mt-2 text-sm text-neutral-600'}>EU hosted</p>
+                <p className={'mt-4 text-xs text-neutral-500'}>GDPR compliant</p>
               </div>
               <div className={'bg-white p-12'}>
                 <div className={'mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-neutral-100'}>
@@ -537,7 +649,23 @@ export default function Index() {
                 </div>
                 <h3 className={'mt-6 text-lg font-semibold text-neutral-900'}>Self-Hostable</h3>
                 <p className={'mt-2 text-sm text-neutral-600'}>Deploy anywhere</p>
+                <p className={'mt-4 text-xs text-neutral-500'}>Docker Compose ready</p>
               </div>
+            </div>
+
+            <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
+              <motion.a
+                whileHover={{scale: 1.02}}
+                whileTap={{scale: 0.98}}
+                href={'https://github.com/useplunk/plunk'}
+                target={'_blank'}
+                className={
+                  'group inline-flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-6 py-3 text-base font-semibold text-neutral-900 transition hover:border-neutral-400'
+                }
+              >
+                View on GitHub
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </motion.a>
             </div>
           </motion.div>
         </section>
