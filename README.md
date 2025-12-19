@@ -7,10 +7,14 @@
 </p>
 
 <p align="center">
-    <img src="https://img.shields.io/github/contributors/useplunk/plunk"/>
-    <img src="https://img.shields.io/github/actions/workflow/status/useplunk/plunk/docker-publish.yml"/>
-    <img src="https://img.shields.io/github/license/useplunk/plunk"/>
-    <img src="https://img.shields.io/github/stars/useplunk/plunk"/>
+    <a href="https://github.com/useplunk/plunk/graphs/contributors"><img src="https://img.shields.io/github/contributors/useplunk/plunk" alt="Contributors"/></a>
+    <a href="https://github.com/useplunk/plunk/actions"><img src="https://img.shields.io/github/actions/workflow/status/useplunk/plunk/docker-publish.yml" alt="Build Status"/></a>
+    <a href="https://github.com/useplunk/plunk/blob/next/LICENSE"><img src="https://img.shields.io/github/license/useplunk/plunk" alt="License"/></a>
+    <a href="https://github.com/useplunk/plunk/stargazers"><img src="https://img.shields.io/github/stars/useplunk/plunk" alt="Stars"/></a>
+    <a href="https://github.com/useplunk/plunk/issues"><img src="https://img.shields.io/github/issues/useplunk/plunk" alt="Issues"/></a>
+    <a href="https://github.com/useplunk/plunk/network/members"><img src="https://img.shields.io/github/forks/useplunk/plunk" alt="Forks"/></a>
+    <a href="https://github.com/useplunk/plunk/pkgs/container/plunk"><img src="https://img.shields.io/badge/docker-available-blue?logo=docker" alt="Docker"/></a>
+    <a href="https://github.com/sponsors/driaug"><img src="https://img.shields.io/badge/sponsor-❤-ff69b4" alt="Sponsor"/></a>
 </p>
 
 ## Introduction
@@ -47,7 +51,7 @@ the [documentation](https://next-wiki.useplunk.com/self-hosting/introduction).
 You are welcome to contribute to Plunk. You can find a guide on how to contribute in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 <a href="https://github.com/useplunk/plunk/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=useplunk/plunk" />
+  <img src="https://contrib.rocks/image?repo=useplunk/plunk" alt="Contributors" />
 </a>
 
 ## License
