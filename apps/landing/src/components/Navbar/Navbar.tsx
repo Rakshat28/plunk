@@ -12,7 +12,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <nav className={'top-0 z-40 mx-auto max-w-7xl px-8 xl:px-0'}>
+    <nav className={'relative top-0 z-40 mx-auto max-w-7xl px-8 xl:px-0'}>
       <div className={'z-40 py-6'}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-12">
