@@ -1,6 +1,6 @@
 import {Footer, Navbar} from '../';
 import {motion} from 'framer-motion';
-import React, {ReactNode, useEffect, useState} from 'react';
+import React, {ReactNode, useLayoutEffect, useState} from 'react';
 import Link from 'next/link';
 import {ArticleJsonLd, BreadcrumbJsonLd, NextSeo} from 'next-seo';
 import {Calendar, Clock} from 'lucide-react';
@@ -31,7 +31,7 @@ export function GuideLayout({
   const [activeId, setActiveId] = useState<string>('');
 
   // Extract headings for table of contents
-  useEffect(() => {
+  useLayoutEffect(() => {
     const elements = Array.from(document.querySelectorAll('h2, h3'));
 
     // Generate IDs for headings that don't have them
@@ -51,6 +51,8 @@ export function GuideLayout({
         level: parseInt(element.tagName.substring(1)),
       };
     });
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHeadings(headingData);
 
     // Set up intersection observer for active heading
@@ -68,7 +70,7 @@ export function GuideLayout({
     elements.forEach(element => observer.observe(element));
 
     return () => observer.disconnect();
-  }, [children]);
+  }, []);
 
   // Generate breadcrumb items
   const breadcrumbItems = [
@@ -172,9 +174,7 @@ export function GuideLayout({
           {headings.length > 0 && (
             <aside className={'hidden lg:block w-64 shrink-0 sticky top-24 self-start'}>
               <div className={'rounded-xl border border-neutral-200 bg-white p-6 shadow-sm'}>
-                <h2 className={'text-sm font-semibold text-neutral-900 mb-4 uppercase tracking-wide'}>
-                  On this page
-                </h2>
+                <h2 className={'text-sm font-semibold text-neutral-900 mb-4 uppercase tracking-wide'}>On this page</h2>
                 <nav>
                   <ul className={'space-y-1'}>
                     {headings.map(heading => (
