@@ -416,6 +416,10 @@ export const requireEmailVerified = async (req: Request, res: Response, next: Ne
   try {
     const auth = res.locals.auth as AuthResponse;
 
+    if (auth.type === 'apiKey') {
+      return next();
+    }
+
     if (!auth.userId) {
       throw new NotAuthenticated();
     }
