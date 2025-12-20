@@ -91,9 +91,9 @@ export default function PostmarkComparison() {
             </div>
 
             <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
-              Postmark alternative
+              Open-source alternative
               <br />
-              with marketing built-in
+              for Postmark
             </h1>
 
             <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>

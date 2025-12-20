@@ -94,7 +94,7 @@ export default function BrevoComparison() {
             </div>
 
             <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
-              Developer-first alternative
+              Open-source alternative
               <br />
               for Brevo
             </h1>
