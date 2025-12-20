@@ -7,11 +7,12 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from '@plunk/ui';
 import {AlertCircle, Mail, Send, TrendingUp, Users} from 'lucide-react';
 import {NextSeo} from 'next-seo';
 import Link from 'next/link';
+import {useState} from 'react';
 import {ApiKeyDisplay} from '../components/ApiKeyDisplay';
 import {DashboardLayout} from '../components/DashboardLayout';
 import {QuickStart} from '../components/QuickStart';
@@ -21,6 +22,8 @@ import {useDashboardStats} from '../lib/hooks/useDashboardStats';
 import {useProjectSetupState} from '../lib/hooks/useProjectSetupState';
 import {useProjectSecurity} from '../lib/hooks/useProjectSecurity';
 import {useConfig} from '../lib/hooks/useConfig';
+import {useUser} from '../lib/hooks/useUser';
+import {network} from '../lib/network';
 
 export default function Index() {
   const {activeProject} = useActiveProject();
@@ -28,6 +31,9 @@ export default function Index() {
   const {setupState, isLoading: isLoadingSetupState} = useProjectSetupState(activeProject?.id);
   const {securityMetrics} = useProjectSecurity(activeProject?.id);
   const {data: config} = useConfig();
+  const {data: user} = useUser();
+  const [isResending, setIsResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string>('');
 
   const stats = [
     {
@@ -52,6 +58,24 @@ export default function Index() {
     },
   ];
 
+  async function handleResendVerification() {
+    setIsResending(true);
+    setResendMessage('');
+    try {
+      const response = await network.fetch<{success: boolean}>('POST', '/auth/request-verification');
+
+      if (response.success) {
+        setResendMessage('Verification email sent! Please check your inbox.');
+      } else {
+        setResendMessage('Failed to send verification email. Please try again.');
+      }
+    } catch {
+      setResendMessage('Failed to send verification email. Please try again.');
+    } finally {
+      setIsResending(false);
+    }
+  }
+
   return (
     <>
       <NextSeo title="Dashboard" />
@@ -67,6 +91,34 @@ export default function Index() {
                 scheduled campaigns and workflows have been cancelled. The project is now in read-only mode - you can
                 view your data but cannot create, update, or delete anything. Please contact support to resolve this
                 issue.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Email Verification Banner */}
+          {user && user.type === 'PASSWORD' && !user.emailVerified && (
+            <Alert variant="warning">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Verify your email address</AlertTitle>
+              <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <span className="text-sm">
+                  Please verify your email address to unlock all features. Check your inbox for the verification link.
+                </span>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    size="sm"
+                    className="w-full sm:w-auto"
+                    onClick={handleResendVerification}
+                    disabled={isResending}
+                  >
+                    {isResending ? 'Sending...' : 'Resend verification email'}
+                  </Button>
+                  {resendMessage && (
+                    <p className={`text-xs ${resendMessage.includes('sent') ? 'text-green-600' : 'text-red-500'}`}>
+                      {resendMessage}
+                    </p>
+                  )}
+                </div>
               </AlertDescription>
             </Alert>
           )}

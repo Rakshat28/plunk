@@ -2,7 +2,7 @@ import {Controller, Delete, Get, Middleware, Patch, Post} from '@overnightjs/cor
 import type {NextFunction, Request, Response} from 'express';
 
 import type {AuthResponse} from '../middleware/auth.js';
-import {requireAuth} from '../middleware/auth.js';
+import {requireAuth, requireEmailVerified} from '../middleware/auth.js';
 import {SegmentService} from '../services/SegmentService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
 
@@ -13,7 +13,7 @@ export class Segments {
    * List all segments for the authenticated project
    */
   @Get('')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async list(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -28,7 +28,7 @@ export class Segments {
    * Get a specific segment by ID with member count
    */
   @Get(':id')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async get(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -48,7 +48,7 @@ export class Segments {
    * Get contacts that match a segment's filters
    */
   @Get(':id/contacts')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getContacts(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -70,7 +70,7 @@ export class Segments {
    * Create a new segment
    */
   @Post('')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async create(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -99,7 +99,7 @@ export class Segments {
    * Update a segment
    */
   @Patch(':id')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async update(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -129,7 +129,7 @@ export class Segments {
    * Delete a segment
    */
   @Delete(':id')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async delete(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -149,7 +149,7 @@ export class Segments {
    * Recompute segment membership for all contacts
    */
   @Post(':id/compute')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async compute(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -169,7 +169,7 @@ export class Segments {
    * Refresh segment member count
    */
   @Post(':id/refresh')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async refresh(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;

@@ -2,7 +2,7 @@ import {Controller, Get, Middleware} from '@overnightjs/core';
 import type {NextFunction, Request, Response} from 'express';
 
 import type {AuthResponse} from '../middleware/auth.js';
-import {requireAuth} from '../middleware/auth.js';
+import {requireAuth, requireEmailVerified} from '../middleware/auth.js';
 import {AnalyticsService} from '../services/AnalyticsService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
 
@@ -19,7 +19,7 @@ export class Analytics {
    * Returns daily aggregated email metrics (sent, opened, clicked, bounced, delivered)
    */
   @Get('timeseries')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getTimeSeries(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -41,7 +41,7 @@ export class Analytics {
    * - endDate: ISO date string (defaults to now)
    */
   @Get('top-campaigns')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getTopCampaigns(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -65,7 +65,7 @@ export class Analytics {
    * Returns aggregate stats: total campaigns, active, completed, average rates
    */
   @Get('campaign-stats')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getCampaignStats(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -89,7 +89,7 @@ export class Analytics {
    * Returns events sorted by frequency with trend data
    */
   @Get('top-events')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getTopEvents(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;

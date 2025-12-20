@@ -5,7 +5,7 @@ import type {NextFunction, Request, Response} from 'express';
 
 import {HttpException} from '../exceptions/index.js';
 import type {AuthResponse} from '../middleware/auth.js';
-import {requireAuth} from '../middleware/auth.js';
+import {requireAuth, requireEmailVerified} from '../middleware/auth.js';
 import {CampaignService} from '../services/CampaignService.js';
 import {DomainService} from '../services/DomainService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
@@ -17,7 +17,7 @@ export class Campaigns {
    * POST /campaigns
    */
   @Post('')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async create(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -60,7 +60,7 @@ export class Campaigns {
    * GET /campaigns
    */
   @Get('')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async list(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -93,7 +93,7 @@ export class Campaigns {
    * GET /campaigns/:id
    */
   @Get(':id')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async get(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -112,7 +112,7 @@ export class Campaigns {
    * PUT /campaigns/:id
    */
   @Put(':id')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async update(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -158,7 +158,7 @@ export class Campaigns {
    * DELETE /campaigns/:id
    */
   @Delete(':id')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async delete(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -177,7 +177,7 @@ export class Campaigns {
    * POST /campaigns/:id/duplicate
    */
   @Post(':id/duplicate')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async duplicate(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -197,7 +197,7 @@ export class Campaigns {
    * POST /campaigns/:id/send
    */
   @Post(':id/send')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async send(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -228,7 +228,7 @@ export class Campaigns {
    * POST /campaigns/:id/cancel
    */
   @Post(':id/cancel')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async cancel(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -248,7 +248,7 @@ export class Campaigns {
    * GET /campaigns/:id/stats
    */
   @Get(':id/stats')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async stats(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -267,7 +267,7 @@ export class Campaigns {
    * POST /campaigns/:id/test
    */
   @Post(':id/test')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async sendTest(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;

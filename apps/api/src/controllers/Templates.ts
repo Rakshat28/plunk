@@ -3,7 +3,7 @@ import {TemplateType} from '@plunk/db';
 import type {NextFunction, Request, Response} from 'express';
 
 import type {AuthResponse} from '../middleware/auth.js';
-import {requireAuth} from '../middleware/auth.js';
+import {requireAuth, requireEmailVerified} from '../middleware/auth.js';
 import {DomainService} from '../services/DomainService.js';
 import {TemplateService} from '../services/TemplateService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
@@ -15,7 +15,7 @@ export class Templates {
    * List all templates for the authenticated project
    */
   @Get('')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async list(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -34,7 +34,7 @@ export class Templates {
    * Get a specific template by ID
    */
   @Get(':id')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async get(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -54,7 +54,7 @@ export class Templates {
    * Create a new template
    */
   @Post('')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async create(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -98,7 +98,7 @@ export class Templates {
    * Update a template
    */
   @Patch(':id')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async update(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -133,7 +133,7 @@ export class Templates {
    * Delete a template
    */
   @Delete(':id')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async delete(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -153,7 +153,7 @@ export class Templates {
    * Duplicate a template
    */
   @Post(':id/duplicate')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async duplicate(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -173,7 +173,7 @@ export class Templates {
    * Get template usage statistics
    */
   @Get(':id/usage')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getUsage(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;

@@ -57,6 +57,15 @@ export class network {
     const res = (await response.json()) as ApiResponse;
 
     if (response.status >= 400) {
+      // Check if this is an email verification required error
+      if (res.error?.code === 'EMAIL_VERIFICATION_REQUIRED') {
+        // Redirect to verification page
+        if (typeof window !== 'undefined' && !window.location.href.includes('/auth/verify-email')) {
+          window.location.href = '/auth/verify-email';
+        }
+        throw new Error(res.error.message ?? 'Please verify your email address to continue');
+      }
+
       // Extract error message from standardized error response or fall back to direct message property
       const errorMessage = res.error?.message ?? res.message ?? 'Something went wrong!';
       throw new Error(errorMessage);
@@ -91,6 +100,15 @@ export class network {
     const res = (await response.json()) as ApiResponse;
 
     if (response.status >= 400) {
+      // Check if this is an email verification required error
+      if (res.error?.code === 'EMAIL_VERIFICATION_REQUIRED') {
+        // Redirect to verification page
+        if (typeof window !== 'undefined') {
+          window.location.href = '/auth/verify-email';
+        }
+        throw new Error(res.error.message ?? 'Please verify your email address to continue');
+      }
+
       // Extract error message from standardized error response or fall back to direct message property
       const errorMessage = res.error?.message ?? res.message ?? 'Something went wrong!';
       throw new Error(errorMessage);

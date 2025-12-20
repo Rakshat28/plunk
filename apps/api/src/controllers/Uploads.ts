@@ -4,7 +4,7 @@ import multer from 'multer';
 import signale from 'signale';
 
 import type {AuthResponse} from '../middleware/auth.js';
-import {requireAuth} from '../middleware/auth.js';
+import {requireAuth, requireEmailVerified} from '../middleware/auth.js';
 import * as S3Service from '../services/S3Service.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
 
@@ -33,7 +33,7 @@ export class Uploads {
    * Upload an image file to S3/Minio
    */
   @Post('image')
-  @Middleware([requireAuth, upload.single('image')])
+  @Middleware([requireAuth, requireEmailVerified, upload.single('image')])
   @CatchAsync
   public async uploadImage(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;

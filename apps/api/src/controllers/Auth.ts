@@ -1,11 +1,25 @@
 import {Controller, Get, Post} from '@overnightjs/core';
 import {AuthenticationSchemas} from '@plunk/shared';
+import {EmailVerificationEmail, PasswordResetEmail, sendPlatformEmail} from '@plunk/email';
+import {randomBytes} from 'node:crypto';
 import type {NextFunction, Request, Response} from 'express';
+import * as React from 'react';
 
-import {GITHUB_OAUTH_ENABLED, GOOGLE_OAUTH_ENABLED} from '../app/constants.js';
+import {
+  DASHBOARD_URI,
+  EMAIL_VERIFICATION_RATE_LIMIT,
+  EMAIL_VERIFICATION_RATE_WINDOW,
+  GITHUB_OAUTH_ENABLED,
+  GOOGLE_OAUTH_ENABLED,
+  LANDING_URI,
+  PASSWORD_RESET_RATE_LIMIT,
+  PLUNK_ENABLED,
+  TOKEN_EXPIRY_SECONDS,
+} from '../app/constants.js';
 import {prisma} from '../database/prisma.js';
 import {redis, REDIS_ONE_MINUTE} from '../database/redis.js';
-import {jwt} from '../middleware/auth.js';
+import {BadRequest, NotAuthenticated, RateLimitError} from '../exceptions/index.js';
+import {jwt, parseJwt} from '../middleware/auth.js';
 import {AuthService} from '../services/AuthService.js';
 import {NtfyService} from '../services/NtfyService.js';
 import {UserService} from '../services/UserService.js';
@@ -64,6 +78,8 @@ export class Auth {
         email,
         password: await AuthService.generateHash(password),
         type: 'PASSWORD',
+        // Auto-verify email if platform emails are disabled
+        emailVerified: !PLUNK_ENABLED,
       },
     });
 
@@ -71,6 +87,27 @@ export class Auth {
 
     // Send notification about new user signup
     await NtfyService.notifyUserSignup(created_user.email, created_user.id);
+
+    // Send email verification if platform emails are enabled
+    if (PLUNK_ENABLED) {
+      const verificationToken = randomBytes(32).toString('hex');
+      await redis.setex(
+        Keys.User.emailVerificationToken(verificationToken),
+        TOKEN_EXPIRY_SECONDS,
+        JSON.stringify({userId: created_user.id, email: created_user.email, createdAt: Date.now()}),
+      );
+
+      const verificationUrl = `${LANDING_URI}/auth/verify-email?token=${verificationToken}`;
+      await sendPlatformEmail(
+        created_user.email,
+        'Verify your email address',
+        React.createElement(EmailVerificationEmail, {
+          email: created_user.email,
+          verificationUrl,
+          landingUrl: LANDING_URI,
+        }),
+      );
+    }
 
     const token = jwt.sign(created_user.id);
     const cookie = UserService.cookieOptions();
@@ -96,5 +133,160 @@ export class Auth {
         google: GOOGLE_OAUTH_ENABLED,
       },
     });
+  }
+
+  @Post('verify-email')
+  @CatchAsync
+  public async verifyEmail(req: Request, res: Response, _next: NextFunction) {
+    const {token} = AuthenticationSchemas.verifyEmail.parse(req.body);
+
+    // Look up token in Redis
+    const data = await redis.get(Keys.User.emailVerificationToken(token));
+
+    if (!data) {
+      throw new BadRequest('Invalid or expired verification token');
+    }
+
+    const {userId} = JSON.parse(data);
+
+    // Update user
+    await prisma.user.update({
+      where: {id: userId},
+      data: {emailVerified: true},
+    });
+
+    // Delete token (single use) and invalidate cache
+    await redis.del(Keys.User.emailVerificationToken(token));
+    await redis.del(Keys.User.id(userId));
+
+    return res.json({success: true, data: {message: 'Email verified successfully'}});
+  }
+
+  @Post('request-verification')
+  @CatchAsync
+  public async requestVerification(req: Request, res: Response, _next: NextFunction) {
+    const userId = parseJwt(req);
+    const user = await UserService.id(userId);
+
+    if (!user) {
+      throw new NotAuthenticated();
+    }
+
+    if (user.emailVerified) {
+      return res.json({success: true, data: {message: 'Email already verified'}});
+    }
+
+    // Check rate limit
+    const rateLimitKey = Keys.User.emailVerificationRateLimit(userId);
+    const count = await redis.get(rateLimitKey);
+
+    if (count && parseInt(count) >= EMAIL_VERIFICATION_RATE_LIMIT) {
+      throw new RateLimitError('Too many verification emails sent. Please try again later.');
+    }
+
+    // Generate token
+    const token = randomBytes(32).toString('hex');
+    await redis.setex(
+      Keys.User.emailVerificationToken(token),
+      TOKEN_EXPIRY_SECONDS,
+      JSON.stringify({userId, email: user.email, createdAt: Date.now()}),
+    );
+
+    // Send email
+    const verificationUrl = `${LANDING_URI}/auth/verify-email?token=${token}`;
+    await sendPlatformEmail(
+      user.email,
+      'Verify your email address',
+      React.createElement(EmailVerificationEmail, {email: user.email, verificationUrl, landingUrl: LANDING_URI}),
+    );
+
+    // Increment rate limit
+    if (count) {
+      await redis.incr(rateLimitKey);
+    } else {
+      await redis.setex(rateLimitKey, EMAIL_VERIFICATION_RATE_WINDOW, '1');
+    }
+
+    return res.json({success: true, data: {message: 'Verification email sent'}});
+  }
+
+  @Post('request-password-reset')
+  @CatchAsync
+  public async requestPasswordReset(req: Request, res: Response, _next: NextFunction) {
+    const {email} = AuthenticationSchemas.requestPasswordReset.parse(req.body);
+
+    // Check rate limit
+    const rateLimitKey = Keys.User.passwordResetRateLimit(email);
+    const count = await redis.get(rateLimitKey);
+
+    if (count && parseInt(count) >= PASSWORD_RESET_RATE_LIMIT) {
+      // Still return success to prevent enumeration
+      return res.json({success: true, data: {message: 'If that email exists, a reset link has been sent'}});
+    }
+
+    // Look up user
+    const user = await UserService.email(email);
+
+    // Only send email if user exists and is PASSWORD type
+    if (user && user.type === 'PASSWORD') {
+      const token = randomBytes(32).toString('hex');
+      await redis.setex(
+        Keys.User.passwordResetToken(token),
+        TOKEN_EXPIRY_SECONDS,
+        JSON.stringify({userId: user.id, email: user.email, createdAt: Date.now()}),
+      );
+
+      const resetUrl = `${DASHBOARD_URI}/auth/reset-password?token=${token}`;
+      await sendPlatformEmail(
+        user.email,
+        'Reset your password',
+        React.createElement(PasswordResetEmail, {email: user.email, resetUrl, landingUrl: LANDING_URI}),
+      );
+
+      // Increment rate limit
+      if (count) {
+        await redis.incr(rateLimitKey);
+      } else {
+        await redis.setex(rateLimitKey, EMAIL_VERIFICATION_RATE_WINDOW, '1');
+      }
+    }
+
+    // Always return success (prevent enumeration)
+    return res.json({success: true, data: {message: 'If that email exists, a reset link has been sent'}});
+  }
+
+  @Post('reset-password')
+  @CatchAsync
+  public async resetPassword(req: Request, res: Response, _next: NextFunction) {
+    const {token, newPassword} = AuthenticationSchemas.resetPassword.parse(req.body);
+
+    // Look up token
+    const data = await redis.get(Keys.User.passwordResetToken(token));
+
+    if (!data) {
+      throw new BadRequest('Invalid or expired reset token');
+    }
+
+    const {userId} = JSON.parse(data);
+
+    // Get user and verify type
+    const user = await prisma.user.findUnique({where: {id: userId}});
+
+    if (!user || user.type !== 'PASSWORD') {
+      throw new BadRequest('Invalid reset token');
+    }
+
+    // Hash new password and update
+    const hashedPassword = await AuthService.generateHash(newPassword);
+    await prisma.user.update({
+      where: {id: userId},
+      data: {password: hashedPassword},
+    });
+
+    // Delete token and invalidate cache
+    await redis.del(Keys.User.passwordResetToken(token));
+    await redis.del(Keys.User.id(userId));
+
+    return res.json({success: true, data: {message: 'Password reset successfully'}});
   }
 }

@@ -75,6 +75,7 @@ export class Google {
         data: {
           email,
           type: 'GOOGLE_OAUTH',
+          emailVerified: true,
         },
       });
       isNewUser = true;

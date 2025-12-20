@@ -9,7 +9,7 @@ import {stripe} from '../app/stripe.js';
 import {prisma} from '../database/prisma.js';
 import {ErrorCode, HttpException, NotAuthenticated, NotFound} from '../exceptions/index.js';
 import type {AuthResponse} from '../middleware/auth.js';
-import {isAuthenticated} from '../middleware/auth.js';
+import {isAuthenticated, requireEmailVerified} from '../middleware/auth.js';
 import {BillingLimitService} from '../services/BillingLimitService.js';
 import {NtfyService} from '../services/NtfyService.js';
 import {SecurityService} from '../services/SecurityService.js';
@@ -20,7 +20,7 @@ import signale from 'signale';
 @Controller('users')
 export class Users {
   @Get('@me')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async me(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -39,7 +39,7 @@ export class Users {
   }
 
   @Get('@me/projects')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async meProjects(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -54,7 +54,7 @@ export class Users {
   }
 
   @Post('@me/projects')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async createProject(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -101,7 +101,7 @@ export class Users {
   }
 
   @Patch('@me/projects/:id')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async updateProject(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -133,7 +133,7 @@ export class Users {
   }
 
   @Post('@me/projects/:id/regenerate-keys')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async regenerateProjectKeys(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -185,7 +185,7 @@ export class Users {
   }
 
   @Post('@me/projects/:id/checkout')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async createCheckoutSession(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -264,7 +264,7 @@ export class Users {
   }
 
   @Post('@me/projects/:id/billing-portal')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async createBillingPortalSession(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -314,7 +314,7 @@ export class Users {
   }
 
   @Get('@me/projects/:id/billing-limits')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async getBillingLimits(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -347,7 +347,7 @@ export class Users {
   }
 
   @Put('@me/projects/:id/billing-limits')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async updateBillingLimits(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -426,7 +426,7 @@ export class Users {
   }
 
   @Get('@me/projects/:id/billing-consumption')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async getBillingConsumption(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -552,7 +552,7 @@ export class Users {
   }
 
   @Get('@me/projects/:id/billing-invoices')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async getBillingInvoices(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -640,7 +640,7 @@ export class Users {
   }
 
   @Get('@me/projects/:id/security')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async getSecurityHealth(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -673,7 +673,7 @@ export class Users {
   }
 
   @Post('@me/projects/:id/reset')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async resetProject(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -759,7 +759,7 @@ export class Users {
   }
 
   @Delete('@me/projects/:id')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async deleteProject(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;

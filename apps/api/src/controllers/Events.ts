@@ -3,7 +3,7 @@ import type {NextFunction, Request, Response} from 'express';
 import signale from 'signale';
 
 import type {AuthResponse} from '../middleware/auth.js';
-import {requireAuth} from '../middleware/auth.js';
+import {requireAuth, requireEmailVerified} from '../middleware/auth.js';
 import {EventService} from '../services/EventService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
 
@@ -14,7 +14,7 @@ export class Events {
    * Track a custom event (can trigger workflows)
    */
   @Post('track')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async track(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -34,7 +34,7 @@ export class Events {
    * List events for the project
    */
   @Get('')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async list(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -51,7 +51,7 @@ export class Events {
    * Get event statistics
    */
   @Get('stats')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async stats(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -68,7 +68,7 @@ export class Events {
    * Get events for a specific contact
    */
   @Get('contact/:contactId')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getContactEvents(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -89,7 +89,7 @@ export class Events {
    * Get unique event names for the project
    */
   @Get('names')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getEventNames(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -105,7 +105,7 @@ export class Events {
    * Returns information about where the event is used and whether it can be safely deleted
    */
   @Get(':eventName/usage')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getEventUsage(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -132,7 +132,7 @@ export class Events {
    * Only works if the event is not used in any segments or workflows
    */
   @Delete(':eventName')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async deleteEvent(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;

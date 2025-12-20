@@ -404,3 +404,47 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
     next(error);
   }
 };
+
+/**
+ * Middleware to require email verification
+ * Must be used AFTER isAuthenticated or requireProjectAccess
+ * @param req
+ * @param res
+ * @param next
+ */
+export const requireEmailVerified = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const auth = res.locals.auth as AuthResponse;
+
+    if (!auth.userId) {
+      throw new NotAuthenticated();
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {id: auth.userId},
+      select: {emailVerified: true, type: true},
+    });
+
+    if (!user) {
+      throw new NotAuthenticated();
+    }
+
+    // OAuth users are always considered verified
+    if (user.type !== 'PASSWORD') {
+      return next();
+    }
+
+    // PASSWORD users must verify email
+    if (!user.emailVerified) {
+      throw new HttpException(
+        403,
+        'Please verify your email address to access this resource',
+        ErrorCode.EMAIL_VERIFICATION_REQUIRED,
+      );
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};

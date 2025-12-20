@@ -86,9 +86,9 @@ export default function Login() {
     setResetStatus('loading');
     setResetError(null);
     try {
-      const response = await network.fetch<{success: boolean}, typeof AuthenticationSchemas.resetPassword>(
+      const response = await network.fetch<{success: boolean}, typeof AuthenticationSchemas.requestPasswordReset>(
         'POST',
-        '/users/reset-password',
+        '/auth/request-password-reset',
         {
           email: resetEmail,
         },

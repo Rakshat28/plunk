@@ -85,6 +85,7 @@ export class Github {
         data: {
           email,
           type: 'GITHUB_OAUTH',
+          emailVerified: true,
         },
       });
       isNewUser = true;

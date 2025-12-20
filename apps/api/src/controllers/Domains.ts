@@ -5,7 +5,7 @@ import type {NextFunction, Request, Response} from 'express';
 import {redis} from '../database/redis.js';
 import {NotFound} from '../exceptions/index.js';
 import type {AuthResponse} from '../middleware/auth.js';
-import {isAuthenticated} from '../middleware/auth.js';
+import {isAuthenticated, requireEmailVerified} from '../middleware/auth.js';
 import {DomainService} from '../services/DomainService.js';
 import {Keys} from '../services/keys.js';
 import {prisma} from '../database/prisma.js';
@@ -17,7 +17,7 @@ export class Domains {
    * Get all domains for a project
    */
   @Get('project/:projectId')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async getProjectDomains(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -44,7 +44,7 @@ export class Domains {
    * Add a new domain to a project
    */
   @Post('')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async addDomain(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -104,7 +104,7 @@ export class Domains {
    * Check verification status for a domain
    */
   @Get(':id/verify')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async checkVerification(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -141,7 +141,7 @@ export class Domains {
    * Remove a domain from a project
    */
   @Delete(':id')
-  @Middleware([isAuthenticated])
+  @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async removeDomain(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;

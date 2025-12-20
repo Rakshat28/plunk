@@ -2,7 +2,7 @@ import {Controller, Get, Middleware} from '@overnightjs/core';
 import type {NextFunction, Request, Response} from 'express';
 
 import type {AuthResponse} from '../middleware/auth.js';
-import {requireAuth} from '../middleware/auth.js';
+import {requireAuth, requireEmailVerified} from '../middleware/auth.js';
 import {ActivityService, ActivityType} from '../services/ActivityService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
 
@@ -21,7 +21,7 @@ export class Activity {
    * - endDate: ISO date string
    */
   @Get('')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getActivities(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -62,7 +62,7 @@ export class Activity {
    * - endDate: ISO date string (defaults to now)
    */
   @Get('stats')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getStats(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -82,7 +82,7 @@ export class Activity {
    * - minutes: number (default 5)
    */
   @Get('recent-count')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getRecentCount(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -98,7 +98,7 @@ export class Activity {
    * Get available activity types (for UI filters)
    */
   @Get('types')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getTypes(_req: Request, res: Response, _next: NextFunction) {
     const types = Object.values(ActivityType);
@@ -114,7 +114,7 @@ export class Activity {
    * - daysAhead: number (default 30, max 90)
    */
   @Get('upcoming')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getUpcoming(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;

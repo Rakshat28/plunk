@@ -48,8 +48,15 @@ export const AuthenticationSchemas = {
     email,
     password: z.string().min(6),
   }),
-  resetPassword: z.object({
+  verifyEmail: z.object({
+    token: z.string().length(64, 'Invalid verification token'),
+  }),
+  requestPasswordReset: z.object({
     email,
+  }),
+  resetPassword: z.object({
+    token: z.string().length(64, 'Invalid reset token'),
+    newPassword: z.string().min(6, 'Password must be at least 6 characters'),
   }),
 } as const;
 

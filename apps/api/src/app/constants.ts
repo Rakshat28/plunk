@@ -103,3 +103,9 @@ export const PLUNK_ENABLED = PLUNK_API_KEY !== '' && PLUNK_FROM_ADDRESS !== '';
 // Controls whether projects are automatically disabled when bounce/complaint rate thresholds are exceeded
 // Useful for self-hosters who want to manage project status manually
 export const AUTO_PROJECT_DISABLE = validateEnv('AUTO_PROJECT_DISABLE', 'true') === 'true';
+
+// Email Verification & Password Reset
+export const TOKEN_EXPIRY_SECONDS = 3600; // 1 hour
+export const EMAIL_VERIFICATION_RATE_LIMIT = 3; // Max 3 emails per hour
+export const PASSWORD_RESET_RATE_LIMIT = 3; // Max 3 emails per hour
+export const EMAIL_VERIFICATION_RATE_WINDOW = 3600; // 1 hour in seconds

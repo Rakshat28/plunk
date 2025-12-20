@@ -4,7 +4,7 @@ import multer from 'multer';
 import signale from 'signale';
 
 import type {AuthResponse} from '../middleware/auth.js';
-import {requireAuth} from '../middleware/auth.js';
+import {requireAuth, requireEmailVerified} from '../middleware/auth.js';
 import {ContactService} from '../services/ContactService.js';
 import {QueueService} from '../services/QueueService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
@@ -32,7 +32,7 @@ export class Contacts {
    * List all contacts for the authenticated project with cursor-based pagination
    */
   @Get('')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async list(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -51,7 +51,7 @@ export class Contacts {
    * Returns field names with inferred types (string, number, boolean, date)
    */
   @Get('fields')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getAvailableFields(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -77,7 +77,7 @@ export class Contacts {
    * Example: /contacts/fields/data.plan/values or /contacts/fields/subscribed/values
    */
   @Get('fields/:field/values')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getFieldValues(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -110,7 +110,7 @@ export class Contacts {
    * Get a specific contact by ID
    */
   @Get(':id')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async get(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -130,7 +130,7 @@ export class Contacts {
    * Create or update a contact (upsert)
    */
   @Post('')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async create(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -160,7 +160,7 @@ export class Contacts {
    * Update a contact
    */
   @Patch(':id')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async update(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -181,7 +181,7 @@ export class Contacts {
    * Delete a contact
    */
   @Delete(':id')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async delete(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -301,7 +301,7 @@ export class Contacts {
    * Get import job status
    */
   @Get('import/:jobId')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getImportStatus(req: Request, res: Response, _next: NextFunction) {
     const jobId = req.params.jobId;
@@ -332,7 +332,7 @@ export class Contacts {
    * Returns information about where the field is used and whether it can be safely deleted
    */
   @Get('fields/:field/usage')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getFieldUsage(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -359,7 +359,7 @@ export class Contacts {
    * Only works if the field is not used in any segments or campaigns
    */
   @Delete('fields/:field')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async deleteField(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -385,7 +385,7 @@ export class Contacts {
    * Queue bulk subscribe operation
    */
   @Post('bulk-subscribe')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async bulkSubscribe(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -420,7 +420,7 @@ export class Contacts {
    * Queue bulk unsubscribe operation
    */
   @Post('bulk-unsubscribe')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async bulkUnsubscribe(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -454,7 +454,7 @@ export class Contacts {
    * Queue bulk delete operation
    */
   @Post('bulk-delete')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async bulkDelete(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
@@ -488,7 +488,7 @@ export class Contacts {
    * Get bulk action job status
    */
   @Get('bulk/:jobId')
-  @Middleware([requireAuth])
+  @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getBulkActionStatus(req: Request, res: Response, _next: NextFunction) {
     const jobId = req.params.jobId;

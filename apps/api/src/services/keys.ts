@@ -6,6 +6,18 @@ export const Keys = {
     email(email: string): string {
       return `account:${email}`;
     },
+    emailVerificationToken(token: string): string {
+      return `auth:email_verification:${token}`;
+    },
+    passwordResetToken(token: string): string {
+      return `auth:password_reset:${token}`;
+    },
+    emailVerificationRateLimit(userId: string): string {
+      return `auth:email_verification_rate:${userId}`;
+    },
+    passwordResetRateLimit(email: string): string {
+      return `auth:password_reset_rate:${email}`;
+    },
   },
   Domain: {
     id(id: string): string {
