@@ -183,7 +183,7 @@ export default function EmailSenderReputation() {
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               1
             </div>
-            <div>
+            <div className="w-full max-w-full wrap-break-word">
               <h3 className="font-semibold text-neutral-900 mb-2">Warm Up New IPs and Domains</h3>
               <p className="text-neutral-700 mb-3">
                 Gradually increase sending volume over 4-8 weeks. Start with your most engaged subscribers.
@@ -210,7 +210,7 @@ Adjust based on engagement and bounce rates.`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               2
             </div>
-            <div>
+            <div className="w-full max-w-full wrap-break-word">
               <h3 className="font-semibold text-neutral-900 mb-2">Start with Highly Engaged Subscribers</h3>
               <p className="text-neutral-700">
                 During warm-up, send only to subscribers who recently opened or clicked. High engagement in early sends
@@ -223,7 +223,7 @@ Adjust based on engagement and bounce rates.`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               3
             </div>
-            <div>
+            <div className="w-full max-w-full wrap-break-word">
               <h3 className="font-semibold text-neutral-900 mb-2">Implement Full Authentication</h3>
               <p className="text-neutral-700">
                 Set up SPF, DKIM, and DMARC before sending. Proper authentication is table stakes for building
@@ -236,7 +236,7 @@ Adjust based on engagement and bounce rates.`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               4
             </div>
-            <div>
+            <div className="w-full max-w-full wrap-break-word">
               <h3 className="font-semibold text-neutral-900 mb-2">Maintain Consistent Sending</h3>
               <p className="text-neutral-700">
                 Send regularly (daily or weekly) rather than sporadic blasts. Consistency builds trust with email
@@ -249,7 +249,7 @@ Adjust based on engagement and bounce rates.`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               5
             </div>
-            <div>
+            <div className="w-full max-w-full wrap-break-word">
               <h3 className="font-semibold text-neutral-900 mb-2">Use Double Opt-In</h3>
               <p className="text-neutral-700">
                 Require email confirmation before adding subscribers. This ensures list quality and prevents spam trap
@@ -262,7 +262,7 @@ Adjust based on engagement and bounce rates.`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               6
             </div>
-            <div>
+            <div className="w-full max-w-full wrap-break-word">
               <h3 className="font-semibold text-neutral-900 mb-2">Monitor Metrics Closely</h3>
               <p className="text-neutral-700">
                 Track bounce rate, spam complaints, and engagement during warm-up. If metrics degrade, slow down volume
@@ -275,7 +275,7 @@ Adjust based on engagement and bounce rates.`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               7
             </div>
-            <div>
+            <div className="w-full max-w-full wrap-break-word">
               <h3 className="font-semibold text-neutral-900 mb-2">Provide Immediate Value</h3>
               <p className="text-neutral-700">
                 Your first emails set the tone. Deliver on promises made during signup. High engagement on early emails
@@ -289,9 +289,7 @@ Adjust based on engagement and bounce rates.`}
       {/* Maintaining Reputation */}
       <section id="maintaining" className="mb-12">
         <h2 className="text-3xl font-bold text-neutral-900 mb-6">Maintaining Good Sender Reputation</h2>
-        <p className="text-neutral-700 leading-relaxed mb-6">
-          Once built, reputation requires ongoing attention:
-        </p>
+        <p className="text-neutral-700 leading-relaxed mb-6">Once built, reputation requires ongoing attention:</p>
 
         <div className="space-y-6">
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
@@ -367,7 +365,7 @@ Adjust based on engagement and bounce rates.`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-600 text-white text-sm font-bold">
               1
             </div>
-            <div>
+            <div className="w-full max-w-full wrap-break-word">
               <h3 className="font-semibold text-amber-900 mb-2">Identify the Root Cause</h3>
               <p className="text-neutral-700">
                 Review recent campaigns for spam complaints, high bounces, poor engagement. Check if you're blacklisted.
@@ -380,7 +378,7 @@ Adjust based on engagement and bounce rates.`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-600 text-white text-sm font-bold">
               2
             </div>
-            <div>
+            <div className="w-full max-w-full wrap-break-word">
               <h3 className="font-semibold text-amber-900 mb-2">Clean Your List Aggressively</h3>
               <p className="text-neutral-700">
                 Remove all unengaged subscribers, bounced addresses, and anyone who hasn't opened in 6+ months. Yes,
@@ -393,7 +391,7 @@ Adjust based on engagement and bounce rates.`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-600 text-white text-sm font-bold">
               3
             </div>
-            <div>
+            <div className="w-full max-w-full wrap-break-word">
               <h3 className="font-semibold text-amber-900 mb-2">Reduce Volume Temporarily</h3>
               <p className="text-neutral-700">
                 Cut sending volume by 50-70% while you fix issues. Send only to highly engaged subscribers. Rebuild
@@ -406,7 +404,7 @@ Adjust based on engagement and bounce rates.`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-600 text-white text-sm font-bold">
               4
             </div>
-            <div>
+            <div className="w-full max-w-full wrap-break-word">
               <h3 className="font-semibold text-amber-900 mb-2">Request Blacklist Removal</h3>
               <p className="text-neutral-700">
                 If blacklisted, identify which lists, fix the underlying issues, then request delisting. Most blacklists
@@ -419,7 +417,7 @@ Adjust based on engagement and bounce rates.`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-600 text-white text-sm font-bold">
               5
             </div>
-            <div>
+            <div className="w-full max-w-full wrap-break-word">
               <h3 className="font-semibold text-amber-900 mb-2">Send Valuable, Engaging Content</h3>
               <p className="text-neutral-700">
                 Recovery requires proving you send emails people want. Focus on value, not promotions. High engagement
@@ -432,7 +430,7 @@ Adjust based on engagement and bounce rates.`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-600 text-white text-sm font-bold">
               6
             </div>
-            <div>
+            <div className="w-full max-w-full wrap-break-word">
               <h3 className="font-semibold text-amber-900 mb-2">Be Patient</h3>
               <p className="text-neutral-700">
                 Reputation recovery typically takes 4-12 weeks of consistently good behavior. Monitor metrics closely

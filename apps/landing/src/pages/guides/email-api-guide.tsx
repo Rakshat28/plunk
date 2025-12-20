@@ -36,27 +36,31 @@ export default function EmailAPIGuide() {
 
         <div className="grid gap-6 md:grid-cols-2 mb-8">
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-3">SMTP (Traditional)</h3>
-            <ul className="space-y-2 text-sm text-neutral-700">
-              <li>• Direct protocol for sending email</li>
-              <li>• Requires managing connections</li>
-              <li>• Manual error handling</li>
-              <li>• Limited delivery tracking</li>
-              <li>• More complex implementation</li>
-              <li>• Port 25, 587, or 465</li>
-            </ul>
+            <div className="w-full max-w-full wrap-break-word">
+              <h3 className="text-lg font-semibold text-neutral-900 mb-3">SMTP (Traditional)</h3>
+              <ul className="space-y-2 text-sm text-neutral-700">
+                <li>• Direct protocol for sending email</li>
+                <li>• Requires managing connections</li>
+                <li>• Manual error handling</li>
+                <li>• Limited delivery tracking</li>
+                <li>• More complex implementation</li>
+                <li>• Port 25, 587, or 465</li>
+              </ul>
+            </div>
           </div>
 
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-3">Email API (Modern)</h3>
-            <ul className="space-y-2 text-sm text-neutral-700">
-              <li>• HTTP-based RESTful interface</li>
-              <li>• No connection management needed</li>
-              <li>• Structured error responses</li>
-              <li>• Built-in tracking & analytics</li>
-              <li>• Simpler to implement</li>
-              <li>• Standard HTTP/HTTPS</li>
-            </ul>
+            <div className="w-full max-w-full wrap-break-word">
+              <h3 className="text-lg font-semibold text-neutral-900 mb-3">Email API (Modern)</h3>
+              <ul className="space-y-2 text-sm text-neutral-700">
+                <li>• HTTP-based RESTful interface</li>
+                <li>• No connection management needed</li>
+                <li>• Structured error responses</li>
+                <li>• Built-in tracking & analytics</li>
+                <li>• Simpler to implement</li>
+                <li>• Standard HTTP/HTTPS</li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -324,53 +328,61 @@ func main() {
 
         <div className="grid gap-6 md:grid-cols-2">
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-3">Sending Features</h3>
-            <ul className="space-y-2 text-sm text-neutral-700">
-              <li>• Send individual or batch emails</li>
-              <li>• HTML and plain text support</li>
-              <li>• Attachments</li>
-              <li>• CC, BCC recipients</li>
-              <li>• Custom headers</li>
-              <li>• Template rendering</li>
-              <li>• Scheduled sending</li>
-            </ul>
+            <div className="w-full max-w-full wrap-break-word">
+              <h3 className="text-lg font-semibold text-neutral-900 mb-3">Sending Features</h3>
+              <ul className="space-y-2 text-sm text-neutral-700">
+                <li>• Send individual or batch emails</li>
+                <li>• HTML and plain text support</li>
+                <li>• Attachments</li>
+                <li>• CC, BCC recipients</li>
+                <li>• Custom headers</li>
+                <li>• Template rendering</li>
+                <li>• Scheduled sending</li>
+              </ul>
+            </div>
           </div>
 
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-3">Tracking & Analytics</h3>
-            <ul className="space-y-2 text-sm text-neutral-700">
-              <li>• Delivery status tracking</li>
-              <li>• Open tracking</li>
-              <li>• Click tracking</li>
-              <li>• Bounce detection</li>
-              <li>• Spam complaint monitoring</li>
-              <li>• Unsubscribe management</li>
-              <li>• Real-time analytics</li>
-            </ul>
+            <div className="w-full max-w-full wrap-break-word">
+              <h3 className="text-lg font-semibold text-neutral-900 mb-3">Tracking & Analytics</h3>
+              <ul className="space-y-2 text-sm text-neutral-700">
+                <li>• Delivery status tracking</li>
+                <li>• Open tracking</li>
+                <li>• Click tracking</li>
+                <li>• Bounce detection</li>
+                <li>• Spam complaint monitoring</li>
+                <li>• Unsubscribe management</li>
+                <li>• Real-time analytics</li>
+              </ul>
+            </div>
           </div>
 
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-3">Webhooks & Events</h3>
-            <ul className="space-y-2 text-sm text-neutral-700">
-              <li>• Delivery notifications</li>
-              <li>• Bounce notifications</li>
-              <li>• Spam complaint alerts</li>
-              <li>• Unsubscribe events</li>
-              <li>• Open and click events</li>
-              <li>• Custom event triggers</li>
-            </ul>
+            <div className="w-full max-w-full wrap-break-word">
+              <h3 className="text-lg font-semibold text-neutral-900 mb-3">Webhooks & Events</h3>
+              <ul className="space-y-2 text-sm text-neutral-700">
+                <li>• Delivery notifications</li>
+                <li>• Bounce notifications</li>
+                <li>• Spam complaint alerts</li>
+                <li>• Unsubscribe events</li>
+                <li>• Open and click events</li>
+                <li>• Custom event triggers</li>
+              </ul>
+            </div>
           </div>
 
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-3">Management Features</h3>
-            <ul className="space-y-2 text-sm text-neutral-700">
-              <li>• Suppression list management</li>
-              <li>• Contact management</li>
-              <li>• Domain verification</li>
-              <li>• Template management</li>
-              <li>• API key management</li>
-              <li>• Rate limiting</li>
-            </ul>
+            <div className="w-full max-w-full wrap-break-word">
+              <h3 className="text-lg font-semibold text-neutral-900 mb-3">Management Features</h3>
+              <ul className="space-y-2 text-sm text-neutral-700">
+                <li>• Suppression list management</li>
+                <li>• Contact management</li>
+                <li>• Domain verification</li>
+                <li>• Template management</li>
+                <li>• API key management</li>
+                <li>• Rate limiting</li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -581,22 +593,28 @@ func main() {
             href="/guides/transactional-vs-marketing-email"
             className="block rounded-xl border border-neutral-200 bg-white p-6 transition hover:border-neutral-300 hover:shadow-lg"
           >
-            <h3 className="text-lg font-semibold text-neutral-900 mb-2">Transactional vs Marketing Email</h3>
-            <p className="text-sm text-neutral-600">Understand email types for APIs.</p>
+            <div className="w-full max-w-full wrap-break-word">
+              <h3 className="text-lg font-semibold text-neutral-900 mb-2">Transactional vs Marketing Email</h3>
+              <p className="text-sm text-neutral-600">Understand email types for APIs.</p>
+            </div>
           </Link>
           <Link
             href="/guides/email-deliverability"
             className="block rounded-xl border border-neutral-200 bg-white p-6 transition hover:border-neutral-300 hover:shadow-lg"
           >
-            <h3 className="text-lg font-semibold text-neutral-900 mb-2">Email Deliverability</h3>
-            <p className="text-sm text-neutral-600">Ensure API-sent emails reach the inbox.</p>
+            <div className="w-full max-w-full wrap-break-word">
+              <h3 className="text-lg font-semibold text-neutral-900 mb-2">Email Deliverability</h3>
+              <p className="text-sm text-neutral-600">Ensure API-sent emails reach the inbox.</p>
+            </div>
           </Link>
           <Link
             href="/guides/email-sender-reputation"
             className="block rounded-xl border border-neutral-200 bg-white p-6 transition hover:border-neutral-300 hover:shadow-lg"
           >
-            <h3 className="text-lg font-semibold text-neutral-900 mb-2">Email Sender Reputation</h3>
-            <p className="text-sm text-neutral-600">Maintain good sender reputation.</p>
+            <div className="w-full max-w-full wrap-break-word">
+              <h3 className="text-lg font-semibold text-neutral-900 mb-2">Email Sender Reputation</h3>
+              <p className="text-sm text-neutral-600">Maintain good sender reputation.</p>
+            </div>
           </Link>
         </div>
       </section>

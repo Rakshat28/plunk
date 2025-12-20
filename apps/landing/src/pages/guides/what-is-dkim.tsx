@@ -81,16 +81,18 @@ export default function WhatIsDKIM() {
           A DKIM record is a TXT record in your DNS that contains your public key. Here's an example:
         </p>
 
-        <CodeBlock
-          language="dns"
-          title="Example DKIM DNS Record"
-          code={`default._domainkey.yourdomain.com  IN  TXT  "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC3QEKyU1fSma0axspqYK5iAj+54lsAg4qRRCnpKK68hawSJfliq9vKD6czJ..."
+        <div className="w-full max-w-full overflow-x-auto">
+          <CodeBlock
+            language="dns"
+            title="Example DKIM DNS Record"
+            code={`default._domainkey.yourdomain.com  IN  TXT  "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC3QEKyU1fSma0axspqYK5iAj+54lsAg4qRRCnpKK68hawSJfliq9vKD6czJ..."
 
 # Breaking down the components:
 # v=DKIM1          -> DKIM version
 # k=rsa            -> Key type (RSA encryption)
 # p=MIGfMA0...     -> Public key (base64 encoded)`}
-        />
+          />
+        </div>
 
         <InfoBox type="info" title="Selector Names">
           <p>
@@ -106,35 +108,43 @@ export default function WhatIsDKIM() {
 
         <div className="grid gap-6 md:grid-cols-2 mb-8">
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-3">Prevents Email Spoofing</h3>
-            <p className="text-neutral-700">
-              DKIM makes it nearly impossible for spammers to forge emails from your domain. The cryptographic signature
-              can't be replicated without your private key.
-            </p>
+            <div className="w-full max-w-full wrap-break-word">
+              <h3 className="text-lg font-semibold text-neutral-900 mb-3">Prevents Email Spoofing</h3>
+              <p className="text-neutral-700">
+                DKIM makes it nearly impossible for spammers to forge emails from your domain. The cryptographic
+                signature can't be replicated without your private key.
+              </p>
+            </div>
           </div>
 
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-3">Improves Deliverability</h3>
-            <p className="text-neutral-700">
-              Major email providers (Gmail, Outlook, Yahoo) use DKIM as a trust signal. Emails with valid DKIM
-              signatures are more likely to reach the inbox.
-            </p>
+            <div className="w-full max-w-full wrap-break-word">
+              <h3 className="text-lg font-semibold text-neutral-900 mb-3">Improves Deliverability</h3>
+              <p className="text-neutral-700">
+                Major email providers (Gmail, Outlook, Yahoo) use DKIM as a trust signal. Emails with valid DKIM
+                signatures are more likely to reach the inbox.
+              </p>
+            </div>
           </div>
 
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-3">Protects Brand Reputation</h3>
-            <p className="text-neutral-700">
-              By preventing domain spoofing, DKIM protects your brand from being used in phishing attacks that could
-              damage your reputation.
-            </p>
+            <div className="w-full max-w-full wrap-break-word">
+              <h3 className="text-lg font-semibold text-neutral-900 mb-3">Protects Brand Reputation</h3>
+              <p className="text-neutral-700">
+                By preventing domain spoofing, DKIM protects your brand from being used in phishing attacks that could
+                damage your reputation.
+              </p>
+            </div>
           </div>
 
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-3">Enables DMARC</h3>
-            <p className="text-neutral-700">
-              DKIM is a prerequisite for implementing DMARC, which provides even stronger email authentication and
-              reporting capabilities.
-            </p>
+            <div className="w-full max-w-full wrap-break-word">
+              <h3 className="text-lg font-semibold text-neutral-900 mb-3">Enables DMARC</h3>
+              <p className="text-neutral-700">
+                DKIM is a prerequisite for implementing DMARC, which provides even stronger email authentication and
+                reporting capabilities.
+              </p>
+            </div>
           </div>
         </div>
 

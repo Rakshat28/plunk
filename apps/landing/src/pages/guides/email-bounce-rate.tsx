@@ -213,7 +213,7 @@ Bounce Rate = (150 ÷ 10,000) × 100 = 1.5%`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               1
             </div>
-            <div>
+            <div className="w-full max-w-full break-words">
               <h3 className="font-semibold text-neutral-900 mb-2">Use Double Opt-In</h3>
               <p className="text-neutral-700">
                 Require new subscribers to confirm their email address by clicking a verification link. This ensures the
@@ -227,7 +227,7 @@ Bounce Rate = (150 ÷ 10,000) × 100 = 1.5%`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               2
             </div>
-            <div>
+            <div className="w-full max-w-full break-words">
               <h3 className="font-semibold text-neutral-900 mb-2">Validate Email Addresses</h3>
               <p className="text-neutral-700 mb-3">
                 Use real-time email validation on signup forms to catch typos and invalid formats. Validate:
@@ -245,7 +245,7 @@ Bounce Rate = (150 ÷ 10,000) × 100 = 1.5%`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               3
             </div>
-            <div>
+            <div className="w-full max-w-full break-words">
               <h3 className="font-semibold text-neutral-900 mb-2">Remove Hard Bounces Immediately</h3>
               <p className="text-neutral-700">
                 Automate removal of hard bounce addresses from your list. Never send to them again. Continued sending to
@@ -258,7 +258,7 @@ Bounce Rate = (150 ÷ 10,000) × 100 = 1.5%`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               4
             </div>
-            <div>
+            <div className="w-full max-w-full break-words">
               <h3 className="font-semibold text-neutral-900 mb-2">Clean Your List Regularly</h3>
               <p className="text-neutral-700">
                 Remove or re-engage inactive subscribers every 6-12 months. Email addresses become invalid over time
@@ -271,7 +271,7 @@ Bounce Rate = (150 ÷ 10,000) × 100 = 1.5%`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               5
             </div>
-            <div>
+            <div className="w-full max-w-full break-words">
               <h3 className="font-semibold text-neutral-900 mb-2">Never Buy Email Lists</h3>
               <p className="text-neutral-700">
                 Purchased lists have 20-40% invalid addresses and zero engagement. They'll destroy your bounce rate and
@@ -284,7 +284,7 @@ Bounce Rate = (150 ÷ 10,000) × 100 = 1.5%`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               6
             </div>
-            <div>
+            <div className="w-full max-w-full break-words">
               <h3 className="font-semibold text-neutral-900 mb-2">Monitor Soft Bounces</h3>
               <p className="text-neutral-700">
                 Track addresses that repeatedly soft bounce. After 3-5 consecutive soft bounces over multiple campaigns,
@@ -297,7 +297,7 @@ Bounce Rate = (150 ÷ 10,000) × 100 = 1.5%`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               7
             </div>
-            <div>
+            <div className="w-full max-w-full break-words">
               <h3 className="font-semibold text-neutral-900 mb-2">Optimize Email Size</h3>
               <p className="text-neutral-700">
                 Keep email size under 100KB to avoid soft bounces from size limits. Compress images, minimize code, and
@@ -310,7 +310,7 @@ Bounce Rate = (150 ÷ 10,000) × 100 = 1.5%`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               8
             </div>
-            <div>
+            <div className="w-full max-w-full break-words">
               <h3 className="font-semibold text-neutral-900 mb-2">Maintain Consistent Sending</h3>
               <p className="text-neutral-700">
                 Send regularly to maintain list freshness. Long gaps between sends (3+ months) increase bounce rates as

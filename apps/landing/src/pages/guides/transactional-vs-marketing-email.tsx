@@ -84,51 +84,59 @@ export default function TransactionalVsMarketingEmail() {
           <h3 className="text-xl font-semibold text-neutral-900 mb-4">Common Types of Transactional Emails</h3>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-xl border border-neutral-200 bg-white p-6">
-              <h4 className="font-semibold text-neutral-900 mb-3">Account & Authentication</h4>
-              <ul className="space-y-2 text-sm text-neutral-700">
-                <li>• Welcome emails after signup</li>
-                <li>• Email verification/confirmation</li>
-                <li>• Password reset requests</li>
-                <li>• Login notifications</li>
-                <li>• Two-factor authentication codes</li>
-                <li>• Account deletion confirmations</li>
-              </ul>
+              <div className="w-full max-w-full break-words">
+                <h4 className="font-semibold text-neutral-900 mb-3">Account & Authentication</h4>
+                <ul className="space-y-2 text-sm text-neutral-700">
+                  <li>• Welcome emails after signup</li>
+                  <li>• Email verification/confirmation</li>
+                  <li>• Password reset requests</li>
+                  <li>• Login notifications</li>
+                  <li>• Two-factor authentication codes</li>
+                  <li>• Account deletion confirmations</li>
+                </ul>
+              </div>
             </div>
 
             <div className="rounded-xl border border-neutral-200 bg-white p-6">
-              <h4 className="font-semibold text-neutral-900 mb-3">Commerce & Transactions</h4>
-              <ul className="space-y-2 text-sm text-neutral-700">
-                <li>• Order confirmations</li>
-                <li>• Shipping notifications</li>
-                <li>• Delivery updates</li>
-                <li>• Payment receipts</li>
-                <li>• Refund confirmations</li>
-                <li>• Invoice emails</li>
-              </ul>
+              <div className="w-full max-w-full break-words">
+                <h4 className="font-semibold text-neutral-900 mb-3">Commerce & Transactions</h4>
+                <ul className="space-y-2 text-sm text-neutral-700">
+                  <li>• Order confirmations</li>
+                  <li>• Shipping notifications</li>
+                  <li>• Delivery updates</li>
+                  <li>• Payment receipts</li>
+                  <li>• Refund confirmations</li>
+                  <li>• Invoice emails</li>
+                </ul>
+              </div>
             </div>
 
             <div className="rounded-xl border border-neutral-200 bg-white p-6">
-              <h4 className="font-semibold text-neutral-900 mb-3">Notifications & Alerts</h4>
-              <ul className="space-y-2 text-sm text-neutral-700">
-                <li>• Activity notifications</li>
-                <li>• Comment or mention alerts</li>
-                <li>• Security alerts</li>
-                <li>• System status updates</li>
-                <li>• Subscription renewals</li>
-                <li>• Trial expiration notices</li>
-              </ul>
+              <div className="w-full max-w-full break-words">
+                <h4 className="font-semibold text-neutral-900 mb-3">Notifications & Alerts</h4>
+                <ul className="space-y-2 text-sm text-neutral-700">
+                  <li>• Activity notifications</li>
+                  <li>• Comment or mention alerts</li>
+                  <li>• Security alerts</li>
+                  <li>• System status updates</li>
+                  <li>• Subscription renewals</li>
+                  <li>• Trial expiration notices</li>
+                </ul>
+              </div>
             </div>
 
             <div className="rounded-xl border border-neutral-200 bg-white p-6">
-              <h4 className="font-semibold text-neutral-900 mb-3">Account Management</h4>
-              <ul className="space-y-2 text-sm text-neutral-700">
-                <li>• Billing statements</li>
-                <li>• Usage reports</li>
-                <li>• Account updates</li>
-                <li>• Plan changes</li>
-                <li>• Subscription confirmations</li>
-                <li>• Account deactivation notices</li>
-              </ul>
+              <div className="w-full max-w-full break-words">
+                <h4 className="font-semibold text-neutral-900 mb-3">Account Management</h4>
+                <ul className="space-y-2 text-sm text-neutral-700">
+                  <li>• Billing statements</li>
+                  <li>• Usage reports</li>
+                  <li>• Account updates</li>
+                  <li>• Plan changes</li>
+                  <li>• Subscription confirmations</li>
+                  <li>• Account deactivation notices</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -215,51 +223,59 @@ export default function TransactionalVsMarketingEmail() {
           <h3 className="text-xl font-semibold text-neutral-900 mb-4">Common Types of Marketing Emails</h3>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-xl border border-neutral-200 bg-white p-6">
-              <h4 className="font-semibold text-neutral-900 mb-3">Promotional Campaigns</h4>
-              <ul className="space-y-2 text-sm text-neutral-700">
-                <li>• Product announcements</li>
-                <li>• Sale and discount promotions</li>
-                <li>• New feature launches</li>
-                <li>• Seasonal campaigns</li>
-                <li>• Limited-time offers</li>
-                <li>• Flash sales</li>
-              </ul>
+              <div className="w-full max-w-full break-words">
+                <h4 className="font-semibold text-neutral-900 mb-3">Promotional Campaigns</h4>
+                <ul className="space-y-2 text-sm text-neutral-700">
+                  <li>• Product announcements</li>
+                  <li>• Sale and discount promotions</li>
+                  <li>• New feature launches</li>
+                  <li>• Seasonal campaigns</li>
+                  <li>• Limited-time offers</li>
+                  <li>• Flash sales</li>
+                </ul>
+              </div>
             </div>
 
             <div className="rounded-xl border border-neutral-200 bg-white p-6">
-              <h4 className="font-semibold text-neutral-900 mb-3">Content Marketing</h4>
-              <ul className="space-y-2 text-sm text-neutral-700">
-                <li>• Newsletters</li>
-                <li>• Blog post roundups</li>
-                <li>• Educational content</li>
-                <li>• Industry news and trends</li>
-                <li>• Case studies</li>
-                <li>• Webinar invitations</li>
-              </ul>
+              <div className="w-full max-w-full break-words">
+                <h4 className="font-semibold text-neutral-900 mb-3">Content Marketing</h4>
+                <ul className="space-y-2 text-sm text-neutral-700">
+                  <li>• Newsletters</li>
+                  <li>• Blog post roundups</li>
+                  <li>• Educational content</li>
+                  <li>• Industry news and trends</li>
+                  <li>• Case studies</li>
+                  <li>• Webinar invitations</li>
+                </ul>
+              </div>
             </div>
 
             <div className="rounded-xl border border-neutral-200 bg-white p-6">
-              <h4 className="font-semibold text-neutral-900 mb-3">Nurture & Engagement</h4>
-              <ul className="space-y-2 text-sm text-neutral-700">
-                <li>• Welcome series (beyond initial welcome)</li>
-                <li>• Onboarding sequences</li>
-                <li>• Re-engagement campaigns</li>
-                <li>• Win-back emails</li>
-                <li>• Customer surveys</li>
-                <li>• Loyalty program updates</li>
-              </ul>
+              <div className="w-full max-w-full break-words">
+                <h4 className="font-semibold text-neutral-900 mb-3">Nurture & Engagement</h4>
+                <ul className="space-y-2 text-sm text-neutral-700">
+                  <li>• Welcome series (beyond initial welcome)</li>
+                  <li>• Onboarding sequences</li>
+                  <li>• Re-engagement campaigns</li>
+                  <li>• Win-back emails</li>
+                  <li>• Customer surveys</li>
+                  <li>• Loyalty program updates</li>
+                </ul>
+              </div>
             </div>
 
             <div className="rounded-xl border border-neutral-200 bg-white p-6">
-              <h4 className="font-semibold text-neutral-900 mb-3">Lifecycle Marketing</h4>
-              <ul className="space-y-2 text-sm text-neutral-700">
-                <li>• Abandoned cart reminders</li>
-                <li>• Product recommendations</li>
-                <li>• Upsell/cross-sell campaigns</li>
-                <li>• Birthday or anniversary emails</li>
-                <li>• Renewal reminders (if promotional)</li>
-                <li>• Review requests</li>
-              </ul>
+              <div className="w-full max-w-full break-words">
+                <h4 className="font-semibold text-neutral-900 mb-3">Lifecycle Marketing</h4>
+                <ul className="space-y-2 text-sm text-neutral-700">
+                  <li>• Abandoned cart reminders</li>
+                  <li>• Product recommendations</li>
+                  <li>• Upsell/cross-sell campaigns</li>
+                  <li>• Birthday or anniversary emails</li>
+                  <li>• Renewal reminders (if promotional)</li>
+                  <li>• Review requests</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>

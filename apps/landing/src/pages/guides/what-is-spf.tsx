@@ -207,15 +207,12 @@ export default function WhatIsSPF() {
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               2
             </div>
-            <div>
+            <div className="w-full max-w-full wrap-break-word">
               <h3 className="font-semibold text-neutral-900 mb-2">Gather SPF Include Values</h3>
               <p className="text-neutral-700 mb-3">Each email service provides SPF values to include. For example:</p>
               <CodeBlock
                 language="text"
-                code={`Google Workspace:     include:_spf.google.com
-Microsoft 365:        include:spf.protection.outlook.com
-Plunk:                include:spf.useplunk.com
-SendGrid:             include:sendgrid.net`}
+                code={`Google Workspace:     include:_spf.google.com\nMicrosoft 365:        include:spf.protection.outlook.com\nPlunk:                include:spf.useplunk.com\nSendGrid:             include:sendgrid.net`}
                 showCopy={false}
               />
             </div>

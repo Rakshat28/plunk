@@ -114,26 +114,30 @@ export function GuideLayout({
 
       <Navbar />
 
-      <main className={'mx-auto max-w-7xl px-8 sm:px-0'}>
-        <div className={'flex gap-12 py-16'}>
+      <main className={'mx-auto max-w-7xl px-4 sm:px-8 w-full overflow-x-hidden'}>
+        <div className={'flex flex-col lg:flex-row gap-8 lg:gap-12 py-8 sm:py-16 w-full'}>
           {/* Main Content */}
-          <article className={'flex-1 max-w-4xl'}>
+          <article className={'flex-1 max-w-full lg:max-w-4xl w-full'}>
             {/* Breadcrumbs */}
-            <nav className={'mb-8'}>
-              <ol className={'flex items-center gap-2 text-sm text-neutral-600'}>
-                <li>
+            <nav className={'mb-6 sm:mb-8 w-full overflow-x-auto'}>
+              <ol
+                className={
+                  'flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-neutral-600 whitespace-normal'
+                }
+              >
+                <li className={'truncate max-w-[90vw]'}>
                   <Link href="/" className={'hover:text-neutral-900'}>
                     Home
                   </Link>
                 </li>
                 <li>/</li>
-                <li>
+                <li className={'truncate max-w-[90vw]'}>
                   <Link href="/guides" className={'hover:text-neutral-900'}>
                     Guides
                   </Link>
                 </li>
                 <li>/</li>
-                <li className={'text-neutral-900 font-medium'}>{title}</li>
+                <li className={'text-neutral-900 font-medium truncate max-w-[90vw]'}>{title}</li>
               </ol>
             </nav>
 
@@ -142,12 +146,22 @@ export function GuideLayout({
               initial={{opacity: 0, y: 20}}
               animate={{opacity: 1, y: 0}}
               transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-              className={'mb-12'}
+              className={'mb-8 sm:mb-12 w-full'}
             >
-              <h1 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>{title}</h1>
-              <p className={'mt-6 text-lg text-neutral-600 leading-relaxed'}>{description}</p>
+              <h1 className={'text-2xl sm:text-4xl font-bold tracking-tight text-neutral-900 break-words max-w-full'}>
+                {title}
+              </h1>
+              <p
+                className={'mt-4 sm:mt-6 text-base sm:text-lg text-neutral-600 leading-relaxed break-words max-w-full'}
+              >
+                {description}
+              </p>
 
-              <div className={'mt-8 flex items-center gap-6 text-sm text-neutral-600'}>
+              <div
+                className={
+                  'mt-6 sm:mt-8 flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm text-neutral-600'
+                }
+              >
                 <div className={'flex items-center gap-2'}>
                   <Calendar className="h-4 w-4" />
                   <span>
@@ -167,7 +181,16 @@ export function GuideLayout({
             </motion.header>
 
             {/* Content */}
-            <div className={'prose prose-neutral max-w-none'}>{children}</div>
+            <div className={'prose prose-neutral max-w-full'} style={{overflowX: 'visible'}}>
+              {/* Responsive table and code block styles */}
+              <style>{`
+                .prose table { display: block; width: 100%; overflow-x: auto; }
+                .prose th, .prose td { white-space: normal; word-break: break-word; }
+                .prose pre, .prose code { max-width: 100vw; overflow-x: auto; word-break: break-word; }
+                .prose img { max-width: 100%; height: auto; }
+              `}</style>
+              {children}
+            </div>
           </article>
 
           {/* Table of Contents - Desktop Only */}

@@ -220,7 +220,7 @@ Open Rate = (285 ÷ 950) × 100 = 30%`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               1
             </div>
-            <div>
+            <div className="w-full max-w-full break-words">
               <h3 className="font-semibold text-neutral-900 mb-2">Write Compelling Subject Lines</h3>
               <p className="text-neutral-700">
                 Test different approaches: questions, personalization, numbers, urgency (without being spammy). Keep
@@ -233,7 +233,7 @@ Open Rate = (285 ÷ 950) × 100 = 30%`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               2
             </div>
-            <div>
+            <div className="w-full max-w-full break-words">
               <h3 className="font-semibold text-neutral-900 mb-2">Personalize Beyond First Names</h3>
               <p className="text-neutral-700">
                 Use behavioral data, past purchases, browsing history, or location. "Products you recently viewed" or
@@ -246,7 +246,7 @@ Open Rate = (285 ÷ 950) × 100 = 30%`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               3
             </div>
-            <div>
+            <div className="w-full max-w-full break-words">
               <h3 className="font-semibold text-neutral-900 mb-2">Segment Your Audience</h3>
               <p className="text-neutral-700">
                 Send targeted emails to specific groups based on engagement level, purchase history, demographics, or
@@ -259,7 +259,7 @@ Open Rate = (285 ÷ 950) × 100 = 30%`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               4
             </div>
-            <div>
+            <div className="w-full max-w-full break-words">
               <h3 className="font-semibold text-neutral-900 mb-2">Optimize Preview Text</h3>
               <p className="text-neutral-700">
                 Preview text appears next to the subject line. Use it to complement your subject, add context, or create
@@ -272,7 +272,7 @@ Open Rate = (285 ÷ 950) × 100 = 30%`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               5
             </div>
-            <div>
+            <div className="w-full max-w-full break-words">
               <h3 className="font-semibold text-neutral-900 mb-2">Clean Your Email List Regularly</h3>
               <p className="text-neutral-700">
                 Remove subscribers who haven't engaged in 6-12 months. While this reduces list size, it dramatically
@@ -285,7 +285,7 @@ Open Rate = (285 ÷ 950) × 100 = 30%`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               6
             </div>
-            <div>
+            <div className="w-full max-w-full break-words">
               <h3 className="font-semibold text-neutral-900 mb-2">Test Send Times</h3>
               <p className="text-neutral-700">
                 Run A/B tests sending the same email at different times. Track when your specific audience is most
@@ -298,7 +298,7 @@ Open Rate = (285 ÷ 950) × 100 = 30%`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               7
             </div>
-            <div>
+            <div className="w-full max-w-full break-words">
               <h3 className="font-semibold text-neutral-900 mb-2">Re-engage Inactive Subscribers</h3>
               <p className="text-neutral-700">
                 Before removing inactive users, send a re-engagement campaign: "We miss you" or "Still interested?"
@@ -311,7 +311,7 @@ Open Rate = (285 ÷ 950) × 100 = 30%`}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white text-sm font-bold">
               8
             </div>
-            <div>
+            <div className="w-full max-w-full break-words">
               <h3 className="font-semibold text-neutral-900 mb-2">Use a Recognizable Sender Name</h3>
               <p className="text-neutral-700">
                 Build consistency with your sender name. People are more likely to open emails from names they

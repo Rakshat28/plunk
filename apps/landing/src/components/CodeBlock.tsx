@@ -27,7 +27,7 @@ export function CodeBlock({code, language = 'javascript', title, showCopy = true
       whileInView={{opacity: 1, y: 0}}
       viewport={{once: true}}
       transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-      className={'group relative overflow-hidden rounded-xl border border-neutral-200 bg-neutral-900'}
+      className={'group relative overflow-hidden rounded-xl border border-neutral-200 bg-neutral-900 w-full max-w-full'}
     >
       {(title || showCopy) && (
         <div className={'flex items-center justify-between border-b border-neutral-800 bg-neutral-900 px-6 py-3'}>
@@ -56,8 +56,10 @@ export function CodeBlock({code, language = 'javascript', title, showCopy = true
           )}
         </div>
       )}
-      <pre className={'overflow-x-auto p-6 text-neutral-100'}>
-        <code className={'font-mono text-sm leading-relaxed'}>{code}</code>
+      <pre className={'overflow-x-auto p-6 text-neutral-100 w-full max-w-full'} style={{boxSizing: 'border-box'}}>
+        <code className={'font-mono text-sm leading-relaxed'} style={{whiteSpace: 'pre-wrap', wordBreak: 'break-word'}}>
+          {code}
+        </code>
       </pre>
     </motion.div>
   );
