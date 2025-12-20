@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import type {NextFunction, Request, Response} from 'express';
 import jsonwebtoken from 'jsonwebtoken';
 
-import {JWT_SECRET} from '../app/constants.js';
+import {JWT_SECRET, PLUNK_ENABLED} from '../app/constants.js';
 import {prisma} from '../database/prisma.js';
 import {ErrorCode, HttpException, NotAuthenticated} from '../exceptions/index.js';
 
@@ -427,6 +427,11 @@ export const requireEmailVerified = async (req: Request, res: Response, next: Ne
 
     if (!user) {
       throw new NotAuthenticated();
+    }
+
+    // If platform email verification is disabled, skip check
+    if (!PLUNK_ENABLED) {
+      return next();
     }
 
     // OAuth users are always considered verified
