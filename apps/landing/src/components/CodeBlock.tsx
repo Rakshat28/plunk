@@ -1,31 +1,63 @@
 import {motion} from 'framer-motion';
-import React from 'react';
+import React, {useState} from 'react';
+import {Check, Copy} from 'lucide-react';
 
 interface CodeBlockProps {
   code: string;
   language?: string;
   title?: string;
+  showCopy?: boolean;
 }
 
 /**
- * Reusable code block component with syntax highlighting styling
+ * Reusable code block component with syntax highlighting styling and copy functionality
  */
-export function CodeBlock({code, language = 'javascript', title}: CodeBlockProps) {
+export function CodeBlock({code, language = 'javascript', title, showCopy = true}: CodeBlockProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <motion.div
       initial={{opacity: 0, y: 20}}
       whileInView={{opacity: 1, y: 0}}
       viewport={{once: true}}
       transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-      className={'overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50'}
+      className={'group relative overflow-hidden rounded-xl border border-neutral-200 bg-neutral-900'}
     >
-      {title && (
-        <div className={'border-b border-neutral-200 bg-white px-6 py-3'}>
-          <span className={'text-sm font-medium text-neutral-900'}>{title}</span>
+      {(title || showCopy) && (
+        <div className={'flex items-center justify-between border-b border-neutral-800 bg-neutral-900 px-6 py-3'}>
+          {title && <span className={'text-sm font-medium text-neutral-400'}>{title}</span>}
+          {!title && <span className={'text-xs font-medium text-neutral-500 uppercase'}>{language}</span>}
+          {showCopy && (
+            <button
+              onClick={handleCopy}
+              className={
+                'flex items-center gap-2 rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-1.5 text-xs font-medium text-neutral-300 transition hover:bg-neutral-700 hover:text-white'
+              }
+              aria-label="Copy code"
+            >
+              {copied ? (
+                <>
+                  <Check className="h-3 w-3" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3 w-3" />
+                  Copy
+                </>
+              )}
+            </button>
+          )}
         </div>
       )}
-      <pre className={'overflow-x-auto p-6'}>
-        <code className={'font-mono text-sm text-neutral-900'}>{code}</code>
+      <pre className={'overflow-x-auto p-6 text-neutral-100'}>
+        <code className={'font-mono text-sm leading-relaxed'}>{code}</code>
       </pre>
     </motion.div>
   );

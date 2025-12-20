@@ -4,62 +4,66 @@ import {DASHBOARD_URI, WIKI_URI} from '../../lib/constants';
 import React from 'react';
 import Link from 'next/link';
 import {NextSeo} from 'next-seo';
-import {ArrowRight, BarChart3, Globe, Layers, PackageOpen, Users, Workflow} from 'lucide-react';
+import {ArrowRight, BarChart3, DollarSign, Globe, PackageOpen, Users, Zap} from 'lucide-react';
 import type {ComparisonRow} from '../../components/ComparisonTable';
 import type {FAQ} from '../../components/FAQSection';
 
 const comparisonData: ComparisonRow[] = [
-  {feature: 'Free Tier', plunk: '1,000 emails/month', competitor: 'Limited trial'},
-  {feature: 'Pricing Model', plunk: 'Pay-as-you-go', competitor: 'Tiered monthly plans'},
+  {feature: 'Pricing Model', plunk: 'Pay-as-you-go', competitor: 'Monthly subscription tiers'},
   {feature: 'Open Source', plunk: true, competitor: false},
   {feature: 'Self-Hostable', plunk: true, competitor: false},
+  {feature: 'Contact Limits', plunk: 'Unlimited', competitor: 'Tier-based limits'},
   {feature: 'Transactional Emails', plunk: true, competitor: true},
-  {feature: 'Marketing Campaigns', plunk: true, competitor: false},
-  {feature: 'Workflow Automation', plunk: true, competitor: false},
-  {feature: 'Dynamic Segmentation', plunk: true, competitor: false},
-  {feature: 'Email Validation', plunk: 'Basic', competitor: 'Advanced'},
-  {feature: 'Custom Domains', plunk: true, competitor: true},
+  {feature: 'Marketing Campaigns', plunk: true, competitor: true},
+  {feature: 'Workflow Automation', plunk: true, competitor: true},
+  {feature: 'Dynamic Segmentation', plunk: true, competitor: true},
+  {feature: 'API Access', plunk: true, competitor: true},
 ];
 
 const faqs: FAQ[] = [
   {
-    question: 'When should I choose Mailgun over Plunk?',
+    question: 'What is the main difference between Plunk and Loops?',
     answer:
-      'Choose Mailgun if you need advanced email validation features or have very high volume transactional email needs (millions per day) and want a proven infrastructure provider. Mailgun has been around longer and has extensive deliverability tools. Choose Plunk if you need marketing campaigns, workflow automation, or want the flexibility to self-host (though Plunk also offers fully-managed hosting).',
+      'Plunk is open-source (AGPL-3.0) and self-hostable, while Loops is a proprietary SaaS platform. Plunk uses pay-as-you-go pricing with no contact limits, whereas Loops uses subscription tiers with contact-based limits. Both offer similar features, but Plunk gives you full transparency and control.',
   },
   {
-    question: 'What is the pricing difference between Plunk and Mailgun?',
+    question: 'Is Plunk cheaper than Loops?',
     answer:
-      "Plunk uses a simple pay-as-you-go pricing model where you pay only for emails sent. Mailgun uses tiered monthly plans based on email volume, which can be cost-effective at very high volumes but less flexible for variable sending patterns. With Plunk, you get marketing campaigns and workflow automation included at no additional cost - with Mailgun, you'd need separate tools for marketing.",
+      "It depends on your usage. Plunk's pay-as-you-go model ($0.001 per email) means you only pay for what you send. Loops charges monthly subscriptions based on contact count. For businesses with variable email volume or growing contact lists, Plunk is often more cost-effective.",
   },
   {
-    question: 'Is migration from Mailgun to Plunk complex?',
+    question: 'Can I self-host Plunk unlike Loops?',
     answer:
-      "Migration requires updating your API integration since Plunk and Mailgun use different API structures. You'll need to update your code to use Plunk's endpoints and parameter format. Both platforms support similar core features (templates, webhooks, custom domains), so the concepts translate directly. Plan for a few hours of development work to migrate your integration. Your email templates can be adapted with minimal changes.",
+      'Yes. Plunk is open-source and can be self-hosted using Docker. This gives you full control over your data, infrastructure, and costs. Loops is cloud-only with no self-hosting option.',
   },
   {
-    question: 'What does Plunk add beyond transactional emails?',
+    question: 'Does Plunk have the same modern features as Loops?',
     answer:
-      'Plunk adds marketing campaigns (one-time broadcasts to all contacts or specific segments), workflow automation (multi-step email sequences with triggers, delays, and conditions), and dynamic audience segmentation (auto-updating groups based on contact data and behavior). These features mean you can handle both transactional and marketing emails in one platform. Plunk is also open-source (AGPL-3.0) and self-hostable, giving you full control over your email infrastructure.',
+      'Yes. Plunk offers transactional emails, marketing campaigns, workflow automation, dynamic segmentation, and a modern API—just like Loops. The key difference is Plunk is open-source, self-hostable, and has no contact limits.',
+  },
+  {
+    question: 'How easy is it to migrate from Loops to Plunk?',
+    answer:
+      "Migration is straightforward. Export your contacts from Loops, import them to Plunk via CSV, and update your application to use Plunk's API. Most migrations can be completed in a few hours.",
   },
 ];
 
 /**
- * Plunk vs Mailgun comparison page
+ * Plunk vs Loops comparison page
  */
-export default function MailgunComparison() {
+export default function LoopsComparison() {
   return (
     <>
       <NextSeo
-        title="Mailgun Alternative: Open-Source with Marketing & Automation | Plunk"
-        description="Compare Plunk and Mailgun. Mailgun focuses on transactional emails, while Plunk adds marketing campaigns, workflows, and is open-source."
-        canonical="https://www.useplunk.com/vs/mailgun"
+        title="Loops Alternative: Open Source & Self-Hostable | Plunk"
+        description="Plunk offers an open-source alternative to Loops with pay-as-you-go pricing, self-hosting, and no contact limits. Same modern features, full transparency."
+        canonical="https://www.useplunk.com/vs/loops"
         openGraph={{
-          title: 'Mailgun Alternative: Open-Source with Marketing & Automation | Plunk',
+          title: 'Loops Alternative: Open Source & Self-Hostable | Plunk',
           description:
-            'Compare Plunk and Mailgun. Mailgun is excellent for transactional emails. Plunk adds marketing, workflows, and is open-source.',
-          url: 'https://www.useplunk.com/vs/mailgun',
-          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs Mailgun'}],
+            'Plunk offers an open-source alternative to Loops with pay-as-you-go pricing, self-hosting, and no contact limits.',
+          url: 'https://www.useplunk.com/vs/loops',
+          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs Loops'}],
         }}
       />
 
@@ -86,18 +90,18 @@ export default function MailgunComparison() {
               }
             >
               <span className={'text-sm text-neutral-600'}>Comparing</span>
-              <span className={'text-sm font-semibold text-neutral-900'}>Plunk vs Mailgun</span>
+              <span className={'text-sm font-semibold text-neutral-900'}>Plunk vs Loops</span>
             </div>
 
             <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
               Open-source alternative
               <br />
-              for Mailgun
+              for Loops
             </h1>
 
             <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
-              Mailgun is excellent for transactional emails. Plunk adds marketing campaigns, workflow automation, and is
-              open-source.
+              Same modern features, but open-source and self-hostable. No contact limits, no proprietary lock-in, no
+              hidden costs. Built for transparency.
             </p>
 
             <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
@@ -110,7 +114,7 @@ export default function MailgunComparison() {
                 }
               >
                 <span className={'flex items-center gap-2'}>
-                  Try Plunk free
+                  Get started free
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </span>
               </motion.a>
@@ -136,8 +140,10 @@ export default function MailgunComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>The Pricing Model That Makes Sense</h2>
-            <p className={'mt-4 text-lg text-neutral-600'}>Pay for what you use, not fixed subscriptions</p>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>
+              Transparent Pricing vs Vendor Lock-In
+            </h2>
+            <p className={'mt-4 text-lg text-neutral-600'}>Pay per email, not per contact</p>
           </motion.div>
 
           <div className={'grid gap-8 lg:grid-cols-2'}>
@@ -153,27 +159,27 @@ export default function MailgunComparison() {
               </div>
               <h3 className={'mt-6 text-2xl font-bold text-neutral-900'}>Pay per email sent</h3>
               <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Pay-as-you-go pricing. Only pay for emails you actually send.
+                Pay-as-you-go pricing with unlimited contacts. No monthly commitments or contact-based limits.
               </p>
-              <div className={'mt-6 text-4xl font-bold text-neutral-900'}>Pay-as-you-go</div>
+              <div className={'mt-6 text-4xl font-bold text-neutral-900'}>$0.001/email</div>
               <div className={'mt-8 space-y-3'}>
                 <div className={'flex items-center gap-3 text-sm text-neutral-600'}>
                   <div className={'h-5 w-5 rounded-full bg-neutral-900 flex items-center justify-center'}>
                     <div className={'h-1.5 w-1.5 rounded-full bg-white'} />
                   </div>
-                  <span>Only pay for emails you actually send</span>
+                  <span>Unlimited contacts at no extra cost</span>
                 </div>
                 <div className={'flex items-center gap-3 text-sm text-neutral-600'}>
                   <div className={'h-5 w-5 rounded-full bg-neutral-900 flex items-center justify-center'}>
                     <div className={'h-1.5 w-1.5 rounded-full bg-white'} />
                   </div>
-                  <span>Scale up or down without commitment</span>
+                  <span>All features included on all plans</span>
                 </div>
                 <div className={'flex items-center gap-3 text-sm text-neutral-600'}>
                   <div className={'h-5 w-5 rounded-full bg-neutral-900 flex items-center justify-center'}>
                     <div className={'h-1.5 w-1.5 rounded-full bg-white'} />
                   </div>
-                  <span>Marketing and automation included</span>
+                  <span>Open-source and self-hostable</span>
                 </div>
               </div>
             </motion.div>
@@ -186,53 +192,38 @@ export default function MailgunComparison() {
               className={'rounded-2xl border border-neutral-200 bg-neutral-50 p-10'}
             >
               <div className={'mb-4 inline-flex items-center gap-2 rounded-full bg-neutral-200 px-4 py-1.5'}>
-                <span className={'text-sm font-semibold text-neutral-900'}>Mailgun</span>
+                <span className={'text-sm font-semibold text-neutral-900'}>Loops</span>
               </div>
-              <h3 className={'mt-6 text-2xl font-bold text-neutral-900'}>Tiered monthly plans</h3>
+              <h3 className={'mt-6 text-2xl font-bold text-neutral-900'}>Subscription tiers by contacts</h3>
               <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Monthly subscription with tiered email volume limits.
+                Monthly subscription based on contact count with tier-based limits and feature restrictions.
               </p>
-              <div className={'mt-6 text-4xl font-bold text-neutral-900'}>Fixed tiers</div>
+              <div className={'mt-6 text-4xl font-bold text-neutral-900'}>Tiered pricing</div>
               <div className={'mt-8 space-y-3'}>
                 <div className={'flex items-center gap-3 text-sm text-neutral-600'}>
                   <div className={'h-5 w-5 rounded-full bg-neutral-300 flex items-center justify-center'}>
                     <div className={'h-1.5 w-1.5 rounded-full bg-neutral-600'} />
                   </div>
-                  <span>Locked into monthly subscription tiers</span>
+                  <span>Contact-based pricing limits</span>
                 </div>
                 <div className={'flex items-center gap-3 text-sm text-neutral-600'}>
                   <div className={'h-5 w-5 rounded-full bg-neutral-300 flex items-center justify-center'}>
                     <div className={'h-1.5 w-1.5 rounded-full bg-neutral-600'} />
                   </div>
-                  <span>Need to upgrade plan as you grow</span>
+                  <span>Feature limits on lower tiers</span>
                 </div>
                 <div className={'flex items-center gap-3 text-sm text-neutral-600'}>
                   <div className={'h-5 w-5 rounded-full bg-neutral-300 flex items-center justify-center'}>
                     <div className={'h-1.5 w-1.5 rounded-full bg-neutral-600'} />
                   </div>
-                  <span>Transactional only, no marketing</span>
+                  <span>Proprietary, cloud-only platform</span>
                 </div>
               </div>
             </motion.div>
           </div>
         </section>
 
-        {/* Feature Comparison */}
-        <section className={'py-32'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mb-16 text-center'}
-          >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Feature-by-Feature</h2>
-          </motion.div>
-
-          <ComparisonTable competitorName="Mailgun" rows={comparisonData} />
-        </section>
-
-        {/* What Plunk Adds */}
+        {/* Key Advantages */}
         <section className={'py-32'}>
           <motion.div
             initial={{opacity: 0, y: 20}}
@@ -241,11 +232,11 @@ export default function MailgunComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-20 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>What Plunk Adds</h2>
-            <p className={'mt-4 text-lg text-neutral-600'}>Beyond transactional emails</p>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Why Choose Plunk Over Loops</h2>
+            <p className={'mt-4 text-lg text-neutral-600'}>Open-source transparency meets modern SaaS features</p>
           </motion.div>
 
-          <div className={'grid gap-px bg-neutral-200 sm:grid-cols-3'}>
+          <div className={'grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3'}>
             <motion.div
               initial={{opacity: 0, y: 20}}
               whileInView={{opacity: 1, y: 0}}
@@ -258,12 +249,12 @@ export default function MailgunComparison() {
                   'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white transition group-hover:scale-110'
                 }
               >
-                <BarChart3 className="h-5 w-5" />
+                <PackageOpen className="h-5 w-5" />
               </div>
-              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Marketing Campaigns</h3>
+              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Open Source & Transparent</h3>
               <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Send one-time broadcasts to all contacts or specific segments. Schedule sends, track performance.
-                Mailgun doesn't offer this.
+                AGPL-3.0 licensed. Inspect the code, contribute features, understand exactly how your emails are sent.
+                No black boxes.
               </p>
             </motion.div>
 
@@ -279,12 +270,12 @@ export default function MailgunComparison() {
                   'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white transition group-hover:scale-110'
                 }
               >
-                <Workflow className="h-5 w-5" />
+                <Globe className="h-5 w-5" />
               </div>
-              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Workflow Automation</h3>
+              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Self-Hostable</h3>
               <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Build multi-step email sequences with triggers, delays, and conditions. Perfect for onboarding, drip
-                campaigns, cart abandonment.
+                Run on your infrastructure with Docker. Full data control, compliance-ready, cost-optimized for scale.
+                Loops is cloud-only.
               </p>
             </motion.div>
 
@@ -302,10 +293,10 @@ export default function MailgunComparison() {
               >
                 <Users className="h-5 w-5" />
               </div>
-              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Dynamic Segmentation</h3>
+              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Unlimited Contacts</h3>
               <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Create audience segments that update automatically based on contact data and behavior. Target campaigns
-                precisely.
+                No contact-based limits. Grow your audience without worrying about tier upgrades or surprise charges.
+                Pay for emails, not contacts.
               </p>
             </motion.div>
 
@@ -321,11 +312,12 @@ export default function MailgunComparison() {
                   'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white transition group-hover:scale-110'
                 }
               >
-                <PackageOpen className="h-5 w-5" />
+                <DollarSign className="h-5 w-5" />
               </div>
-              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Open Source</h3>
+              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Predictable Pricing</h3>
               <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                AGPL-3.0 licensed. Inspect the code, contribute features, no vendor lock-in. Mailgun is proprietary.
+                Pay-as-you-go per email. No surprise costs as you grow. No forced tier upgrades. No sales calls. Just
+                simple, transparent pricing.
               </p>
             </motion.div>
 
@@ -341,12 +333,12 @@ export default function MailgunComparison() {
                   'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white transition group-hover:scale-110'
                 }
               >
-                <Globe className="h-5 w-5" />
+                <Zap className="h-5 w-5" />
               </div>
-              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Self-Hostable</h3>
+              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Full API Access</h3>
               <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Run on your infrastructure with Docker. Full data control, compliance-ready. Pay only AWS SES fees when
-                self-hosting.
+                Complete API access on all plans. No feature restrictions, no "contact sales" for API access. Everything
+                documented and ready to use.
               </p>
             </motion.div>
 
@@ -362,18 +354,35 @@ export default function MailgunComparison() {
                   'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white transition group-hover:scale-110'
                 }
               >
-                <Layers className="h-5 w-5" />
+                <BarChart3 className="h-5 w-5" />
               </div>
-              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>All-in-One Platform</h3>
+              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>All Features Included</h3>
               <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                One platform for transactional, marketing, and automation. No need for multiple tools or integrations.
+                Transactional emails, campaigns, workflows, segmentation—all included. No artificial feature gating
+                based on your plan.
               </p>
             </motion.div>
           </div>
         </section>
 
+        {/* Feature Comparison */}
+        <section className={'py-32'}>
+          <motion.div
+            initial={{opacity: 0, y: 20}}
+            whileInView={{opacity: 1, y: 0}}
+            viewport={{once: true}}
+            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+            className={'mb-16 text-center'}
+          >
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Feature-by-Feature Comparison</h2>
+            <p className={'mt-4 text-lg text-neutral-600'}>See exactly what you get with each platform</p>
+          </motion.div>
+
+          <ComparisonTable competitorName="Loops" rows={comparisonData} />
+        </section>
+
         {/* FAQ */}
-        <FAQSection faqs={faqs} schemaId="faq-schema-mailgun" />
+        <FAQSection faqs={faqs} schemaId="faq-schema-loops" />
 
         {/* CTA */}
         <section className={'border-t border-neutral-200 py-32'}>
@@ -384,9 +393,10 @@ export default function MailgunComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Try Plunk free</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Switch to open source</h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
-              1,000 emails/month free. No credit card required. Add marketing and automation when you need it.
+              Join developers choosing transparency and control over proprietary platforms. Start free, no credit card
+              required.
             </p>
             <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
               <motion.a
@@ -400,13 +410,12 @@ export default function MailgunComparison() {
                 Start free trial
               </motion.a>
               <Link
-                href={WIKI_URI}
-                target={'_blank'}
+                href="/pricing"
                 className={
                   'rounded-lg border border-neutral-300 px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-400'
                 }
               >
-                Read documentation
+                View pricing details
               </Link>
             </div>
           </motion.div>

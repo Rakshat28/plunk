@@ -1,10 +1,10 @@
-import {Footer, Navbar, ComparisonTable, FAQSection} from '../../components';
+import {ComparisonTable, FAQSection, Footer, Navbar} from '../../components';
 import {motion} from 'framer-motion';
 import {DASHBOARD_URI, WIKI_URI} from '../../lib/constants';
 import React from 'react';
 import Link from 'next/link';
 import {NextSeo} from 'next-seo';
-import {ArrowRight, PackageOpen, DollarSign, Zap, Globe, Users, BarChart3} from 'lucide-react';
+import {ArrowRight, BarChart3, DollarSign, Globe, PackageOpen, Users, Zap} from 'lucide-react';
 import type {ComparisonRow} from '../../components/ComparisonTable';
 import type {FAQ} from '../../components/FAQSection';
 
@@ -39,7 +39,7 @@ const faqs: FAQ[] = [
   {
     question: 'Can I migrate from SendGrid to Plunk?',
     answer:
-      'Yes, migration is straightforward. Export your contacts from SendGrid, import them to Plunk via CSV, and update your application to use Plunk\'s easy API. Most migrations take less than a day.',
+      "Yes, migration is straightforward. Export your contacts from SendGrid, import them to Plunk via CSV, and update your application to use Plunk's easy API. Most migrations take less than a day.",
   },
   {
     question: 'What SendGrid features does Plunk not have?',
@@ -61,7 +61,7 @@ export default function SendGridComparison() {
         openGraph={{
           title: 'SendGrid Alternative: Pay-As-You-Go & Open Source | Plunk',
           description:
-            "Plunk offers pay-as-you-go pricing instead of monthly subscriptions, with a modern API and no complex setup.",
+            'Plunk offers pay-as-you-go pricing instead of monthly subscriptions, with a modern API and no complex setup.',
           url: 'https://www.useplunk.com/vs/sendgrid',
           images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs SendGrid'}],
         }}
@@ -84,7 +84,11 @@ export default function SendGridComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-4xl text-center'}
           >
-            <div className={'mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2'}>
+            <div
+              className={
+                'mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2'
+              }
+            >
               <span className={'text-sm text-neutral-600'}>Comparing</span>
               <span className={'text-sm font-semibold text-neutral-900'}>Plunk vs SendGrid</span>
             </div>
@@ -96,8 +100,8 @@ export default function SendGridComparison() {
             </h1>
 
             <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
-              Pay-as-you-go instead of fixed subscriptions. No complex setup, no feature gating, no enterprise sales pitches.
-              Built for developers, not procurement teams.
+              Pay-as-you-go instead of fixed subscriptions. No complex setup, no feature gating, no enterprise sales
+              pitches. Built for developers, not procurement teams.
             </p>
 
             <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
@@ -247,8 +251,8 @@ export default function SendGridComparison() {
               </div>
               <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Simple, Transparent Pricing</h3>
               <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Pay-as-you-go per email. No hidden fees, no complex tiers, no enterprise sales calls. Start free, scale as
-                you grow.
+                Pay-as-you-go per email. No hidden fees, no complex tiers, no enterprise sales calls. Start free, scale
+                as you grow.
               </p>
             </motion.div>
 

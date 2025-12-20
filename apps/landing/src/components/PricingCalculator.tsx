@@ -38,16 +38,14 @@ export function PricingCalculator({competitors, defaultVolume = 100000}: Pricing
       {/* Header */}
       <div className={'border-b border-neutral-200 bg-neutral-50 p-8'}>
         <h3 className={'text-2xl font-bold text-neutral-900'}>Pricing Calculator</h3>
-        <p className={'mt-2 text-sm text-neutral-600'}>
-          Compare costs across platforms at different email volumes
-        </p>
+        <p className={'mt-2 text-sm text-neutral-600'}>Compare costs across platforms at different email volumes</p>
       </div>
 
       {/* Volume Selector */}
       <div className={'p-8'}>
         <label className={'block text-sm font-semibold text-neutral-900'}>Monthly Email Volume</label>
         <div className={'mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4'}>
-          {volumeOptions.map((option) => (
+          {volumeOptions.map(option => (
             <button
               key={option.value}
               onClick={() => setVolume(option.value)}

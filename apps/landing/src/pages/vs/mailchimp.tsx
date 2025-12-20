@@ -1,10 +1,10 @@
-import {Footer, Navbar, ComparisonTable, FAQSection, CodeBlock} from '../../components';
+import {ComparisonTable, FAQSection, Footer, Navbar} from '../../components';
 import {motion} from 'framer-motion';
 import {DASHBOARD_URI, WIKI_URI} from '../../lib/constants';
 import React from 'react';
 import Link from 'next/link';
 import {NextSeo} from 'next-seo';
-import {ArrowRight, Code2, DollarSign, Zap, PackageOpen, Mail, Send} from 'lucide-react';
+import {ArrowRight, Code2, DollarSign, Mail, PackageOpen, Zap} from 'lucide-react';
 import type {ComparisonRow} from '../../components/ComparisonTable';
 import type {FAQ} from '../../components/FAQSection';
 
@@ -25,20 +25,20 @@ const faqs: FAQ[] = [
   {
     question: 'When should I choose Mailchimp over Plunk?',
     answer:
-      'Choose Mailchimp if you\'re a marketer who needs a drag-and-drop email builder and prefers a marketing-first interface. Mailchimp excels at visual design and non-technical users. Choose Plunk if you\'re a developer who values API-first design, wants transactional + marketing in one platform, and prefers code over drag-and-drop.',
+      "Choose Mailchimp if you're a marketer who needs a drag-and-drop email builder and prefers a marketing-first interface. Mailchimp excels at visual design and non-technical users. Choose Plunk if you're a developer who values API-first design, wants transactional + marketing in one platform, and prefers code over drag-and-drop.",
   },
   {
     question: 'What is the difference between Plunk and Mailchimp pricing?',
     answer:
-      "Mailchimp charges per contact stored, regardless of how many emails you send. Plunk uses a pay-as-you-go model where you only pay for emails sent. This means with Mailchimp, your cost increases as your contact list grows, while with Plunk, you only pay when you actually send emails.",
+      'Mailchimp charges per contact stored, regardless of how many emails you send. Plunk uses a pay-as-you-go model where you only pay for emails sent. This means with Mailchimp, your cost increases as your contact list grows, while with Plunk, you only pay when you actually send emails.',
   },
   {
     question: 'Can Plunk handle both transactional and marketing emails?',
     answer:
-      'Yes, that\'s one of Plunk\'s key advantages. Transactional emails (receipts, password resets) and marketing emails (newsletters, campaigns) are built into one platform. With Mailchimp, you need their separate Mandrill service for transactional emails, which adds complexity.',
+      "Yes, that's one of Plunk's key advantages. Transactional emails (receipts, password resets) and marketing emails (newsletters, campaigns) are built into one platform. With Mailchimp, you need their separate Mandrill service for transactional emails, which adds complexity.",
   },
   {
-    question: 'Is Plunk\'s API easier to use than Mailchimp\'s?',
+    question: "Is Plunk's API easier to use than Mailchimp's?",
     answer:
       'Yes, significantly. Plunk has a modern RESTful API designed for developers. Mailchimp\'s API is complex and marketing-focused, requiring you to understand concepts like "audiences," "campaigns," and "merge fields." Most developers find Plunk\'s API 10x easier to integrate.',
   },
@@ -85,7 +85,11 @@ export default function MailchimpComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-4xl text-center'}
           >
-            <div className={'mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2'}>
+            <div
+              className={
+                'mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2'
+              }
+            >
               <span className={'text-sm text-neutral-600'}>Comparing</span>
               <span className={'text-sm font-semibold text-neutral-900'}>Plunk vs Mailchimp</span>
             </div>
@@ -247,7 +251,8 @@ export default function MailchimpComparison() {
               </div>
               <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Pay-as-you-go Pricing</h3>
               <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Only pay for emails you send, not for contacts you store. No monthly minimums or fixed subscription costs.
+                Only pay for emails you send, not for contacts you store. No monthly minimums or fixed subscription
+                costs.
               </p>
             </motion.div>
 
@@ -380,9 +385,12 @@ export default function MailchimpComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Ready for a better developer experience?</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>
+              Ready for a better developer experience?
+            </h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
-              Join developers who've switched from Mailchimp to Plunk for better DX and transparent pay-as-you-go pricing.
+              Join developers who've switched from Mailchimp to Plunk for better DX and transparent pay-as-you-go
+              pricing.
             </p>
             <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
               <motion.a

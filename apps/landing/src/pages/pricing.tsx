@@ -114,8 +114,7 @@ export default function Index() {
                           clipRule="evenodd"
                         />
                       </svg>
-                      <span>Click & open tracking
-                      </span>
+                      <span>Click & open tracking</span>
                     </li>
                     <li className="flex items-start gap-3 text-white/80">
                       <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-white" fill="currentColor" viewBox="0 0 20 20">

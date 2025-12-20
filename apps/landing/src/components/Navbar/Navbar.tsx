@@ -25,19 +25,34 @@ export default function Navbar() {
               </Link>
             </div>
             <div className="hidden items-center gap-8 md:flex">
-              <Link href={'/made-by-humans'} className={'text-sm font-medium text-neutral-600 transition hover:text-neutral-900'}>
+              <Link
+                href={'/made-by-humans'}
+                className={'text-sm font-medium text-neutral-600 transition hover:text-neutral-900'}
+              >
                 By humans
               </Link>
 
-              <Link href={'/pricing'} className={'text-sm font-medium text-neutral-600 transition hover:text-neutral-900'}>
+              <Link
+                href={'/pricing'}
+                className={'text-sm font-medium text-neutral-600 transition hover:text-neutral-900'}
+              >
                 Pricing
+              </Link>
+
+              <Link
+                href={'/guides'}
+                className={'text-sm font-medium text-neutral-600 transition hover:text-neutral-900'}
+              >
+                Guides
               </Link>
 
               <Link
                 href={WIKI_URI}
                 target={'_blank'}
                 rel={'noreferrer'}
-                className={'flex items-center gap-x-1.5 text-sm font-medium text-neutral-600 transition hover:text-neutral-900'}
+                className={
+                  'flex items-center gap-x-1.5 text-sm font-medium text-neutral-600 transition hover:text-neutral-900'
+                }
               >
                 Docs
                 <svg className={'h-3.5 w-3.5'} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -47,32 +62,27 @@ export default function Navbar() {
                     strokeWidth="2"
                     d="M9.25 4.75H6.75C5.64543 4.75 4.75 5.64543 4.75 6.75V17.25C4.75 18.3546 5.64543 19.25 6.75 19.25H17.25C18.3546 19.25 19.25 18.3546 19.25 17.25V14.75"
                   />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M19.25 9.25V4.75H14.75"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M19 5L11.75 12.25"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.25 9.25V4.75H14.75" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 5L11.75 12.25" />
                 </svg>
               </Link>
             </div>
           </div>
 
           <div className="hidden items-center gap-6 md:flex">
-            <a href={`${DASHBOARD_URI}/auth/login`} className={'text-sm font-medium text-neutral-600 transition hover:text-neutral-900'}>
+            <a
+              href={`${DASHBOARD_URI}/auth/login`}
+              className={'text-sm font-medium text-neutral-600 transition hover:text-neutral-900'}
+            >
               Sign in
             </a>
             <motion.a
               whileHover={{scale: 1.02}}
               whileTap={{scale: 0.98}}
               href={`${DASHBOARD_URI}/auth/signup`}
-              className={'rounded-lg bg-neutral-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800'}
+              className={
+                'rounded-lg bg-neutral-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800'
+              }
             >
               Get started
             </motion.a>
@@ -144,6 +154,14 @@ export default function Navbar() {
                 className="block rounded-lg px-4 py-3 text-sm font-medium text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900"
               >
                 Pricing
+              </Link>
+
+              <Link
+                href={'/guides'}
+                onClick={() => setMobileOpen(false)}
+                className="block rounded-lg px-4 py-3 text-sm font-medium text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900"
+              >
+                Guides
               </Link>
 
               <a

@@ -1,10 +1,10 @@
-import {Footer, Navbar, ComparisonTable, FAQSection} from '../../components';
+import {ComparisonTable, FAQSection, Footer, Navbar} from '../../components';
 import {motion} from 'framer-motion';
 import {DASHBOARD_URI, WIKI_URI} from '../../lib/constants';
 import React from 'react';
 import Link from 'next/link';
 import {NextSeo} from 'next-seo';
-import {ArrowRight, Code2, DollarSign, PackageOpen, Zap, Globe, BarChart3} from 'lucide-react';
+import {ArrowRight, BarChart3, Code2, DollarSign, Globe, PackageOpen, Zap} from 'lucide-react';
 import type {ComparisonRow} from '../../components/ComparisonTable';
 import type {FAQ} from '../../components/FAQSection';
 
@@ -25,17 +25,17 @@ const faqs: FAQ[] = [
   {
     question: 'When should I choose Customer.io over Plunk?',
     answer:
-      'Choose Customer.io if you need advanced behavioral segmentation, visual journey builders, and have a dedicated marketing operations team. Customer.io excels at complex, enterprise-level marketing automation with sophisticated visual tools. Choose Plunk if you want developer-friendly APIs, simpler workflows, and don\'t need the overhead of an enterprise marketing platform.',
+      "Choose Customer.io if you need advanced behavioral segmentation, visual journey builders, and have a dedicated marketing operations team. Customer.io excels at complex, enterprise-level marketing automation with sophisticated visual tools. Choose Plunk if you want developer-friendly APIs, simpler workflows, and don't need the overhead of an enterprise marketing platform.",
   },
   {
     question: 'What is the pricing difference between Plunk and Customer.io?',
     answer:
-      'Plunk uses a simple pay-as-you-go pricing model where you only pay for emails sent. Customer.io has complex usage-based tiers that combine messages sent, active profiles, and feature access. For small to medium teams, Plunk is typically more cost-effective. Customer.io\'s pricing scales with contact count and feature usage, which can become expensive as you grow.',
+      "Plunk uses a simple pay-as-you-go pricing model where you only pay for emails sent. Customer.io has complex usage-based tiers that combine messages sent, active profiles, and feature access. For small to medium teams, Plunk is typically more cost-effective. Customer.io's pricing scales with contact count and feature usage, which can become expensive as you grow.",
   },
   {
     question: 'Is migration from Customer.io to Plunk complex?',
     answer:
-      'Migration complexity depends on your current setup. If you use basic transactional emails and simple workflows, migration is straightforward - update your API integration and recreate your workflows. If you rely heavily on Customer.io\'s visual journey builder and advanced behavioral segmentation, you\'ll need to simplify some workflows. Most teams can migrate in a few days of development work.',
+      "Migration complexity depends on your current setup. If you use basic transactional emails and simple workflows, migration is straightforward - update your API integration and recreate your workflows. If you rely heavily on Customer.io's visual journey builder and advanced behavioral segmentation, you'll need to simplify some workflows. Most teams can migrate in a few days of development work.",
   },
   {
     question: 'What does Plunk simplify compared to Customer.io?',
@@ -80,7 +80,11 @@ export default function CustomerioComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-4xl text-center'}
           >
-            <div className={'mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2'}>
+            <div
+              className={
+                'mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2'
+              }
+            >
               <span className={'text-sm text-neutral-600'}>Comparing</span>
               <span className={'text-sm font-semibold text-neutral-900'}>Plunk vs Customer.io</span>
             </div>
@@ -258,8 +262,8 @@ export default function CustomerioComparison() {
               </div>
               <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Developer-First Experience</h3>
               <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Clean, simple APIs designed for developers. No complex visual builders or marketing jargon. Integrate
-                in minutes, not weeks.
+                Clean, simple APIs designed for developers. No complex visual builders or marketing jargon. Integrate in
+                minutes, not weeks.
               </p>
             </motion.div>
 
@@ -279,8 +283,8 @@ export default function CustomerioComparison() {
               </div>
               <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Transparent Pricing</h3>
               <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Pay-as-you-go pricing with no hidden costs or complex tiers. No need to pay for contact lists or
-                profile counts - just emails sent.
+                Pay-as-you-go pricing with no hidden costs or complex tiers. No need to pay for contact lists or profile
+                counts - just emails sent.
               </p>
             </motion.div>
 

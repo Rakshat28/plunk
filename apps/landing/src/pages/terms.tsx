@@ -12,7 +12,9 @@ export default function Index() {
     <>
       <NextSeo
         title={'Plunk Terms of Service | The Open-Source Email Platform'}
-        description={'Terms of Service for Plunk, the open-source email automation platform. Read our user agreement and service terms.'}
+        description={
+          'Terms of Service for Plunk, the open-source email automation platform. Read our user agreement and service terms.'
+        }
         openGraph={{
           title: 'Plunk Terms of Service | The Open-Source Email Platform',
           description:

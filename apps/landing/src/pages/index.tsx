@@ -26,7 +26,7 @@ import {
   TrendingUp,
   User,
   Users,
-  Workflow
+  Workflow,
 } from 'lucide-react';
 
 const testimonials = [
@@ -197,15 +197,16 @@ export default function Index() {
                 '@type': 'UnitPriceSpecification',
                 'price': '0.001',
                 'priceCurrency': 'USD',
-                'unitText': 'email'
-              }
+                'unitText': 'email',
+              },
             },
             'aggregateRating': {
               '@type': 'AggregateRating',
               'ratingValue': '4.8',
-              'reviewCount': '50'
+              'reviewCount': '50',
             },
-            'featureList': 'Workflow Automation, Dynamic Segmentation, Campaign Management, Analytics, Developer API, Custom Domains, Self-Hosting, Open Source'
+            'featureList':
+              'Workflow Automation, Dynamic Segmentation, Campaign Management, Analytics, Developer API, Custom Domains, Self-Hosting, Open Source',
           }),
         }}
       />
@@ -281,10 +282,7 @@ export default function Index() {
             </p>
 
             <div className={'mt-16 grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-5'}>
-              <Link
-                href={'/vs/resend'}
-                className={'group bg-white p-10 transition hover:bg-neutral-50'}
-              >
+              <Link href={'/vs/resend'} className={'group bg-white p-10 transition hover:bg-neutral-50'}>
                 <div className={'flex flex-col items-center gap-4'}>
                   <div className={'text-2xl font-bold text-neutral-400 transition group-hover:text-neutral-900'}>
                     Resend
@@ -293,10 +291,7 @@ export default function Index() {
                 </div>
               </Link>
 
-              <Link
-                href={'/vs/sendgrid'}
-                className={'group bg-white p-10 transition hover:bg-neutral-50'}
-              >
+              <Link href={'/vs/sendgrid'} className={'group bg-white p-10 transition hover:bg-neutral-50'}>
                 <div className={'flex flex-col items-center gap-4'}>
                   <div className={'text-2xl font-bold text-neutral-400 transition group-hover:text-neutral-900'}>
                     SendGrid
@@ -305,10 +300,7 @@ export default function Index() {
                 </div>
               </Link>
 
-              <Link
-                href={'/vs/mailchimp'}
-                className={'group bg-white p-10 transition hover:bg-neutral-50'}
-              >
+              <Link href={'/vs/mailchimp'} className={'group bg-white p-10 transition hover:bg-neutral-50'}>
                 <div className={'flex flex-col items-center gap-4'}>
                   <div className={'text-2xl font-bold text-neutral-400 transition group-hover:text-neutral-900'}>
                     Mailchimp
@@ -317,10 +309,7 @@ export default function Index() {
                 </div>
               </Link>
 
-              <Link
-                href={'/vs/customerio'}
-                className={'group bg-white p-10 transition hover:bg-neutral-50'}
-              >
+              <Link href={'/vs/customerio'} className={'group bg-white p-10 transition hover:bg-neutral-50'}>
                 <div className={'flex flex-col items-center gap-4'}>
                   <div className={'text-2xl font-bold text-neutral-400 transition group-hover:text-neutral-900'}>
                     Customer.io
@@ -329,10 +318,7 @@ export default function Index() {
                 </div>
               </Link>
 
-              <Link
-                href={'/vs/mailgun'}
-                className={'group bg-white p-10 transition hover:bg-neutral-50'}
-              >
+              <Link href={'/vs/mailgun'} className={'group bg-white p-10 transition hover:bg-neutral-50'}>
                 <div className={'flex flex-col items-center gap-4'}>
                   <div className={'text-2xl font-bold text-neutral-400 transition group-hover:text-neutral-900'}>
                     Mailgun

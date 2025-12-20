@@ -67,7 +67,10 @@ export default function Footer() {
                     </Link>
                   </li>
                   <li>
-                    <Link href={'/made-by-humans'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                    <Link
+                      href={'/made-by-humans'}
+                      className="text-sm text-neutral-600 transition hover:text-neutral-900"
+                    >
                       Made by humans
                     </Link>
                   </li>
@@ -131,9 +134,7 @@ export default function Footer() {
           </div>
 
           <div className="mt-16 border-t border-neutral-200 pt-8">
-            <p className="text-sm text-neutral-500">
-              &copy; {new Date().getFullYear()} Plunk. All rights reserved.
-            </p>
+            <p className="text-sm text-neutral-500">&copy; {new Date().getFullYear()} Plunk. All rights reserved.</p>
           </div>
         </div>
       </footer>

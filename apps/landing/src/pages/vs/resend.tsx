@@ -1,10 +1,10 @@
-import {Footer, Navbar, ComparisonTable, FAQSection} from '../../components';
+import {ComparisonTable, FAQSection, Footer, Navbar} from '../../components';
 import {motion} from 'framer-motion';
 import {DASHBOARD_URI, WIKI_URI} from '../../lib/constants';
 import React from 'react';
 import Link from 'next/link';
 import {NextSeo} from 'next-seo';
-import {ArrowRight, PackageOpen, Workflow, Users, BarChart3, Globe, Layers} from 'lucide-react';
+import {ArrowRight, BarChart3, Globe, Layers, PackageOpen, Users, Workflow} from 'lucide-react';
 import type {ComparisonRow} from '../../components/ComparisonTable';
 import type {FAQ} from '../../components/FAQSection';
 
@@ -28,17 +28,17 @@ const faqs: FAQ[] = [
       'Choose Resend if you only need transactional emails and prefer a service focused exclusively on that use case. Resend has a larger free tier and excellent developer experience for transactional emails. Choose Plunk if you need marketing campaigns, automation workflows, or want the flexibility to self-host (though Plunk also offers fully-managed hosting).',
   },
   {
-    question: "What is the pricing difference between Plunk and Resend?",
+    question: 'What is the pricing difference between Plunk and Resend?',
     answer:
       "Plunk uses a pay-as-you-go pricing model, while Resend uses a fixed subscription model. Both optimize for different use cases - Resend focuses exclusively on transactional emails. Plunk includes marketing campaigns and workflow automation at no additional cost. If you need both transactional and marketing emails, Plunk may be more cost-effective overall since you won't need a separate marketing platform.",
   },
   {
     question: 'Is migration from Resend to Plunk complex?',
     answer:
-      'Migration requires updating your API integration since Plunk and Resend use different API structures. You\'ll need to update your code to use Plunk\'s endpoints and parameter format. However, both platforms support similar features (templates, webhooks, custom domains), so the concepts translate directly. Plan for a few hours of development work to migrate your integration.',
+      "Migration requires updating your API integration since Plunk and Resend use different API structures. You'll need to update your code to use Plunk's endpoints and parameter format. However, both platforms support similar features (templates, webhooks, custom domains), so the concepts translate directly. Plan for a few hours of development work to migrate your integration.",
   },
   {
-    question: 'What does Plunk offer that Resend doesn\'t?',
+    question: "What does Plunk offer that Resend doesn't?",
     answer:
       'Plunk adds marketing campaigns (one-time broadcasts to segments), workflow automation (multi-step email sequences with triggers and conditions), and dynamic audience segmentation. These features mean you can handle both transactional and marketing emails in one platform. Plunk is also open-source (AGPL-3.0) and self-hostable, giving you full control over your email infrastructure.',
   },
@@ -80,7 +80,11 @@ export default function ResendComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-4xl text-center'}
           >
-            <div className={'mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2'}>
+            <div
+              className={
+                'mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2'
+              }
+            >
               <span className={'text-sm text-neutral-600'}>Comparing</span>
               <span className={'text-sm font-semibold text-neutral-900'}>Plunk vs Resend</span>
             </div>
