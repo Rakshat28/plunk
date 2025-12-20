@@ -97,7 +97,7 @@ export class Auth {
         JSON.stringify({userId: created_user.id, email: created_user.email, createdAt: Date.now()}),
       );
 
-      const verificationUrl = `${LANDING_URI}/auth/verify-email?token=${verificationToken}`;
+      const verificationUrl = `${DASHBOARD_URI}/auth/verify-email?token=${verificationToken}`;
       await sendPlatformEmail(
         created_user.email,
         'Verify your email address',
@@ -193,7 +193,7 @@ export class Auth {
     );
 
     // Send email
-    const verificationUrl = `${LANDING_URI}/auth/verify-email?token=${token}`;
+    const verificationUrl = `${DASHBOARD_URI}/auth/verify-email?token=${token}`;
     await sendPlatformEmail(
       user.email,
       'Verify your email address',
