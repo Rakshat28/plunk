@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "node scripts/generate-openapi.js && npx tsx scripts/generate-docs.mts && fumadocs-mdx",
     "build": "next build",
-    "sitemap": "next-sitemap --config next-sitemap.config.cjs",
+    "sitemap": "next-sitemap --config next-sitemap.config.mjs",
     "predev": "node scripts/generate-openapi.js && npx tsx scripts/generate-docs.mts && fumadocs-mdx",
     "dev": "next dev --turbo --port 1000",
     "start": "next start",

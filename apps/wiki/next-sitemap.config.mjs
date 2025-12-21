@@ -1,7 +1,11 @@
 /** @type {import('next-sitemap').IConfig} */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import {fileURLToPath} from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Recursively find all MDX files in a directory
@@ -28,7 +32,7 @@ function findMdxFiles(dir, fileList = []) {
  * Example: content/docs/getting-started/introduction.mdx -> /getting-started/introduction
  */
 function filePathToUrl(filePath) {
-  const contentDocsPath = path.join(process.cwd(), 'content', 'docs');
+  const contentDocsPath = path.join(__dirname, 'content', 'docs');
   const relativePath = path.relative(contentDocsPath, filePath);
   const withoutExt = relativePath.replace(/\.mdx$/, '');
 
@@ -41,11 +45,11 @@ function filePathToUrl(filePath) {
   return '/' + withoutExt.split(path.sep).join('/');
 }
 
-module.exports = {
+const config = {
   siteUrl: process.env.NEXT_PUBLIC_WIKI_URI || 'https://docs.useplunk.com',
   generateRobotsTxt: true,
-  additionalPaths: async (config) => {
-    const contentDocsPath = path.join(process.cwd(), 'content', 'docs');
+  additionalPaths: async () => {
+    const contentDocsPath = path.join(__dirname, 'content', 'docs');
 
     // Find all MDX files
     const mdxFiles = findMdxFiles(contentDocsPath);
@@ -59,3 +63,5 @@ module.exports = {
     }));
   },
 };
+
+export default config;
