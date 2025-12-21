@@ -340,6 +340,25 @@ export class ContactService {
   }
 
   /**
+   * Get project by contact ID
+   * Used to fetch project settings for public endpoints
+   */
+  public static async getProjectByContactId(contactId: string): Promise<{language: string} | null> {
+    const contact = await prisma.contact.findUnique({
+      where: {id: contactId},
+      select: {
+        project: {
+          select: {
+            language: true,
+          },
+        },
+      },
+    });
+
+    return contact?.project || null;
+  }
+
+  /**
    * PUBLIC: Subscribe a contact
    */
   public static async subscribe(contactId: string): Promise<Contact> {

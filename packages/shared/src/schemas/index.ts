@@ -67,6 +67,7 @@ export const ProjectSchemas = {
   update: z.object({
     name: z.string().min(1).max(100).optional(),
     tracking: z.nativeEnum(TrackingMode).optional(),
+    language: z.string().length(2).regex(/^[a-z]{2}$/).optional(),
   }),
 } as const;
 

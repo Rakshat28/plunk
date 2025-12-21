@@ -211,10 +211,14 @@ export class Contacts {
 
     const contact = await ContactService.getById(contactId);
 
+    // Fetch project to get language preference
+    const project = await ContactService.getProjectByContactId(contactId);
+
     return res.status(200).json({
       id: contact.id,
       email: contact.email,
       subscribed: contact.subscribed,
+      language: project?.language || 'en',
     });
   }
 

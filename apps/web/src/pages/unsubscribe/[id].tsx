@@ -1,4 +1,5 @@
 import {Button, Card, CardContent} from '@plunk/ui';
+import {createTranslator, type Translator} from '@plunk/shared';
 import {AnimatePresence, motion} from 'framer-motion';
 import {useRouter} from 'next/router';
 import React, {useEffect, useState} from 'react';
@@ -9,6 +10,7 @@ interface ContactInfo {
   id: string;
   email: string;
   subscribed: boolean;
+  language: string;
 }
 
 export default function Unsubscribe() {
@@ -16,6 +18,7 @@ export default function Unsubscribe() {
   const {id} = router.query;
 
   const [contact, setContact] = useState<ContactInfo | null>(null);
+  const [translator, setTranslator] = useState<Translator | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [unsubscribing, setUnsubscribing] = useState(false);
@@ -29,6 +32,11 @@ export default function Unsubscribe() {
         setLoading(true);
         const data = await network.fetch<ContactInfo>('GET', `/contacts/public/${id}`);
         setContact(data);
+
+        // Load translations for the project's language
+        const t = await createTranslator(data.language || 'en');
+        setTranslator(t);
+
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load contact information');
@@ -56,7 +64,8 @@ export default function Unsubscribe() {
     }
   };
 
-  if (loading) {
+  // Don't render until translations are loaded
+  if (!translator) {
     return (
       <div className={'h-screen flex items-center justify-center bg-neutral-50'}>
         <div className={'flex flex-col gap-6 max-w-2xl w-full px-4'}>
@@ -85,6 +94,35 @@ export default function Unsubscribe() {
     );
   }
 
+  if (loading) {
+    return (
+      <div className={'h-screen flex items-center justify-center bg-neutral-50'}>
+        <div className={'flex flex-col gap-6 max-w-2xl w-full px-4'}>
+          <Card>
+            <CardContent className="p-8">
+              <div className="flex flex-col items-center gap-4">
+                <svg
+                  className="h-8 w-8 animate-spin text-neutral-500"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                <p className="text-sm text-neutral-500">{translator.t('pages.common.loading')}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   if (error && !contact) {
     return (
       <div className={'h-screen flex items-center justify-center bg-neutral-50'}>
@@ -105,7 +143,7 @@ export default function Unsubscribe() {
                     <path d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </div>
-                <h1 className="text-2xl font-bold text-neutral-900">Error</h1>
+                <h1 className="text-2xl font-bold text-neutral-900">{translator.t('pages.common.error')}</h1>
                 <p className="text-neutral-500">{error}</p>
               </div>
             </CardContent>
@@ -140,17 +178,17 @@ export default function Unsubscribe() {
                     <path d="M5 13l4 4L19 7" />
                   </svg>
                 </motion.div>
-                <h1 className="text-2xl font-bold text-neutral-900">You&apos;re unsubscribed</h1>
+                <h1 className="text-2xl font-bold text-neutral-900">{translator.t('pages.unsubscribe.successTitle')}</h1>
                 <p className="text-neutral-500">
-                  {contact?.email} has been unsubscribed. You won&apos;t receive any more emails from us.
+                  {translator.t('pages.unsubscribe.successDescription', {email: contact?.email || ''})}
                 </p>
                 <p className="text-sm text-neutral-400 mt-2">
-                  Changed your mind?{' '}
+                  {translator.t('pages.unsubscribe.changedMind')}{' '}
                   <button
                     onClick={() => router.push(`/subscribe/${id as string}`)}
                     className="underline hover:text-neutral-600"
                   >
-                    Subscribe again
+                    {translator.t('pages.unsubscribe.subscribeAgain')}
                   </button>
                 </p>
               </div>
@@ -168,10 +206,9 @@ export default function Unsubscribe() {
           <CardContent className="p-8">
             <div className="flex flex-col gap-6">
               <div className="flex flex-col items-center text-center gap-2">
-                <h1 className="text-2xl font-bold text-neutral-900">Unsubscribe</h1>
+                <h1 className="text-2xl font-bold text-neutral-900">{translator.t('pages.unsubscribe.title')}</h1>
                 <p className="text-neutral-500">
-                  We&apos;re sorry to see you go. Are you sure you want to unsubscribe <strong>{contact?.email}</strong>{' '}
-                  from receiving emails?
+                  {translator.t('pages.unsubscribe.description', {email: contact?.email || ''})}
                 </p>
               </div>
 
@@ -210,14 +247,14 @@ export default function Unsubscribe() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         />
                       </svg>
-                      <span>Unsubscribing...</span>
+                      <span>{translator.t('pages.unsubscribe.buttonLoading')}</span>
                     </div>
                   ) : (
-                    'Unsubscribe'
+                    translator.t('pages.unsubscribe.button')
                   )}
                 </Button>
                 <Button variant="outline" className="w-full" onClick={() => router.push(`/manage/${id as string}`)}>
-                  Manage preferences instead
+                  {translator.t('pages.unsubscribe.managePreferences')}
                 </Button>
               </div>
             </div>

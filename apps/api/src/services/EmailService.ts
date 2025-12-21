@@ -5,7 +5,7 @@ import signale from 'signale';
 import {DASHBOARD_URI, LANDING_URI, STRIPE_ENABLED} from '../app/constants.js';
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
-import {renderTemplate} from '@plunk/shared';
+import {renderTemplate, createTranslatorSync} from '@plunk/shared';
 
 import {BillingLimitService} from './BillingLimitService.js';
 import {DomainService} from './DomainService.js';
@@ -603,19 +603,28 @@ export class EmailService {
     let html = content;
 
     const unsubscribeHtml = includeUnsubscribe
-      ? `<table align="center" width="100%" style="max-width: 480px; width: 100%; margin-left: auto; margin-right: auto; font-family: Inter, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; border: 0; cellpadding: 0; cellspacing: 0;" role="presentation">
+      ? (() => {
+          // Get translator for project's language
+          const translator = createTranslatorSync(project.language || 'en');
+          const unsubscribeText = translator.t('email.footer.unsubscribeText', {
+            projectName: project.name,
+          });
+          const updatePreferencesText = translator.t('email.footer.updatePreferences');
+
+          return `<table align="center" width="100%" style="max-width: 480px; width: 100%; margin-left: auto; margin-right: auto; font-family: Inter, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; border: 0; cellpadding: 0; cellspacing: 0;" role="presentation">
           <tbody>
             <tr>
               <td>
                 <hr style="border: none; border-top: 1px solid #eaeaea; width: 100%; margin-top: 12px; margin-bottom: 12px;">
                 <p style="font-size: 12px; line-height: 24px; margin: 16px 0; text-align: center; color: rgb(64, 64, 64);">
-                  You received this email because you agreed to receive emails from ${project.name}. If you no longer wish to receive emails like this, please
-                  <a href="${DASHBOARD_URI}/unsubscribe/${contact.id}">update your preferences</a>.
+                  ${unsubscribeText}
+                  <a href="${DASHBOARD_URI}/unsubscribe/${contact.id}">${updatePreferencesText}</a>.
                 </p>
               </td>
             </tr>
           </tbody>
-        </table>`
+        </table>`;
+        })()
       : '';
 
     // Add Plunk badge if billing is enabled and project has no subscription (free tier)

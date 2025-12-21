@@ -57,6 +57,9 @@ model Project {
   // Email Tracking
   tracking TrackingMode @default(ENABLED) // Open and click tracking mode
 
+  // Localization
+  language String @default("en") // Language code for customer-facing content (ISO 639-1)
+
   // Relations
   members     Membership[]
   contacts    Contact[]

@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {ProjectSchemas} from '@plunk/shared';
+import {ProjectSchemas, SUPPORTED_LANGUAGES} from '@plunk/shared';
 import {TrackingMode} from '@plunk/db';
 import {
   Alert,
@@ -181,6 +181,7 @@ export default function Settings() {
     defaultValues: {
       name: activeProject?.name || '',
       tracking: activeProject?.tracking ?? TrackingMode.ENABLED,
+      language: activeProject?.language || 'en',
     },
   });
 
@@ -190,6 +191,7 @@ export default function Settings() {
       form.reset({
         name: activeProject.name,
         tracking: activeProject.tracking ?? TrackingMode.ENABLED,
+        language: activeProject.language || 'en',
       });
     }
   }, [activeProject, form]);
@@ -463,6 +465,39 @@ export default function Settings() {
                           )}
                         />
                       )}
+
+                      {/* Language Selection */}
+                      <FormField
+                        control={form.control}
+                        name="language"
+                        render={({field}) => (
+                          <FormItem>
+                            <FormLabel>Customer Language</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value || 'en'}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select language" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {SUPPORTED_LANGUAGES.map((lang) => (
+                                  <SelectItem key={lang.code} value={lang.code}>
+                                    <div className="flex items-center gap-2">
+                                      <span>{lang.flag}</span>
+                                      <span>{lang.nativeName}</span>
+                                      <span className="text-neutral-500 text-xs">({lang.name})</span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Language for customer-facing pages (unsubscribe, preferences) and email footers.
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
                       <div className="flex justify-end">
                         <Button type="submit" disabled={form.formState.isSubmitting}>
