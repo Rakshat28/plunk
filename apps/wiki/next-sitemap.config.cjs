@@ -1,6 +1,61 @@
 /** @type {import('next-sitemap').IConfig} */
 
+const fs = require('fs');
+const path = require('path');
+
+/**
+ * Recursively find all MDX files in a directory
+ */
+function findMdxFiles(dir, fileList = []) {
+  const files = fs.readdirSync(dir);
+
+  files.forEach((file) => {
+    const filePath = path.join(dir, file);
+    const stat = fs.statSync(filePath);
+
+    if (stat.isDirectory()) {
+      findMdxFiles(filePath, fileList);
+    } else if (file.endsWith('.mdx')) {
+      fileList.push(filePath);
+    }
+  });
+
+  return fileList;
+}
+
+/**
+ * Convert file path to URL path
+ * Example: content/docs/getting-started/introduction.mdx -> /getting-started/introduction
+ */
+function filePathToUrl(filePath) {
+  const contentDocsPath = path.join(process.cwd(), 'content', 'docs');
+  const relativePath = path.relative(contentDocsPath, filePath);
+  const withoutExt = relativePath.replace(/\.mdx$/, '');
+
+  // Convert index.mdx to root path
+  if (withoutExt === 'index') {
+    return '/';
+  }
+
+  // Convert path separators to forward slashes
+  return '/' + withoutExt.split(path.sep).join('/');
+}
+
 module.exports = {
   siteUrl: process.env.NEXT_PUBLIC_WIKI_URI || 'https://docs.useplunk.com',
   generateRobotsTxt: true,
+  additionalPaths: async (config) => {
+    const contentDocsPath = path.join(process.cwd(), 'content', 'docs');
+
+    // Find all MDX files
+    const mdxFiles = findMdxFiles(contentDocsPath);
+
+    // Convert to sitemap entries
+    return mdxFiles.map((filePath) => ({
+      loc: filePathToUrl(filePath),
+      changefreq: 'weekly',
+      priority: 0.7,
+      lastmod: new Date().toISOString(),
+    }));
+  },
 };
