@@ -52,9 +52,9 @@ export function createImportWorker() {
         // Decode base64 CSV data
         const csvContent = Buffer.from(csvData, 'base64').toString('utf-8');
 
-        // Parse CSV
+        // Parse CSV with column header normalization
         const records = parse(csvContent, {
-          columns: true, // Use first row as header
+          columns: (header: string[]) => header.map(h => h.toLowerCase()), // Normalize headers to lowercase
           skip_empty_lines: true,
           trim: true,
           relax_column_count: true, // Allow rows with different column counts
@@ -72,10 +72,10 @@ export function createImportWorker() {
         // Notify that import has started
         await NtfyService.notifyContactImportStarted(projectName, projectId, filename, result.totalRows);
 
-        // Validate that 'email' column exists
+        // Validate that 'email' column exists (case-insensitive)
         const firstRecord = records[0];
         if (firstRecord && typeof firstRecord === 'object' && !('email' in firstRecord)) {
-          throw new Error('CSV must have an "email" column');
+          throw new Error('CSV must have an "email" column (case-insensitive)');
         }
 
         // Process contacts in batches
@@ -110,7 +110,7 @@ export function createImportWorker() {
                 continue;
               }
 
-              // Extract subscribed field if present
+              // Extract subscribed field if present (case-insensitive)
               const subscribedValue = record.subscribed;
               let subscribed: boolean | undefined;
 
