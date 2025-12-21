@@ -157,7 +157,7 @@ export default function Index() {
                 'acceptedAnswer': {
                   '@type': 'Answer',
                   'text':
-                    'Plunk offers a free plan that includes 3000 automated, 3000 transactional and 3000 broadcast emails per month. You can upgrade to a pay-as-you-go plan that costs $0.001 per email.',
+                    'Plunk offers a free plan that includes 1000 emails per month. You can upgrade to a pay-as-you-go plan that costs $0.001 per email.',
                 },
               },
             ],
@@ -199,11 +199,6 @@ export default function Index() {
                 'priceCurrency': 'USD',
                 'unitText': 'email',
               },
-            },
-            'aggregateRating': {
-              '@type': 'AggregateRating',
-              'ratingValue': '4.8',
-              'reviewCount': '50',
             },
             'featureList':
               'Workflow Automation, Dynamic Segmentation, Campaign Management, Analytics, Developer API, Custom Domains, Self-Hosting, Open Source',
