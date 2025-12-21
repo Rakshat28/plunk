@@ -190,6 +190,7 @@ export class Users {
   public async createCheckoutSession(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth as AuthResponse;
     const {id} = UtilitySchemas.id.parse(req.params);
+    const {currency} = req.query;
 
     // Check if billing is enabled
     if (!STRIPE_ENABLED || !stripe) {
@@ -245,6 +246,17 @@ export class Users {
     const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
     const billingCycleAnchor = Math.floor(nextMonth.getTime() / 1000);
 
+    // Validate currency if provided
+    let checkoutCurrency: string | undefined;
+    if (currency && typeof currency === 'string') {
+      const validCurrencies = ['usd', 'eur', 'gbp'];
+      if (validCurrencies.includes(currency.toLowerCase())) {
+        checkoutCurrency = currency.toLowerCase();
+      } else {
+        return res.status(400).json({error: 'Invalid currency. Supported: USD, EUR, GBP'});
+      }
+    }
+
     // Create checkout session
     // Note: proration_behavior cannot be set when one-time prices are included
     // The billing_cycle_anchor alone ensures the subscription is anchored to the 1st of the month
@@ -253,6 +265,7 @@ export class Users {
       customer: project.customer ?? undefined, // Use existing customer if available
       client_reference_id: project.id, // Store project ID for webhook
       line_items: lineItems,
+      ...(checkoutCurrency && {currency: checkoutCurrency}),
       subscription_data: {
         billing_cycle_anchor: billingCycleAnchor,
       },
