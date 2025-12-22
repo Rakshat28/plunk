@@ -2,6 +2,7 @@ import type {Language} from './languages.js';
 // Static imports for all translation files
 import enTranslations from './locales/en.json' with {type: 'json'};
 import nlTranslations from './locales/nl.json' with {type: 'json'};
+import frTranslations from './locales/fr.json' with {type: 'json'};
 
 export {
   SUPPORTED_LANGUAGES,
@@ -29,6 +30,7 @@ export interface Translations {
 const translationsMap: Record<string, Translations> = {
   en: enTranslations,
   nl: nlTranslations,
+  fr: frTranslations,
 };
 
 // In-memory cache for loaded translations
