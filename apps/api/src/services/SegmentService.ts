@@ -458,7 +458,7 @@ export class SegmentService {
     // Handle JSON field paths (e.g., "data.plan")
     if (field.startsWith('data.')) {
       const jsonPath = field.substring(5); // Remove "data." prefix
-      return this.buildJsonFieldCondition(jsonPath, operator, value);
+      return this.buildJsonFieldCondition(jsonPath, operator, value, unit);
     }
 
     // Handle regular fields
@@ -638,13 +638,38 @@ export class SegmentService {
   /**
    * Build condition for JSON fields (stored in contact.data)
    */
-  private static buildJsonFieldCondition(jsonPath: string, operator: string, value: unknown): Prisma.ContactWhereInput {
+  private static buildJsonFieldCondition(
+    jsonPath: string,
+    operator: string,
+    value: unknown,
+    unit?: 'days' | 'hours' | 'minutes',
+  ): Prisma.ContactWhereInput {
     const path = jsonPath.split('.');
 
     switch (operator) {
       case 'equals':
+        // For date strings, compare only the date portion (ignore time)
+        if (this.isDateString(value)) {
+          const {startOfDay, startOfNextDay} = this.getDateRange(String(value));
+          return {
+            AND: [
+              {data: {path, gte: startOfDay as Prisma.InputJsonValue}},
+              {data: {path, lt: startOfNextDay as Prisma.InputJsonValue}},
+            ],
+          };
+        }
         return {data: {path, equals: value as Prisma.InputJsonValue}};
       case 'notEquals':
+        // For date strings, exclude the entire day (not just exact timestamp)
+        if (this.isDateString(value)) {
+          const {startOfDay, startOfNextDay} = this.getDateRange(String(value));
+          return {
+            OR: [
+              {data: {path, lt: startOfDay as Prisma.InputJsonValue}},
+              {data: {path, gte: startOfNextDay as Prisma.InputJsonValue}},
+            ],
+          };
+        }
         return {NOT: {data: {path, equals: value as Prisma.InputJsonValue}}};
       case 'contains':
         return {data: {path, string_contains: String(value)}};
@@ -670,6 +695,20 @@ export class SegmentService {
         return {
           OR: [{data: {path, equals: Prisma.DbNull}}, {data: {path, equals: Prisma.JsonNull}}],
         };
+      case 'within': {
+        // Note: Requires JSON date fields in ISO 8601 format for proper comparison
+        if (!unit) {
+          throw new HttpException(400, 'Unit is required for "within" operator');
+        }
+
+        // Calculate the "since" date (X time units ago from now)
+        const now = new Date();
+        const milliseconds = this.getMilliseconds(value as number, unit);
+        const since = new Date(now.getTime() - milliseconds);
+
+        // Use ISO string for lexicographic comparison in JSON
+        return {data: {path, gte: since.toISOString() as Prisma.InputJsonValue}};
+      }
       default:
         throw new HttpException(400, `Unsupported operator for JSON field: ${operator}`);
     }
@@ -721,6 +760,28 @@ export class SegmentService {
     unit?: 'days' | 'hours' | 'minutes',
   ): Prisma.ContactWhereInput {
     switch (operator) {
+      case 'equals': {
+        // For date fields, compare only the date portion (ignore time)
+        if (this.isDateString(value)) {
+          const {startOfDay, startOfNextDay} = this.getDateRange(String(value));
+          return {
+            AND: [{[field]: {gte: new Date(startOfDay)}}, {[field]: {lt: new Date(startOfNextDay)}}],
+          };
+        }
+        // Exact timestamp match if not a date string
+        return {[field]: new Date(value as string | number | Date)};
+      }
+      case 'notEquals': {
+        // For date fields, exclude the entire day (not just exact timestamp)
+        if (this.isDateString(value)) {
+          const {startOfDay, startOfNextDay} = this.getDateRange(String(value));
+          return {
+            OR: [{[field]: {lt: new Date(startOfDay)}}, {[field]: {gte: new Date(startOfNextDay)}}],
+          };
+        }
+        // Exclude exact timestamp if not a date string
+        return {NOT: {[field]: new Date(value as string | number | Date)}};
+      }
       case 'greaterThan':
         return {[field]: {gt: new Date(value as string | number | Date)}};
       case 'lessThan':
@@ -760,6 +821,41 @@ export class SegmentService {
       default:
         throw new HttpException(400, `Unsupported time unit: ${unit}`);
     }
+  }
+
+  /**
+   * Check if a value is a date string in YYYY-MM-DD format
+   */
+  private static isDateString(value: unknown): boolean {
+    if (typeof value !== 'string') return false;
+    // Match YYYY-MM-DD format (with optional time component)
+    const dateRegex = /^\d{4}-\d{2}-\d{2}(T|$)/;
+    if (!dateRegex.test(value)) return false;
+    // Verify it's a valid date
+    const date = new Date(value);
+    return !isNaN(date.getTime());
+  }
+
+  /**
+   * Get date range for a date string (start of day to start of next day in UTC)
+   * @param value - Date string in YYYY-MM-DD format
+   * @returns Object with startOfDay and startOfNextDay as ISO strings
+   */
+  private static getDateRange(value: string): {startOfDay: string; startOfNextDay: string} {
+    // Extract just the date part (YYYY-MM-DD)
+    const dateStr = value.split('T')[0];
+    const startOfDay = `${dateStr}T00:00:00.000Z`;
+
+    if (!dateStr) {
+      throw new HttpException(400, `Invalid date string: ${value}`);
+    }
+
+    // Calculate start of next day
+    const nextDay = new Date(dateStr);
+    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+    const startOfNextDay = nextDay.toISOString().split('T')[0] + 'T00:00:00.000Z';
+
+    return {startOfDay, startOfNextDay};
   }
 
   /**

@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it} from 'vitest';
 import {SegmentService} from '../SegmentService';
-import {factories} from '../../../../../test/helpers';
+import {factories, getPrismaClient} from '../../../../../test/helpers';
 
 /**
  * Comprehensive Operator Tests for Segment Filtering
@@ -760,6 +760,226 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         expect(ids).toContain(justNow.id);
       });
     });
+
+    describe('within operator for JSON date fields', () => {
+      it('should match contacts with JSON date field within specified days', async () => {
+        // Create contact with recent date in JSON field
+        const recentDate = new Date();
+        const match = await factories.createContact({
+          projectId,
+          data: {
+            subscriptionEndDate: recentDate.toISOString(),
+          },
+        });
+
+        // Create contact with old date
+        const oldDate = new Date();
+        oldDate.setDate(oldDate.getDate() - 10);
+        await factories.createContact({
+          projectId,
+          data: {
+            subscriptionEndDate: oldDate.toISOString(),
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [
+            {
+              field: 'data.subscriptionEndDate',
+              operator: 'within',
+              value: 3,
+              unit: 'days',
+            },
+          ],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(1);
+        expect(result.contacts[0].id).toBe(match.id);
+      });
+
+      it('should match contacts with JSON date field within specified hours', async () => {
+        const recentDate = new Date();
+        const match = await factories.createContact({
+          projectId,
+          data: {
+            lastLoginAt: recentDate.toISOString(),
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [
+            {
+              field: 'data.lastLoginAt',
+              operator: 'within',
+              value: 24,
+              unit: 'hours',
+            },
+          ],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(1);
+        expect(result.contacts[0].id).toBe(match.id);
+      });
+
+      it('should match contacts with JSON date field within specified minutes', async () => {
+        const justNow = new Date();
+        const match = await factories.createContact({
+          projectId,
+          data: {
+            verifiedAt: justNow.toISOString(),
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [
+            {
+              field: 'data.verifiedAt',
+              operator: 'within',
+              value: 60,
+              unit: 'minutes',
+            },
+          ],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(1);
+        expect(result.contacts[0].id).toBe(match.id);
+      });
+
+      it('should NOT match contacts with JSON date field outside the time range', async () => {
+        const oldDate = new Date();
+        oldDate.setDate(oldDate.getDate() - 10);
+        await factories.createContact({
+          projectId,
+          data: {
+            subscriptionEndDate: oldDate.toISOString(),
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [
+            {
+              field: 'data.subscriptionEndDate',
+              operator: 'within',
+              value: 3,
+              unit: 'days',
+            },
+          ],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(0);
+      });
+
+      it('should NOT match contacts where JSON date field does not exist', async () => {
+        await factories.createContact({
+          projectId,
+          data: {
+            otherField: 'value',
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [
+            {
+              field: 'data.subscriptionEndDate',
+              operator: 'within',
+              value: 3,
+              unit: 'days',
+            },
+          ],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(0);
+      });
+
+      it('should handle null values in JSON date fields gracefully', async () => {
+        await factories.createContact({
+          projectId,
+          data: {
+            subscriptionEndDate: null,
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [
+            {
+              field: 'data.subscriptionEndDate',
+              operator: 'within',
+              value: 3,
+              unit: 'days',
+            },
+          ],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(0);
+      });
+
+      it('should work correctly with combined filters (AND logic)', async () => {
+        const recentDate = new Date();
+        const match = await factories.createContact({
+          projectId,
+          subscribed: true,
+          data: {
+            plan: 'premium',
+            subscriptionEndDate: recentDate.toISOString(),
+          },
+        });
+
+        await factories.createContact({
+          projectId,
+          subscribed: false,
+          data: {
+            plan: 'premium',
+            subscriptionEndDate: recentDate.toISOString(),
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [
+            {field: 'subscribed', operator: 'equals', value: true},
+            {field: 'data.plan', operator: 'equals', value: 'premium'},
+            {
+              field: 'data.subscriptionEndDate',
+              operator: 'within',
+              value: 3,
+              unit: 'days',
+            },
+          ],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(1);
+        expect(result.contacts[0].id).toBe(match.id);
+      });
+
+      it('should require unit parameter for within operator', async () => {
+        await expect(
+          SegmentService.create(projectId, {
+            name: 'Invalid Segment',
+            condition: {
+              logic: 'AND',
+              groups: [
+                {
+                  filters: [
+                    {
+                      field: 'data.subscriptionEndDate',
+                      operator: 'within',
+                      value: 3,
+                      // unit intentionally omitted
+                    } as any,
+                  ],
+                },
+              ],
+            },
+          }),
+        ).rejects.toThrow(/operator requires a unit/i);
+      });
+    });
   });
 
   // ========================================
@@ -809,6 +1029,229 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       expect(ids).toContain(first.id);
       expect(ids).toContain(second.id);
       expect(ids).not.toContain(third.id);
+    });
+  });
+
+  // ========================================
+  // DATE-ONLY COMPARISON (equals/notEquals)
+  // ========================================
+  describe('Date-Only Comparison for equals/notEquals', () => {
+    describe('JSON date fields', () => {
+      it('should match contacts with date on the same day (equals) - ignoring time', async () => {
+        const targetDate = '2025-01-15';
+        const match1 = await factories.createContact({
+          projectId,
+          data: {
+            subscriptionEndDate: '2025-01-15T08:30:00.000Z', // Morning
+          },
+        });
+        const match2 = await factories.createContact({
+          projectId,
+          data: {
+            subscriptionEndDate: '2025-01-15T18:45:30.000Z', // Evening
+          },
+        });
+        const noMatch = await factories.createContact({
+          projectId,
+          data: {
+            subscriptionEndDate: '2025-01-16T00:00:00.000Z', // Next day
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [
+            {
+              field: 'data.subscriptionEndDate',
+              operator: 'equals',
+              value: targetDate,
+            },
+          ],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        const ids = result.contacts.map(c => c.id);
+        expect(ids).toContain(match1.id);
+        expect(ids).toContain(match2.id);
+        expect(ids).not.toContain(noMatch.id);
+      });
+
+      it('should exclude contacts with date on the specified day (notEquals)', async () => {
+        const targetDate = '2025-01-15';
+        const match1 = await factories.createContact({
+          projectId,
+          data: {
+            subscriptionEndDate: '2025-01-14T23:59:59.999Z', // Day before
+          },
+        });
+        const match2 = await factories.createContact({
+          projectId,
+          data: {
+            subscriptionEndDate: '2025-01-16T00:00:00.000Z', // Day after
+          },
+        });
+        const noMatch = await factories.createContact({
+          projectId,
+          data: {
+            subscriptionEndDate: '2025-01-15T12:00:00.000Z', // Same day
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [
+            {
+              field: 'data.subscriptionEndDate',
+              operator: 'notEquals',
+              value: targetDate,
+            },
+          ],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        const ids = result.contacts.map(c => c.id);
+        expect(ids).toContain(match1.id);
+        expect(ids).toContain(match2.id);
+        expect(ids).not.toContain(noMatch.id);
+      });
+
+      it('should handle date string with time component (extracts date only)', async () => {
+        const targetDate = '2025-01-15T00:00:00.000Z'; // Has time component
+        const match = await factories.createContact({
+          projectId,
+          data: {
+            subscriptionEndDate: '2025-01-15T23:59:59.999Z', // End of day
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [
+            {
+              field: 'data.subscriptionEndDate',
+              operator: 'equals',
+              value: targetDate,
+            },
+          ],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        const ids = result.contacts.map(c => c.id);
+        expect(ids).toContain(match.id);
+      });
+
+      it('should still do exact match for non-date strings', async () => {
+        const match = await factories.createContact({
+          projectId,
+          data: {
+            plan: 'premium',
+          },
+        });
+        await factories.createContact({
+          projectId,
+          data: {
+            plan: 'basic',
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [
+            {
+              field: 'data.plan',
+              operator: 'equals',
+              value: 'premium',
+            },
+          ],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(1);
+        expect(result.contacts[0].id).toBe(match.id);
+      });
+    });
+
+    describe('Native date fields (createdAt)', () => {
+      it('should match contacts created on the same day (equals) - ignoring time', async () => {
+        // Create contacts on specific dates
+        const jan15Morning = new Date('2025-01-15T08:30:00.000Z');
+        const jan15Evening = new Date('2025-01-15T18:45:30.000Z');
+        const jan16 = new Date('2025-01-16T00:00:00.000Z');
+
+        const prisma = getPrismaClient();
+
+        const match1 = await factories.createContact({projectId});
+        await prisma.contact.update({
+          where: {id: match1.id},
+          data: {createdAt: jan15Morning},
+        });
+
+        const match2 = await factories.createContact({projectId});
+        await prisma.contact.update({
+          where: {id: match2.id},
+          data: {createdAt: jan15Evening},
+        });
+
+        const noMatch = await factories.createContact({projectId});
+        await prisma.contact.update({
+          where: {id: noMatch.id},
+          data: {createdAt: jan16},
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [
+            {
+              field: 'createdAt',
+              operator: 'equals',
+              value: '2025-01-15',
+            },
+          ],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        const ids = result.contacts.map(c => c.id);
+        expect(ids).toContain(match1.id);
+        expect(ids).toContain(match2.id);
+        expect(ids).not.toContain(noMatch.id);
+      });
+
+      it('should exclude contacts created on the specified day (notEquals)', async () => {
+        const jan14 = new Date('2025-01-14T23:59:59.999Z');
+        const jan15 = new Date('2025-01-15T12:00:00.000Z');
+        const jan16 = new Date('2025-01-16T00:00:00.000Z');
+
+        const prisma = getPrismaClient();
+
+        const match1 = await factories.createContact({projectId});
+        await prisma.contact.update({
+          where: {id: match1.id},
+          data: {createdAt: jan14},
+        });
+
+        const match2 = await factories.createContact({projectId});
+        await prisma.contact.update({
+          where: {id: match2.id},
+          data: {createdAt: jan16},
+        });
+
+        const noMatch = await factories.createContact({projectId});
+        await prisma.contact.update({
+          where: {id: noMatch.id},
+          data: {createdAt: jan15},
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [
+            {
+              field: 'createdAt',
+              operator: 'notEquals',
+              value: '2025-01-15',
+            },
+          ],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        const ids = result.contacts.map(c => c.id);
+        expect(ids).toContain(match1.id);
+        expect(ids).toContain(match2.id);
+        expect(ids).not.toContain(noMatch.id);
+      });
     });
   });
 
