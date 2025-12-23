@@ -1333,4 +1333,409 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       expect(result.contacts[0].id).toBe(match.id);
     });
   });
+
+  // ========================================
+  // EVENT OPERATORS
+  // ========================================
+  describe('Event Operators', () => {
+    describe('triggered operator', () => {
+      it('should match contacts who have triggered the event', async () => {
+        const prisma = getPrismaClient();
+        const match = await factories.createContact({projectId});
+        const noMatch = await factories.createContact({projectId});
+
+        // Create event for match contact
+        await prisma.event.create({
+          data: {
+            projectId,
+            contactId: match.id,
+            name: 'purchase',
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [{field: 'event.purchase', operator: 'triggered'}],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(1);
+        expect(result.contacts[0].id).toBe(match.id);
+      });
+
+      it('should not match contacts who have not triggered the event', async () => {
+        const prisma = getPrismaClient();
+        const contact1 = await factories.createContact({projectId});
+        const contact2 = await factories.createContact({projectId});
+
+        // Create different event
+        await prisma.event.create({
+          data: {
+            projectId,
+            contactId: contact1.id,
+            name: 'signup',
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [{field: 'event.purchase', operator: 'triggered'}],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(0);
+      });
+
+      it('should match contacts with multiple occurrences of the same event', async () => {
+        const prisma = getPrismaClient();
+        const match = await factories.createContact({projectId});
+
+        // Create multiple events
+        await prisma.event.createMany({
+          data: [
+            {projectId, contactId: match.id, name: 'purchase'},
+            {projectId, contactId: match.id, name: 'purchase'},
+            {projectId, contactId: match.id, name: 'purchase'},
+          ],
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [{field: 'event.purchase', operator: 'triggered'}],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(1);
+        expect(result.contacts[0].id).toBe(match.id);
+      });
+    });
+
+    describe('triggeredWithin operator', () => {
+      it('should match contacts with event within time range (days)', async () => {
+        const prisma = getPrismaClient();
+        const match = await factories.createContact({projectId});
+        const noMatch = await factories.createContact({projectId});
+
+        const now = new Date();
+        const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+        const eightDaysAgo = new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000);
+
+        // Recent event
+        await prisma.event.create({
+          data: {
+            projectId,
+            contactId: match.id,
+            name: 'purchase',
+            createdAt: twoDaysAgo,
+          },
+        });
+
+        // Old event
+        await prisma.event.create({
+          data: {
+            projectId,
+            contactId: noMatch.id,
+            name: 'purchase',
+            createdAt: eightDaysAgo,
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [{field: 'event.purchase', operator: 'triggeredWithin', value: 7, unit: 'days'}],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(1);
+        expect(result.contacts[0].id).toBe(match.id);
+      });
+
+      it('should match contacts with event within time range (hours)', async () => {
+        const prisma = getPrismaClient();
+        const match = await factories.createContact({projectId});
+        const noMatch = await factories.createContact({projectId});
+
+        const now = new Date();
+        const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+        const sixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+
+        await prisma.event.create({
+          data: {
+            projectId,
+            contactId: match.id,
+            name: 'login',
+            createdAt: twoHoursAgo,
+          },
+        });
+
+        await prisma.event.create({
+          data: {
+            projectId,
+            contactId: noMatch.id,
+            name: 'login',
+            createdAt: sixHoursAgo,
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [{field: 'event.login', operator: 'triggeredWithin', value: 4, unit: 'hours'}],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(1);
+        expect(result.contacts[0].id).toBe(match.id);
+      });
+
+      it('should match contacts with event within time range (minutes)', async () => {
+        const prisma = getPrismaClient();
+        const match = await factories.createContact({projectId});
+        const noMatch = await factories.createContact({projectId});
+
+        const now = new Date();
+        const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+        const twentyMinutesAgo = new Date(now.getTime() - 20 * 60 * 1000);
+
+        await prisma.event.create({
+          data: {
+            projectId,
+            contactId: match.id,
+            name: 'click',
+            createdAt: fiveMinutesAgo,
+          },
+        });
+
+        await prisma.event.create({
+          data: {
+            projectId,
+            contactId: noMatch.id,
+            name: 'click',
+            createdAt: twentyMinutesAgo,
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [{field: 'event.click', operator: 'triggeredWithin', value: 10, unit: 'minutes'}],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(1);
+        expect(result.contacts[0].id).toBe(match.id);
+      });
+
+      it('should handle events at exact boundary', async () => {
+        const prisma = getPrismaClient();
+        const contact = await factories.createContact({projectId});
+
+        const now = new Date();
+        const exactlySevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+        await prisma.event.create({
+          data: {
+            projectId,
+            contactId: contact.id,
+            name: 'purchase',
+            createdAt: exactlySevenDaysAgo,
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [{field: 'event.purchase', operator: 'triggeredWithin', value: 7, unit: 'days'}],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        // Should not match because events at exact boundary are excluded
+        expect(result.contacts).toHaveLength(0);
+      });
+
+      it('should not match contacts with event outside time range', async () => {
+        const prisma = getPrismaClient();
+        const contact = await factories.createContact({projectId});
+
+        const now = new Date();
+        const tenDaysAgo = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000);
+
+        await prisma.event.create({
+          data: {
+            projectId,
+            contactId: contact.id,
+            name: 'purchase',
+            createdAt: tenDaysAgo,
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [{field: 'event.purchase', operator: 'triggeredWithin', value: 7, unit: 'days'}],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(0);
+      });
+
+      it('should match contact if any of their events is within range', async () => {
+        const prisma = getPrismaClient();
+        const match = await factories.createContact({projectId});
+
+        const now = new Date();
+        const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+        // Old event
+        await prisma.event.create({
+          data: {
+            projectId,
+            contactId: match.id,
+            name: 'purchase',
+            createdAt: thirtyDaysAgo,
+          },
+        });
+
+        // Recent event
+        await prisma.event.create({
+          data: {
+            projectId,
+            contactId: match.id,
+            name: 'purchase',
+            createdAt: twoDaysAgo,
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [{field: 'event.purchase', operator: 'triggeredWithin', value: 7, unit: 'days'}],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(1);
+        expect(result.contacts[0].id).toBe(match.id);
+      });
+    });
+
+    describe('notTriggered operator', () => {
+      it('should match contacts who have never triggered the event', async () => {
+        const prisma = getPrismaClient();
+        const match = await factories.createContact({projectId});
+        const noMatch = await factories.createContact({projectId});
+
+        // Only noMatch has the event
+        await prisma.event.create({
+          data: {
+            projectId,
+            contactId: noMatch.id,
+            name: 'purchase',
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [{field: 'event.purchase', operator: 'notTriggered'}],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(1);
+        expect(result.contacts[0].id).toBe(match.id);
+      });
+
+      it('should not match contacts who have triggered the event', async () => {
+        const prisma = getPrismaClient();
+        const contact = await factories.createContact({projectId});
+
+        await prisma.event.create({
+          data: {
+            projectId,
+            contactId: contact.id,
+            name: 'purchase',
+          },
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [{field: 'event.purchase', operator: 'notTriggered'}],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(0);
+      });
+
+      it('should match contacts with other events but not the target event', async () => {
+        const prisma = getPrismaClient();
+        const match = await factories.createContact({projectId});
+
+        // Create different events
+        await prisma.event.createMany({
+          data: [
+            {projectId, contactId: match.id, name: 'signup'},
+            {projectId, contactId: match.id, name: 'login'},
+          ],
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [{field: 'event.purchase', operator: 'notTriggered'}],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(1);
+        expect(result.contacts[0].id).toBe(match.id);
+      });
+    });
+
+    describe('Event operators with combined filters', () => {
+      it('should combine event filter with contact field filter (AND)', async () => {
+        const prisma = getPrismaClient();
+        const match = await factories.createContact({
+          projectId,
+          data: {plan: 'premium'},
+        });
+        const noMatch1 = await factories.createContact({
+          projectId,
+          data: {plan: 'basic'},
+        });
+        const noMatch2 = await factories.createContact({
+          projectId,
+          data: {plan: 'premium'},
+        });
+
+        // match and noMatch1 have the event, but only match has premium plan
+        await prisma.event.create({
+          data: {projectId, contactId: match.id, name: 'purchase'},
+        });
+        await prisma.event.create({
+          data: {projectId, contactId: noMatch1.id, name: 'purchase'},
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [
+            {field: 'event.purchase', operator: 'triggered'},
+            {field: 'data.plan', operator: 'equals', value: 'premium'},
+          ],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(1);
+        expect(result.contacts[0].id).toBe(match.id);
+      });
+
+      it('should combine multiple event filters', async () => {
+        const prisma = getPrismaClient();
+        const match = await factories.createContact({projectId});
+        const noMatch = await factories.createContact({projectId});
+
+        // match has both events
+        await prisma.event.createMany({
+          data: [
+            {projectId, contactId: match.id, name: 'signup'},
+            {projectId, contactId: match.id, name: 'purchase'},
+          ],
+        });
+
+        // noMatch only has signup
+        await prisma.event.create({
+          data: {projectId, contactId: noMatch.id, name: 'signup'},
+        });
+
+        const segment = await factories.createSegment(projectId, {
+          filters: [
+            {field: 'event.signup', operator: 'triggered'},
+            {field: 'event.purchase', operator: 'triggered'},
+          ],
+        });
+
+        const result = await SegmentService.getContacts(projectId, segment.id);
+        expect(result.contacts).toHaveLength(1);
+        expect(result.contacts[0].id).toBe(match.id);
+      });
+    });
+  });
 });

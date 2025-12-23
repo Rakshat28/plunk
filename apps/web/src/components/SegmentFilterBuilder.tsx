@@ -100,9 +100,11 @@ function useAvailableOptions() {
               category: 'Email Activity' as const,
             });
           } else {
+            // Ensure event has the 'event.' prefix for backend compatibility
+            const eventValue = name.startsWith('event.') ? name : `event.${name}`;
             eventOptions.push({
-              value: name,
-              label: name,
+              value: eventValue,
+              label: name.replace(/^event\./, ''), // Remove prefix from label for display
               type: 'event' as const,
               category: 'Events' as const,
             });
