@@ -668,6 +668,10 @@
                           "type": "boolean",
                           "description": "Whether a potential typo was detected in the email address"
                         },
+                        "isPlusAddressed": {
+                          "type": "boolean",
+                          "description": "Whether the email uses plus addressing (contains a + in the local part)"
+                        },
                         "domainExists": {
                           "type": "boolean",
                           "description": "Whether the domain exists (has DNS A or AAAA records)"
@@ -690,7 +694,7 @@
                           "description": "Array of human-readable reasons describing the verification results"
                         }
                       },
-                      "required": ["email", "valid", "isDisposable", "isTypo", "domainExists", "hasMxRecords", "reasons"]
+                      "required": ["email", "valid", "isDisposable", "isTypo", "isPlusAddressed", "domainExists", "hasMxRecords", "reasons"]
                     }
                   }
                 },
@@ -704,6 +708,7 @@
                         "valid": true,
                         "isDisposable": false,
                         "isTypo": false,
+                        "isPlusAddressed": false,
                         "domainExists": true,
                         "hasMxRecords": true,
                         "reasons": [
@@ -721,6 +726,7 @@
                         "valid": false,
                         "isDisposable": false,
                         "isTypo": true,
+                        "isPlusAddressed": false,
                         "domainExists": false,
                         "hasMxRecords": false,
                         "suggestedEmail": "user@gmail.com",
@@ -740,6 +746,7 @@
                         "valid": true,
                         "isDisposable": true,
                         "isTypo": false,
+                        "isPlusAddressed": false,
                         "domainExists": true,
                         "hasMxRecords": true,
                         "reasons": [
