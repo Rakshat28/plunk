@@ -7,6 +7,7 @@ export interface EmailVerificationResult {
   valid: boolean;
   isDisposable: boolean;
   isTypo: boolean;
+  isPlusAddressed: boolean;
   domainExists: boolean;
   hasMxRecords: boolean;
   suggestedEmail?: string;
@@ -27,6 +28,7 @@ export class EmailVerificationService {
       valid: true,
       isDisposable: false,
       isTypo: false,
+      isPlusAddressed: false,
       domainExists: false,
       hasMxRecords: false,
       reasons: [],
@@ -45,6 +47,9 @@ export class EmailVerificationService {
     // Check if email is from a disposable domain
     // MailChecker.isValid returns false for disposable emails
     result.isDisposable = disposable.validate(domain);
+
+    // Check for plus addressing
+    result.isPlusAddressed = emailParts[0]!.includes('+');
 
     // Check for common typos and suggest corrections
     const typoCheck = run({email});
