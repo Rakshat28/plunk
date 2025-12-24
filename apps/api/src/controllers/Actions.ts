@@ -8,6 +8,7 @@ import {prisma} from '../database/prisma.js';
 import {ContactService} from '../services/ContactService.js';
 import {DomainService} from '../services/DomainService.js';
 import {EmailService} from '../services/EmailService.js';
+import {EmailVerificationService} from '../services/EmailVerificationService.js';
 import {EventService} from '../services/EventService.js';
 import {NotFound, ValidationError} from '../exceptions/index.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
@@ -15,7 +16,7 @@ import {DASHBOARD_URI} from '../app/constants.js';
 
 /**
  * Public API Actions Controller
- * Handles track event and transactional email endpoints
+ * Handles track event, transactional email, and email verification endpoints
  */
 @Controller('v1')
 export class Actions {
@@ -339,6 +340,60 @@ export class Actions {
         emails: emailResults,
         timestamp: timestamp.toISOString(),
       },
+    });
+  }
+
+  /**
+   * POST /v1/verify
+   * Verify an email address
+   *
+   * Request body:
+   * - email: string (required) - Email address to verify
+   *
+   * Response:
+   * - success: boolean
+   * - data: object with verification results
+   *   - email: string - Email address that was verified
+   *   - valid: boolean - Whether the email appears to be valid
+   *   - isDisposable: boolean - Whether the email is from a disposable domain
+   *   - hasMxRecords: boolean - Whether the domain has MX records configured
+   *   - suggestedEmail?: string - Suggested correction if typo detected
+   *   - reasons: string[] - Array of reasons describing the verification results
+   *
+   * Example:
+   * {
+   *   email: "user@gmial.com"
+   * }
+   *
+   * Response:
+   * {
+   *   success: true,
+   *   data: {
+   *     email: "user@gmial.com",
+   *     valid: false,
+   *     isDisposable: false,
+   *     hasMxRecords: false,
+   *     suggestedEmail: "user@gmail.com",
+   *     reasons: [
+   *       "Possible typo detected, did you mean user@gmail.com?",
+   *       "Domain does not exist or has no MX records"
+   *     ]
+   *   }
+   * }
+   */
+  @Post('verify')
+  @Middleware([requireSecretKey])
+  @CatchAsync
+  public async verify(req: Request, res: Response, _next: NextFunction) {
+    // Zod validation - errors automatically handled by global error handler
+    const {email} = ActionSchemas.verify.parse(req.body);
+
+    // Verify the email address
+    const verificationResult = await EmailVerificationService.verifyEmail(email);
+
+    return res.status(200).json({
+      success: true,
+      data: verificationResult,
     });
   }
 }

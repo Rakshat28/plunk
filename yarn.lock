@@ -6552,6 +6552,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/disposable-email@npm:^0":
+  version: 0.2.2
+  resolution: "@types/disposable-email@npm:0.2.2"
+  checksum: 10c0/8e96fe0e5d9677629d848cae2245e88d182a712ee53179d83a7ce371da836585fb2a4fed29ead263c2aec74d100daeff5af9dc2a54dfbac3f20ffc3b875fb087
+  languageName: node
+  linkType: hard
+
 "@types/eslint-scope@npm:^3.7.7":
   version: 3.7.7
   resolution: "@types/eslint-scope@npm:3.7.7"
@@ -7606,6 +7613,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@zootools/email-spell-checker@npm:^1.12.0":
+  version: 1.12.0
+  resolution: "@zootools/email-spell-checker@npm:1.12.0"
+  checksum: 10c0/0b2fa9d0aaf1e6d846fe9e261276fecbd5c48db2689814b702bcec6b63729d097b245f59cdfb3dfca65d66b68de24b67e3b317494bcfbfdd166c244cd298a0cc
+  languageName: node
+  linkType: hard
+
 "abbrev@npm:^4.0.0":
   version: 4.0.0
   resolution: "abbrev@npm:4.0.0"
@@ -7829,12 +7843,14 @@ __metadata:
     "@types/bcrypt": "npm:^6.0.0"
     "@types/cookie-parser": "npm:^1.4.7"
     "@types/cors": "npm:^2.8.17"
+    "@types/disposable-email": "npm:^0"
     "@types/express": "npm:^5.0.5"
     "@types/helmet": "npm:^4.0.0"
     "@types/jsonwebtoken": "npm:^9.0.6"
     "@types/morgan": "npm:^1.9.9"
     "@types/multer": "npm:^2.0.0"
     "@types/signale": "npm:^1.4.7"
+    "@zootools/email-spell-checker": "npm:^1.12.0"
     bcrypt: "npm:^6.0.0"
     body-parser: "npm:^2.2.0"
     bullmq: "npm:^5.63.2"
@@ -7843,11 +7859,13 @@ __metadata:
     cors: "npm:^2.8.5"
     csv-parse: "npm:^6.1.0"
     dayjs: "npm:^1.11.19"
+    disposable-email: "npm:^0.2.3"
     dotenv: "npm:^17.2.3"
     express: "npm:^5.1.0"
     helmet: "npm:^8.1.0"
     ioredis: "npm:^5.8.2"
     jsonwebtoken: "npm:^9.0.2"
+    mailchecker: "npm:^6.0.19"
     morgan: "npm:^1.10.0"
     multer: "npm:^2.0.2"
     signale: "npm:^1.4.0"
@@ -9487,6 +9505,13 @@ __metadata:
   version: 4.0.2
   resolution: "diff@npm:4.0.2"
   checksum: 10c0/81b91f9d39c4eaca068eb0c1eb0e4afbdc5bb2941d197f513dd596b820b956fef43485876226d65d497bebc15666aa2aa82c679e84f65d5f2bfbf14ee46e32c1
+  languageName: node
+  linkType: hard
+
+"disposable-email@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "disposable-email@npm:0.2.3"
+  checksum: 10c0/d2da52e225bb784e640f9aff6c3e319c596e82c778b5483e36ff67eba5c5b9df6f59ed8c26be401b0813c921783e0b271fb97d49b33a73cb46dd010dc7081931
   languageName: node
   linkType: hard
 
@@ -13293,6 +13318,13 @@ __metadata:
     "@babel/types": "npm:^7.28.5"
     source-map-js: "npm:^1.2.1"
   checksum: 10c0/a00bbf3688b9b3e83c10b3bfe3f106cc2ccbf20c4f2dc1c9020a10556dfe0a6a6605a445ee8e86a6e2b484ec519a657b5e405532684f72678c62e4c0d32f962c
+  languageName: node
+  linkType: hard
+
+"mailchecker@npm:^6.0.19":
+  version: 6.0.19
+  resolution: "mailchecker@npm:6.0.19"
+  checksum: 10c0/96269fc53d5103f1950926554ac92cb38ff6c8511c7628d13a36e74572f88484a47d8789d35902cb69589c1eeb7c8d96d46105f92d285c4dfabbb00b88e8b8a3
   languageName: node
   linkType: hard
 

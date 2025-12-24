@@ -592,6 +592,189 @@
         }
       }
     },
+    "/v1/verify": {
+      "post": {
+        "tags": ["Public API"],
+        "summary": "Verify email address",
+        "description": "Verify an email address for validity, check if it's from a disposable domain, verify MX records, and detect potential typos with suggestions.",
+        "operationId": "verifyEmail",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Email address to verify"
+                  }
+                }
+              },
+              "examples": {
+                "validEmail": {
+                  "summary": "Valid email address",
+                  "value": {
+                    "email": "user@gmail.com"
+                  }
+                },
+                "typoEmail": {
+                  "summary": "Email with potential typo",
+                  "value": {
+                    "email": "user@gmial.com"
+                  }
+                },
+                "disposableEmail": {
+                  "summary": "Disposable email address",
+                  "value": {
+                    "email": "user@tempmail.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email verification completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "Always true for successful requests"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "email": {
+                          "type": "string",
+                          "format": "email",
+                          "description": "Email address that was verified"
+                        },
+                        "valid": {
+                          "type": "boolean",
+                          "description": "Whether the email appears to be valid overall"
+                        },
+                        "isDisposable": {
+                          "type": "boolean",
+                          "description": "Whether the email is from a disposable/temporary email domain"
+                        },
+                        "isTypo": {
+                          "type": "boolean",
+                          "description": "Whether a potential typo was detected in the email address"
+                        },
+                        "domainExists": {
+                          "type": "boolean",
+                          "description": "Whether the domain exists (has DNS A or AAAA records)"
+                        },
+                        "hasMxRecords": {
+                          "type": "boolean",
+                          "description": "Whether the domain has MX records configured for email delivery"
+                        },
+                        "suggestedEmail": {
+                          "type": "string",
+                          "format": "email",
+                          "description": "Suggested correction if a typo was detected (optional)",
+                          "nullable": true
+                        },
+                        "reasons": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Array of human-readable reasons describing the verification results"
+                        }
+                      },
+                      "required": ["email", "valid", "isDisposable", "isTypo", "domainExists", "hasMxRecords", "reasons"]
+                    }
+                  }
+                },
+                "examples": {
+                  "validEmail": {
+                    "summary": "Valid email",
+                    "value": {
+                      "success": true,
+                      "data": {
+                        "email": "user@gmail.com",
+                        "valid": true,
+                        "isDisposable": false,
+                        "isTypo": false,
+                        "domainExists": true,
+                        "hasMxRecords": true,
+                        "reasons": [
+                          "Email appears to be valid"
+                        ]
+                      }
+                    }
+                  },
+                  "typoDetected": {
+                    "summary": "Email with typo detected",
+                    "value": {
+                      "success": true,
+                      "data": {
+                        "email": "user@gmial.com",
+                        "valid": false,
+                        "isDisposable": false,
+                        "isTypo": true,
+                        "domainExists": false,
+                        "hasMxRecords": false,
+                        "suggestedEmail": "user@gmail.com",
+                        "reasons": [
+                          "Possible typo detected, did you mean gmail.com?",
+                          "Domain does not exist"
+                        ]
+                      }
+                    }
+                  },
+                  "disposableEmail": {
+                    "summary": "Disposable email detected",
+                    "value": {
+                      "success": true,
+                      "data": {
+                        "email": "user@tempmail.com",
+                        "valid": true,
+                        "isDisposable": true,
+                        "isTypo": false,
+                        "domainExists": true,
+                        "hasMxRecords": true,
+                        "reasons": [
+                          "Email appears to be valid"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - invalid email format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/contacts": {
       "get": {
         "tags": ["Contacts"],

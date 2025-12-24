@@ -390,6 +390,9 @@ export const ActionSchemas = {
         message: 'Total attachment size must not exceed 10MB',
       },
     ),
+  verify: z.object({
+    email,
+  }),
 } as const;
 
 export const BillingLimitSchemas = {
