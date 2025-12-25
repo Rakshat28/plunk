@@ -3,6 +3,7 @@ import type {Language} from './languages.js';
 import enTranslations from './locales/en.json' with {type: 'json'};
 import nlTranslations from './locales/nl.json' with {type: 'json'};
 import frTranslations from './locales/fr.json' with {type: 'json'};
+import deTranslations from './locales/de.json' with {type: 'json'};
 import hiTranslations from './locales/hi.json' with {type: 'json'};
 export {
   SUPPORTED_LANGUAGES,
@@ -30,6 +31,7 @@ export interface Translations {
 const translationsMap: Record<string, Translations> = {
   en: enTranslations,
   nl: nlTranslations,
+  de: deTranslations,
   fr: frTranslations,
   hi: hiTranslations,
 };
