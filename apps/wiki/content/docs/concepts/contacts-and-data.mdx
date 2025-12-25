@@ -35,6 +35,46 @@ The `data` field stores custom key-value pairs.
 - Store dates as ISO strings: `"2024-03-15T10:30:00Z"`
 - Use numbers for numeric values (enables comparisons)
 
+## Localization
+
+The `locale` field in contact data overrides the project-wide language setting for that specific contact.
+
+**Where it's used:**
+- Unsubscribe and preference center pages
+- Email footer translations
+- All contact-facing content
+
+**Example:**
+
+```javascript
+// Set a contact's preferred language
+POST /contacts
+{
+  "email": "user@example.com",
+  "data": {
+    "locale": "de"  // German
+  }
+}
+```
+
+**Via tracking:**
+
+```javascript
+POST /v1/track
+{
+  "event": "signup",
+  "email": "user@example.com",
+  "data": {
+    "locale": "fr"  // French
+  }
+}
+```
+
+**Behavior:**
+- If `locale` is set: uses contact's language
+- If not set: uses project's default language
+- Falls back to English if neither is set
+
 ## Template variables
 
 Use `{{fieldName}}` in emails:
@@ -45,7 +85,7 @@ Use `{{fieldName}}` in emails:
 
 **Fallback:** `{{firstName ?? 'there'}}`
 
-**Reserved:** `{{email}}`, `{{id}}`
+**Predefined fields:** `{{email}}`, `{{unsubscribeUrl}}`, `{{subscribeUrl}}`, `{{manageUrl}}`, `{{locale}}`
 
 ## Temporary data
 
