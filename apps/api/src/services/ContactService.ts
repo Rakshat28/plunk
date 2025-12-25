@@ -1,4 +1,5 @@
 import {type Contact, Prisma} from '@plunk/db';
+import {isValidLanguageCode} from '@plunk/shared';
 import type {FilterCondition, FilterGroup} from '@plunk/types';
 
 import {prisma} from '../database/prisma.js';
@@ -229,6 +230,20 @@ export class ContactService {
           continue;
         }
 
+        // Validate locale field
+        if (key === 'locale') {
+          if (typeof value === 'string') {
+            if (!isValidLanguageCode(value)) {
+              throw new HttpException(
+                400,
+                `Invalid locale code: ${value}. Must be one of: en, nl, fr, hi, de`,
+              );
+            }
+          } else if (value !== null && value !== undefined) {
+            throw new HttpException(400, 'Locale must be a string');
+          }
+        }
+
         // Handle non-persistent data format: { value: "...", persistent: false }
         if (
           typeof value === 'object' &&
@@ -295,6 +310,12 @@ export class ContactService {
     // Add contact's persistent data
     if (contact.data && typeof contact.data === 'object' && !Array.isArray(contact.data)) {
       Object.assign(mergedData, contact.data);
+    }
+
+    // Explicitly expose locale as a predefined field (available in templates)
+    // This ensures locale is always accessible even if not in contact.data
+    if (mergedData.locale === undefined) {
+      mergedData.locale = null;
     }
 
     // Add temporary (non-persistent) data

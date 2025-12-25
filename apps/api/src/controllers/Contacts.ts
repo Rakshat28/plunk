@@ -214,11 +214,21 @@ export class Contacts {
     // Fetch project to get language preference
     const project = await ContactService.getProjectByContactId(contactId);
 
+    // Get contact-level locale (overrides project language)
+    const contactLocale =
+      contact.data &&
+      typeof contact.data === 'object' &&
+      !Array.isArray(contact.data) &&
+      'locale' in contact.data &&
+      typeof contact.data.locale === 'string'
+        ? contact.data.locale
+        : null;
+
     return res.status(200).json({
       id: contact.id,
       email: contact.email,
       subscribed: contact.subscribed,
-      language: project?.language || 'en',
+      language: contactLocale || project?.language || 'en',
     });
   }
 

@@ -604,8 +604,18 @@ export class EmailService {
 
     const unsubscribeHtml = includeUnsubscribe
       ? (() => {
-          // Get translator for project's language
-          const translator = createTranslatorSync(project.language || 'en');
+          // Get contact-level locale (overrides project language)
+          const contactLocale =
+            contact.data &&
+            typeof contact.data === 'object' &&
+            !Array.isArray(contact.data) &&
+            'locale' in contact.data &&
+            typeof contact.data.locale === 'string'
+              ? contact.data.locale
+              : null;
+
+          // Get translator for contact's locale or project's language
+          const translator = createTranslatorSync(contactLocale || project.language || 'en');
           const unsubscribeText = translator.t('email.footer.unsubscribeText', {
             projectName: project.name,
           });
