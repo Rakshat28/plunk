@@ -225,12 +225,14 @@ export class ContactService {
     // Merge new data (if provided)
     if (data) {
       for (const [key, value] of Object.entries(data)) {
-        // Skip reserved fields
-        if (key === 'plunk_id' || key === 'plunk_email') {
+        // Skip reserved system-generated fields
+        // These fields are dynamically added during template rendering and cannot be overridden
+        const reservedFields = ['plunk_id', 'plunk_email', 'email', 'unsubscribeUrl', 'subscribeUrl', 'manageUrl'];
+        if (reservedFields.includes(key)) {
           continue;
         }
 
-        // Validate locale field
+        // Validate locale field (special user-settable field)
         if (key === 'locale') {
           if (typeof value === 'string') {
             if (!isValidLanguageCode(value)) {
@@ -321,8 +323,9 @@ export class ContactService {
     // Add temporary (non-persistent) data
     if (temporaryData) {
       for (const [key, value] of Object.entries(temporaryData)) {
-        // Skip reserved fields
-        if (key === 'plunk_id' || key === 'plunk_email') {
+        // Skip reserved system-generated fields
+        const reservedFields = ['plunk_id', 'plunk_email', 'email', 'unsubscribeUrl', 'subscribeUrl', 'manageUrl'];
+        if (reservedFields.includes(key)) {
           continue;
         }
 

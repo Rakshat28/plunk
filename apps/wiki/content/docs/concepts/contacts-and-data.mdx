@@ -85,7 +85,14 @@ Use `{{fieldName}}` in emails:
 
 **Fallback:** `{{firstName ?? 'there'}}`
 
-**Predefined fields:** `{{email}}`, `{{unsubscribeUrl}}`, `{{subscribeUrl}}`, `{{manageUrl}}`, `{{locale}}`
+**System-generated fields (always available):**
+- `{{email}}` - Contact's email address
+- `{{unsubscribeUrl}}` - Link to unsubscribe page
+- `{{subscribeUrl}}` - Link to subscribe page
+- `{{manageUrl}}` - Link to preference center
+
+**Special fields:**
+- `{{locale}}` - Contact's language preference (user-settable, overrides project default)
 
 ## Temporary data
 
