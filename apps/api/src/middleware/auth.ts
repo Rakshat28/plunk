@@ -119,6 +119,13 @@ export const requireProjectAccess = async (req: Request, res: Response, next: Ne
       throw new HttpException(403, 'You do not have access to this project', ErrorCode.PROJECT_ACCESS_DENIED);
     }
 
+    // Set auth response with project ID (before disabled check so it's available for logging)
+    res.locals.auth = {
+      type: 'jwt',
+      userId,
+      projectId,
+    } as AuthResponse;
+
     // Check if project is disabled - block write operations
     if (project?.disabled) {
       const method = req.method.toUpperCase();
@@ -132,13 +139,6 @@ export const requireProjectAccess = async (req: Request, res: Response, next: Ne
         );
       }
     }
-
-    // Set auth response with project ID
-    res.locals.auth = {
-      type: 'jwt',
-      userId,
-      projectId,
-    } as AuthResponse;
 
     next();
   } catch (error) {
@@ -189,6 +189,12 @@ export const requirePublicKey = async (req: Request, res: Response, next: NextFu
       );
     }
 
+    // Set auth response with project ID (before disabled check so it's available for logging)
+    res.locals.auth = {
+      type: 'apiKey',
+      projectId: project.id,
+    } as AuthResponse;
+
     // Check if project is disabled - block write operations
     if (project.disabled) {
       const method = req.method.toUpperCase();
@@ -202,12 +208,6 @@ export const requirePublicKey = async (req: Request, res: Response, next: NextFu
         );
       }
     }
-
-    // Set auth response with project ID
-    res.locals.auth = {
-      type: 'apiKey',
-      projectId: project.id,
-    } as AuthResponse;
 
     next();
   } catch (error) {
@@ -258,6 +258,12 @@ export const requireSecretKey = async (req: Request, res: Response, next: NextFu
       );
     }
 
+    // Set auth response with project ID (before disabled check so it's available for logging)
+    res.locals.auth = {
+      type: 'apiKey',
+      projectId: project.id,
+    } as AuthResponse;
+
     // Check if project is disabled - block write operations
     if (project.disabled) {
       const method = req.method.toUpperCase();
@@ -271,12 +277,6 @@ export const requireSecretKey = async (req: Request, res: Response, next: NextFu
         );
       }
     }
-
-    // Set auth response with project ID
-    res.locals.auth = {
-      type: 'apiKey',
-      projectId: project.id,
-    } as AuthResponse;
 
     next();
   } catch (error) {
@@ -325,6 +325,12 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
         );
       }
 
+      // Set auth response with project ID (before disabled check so it's available for logging)
+      res.locals.auth = {
+        type: 'apiKey',
+        projectId: project.id,
+      } as AuthResponse;
+
       // Check if project is disabled - block write operations
       if (project.disabled) {
         const method = req.method.toUpperCase();
@@ -338,12 +344,6 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
           );
         }
       }
-
-      // Set auth response with project ID
-      res.locals.auth = {
-        type: 'apiKey',
-        projectId: project.id,
-      } as AuthResponse;
 
       return next();
     }
@@ -378,6 +378,13 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
       throw new HttpException(403, 'You do not have access to this project', ErrorCode.PROJECT_ACCESS_DENIED);
     }
 
+    // Set auth response with project ID (before disabled check so it's available for logging)
+    res.locals.auth = {
+      type: 'jwt',
+      userId,
+      projectId,
+    } as AuthResponse;
+
     // Check if project is disabled - block write operations
     if (project?.disabled) {
       const method = req.method.toUpperCase();
@@ -391,13 +398,6 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
         );
       }
     }
-
-    // Set auth response with project ID
-    res.locals.auth = {
-      type: 'jwt',
-      userId,
-      projectId,
-    } as AuthResponse;
 
     next();
   } catch (error) {
