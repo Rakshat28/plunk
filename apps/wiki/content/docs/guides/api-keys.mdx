@@ -1,0 +1,19 @@
+---
+title: API Keys
+description: Manage your API keys and understand their usage
+icon: Key
+---
+
+Each project has two unique API keys. A public key and a secret key. These keys are used to authenticate requests made to Plunk's API.
+
+## Public Key
+The public API key can only be used with the [/v1/track](/api-reference/public-api/trackEvent) endpoint to track events. This key can be safely exposed in client-side applications.
+
+## Secret Key
+The secret API key can be used with all other endpoints in Plunk's API. This key should be kept confidential and not exposed in client-side applications.
+
+If this key is compromised, a malicious actor could read and modify your project data, send emails, and perform other actions on your behalf.
+
+## Regenerating API Keys
+If you believe your API keys have been compromised, you can regenerate them in the project settings.
+Keep in mind that regenerating an API key will invalidate both keys, so make sure to update your applications with the new key.

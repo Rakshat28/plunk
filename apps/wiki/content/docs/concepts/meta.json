@@ -1,14 +1,3 @@
 {
-  "title": "Core Concepts",
-  "pages": [
-    "contacts-and-data",
-    "templates-types",
-    "campaigns-vs-workflows",
-    "segments-and-filters",
-    "events-and-triggers",
-    "webhooks",
-    "custom-domains",
-    "attachments",
-    "troubleshooting"
-  ]
+  "pages": ["contacts", "segments", "workflows", "campaigns", "transactional-emails", "templates", "billing"]
 }

@@ -1,0 +1,31 @@
+---
+title: List Hygiene
+description: Understand and maintain a healthy email list
+icon: ShieldCheck
+---
+
+Plunk automatically monitors the bounce and complaint rates of your emails to help maintain a health sender reputation. High bounce or complaint rates can negatively impact your deliverability and may lead to your account being suspended.
+
+## Bounce Management
+
+A bounce occurs when an email cannot be delivered to the recipient's inbox. When an email bounces, Plunk will automatically unsubscribe the contact and also send an event on the contact for `email.bounced`.
+
+### Types of Bounces
+| Type | Description |
+|------|-------------|
+| Hard Bounce | Permanent delivery failure (e.g., invalid email address) |
+| Soft Bounce | Temporary delivery failure (e.g., mailbox full) |
+
+### Preventing bounces
+- [Verify email addresses](/api-reference/public-api/verifyEmail)
+- Regularly clean your email list
+- Use double opt-in for subscriptions
+
+## Complaint Management
+
+A complaint occurs when a recipient marks your email as spam. When a complaint is received, Plunk will automatically unsubscribe the contact and send an event on the contact for `email.complaint`.
+
+### Preventing complaints
+- Ensure your emails are relevant and valuable to your audience
+- Include a clear unsubscribe link in every email
+- Monitor your email frequency to avoid overwhelming your contacts

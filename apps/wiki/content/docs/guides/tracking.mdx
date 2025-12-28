@@ -1,0 +1,32 @@
+---
+title: Tracking
+description: Tracking for opens and clicks in your emails
+icon: HatGlasses
+---
+
+Plunk provides built-in tracking for email opens and link clicks. This allows you to monitor the engagement of your emails and gain insights into how your contacts interact with your content.
+
+## Open tracking
+
+When open tracking is enabled, Plunk includes a small, invisible tracking pixel in your emails. When a contact opens the email, the pixel is loaded, and Plunk records the open event.
+
+### Considerations
+- Open tracking relies on the loading of images in the email client. If a contact has images disabled, the open event may not be recorded.
+- Some email clients may pre-load images, which can result in false open events.
+
+## Click tracking
+
+Click tracking is enabled by default for all emails sent through Plunk. When a contact clicks on a link in the email, Plunk records the click event and tracks which link was clicked.
+
+### Considerations
+- Click tracking works by rewriting the URLs in your email to point to Plunk's tracking servers
+- Some email clients or security software may block tracking links, which can result in missed click events
+
+## Configuration
+There are three levels of configuration for tracking:
+
+| Level | Description |
+|-------|-------------|
+| Enabled | Tracking is enabled for all emails |
+| Disabled | Tracking is disabled for all emails |
+| Marketing only | Tracking is enabled only for marketing emails (templates and campaigns) |

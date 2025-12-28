@@ -1,0 +1,41 @@
+---
+title: Workflows
+description: Set up automated email sequences and trigger them from your apps
+icon: Workflow
+---
+
+Workflows in Plunk allow you to create automated email sequences that can be triggered based on events you send using the API.
+
+## Prerequisites for workflows
+### Sending an event
+Workflows are triggered by sending events to Plunk using the [/v1/track](/api-reference/public-api/trackEvent) endpoint. When sending an event, you can specify the contact it is associated with and include any relevant data.
+
+### Creating a template
+Before setting up the workflow, ensure you have created a template that will be used for the emails sent by the workflow. You can create templates in the [Templates](/concepts/templates) section of the dashboard.
+
+## Creating a workflow
+To create a workflow, navigate to the [Workflows](/concepts/workflows) section of the dashboard and create a workflow.
+
+<Callout
+ title="Trigger"
+ variant="idea">
+When creating a workflow, you can not change the trigger event after the workflow has been created. Make sure to choose the correct event name that will trigger the workflow.
+</Callout>
+
+### Defining workflow steps
+Workflows consists of multiple steps that define the sequence of actions to be taken.
+
+| Step Type | Description |
+|-----------|-------------|
+| Send Email | Sends an email to the contact using a specified template. You can customize the email content using variables from the event data. |
+| Delay | Pauses the workflow for a specified duration before proceeding to the next step. |
+| Wait for Event | Pauses the workflow until a specified event is received for the contact. You can also set a timeout duration to proceed if the event is not received within that time. |
+| Condition | Evaluates a condition based on the event data or contact data and branches the workflow accordingly. |
+| Webhook | Sends a webhook to a specified URL with the event and contact data. |
+| Update Contact | Updates the contact's data with specified key-value pairs. |
+| Exit | Terminates the workflow for the contact. |
+
+## Managing workflow executions
+You can monitor and manage contacts going through workflows in the executions tab of the workflow detail page. Here you can see the status of each execution, cancel a specific execution or all executions.
+
+A workflow will be locked while there are active executions. If you want to make changes to a running workflow you will either need to pause it and wait for all executions to complete, or cancel all active executions.

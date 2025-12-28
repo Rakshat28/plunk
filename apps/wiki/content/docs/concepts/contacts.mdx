@@ -1,0 +1,46 @@
+---
+title: Contacts
+description: Manage and organize your contacts effectively
+icon: Users
+---
+
+Contacts in Plunk represent an individual email recipient. Each contact has an identifier and is linked to an email address.
+
+## Adding contacts
+Contacts can be added to your Plunk project in several ways:
+- Using [/v1/track](/api-reference/public-api/trackEvent), when tracking an event for a contact that does not yet exist, Plunk will automatically create it.
+- Using [/contacts](/api-reference/contacts/createContact), to create a single contact.
+- Import through CSV
+- Manually through the dashboard
+
+## Contact Data
+You can associate custom data with each contact using key-value pairs. This data can be used for segmentation and personalization.
+
+### Data types
+Contact data types are inferred based on the value provided:
+| Type | Description |
+|------|-------------|
+| String | Any text value |
+| Number | Numeric values, including integers and floats |
+| Boolean | True or false values |
+| Date | Date values in ISO 8601 format |
+
+<Callout
+ title="Default data type"
+ variant="idea">
+If you accidentally mix data types for a specific key, Plunk will default to treating the value as a string.
+</Callout>
+
+### Reserved keys
+Certain keys are reserved by the system and automatically set by Plunk:
+| Key | Description |
+|-----|-------------|
+| email | The contact's email address |
+| createdAt | Timestamp of when the contact was created |
+| updatedAt | Timestamp of the last update to the contact |
+| subscribed | Boolean indicating if the contact is globally subscribed or not |
+
+### Special keys
+| Key | Description |
+|-----|-------------|
+| locale | The contact's preferred locale in ISO 639 (e.g. 'en', 'fr', 'es'). Specifying the locale field on a contact will override the project-wide locale for contact-facing pages and email footers |

@@ -1,14 +1,9 @@
 {
   "pages": [
     "index",
-    "---Getting Started---",
-    "getting-started",
-    "---Tutorials---",
-    "tutorials",
-    "---Core Concepts---",
+    "---Docs---",
     "concepts",
-    "---Automation---",
-    "automation-patterns",
+    "guides",
     "---API Reference---",
     "api-reference",
     "---Self-Hosting---",

@@ -1,0 +1,24 @@
+---
+title: Templates
+description: Create reusable email templates for your campaigns, workflows and transactional emails
+icon: SwatchBook
+---
+
+Templates are stored in the Plunk dashboard and can be used in campaigns, workflows and transactional emails.
+
+## Designing templates
+Templates can be created using the built-in editor or by uploading your own HTML.
+
+### Personalization
+You can use contact data to personalize your templates by using the handlebars syntax `{{ key }}`, where `key` is the contact data key.
+
+### Previewing templates
+You can preview your templates by selecting a contact in the preview window. This will allow you to see how the template will look for that specific contact, with their data populated.
+
+## Templates types
+There are two types of templates in Plunk. Each type is treated at the same priority when sending emails, you should not pick one type over the other based on deliverability or performance.
+
+| Type | Description |
+|------|-------------|
+| Marketing | Automatically includes a Plunk-hosted unsubscribe page and footer. Will not be sent to contacts who are unsubscribed |
+| Transactional | Does not include any way to unsubscribe. Will be sent to any contact, regardless of subscription state |

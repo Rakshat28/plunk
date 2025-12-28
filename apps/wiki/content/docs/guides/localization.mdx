@@ -1,0 +1,15 @@
+---
+title: Localization
+description: Support for multiple languages and regions
+icon: Globe
+---
+
+Localization in Plunk allows you to configure the language of the unsubscribe footer and contact-facing pages (subscribe, unsubscribe, manage) to better suit your audience.
+
+## Configuring Localization
+You can set the default language for your project in the project settings.
+
+## Overriding language per contact
+You can override the default language for individual contacts by setting the `locale` field in the contact data. This field should contain a valid [ISO 639](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) language code (e.g., 'en' for English, 'fr' for French, 'es' for Spanish).
+
+When sending emails, Plunk will use the contact's specified language if available; otherwise, it will fall back to the project's default language.

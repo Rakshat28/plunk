@@ -1,0 +1,17 @@
+---
+title: Verifying domains
+description: Ensure your emails reach the inbox by verifying your sending domains
+icon: Globe
+---
+
+Verifying your domain is a requirement to send emails through Plunk. Domain verification helps improve email deliverability and ensures that your emails are less likely to be marked as spam.
+
+## Verifying a domain
+
+You can verify a domain by adding it in the domain tab of the project settings. Once added, Plunk will provide you with the necessary DNS records to add to your domain's DNS settings.
+Once you have added the DNS records, it may take some time for the changes to propagate. You can check the verification status in the domain tab of the project settings.
+
+### DNS Records
+- 3 CNAME records for DKIM (DomainKeys Identified Mail) to authenticate your emails.
+- 1 TXT record for SPF (Sender Policy Framework) to specify which mail servers are authorized
+- 1 MX record to handle bounces and feedback loops

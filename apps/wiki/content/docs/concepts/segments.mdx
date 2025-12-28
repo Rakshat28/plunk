@@ -1,0 +1,20 @@
+---
+title: Segments
+description: Group and target your contacts with dynamic segments
+icon: Layers
+---
+
+Segments in Plunk allow you to create dynamic groups of contacts based on [contact data](/concepts/contacts#contact-data) and events.
+
+## Creating segments
+Segments can be created through the Plunk dashboard. When creating a segment, you can define multiple conditions that contacts must meet to be included in the segment. Plunk will automatically update the segment membership as contact data and events change.
+
+### Track Membership Changes
+Plunk will automatically add and remove contacts from segments as their data and events change. When toggling on `Track membership changes`, Plunk will send an event to your webhook each time a contact is added or removed from the segment.
+
+These events will have the following name `segment.trial-users.entry` or `segment.trial-users.exit`, where `trial-users` is the segment's name.
+
+## Using segments
+Segment can be used in various parts of Plunk, including:
+- Targeting contacts in [email campaigns](/concepts/campaigns)
+- Triggering workflows in [marketing automation](/concepts/workflows)
