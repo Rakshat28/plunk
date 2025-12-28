@@ -86,11 +86,32 @@ export default function Index() {
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Project Disabled - Read-Only Mode</AlertTitle>
-              <AlertDescription>
-                This project has been disabled due to security violations (high bounce or complaint rates). All
-                scheduled campaigns and workflows have been cancelled. The project is now in read-only mode - you can
-                view your data but cannot create, update, or delete anything. Please contact support to resolve this
-                issue.
+              <AlertDescription className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div className="space-y-2 flex-1">
+                  <p className="text-sm font-medium">
+                    This project has been disabled due to security violations. All scheduled campaigns and workflows
+                    have been cancelled. The project is now in read-only mode - you can view your data but cannot
+                    create, update, or delete anything.
+                  </p>
+                  {securityMetrics && securityMetrics.status.violations.length > 0 && (
+                    <>
+                      <p className="text-sm font-medium mt-3">Security violations that caused suspension:</p>
+                      <ul className="list-disc list-inside space-y-1 text-sm text-red-800">
+                        {securityMetrics.status.violations.map((violation, idx) => (
+                          <li key={idx}>{violation}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                  <p className="text-xs text-red-800 mt-2">
+                    Please contact support to resolve this issue and get your project re-enabled.
+                  </p>
+                </div>
+                <Link href="/settings?tab=security">
+                  <Button size="sm" variant="outline" className="w-full sm:w-auto flex-shrink-0">
+                    View Details
+                  </Button>
+                </Link>
               </AlertDescription>
             </Alert>
           )}
