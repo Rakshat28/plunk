@@ -57,6 +57,7 @@ vitest.config.ts
 Dockerfile*
 docker
 !docker/nginx
+!docker/*.sh
 .dockerignore
 
 # Misc
