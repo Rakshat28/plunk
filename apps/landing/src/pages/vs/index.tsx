@@ -55,6 +55,36 @@ const competitors = [
     description: 'European email platform vs global open-source',
     features: ['Transactional Emails', 'Marketing Campaigns', 'GDPR Compliant'],
   },
+  {
+    name: 'ConvertKit',
+    slug: 'convertkit',
+    description: 'Creator platform vs developer-first email',
+    features: ['Marketing Campaigns', 'Workflow Automation', 'API-First Design'],
+  },
+  {
+    name: 'ActiveCampaign',
+    slug: 'activecampaign',
+    description: 'Enterprise automation vs simple workflows',
+    features: ['Marketing Campaigns', 'Workflow Automation', 'Transactional Emails'],
+  },
+  {
+    name: 'MailerLite',
+    slug: 'mailerlite',
+    description: 'Developer-friendly vs developer-first platform',
+    features: ['Marketing Campaigns', 'Transactional Emails', 'Open Source'],
+  },
+  {
+    name: 'Klaviyo',
+    slug: 'klaviyo',
+    description: 'E-commerce leader vs affordable alternative',
+    features: ['E-commerce Integration', 'Workflow Automation', 'Pay-as-you-go'],
+  },
+  {
+    name: 'Bento',
+    slug: 'bento',
+    description: 'All-in-one platform vs focused email solution',
+    features: ['Transactional Emails', 'Marketing Campaigns', 'API-First'],
+  },
 ];
 
 /**
@@ -65,12 +95,12 @@ export default function CompetitorsIndex() {
     <>
       <NextSeo
         title="Plunk vs Email Competitors | Compare Email Platforms"
-        description="Compare Plunk with Postmark, SendGrid, Mailgun, Mailchimp, and more. See why Plunk offers transactional emails plus marketing features in one open-source platform."
+        description="Compare Plunk with Postmark, SendGrid, Mailgun, Mailchimp, ConvertKit, ActiveCampaign, Klaviyo, MailerLite, and more. See why Plunk offers transactional emails plus marketing features in one open-source platform."
         canonical="https://www.useplunk.com/vs"
         openGraph={{
           title: 'Plunk vs Email Competitors | Compare Email Platforms',
           description:
-            'Compare Plunk with leading email platforms. Transactional + marketing emails in one open-source solution.',
+            'Compare Plunk with 13 leading email platforms. Transactional + marketing emails in one open-source solution.',
           url: 'https://www.useplunk.com/vs',
           images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs Competitors'}],
         }}
