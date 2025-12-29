@@ -14,7 +14,7 @@ import {
   DialogTitle,
   Input,
   Label,
-  Switch
+  Switch,
 } from '@plunk/ui';
 import type {Contact} from '@plunk/db';
 import {DashboardLayout} from '../../components/DashboardLayout';
@@ -34,7 +34,7 @@ import {
   Search,
   Trash2,
   Upload,
-  XCircle
+  XCircle,
 } from 'lucide-react';
 import {NextSeo} from 'next-seo';
 import Link from 'next/link';
@@ -237,27 +237,15 @@ export default function ContactsPage() {
                       {selectedContacts.size} contact{selectedContacts.size !== 1 ? 's' : ''} selected
                     </span>
                     <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleBulkAction('subscribe')}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => handleBulkAction('subscribe')}>
                         <MailCheck className="h-4 w-4 mr-1.5" />
                         Subscribe
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleBulkAction('unsubscribe')}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => handleBulkAction('unsubscribe')}>
                         <MailX className="h-4 w-4 mr-1.5" />
                         Unsubscribe
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleBulkAction('delete')}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => handleBulkAction('delete')}>
                         <Trash2 className="h-4 w-4 mr-1.5" />
                         Delete
                       </Button>
@@ -625,8 +613,7 @@ interface ImportResult {
 
 function ImportContactsDialog({open, onOpenChange, onSuccess}: ImportContactsDialogProps) {
   const [file, setFile] = useState<File | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [jobId, setJobId] = useState<string | null>(null);
+  const [, setJobId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'failed'>('idle');
@@ -978,7 +965,7 @@ interface BulkActionResult {
 }
 
 function BulkActionsDialog({open, onOpenChange, operation, contactIds, onSuccess}: BulkActionsDialogProps) {
-  const [jobId, setJobId] = useState<string | null>(null);
+  const [, setJobId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<'idle' | 'processing' | 'completed' | 'failed'>('idle');
@@ -1097,19 +1084,27 @@ function BulkActionsDialog({open, onOpenChange, operation, contactIds, onSuccess
 
   const getOperationLabel = () => {
     switch (operation) {
-      case 'subscribe': return 'Subscribe';
-      case 'unsubscribe': return 'Unsubscribe';
-      case 'delete': return 'Delete';
-      default: return 'Process';
+      case 'subscribe':
+        return 'Subscribe';
+      case 'unsubscribe':
+        return 'Unsubscribe';
+      case 'delete':
+        return 'Delete';
+      default:
+        return 'Process';
     }
   };
 
   const getOperationColor = () => {
     switch (operation) {
-      case 'subscribe': return 'green';
-      case 'unsubscribe': return 'yellow';
-      case 'delete': return 'red';
-      default: return 'blue';
+      case 'subscribe':
+        return 'green';
+      case 'unsubscribe':
+        return 'yellow';
+      case 'delete':
+        return 'red';
+      default:
+        return 'blue';
     }
   };
 
@@ -1129,14 +1124,12 @@ function BulkActionsDialog({open, onOpenChange, operation, contactIds, onSuccess
                   {contactIds.length !== 1 ? 's' : ''}?
                 </p>
                 {operation === 'delete' && (
-                  <p className="text-sm text-red-600 mt-2 font-medium">
-                    This action cannot be undone.
-                  </p>
+                  <p className="text-sm text-red-600 mt-2 font-medium">This action cannot be undone.</p>
                 )}
               </div>
             )}
 
-            {(status === 'processing') && (
+            {status === 'processing' && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-neutral-600">Processing contacts...</span>
@@ -1196,9 +1189,7 @@ function BulkActionsDialog({open, onOpenChange, operation, contactIds, onSuccess
                   <XCircle className="h-5 w-5" />
                   <span className="font-medium">Operation failed</span>
                 </div>
-                <p className="text-sm text-red-800 mt-1">
-                  {errorMessage || 'Please try again.'}
-                </p>
+                <p className="text-sm text-red-800 mt-1">{errorMessage || 'Please try again.'}</p>
               </div>
             )}
           </div>

@@ -5,7 +5,6 @@ import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
-import {ValidationError} from '../exceptions/index.js';
 import {Keys} from './keys.js';
 
 import {WorkflowExecutionService} from './WorkflowExecutionService.js';

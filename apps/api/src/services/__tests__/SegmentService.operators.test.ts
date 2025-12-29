@@ -1342,7 +1342,6 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should match contacts who have triggered the event', async () => {
         const prisma = getPrismaClient();
         const match = await factories.createContact({projectId});
-        const noMatch = await factories.createContact({projectId});
 
         // Create event for match contact
         await prisma.event.create({
@@ -1365,7 +1364,6 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       it('should not match contacts who have not triggered the event', async () => {
         const prisma = getPrismaClient();
         const contact1 = await factories.createContact({projectId});
-        const contact2 = await factories.createContact({projectId});
 
         // Create different event
         await prisma.event.create({
@@ -1681,10 +1679,6 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         const noMatch1 = await factories.createContact({
           projectId,
           data: {plan: 'basic'},
-        });
-        const noMatch2 = await factories.createContact({
-          projectId,
-          data: {plan: 'premium'},
         });
 
         // match and noMatch1 have the event, but only match has premium plan
