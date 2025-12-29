@@ -182,7 +182,7 @@ module.exports = {
         DASHBOARD_URI: '${DASHBOARD_URI}',
         LANDING_URI: '${LANDING_URI}',
         WIKI_URI: '${WIKI_URI}',
-        PLUNK_SECRET_KEY: '${PLUNK_SECRET_KEY:-}'
+        PLUNK_API_KEY: '${PLUNK_API_KEY:-}'
       }
     },
     {

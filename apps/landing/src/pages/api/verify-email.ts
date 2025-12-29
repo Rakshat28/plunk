@@ -37,9 +37,9 @@ export default async function handler(
   const {email} = result.data;
 
   // Get secret key from environment
-  const secretKey = process.env.PLUNK_SECRET_KEY;
+  const secretKey = process.env.PLUNK_API_KEY;
   if (!secretKey) {
-    console.error('PLUNK_SECRET_KEY is not configured');
+    console.error('PLUNK_API_KEY is not configured');
     return res.status(500).json({error: 'Service configuration error'});
   }
 
