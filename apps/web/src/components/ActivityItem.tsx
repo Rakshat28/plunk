@@ -1,6 +1,7 @@
-import {Badge, Collapsible, CollapsibleContent, CollapsibleTrigger} from '@plunk/ui';
+import {Badge, Button, Collapsible, CollapsibleContent, CollapsibleTrigger} from '@plunk/ui';
 import type {Activity} from './ActivityFeed';
-import {memo} from 'react';
+import {memo, useState} from 'react';
+import {EmailPreviewModal} from './EmailPreviewModal';
 import {
   AlertCircle,
   Calendar,
@@ -88,6 +89,13 @@ function getUpcomingTime(date: Date): string {
 
   const diffInMonths = Math.floor(diffInDays / 30);
   return `in ${diffInMonths} ${diffInMonths === 1 ? 'month' : 'months'}`;
+}
+
+/**
+ * Check if an activity is an email activity
+ */
+function isEmailActivity(type: string): boolean {
+  return ['email.sent', 'email.delivered', 'email.opened', 'email.clicked', 'email.bounced'].includes(type);
 }
 
 interface ActivityItemProps {
@@ -295,6 +303,7 @@ function getActivityConfig(activity: Activity): ActivityConfig {
 }
 
 export const ActivityItem = memo(function ActivityItem({activity, isUpcoming = false}: ActivityItemProps) {
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const config = getActivityConfig(activity);
   const Icon = config.icon;
   const timestamp = new Date(activity.timestamp);
@@ -318,6 +327,17 @@ export const ActivityItem = memo(function ActivityItem({activity, isUpcoming = f
                 {config.title}
               </p>
               {config.badge && <Badge variant={config.badge.variant}>{config.badge.label}</Badge>}
+              {isEmailActivity(activity.type) && activity.metadata.subject && activity.metadata.body ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowPreviewModal(true)}
+                  className="h-6 px-2 text-xs"
+                >
+                  <Eye className="h-3 w-3 mr-1" />
+                  Preview
+                </Button>
+              ) : null}
             </div>
             {config.description && <p className="text-sm text-neutral-500 line-clamp-2">{config.description}</p>}
             {activity.contactEmail && (
@@ -357,6 +377,21 @@ export const ActivityItem = memo(function ActivityItem({activity, isUpcoming = f
           </span>
         </div>
       </div>
+
+      {/* Email Preview Modal */}
+      {showPreviewModal && activity.metadata.subject && activity.metadata.body ? (
+        <EmailPreviewModal
+          open={showPreviewModal}
+          onOpenChange={setShowPreviewModal}
+          subject={String(activity.metadata.subject)}
+          body={String(activity.metadata.body)}
+          from={activity.metadata.from ? String(activity.metadata.from) : undefined}
+          fromName={activity.metadata.fromName ? String(activity.metadata.fromName) : undefined}
+          replyTo={activity.metadata.replyTo ? String(activity.metadata.replyTo) : undefined}
+          toName={activity.metadata.toName ? String(activity.metadata.toName) : undefined}
+          toEmail={activity.contactEmail}
+        />
+      ) : null}
     </div>
   );
 });

@@ -454,6 +454,11 @@ export class ActivityService {
     for (const email of emails) {
       const baseMetadata = {
         subject: email.subject,
+        body: email.body,
+        from: email.from,
+        fromName: email.fromName,
+        replyTo: email.replyTo,
+        toName: email.toName,
         sourceType: email.sourceType,
         campaignName: email.campaign?.name,
         workflowName: email.workflowExecution?.workflow?.name,
