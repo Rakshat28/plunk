@@ -123,6 +123,10 @@ COPY --from=deps /app/yarn.lock ./
 # Copy root config files needed for Turbo
 COPY turbo.json ./
 
+# Copy manifest generation script
+COPY docker/generate-url-manifest.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/generate-url-manifest.sh
+
 # Step 1: Copy and build shared packages (these change less frequently)
 # Shared packages are dependencies for apps, so build them first
 COPY packages ./packages
@@ -173,6 +177,8 @@ RUN --mount=type=cache,target=/app/.turbo,sharing=locked \
     yarn turbo build --filter=wiki
 # Generate sitemap for wiki
 RUN NEXT_PUBLIC_WIKI_URI=${WIKI_URI} yarn workspace wiki sitemap
+# Generate URL replacement manifest for wiki (build-time optimization)
+RUN generate-url-manifest.sh wiki /app/apps/wiki
 
 # Step 4: Copy and build Web dashboard
 COPY apps/web ./apps/web
@@ -188,6 +194,8 @@ RUN --mount=type=cache,target=/app/.turbo,sharing=locked \
     yarn turbo build --filter=web
 # Generate sitemap for web
 RUN NEXT_PUBLIC_DASHBOARD_URI=${DASHBOARD_URI} yarn workspace web sitemap
+# Generate URL replacement manifest for web (build-time optimization)
+RUN generate-url-manifest.sh web /app/apps/web
 
 # Step 5: Copy and build Landing page
 COPY apps/landing ./apps/landing
@@ -203,6 +211,8 @@ RUN --mount=type=cache,target=/app/.turbo,sharing=locked \
     yarn turbo build --filter=landing
 # Generate sitemap for landing
 RUN NEXT_PUBLIC_LANDING_URI=${LANDING_URI} yarn workspace landing sitemap
+# Generate URL replacement manifest for landing (build-time optimization)
+RUN generate-url-manifest.sh landing /app/apps/landing
 
 # Copy any remaining root files (if needed)
 COPY . .
@@ -316,6 +326,10 @@ COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/openapi.local.json ./app
 # Copy nginx configuration templates and setup script
 COPY --chown=plunk:nodejs docker/nginx/ /app/docker/nginx/
 RUN chmod +x /app/docker/nginx/setup-nginx.sh
+
+# Copy optimized URL replacement script
+COPY --chown=plunk:nodejs docker/replace-urls-optimized.sh /app/docker/
+RUN chmod +x /app/docker/replace-urls-optimized.sh
 
 # Copy entrypoint script
 COPY --chown=plunk:nodejs docker-entrypoint-nginx.sh /usr/local/bin/
