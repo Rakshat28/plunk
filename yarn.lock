@@ -6213,6 +6213,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tiptap/extension-underline@npm:^3.11.0":
+  version: 3.14.0
+  resolution: "@tiptap/extension-underline@npm:3.14.0"
+  peerDependencies:
+    "@tiptap/core": ^3.14.0
+  checksum: 10c0/7453af7645ac1d98bcae1df517826228e49aae8ed590f5bbff3378ea58d6fbb023703bd0894526512a3e93202e16bab0f0f1652cb5f533adfc9a0922b3831530
+  languageName: node
+  linkType: hard
+
 "@tiptap/extension-underline@npm:^3.13.0":
   version: 3.13.0
   resolution: "@tiptap/extension-underline@npm:3.13.0"
@@ -6549,13 +6558,6 @@ __metadata:
   version: 4.0.2
   resolution: "@types/deep-eql@npm:4.0.2"
   checksum: 10c0/bf3f811843117900d7084b9d0c852da9a044d12eb40e6de73b552598a6843c21291a8a381b0532644574beecd5e3491c5ff3a0365ab86b15d59862c025384844
-  languageName: node
-  linkType: hard
-
-"@types/disposable-email@npm:^0":
-  version: 0.2.2
-  resolution: "@types/disposable-email@npm:0.2.2"
-  checksum: 10c0/8e96fe0e5d9677629d848cae2245e88d182a712ee53179d83a7ce371da836585fb2a4fed29ead263c2aec74d100daeff5af9dc2a54dfbac3f20ffc3b875fb087
   languageName: node
   linkType: hard
 
@@ -7843,7 +7845,6 @@ __metadata:
     "@types/bcrypt": "npm:^6.0.0"
     "@types/cookie-parser": "npm:^1.4.7"
     "@types/cors": "npm:^2.8.17"
-    "@types/disposable-email": "npm:^0"
     "@types/express": "npm:^5.0.5"
     "@types/helmet": "npm:^4.0.0"
     "@types/jsonwebtoken": "npm:^9.0.6"
@@ -7859,7 +7860,6 @@ __metadata:
     cors: "npm:^2.8.5"
     csv-parse: "npm:^6.1.0"
     dayjs: "npm:^1.11.19"
-    disposable-email: "npm:^0.2.3"
     dotenv: "npm:^17.2.3"
     express: "npm:^5.1.0"
     helmet: "npm:^8.1.0"
@@ -9505,13 +9505,6 @@ __metadata:
   version: 4.0.2
   resolution: "diff@npm:4.0.2"
   checksum: 10c0/81b91f9d39c4eaca068eb0c1eb0e4afbdc5bb2941d197f513dd596b820b956fef43485876226d65d497bebc15666aa2aa82c679e84f65d5f2bfbf14ee46e32c1
-  languageName: node
-  linkType: hard
-
-"disposable-email@npm:^0.2.3":
-  version: 0.2.3
-  resolution: "disposable-email@npm:0.2.3"
-  checksum: 10c0/d2da52e225bb784e640f9aff6c3e319c596e82c778b5483e36ff67eba5c5b9df6f59ed8c26be401b0813c921783e0b271fb97d49b33a73cb46dd010dc7081931
   languageName: node
   linkType: hard
 
@@ -12865,11 +12858,23 @@ __metadata:
     "@tailwindcss/forms": "npm:^0.5.10"
     "@tailwindcss/postcss": "npm:^4.1.17"
     "@tailwindcss/typography": "npm:^0.5.19"
+    "@tiptap/core": "npm:^3.11.0"
+    "@tiptap/extension-color": "npm:^3.11.0"
+    "@tiptap/extension-image": "npm:^3.11.0"
+    "@tiptap/extension-link": "npm:^3.11.0"
+    "@tiptap/extension-placeholder": "npm:^3.11.0"
+    "@tiptap/extension-text-align": "npm:^3.11.0"
+    "@tiptap/extension-text-style": "npm:^3.11.0"
+    "@tiptap/extension-underline": "npm:^3.11.0"
+    "@tiptap/pm": "npm:^3.11.0"
+    "@tiptap/react": "npm:^3.11.0"
+    "@tiptap/starter-kit": "npm:^3.11.0"
     "@types/node": "npm:^24.10.0"
     "@types/react": "npm:^19.2.7"
     "@types/react-dom": "npm:^19.2.3"
     eslint: "npm:^9.27.0"
     eslint-config-next: "npm:^16.0.1"
+    juice: "npm:^11.0.3"
     lucide-react: "npm:^0.553.0"
     next: "npm:^16.0.10"
     next-seo: "npm:^6.6.0"
