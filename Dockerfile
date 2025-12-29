@@ -300,17 +300,26 @@ COPY --from=builder --chown=plunk:nodejs /app/apps/smtp/package.json ./apps/smtp
 COPY --from=builder --chown=plunk:nodejs /app/apps/web/.next/standalone ./apps/web/.next/standalone
 COPY --from=builder --chown=plunk:nodejs /app/apps/web/public ./apps/web/.next/standalone/apps/web/public
 COPY --from=builder --chown=plunk:nodejs /app/apps/web/.next/static ./apps/web/.next/standalone/apps/web/.next/static
+# Copy URL replacement manifests to standalone directory
+COPY --from=builder --chown=plunk:nodejs /app/apps/web/.next/url-manifest.txt ./apps/web/.next/standalone/apps/web/.next/url-manifest.txt
+COPY --from=builder --chown=plunk:nodejs /app/apps/web/.next/sitemap-manifest.txt ./apps/web/.next/standalone/apps/web/.next/sitemap-manifest.txt
 
 # Landing app - standalone build with static assets
 COPY --from=builder --chown=plunk:nodejs /app/apps/landing/.next/standalone ./apps/landing/.next/standalone
 COPY --from=builder --chown=plunk:nodejs /app/apps/landing/public ./apps/landing/.next/standalone/apps/landing/public
 COPY --from=builder --chown=plunk:nodejs /app/apps/landing/.next/static ./apps/landing/.next/standalone/apps/landing/.next/static
+# Copy URL replacement manifests to standalone directory
+COPY --from=builder --chown=plunk:nodejs /app/apps/landing/.next/url-manifest.txt ./apps/landing/.next/standalone/apps/landing/.next/url-manifest.txt
+COPY --from=builder --chown=plunk:nodejs /app/apps/landing/.next/sitemap-manifest.txt ./apps/landing/.next/standalone/apps/landing/.next/sitemap-manifest.txt
 
 # Wiki app - standalone build with static assets and OpenAPI spec
 COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/.next/standalone ./apps/wiki/.next/standalone
 COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/public ./apps/wiki/.next/standalone/apps/wiki/public
 COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/.next/static ./apps/wiki/.next/standalone/apps/wiki/.next/static
 COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/openapi.local.json ./apps/wiki/.next/standalone/apps/wiki/openapi.local.json
+# Copy URL replacement manifests to standalone directory
+COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/.next/url-manifest.txt ./apps/wiki/.next/standalone/apps/wiki/.next/url-manifest.txt
+COPY --from=builder --chown=plunk:nodejs /app/apps/wiki/.next/sitemap-manifest.txt ./apps/wiki/.next/standalone/apps/wiki/.next/sitemap-manifest.txt
 
 # Copy full .next directories for the entrypoint script (URL replacement via find command)
 # These are much smaller than node_modules and needed for runtime URL replacement
