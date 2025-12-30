@@ -95,10 +95,10 @@ ARG TARGETPLATFORM
 # Build-time arguments for URL configuration
 # These are only used during the build process (for wiki OpenAPI generation and static assets)
 # Runtime URLs are configured via *_DOMAIN and USE_HTTPS environment variables at container startup
-ARG API_URI=https://api.useplunk.com
-ARG DASHBOARD_URI=https://app.useplunk.com
-ARG LANDING_URI=https://www.useplunk.com
-ARG WIKI_URI=https://docs.useplunk.com
+ARG API_URI=https://next-api.useplunk.com
+ARG DASHBOARD_URI=https://next-app.useplunk.com
+ARG LANDING_URI=https://next.useplunk.com
+ARG WIKI_URI=https://next-wiki.useplunk.com
 
 WORKDIR /app
 

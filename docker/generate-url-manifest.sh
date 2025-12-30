@@ -17,10 +17,10 @@ fi
 echo "🔍 Generating URL manifest for $APP_NAME..."
 
 # Define placeholder URLs that will be replaced at runtime
-PLACEHOLDER_API="https://api.useplunk.com"
-PLACEHOLDER_DASHBOARD="https://app.useplunk.com"
-PLACEHOLDER_LANDING="https://www.useplunk.com"
-PLACEHOLDER_WIKI="https://docs.useplunk.com"
+PLACEHOLDER_API="https://next-api.useplunk.com"
+PLACEHOLDER_DASHBOARD="https://next-app.useplunk.com"
+PLACEHOLDER_LANDING="https://next.useplunk.com"
+PLACEHOLDER_WIKI="https://next-wiki.useplunk.com"
 
 # Output manifest file
 MANIFEST_FILE="$APP_DIR/.next/url-manifest.txt"

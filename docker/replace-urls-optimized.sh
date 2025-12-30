@@ -11,10 +11,10 @@ replace_urls_in_app() {
   echo "📝 Replacing URLs in $app build files..."
 
   # Define placeholder URLs (built into the app at compile time)
-  local PLACEHOLDER_API="https://api.useplunk.com"
-  local PLACEHOLDER_DASHBOARD="https://app.useplunk.com"
-  local PLACEHOLDER_LANDING="https://www.useplunk.com"
-  local PLACEHOLDER_WIKI="https://docs.useplunk.com"
+  local PLACEHOLDER_API="https://next-api.useplunk.com"
+  local PLACEHOLDER_DASHBOARD="https://next-app.useplunk.com"
+  local PLACEHOLDER_LANDING="https://next.useplunk.com"
+  local PLACEHOLDER_WIKI="https://next-wiki.useplunk.com"
 
   # Use pre-generated manifest instead of scanning all files
   local manifest_file="$app_dir/.next/url-manifest.txt"
