@@ -1,5 +1,45 @@
 # Changelog
 
+## [0.3.0](https://github.com/useplunk/plunk/compare/v0.2.0...v0.3.0) (2025-12-29)
+
+
+### Features
+
+* Ability to overwrite locale on contact level with locale key on data ([7615523](https://github.com/useplunk/plunk/commit/76155232a3383e75e8c7b44a498454b07472852a))
+* Add additional banner and information about security metrics ([bc8611a](https://github.com/useplunk/plunk/commit/bc8611a66250eb7747e7acd6e882a740c0028ba1))
+* Add bulk actions to contact overview ([726f667](https://github.com/useplunk/plunk/commit/726f66762b890c73041139432524d6c85d6bd709))
+* Add email verification and password reset ([1a5607f](https://github.com/useplunk/plunk/commit/1a5607f2780d5a4692492032dd0cd2e7521362d9))
+* Add email verification endpoint at /v1/verify ([6a9f6aa](https://github.com/useplunk/plunk/commit/6a9f6aa65a3219c5d4d6f33253cdcf145c3ff20b))
+* Add plus address check to /v1/verify ([afc405e](https://github.com/useplunk/plunk/commit/afc405ec028ac9d7333a7817c49f1232278fc28b))
+* Add project-scoped language for unsubscribe footer and contact-facing pages ([e1f8263](https://github.com/useplunk/plunk/commit/e1f826357d1e8cff7bd3c2811698734f578836f5))
+* Allow to pick currency when starting subscription ([8a136dd](https://github.com/useplunk/plunk/commit/8a136dde55fd1fae1f2a2e285019beb35fc75977))
+* Email preview in contact and activity feed ([72dffe1](https://github.com/useplunk/plunk/commit/72dffe12e53ff9d74ef43da2cf653d31e7a4df25))
+* **i18n:** add German translations and update supported languages ([a6bd2e7](https://github.com/useplunk/plunk/commit/a6bd2e7dba261a858eab6ab1f782ddc9efb136a5))
+* **i18n:** add Hindi translations for contact-facing pages ([ddc14ae](https://github.com/useplunk/plunk/commit/ddc14ae8534eda2e1368f148e0434388008bb7b5)), closes [#246](https://github.com/useplunk/plunk/issues/246)
+
+
+### Bug Fixes
+
+* Add styling for visual editor emails in preview ([5993b84](https://github.com/useplunk/plunk/commit/5993b842a0f17d66644aaa3057602ae8f3daebc2))
+* Correctly reserve fields from being set on contact ([61cea95](https://github.com/useplunk/plunk/commit/61cea95697ccb56c525002b08f76bf57da896837))
+* Date filtering not working properly for custom contact data ([97ab0a2](https://github.com/useplunk/plunk/commit/97ab0a2c2c811ac1b8a2b9039ab835e837a3f3be))
+* Do not check verification if platform emails are not enabled ([9567144](https://github.com/useplunk/plunk/commit/9567144390512173f7f615db71368c1cd26d9f4d))
+* Import no longer case-sensitive about email column ([451dd03](https://github.com/useplunk/plunk/commit/451dd0327f4866fd27343407a84a6c979cfcd70d))
+* Pass through email verification if auth type is apiKey ([d7b5d3f](https://github.com/useplunk/plunk/commit/d7b5d3f60ed1af6ca9bf8e2a659204a01ca3acb0))
+* Persistence of subscription state for existing contacts ([007a908](https://github.com/useplunk/plunk/commit/007a908e833cdd1b229f485c34c17c6510a55f9c))
+* Properly tag events in SegmentFilterBuilder.tsx ([8f725c7](https://github.com/useplunk/plunk/commit/8f725c7c84749eca5647fdbd19d41260f6998d6e))
+* Redirect verification link to dashboard instead of landing ([35f5275](https://github.com/useplunk/plunk/commit/35f5275d889b167e0fe75246b29a4ffa632bad46))
+* Set auth type before disable check ([862babb](https://github.com/useplunk/plunk/commit/862babb8f5ab47599ce6a841fc988fafa1ec0bbe))
+* Variable substitution in transactional emails ([8c03042](https://github.com/useplunk/plunk/commit/8c0304273c2bd1a64718ec56838632aa63447ef8))
+
+
+### Documentation
+
+* Add locale overwrite to project documentation ([1fc1e23](https://github.com/useplunk/plunk/commit/1fc1e23fce69a870ccf95faf2fff644733de7145))
+* Add plus address check to /v1/verify ([0d54b1a](https://github.com/useplunk/plunk/commit/0d54b1a631415a15e504ff5bd4573ddb12cc421a))
+* Improve docs with core-concept and guides ([2ddfcec](https://github.com/useplunk/plunk/commit/2ddfceca3606b0d4d832f83fce14c7277b5eaa35))
+* Update openapi.json to match actual API outputs ([dc9b88d](https://github.com/useplunk/plunk/commit/dc9b88dedb75535814239b4bc73f62375570998b))
+
 ## [0.2.0](https://github.com/useplunk/plunk/compare/v0.1.1...v0.2.0) (2025-12-16)
 
 
