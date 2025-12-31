@@ -84,4 +84,15 @@ export const Keys = {
       return `membership:owner:${projectId}`;
     },
   },
+  Project: {
+    id(id: string): string {
+      return `project:id:${id}`;
+    },
+    secret(key: string): string {
+      return `project:secret:${key}`;
+    },
+    public(key: string): string {
+      return `project:public:${key}`;
+    },
+  },
 } as const;

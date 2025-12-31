@@ -3,9 +3,10 @@ import type {NextFunction, Request, Response} from 'express';
 import jsonwebtoken from 'jsonwebtoken';
 
 import {JWT_SECRET, PLUNK_ENABLED} from '../app/constants.js';
-import {prisma} from '../database/prisma.js';
 import {ErrorCode, HttpException, NotAuthenticated} from '../exceptions/index.js';
 import {MembershipService} from '../services/MembershipService.js';
+import {ProjectService} from '../services/ProjectService.js';
+import {UserService} from '../services/UserService.js';
 
 export interface AuthResponse {
   type: 'jwt' | 'apiKey';
@@ -82,65 +83,6 @@ export function parseJwt(request: Request): string {
 }
 
 /**
- * Middleware to require project access
- * Validates that the user is authenticated and has access to the project specified in X-Project-Id header
- * @param req
- * @param res
- * @param next
- */
-export const requireProjectAccess = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    // First authenticate the user
-    const userId = parseJwt(req);
-
-    // Get project ID from header
-    const projectId = req.headers['x-project-id'] as string | undefined;
-
-    if (!projectId) {
-      throw new HttpException(400, 'Project ID is required in X-Project-Id header', ErrorCode.BAD_REQUEST);
-    }
-
-    // Verify user has access to this project and get project status
-    const [membership, project] = await Promise.all([
-      MembershipService.getMembership(userId, projectId),
-      prisma.project.findUnique({
-        where: {id: projectId},
-        select: {disabled: true},
-      }),
-    ]);
-
-    if (!membership) {
-      throw new HttpException(403, 'You do not have access to this project', ErrorCode.PROJECT_ACCESS_DENIED);
-    }
-
-    // Set auth response with project ID (before disabled check so it's available for logging)
-    res.locals.auth = {
-      type: 'jwt',
-      userId,
-      projectId,
-    } as AuthResponse;
-
-    // Check if project is disabled - block write operations
-    if (project?.disabled) {
-      const method = req.method.toUpperCase();
-      const isWriteOperation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
-
-      if (isWriteOperation) {
-        throw new HttpException(
-          403,
-          'Project is disabled due to security violations. All write operations are blocked.',
-          ErrorCode.PROJECT_DISABLED,
-        );
-      }
-    }
-
-    next();
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
  * Middleware to require public API key authentication (for /v1/track endpoint only)
  * Validates that the request has a valid public key and sets the project
  * @param req
@@ -168,12 +110,12 @@ export const requirePublicKey = async (req: Request, res: Response, next: NextFu
 
     const apiKey = parts[1];
 
+    if (!apiKey) {
+      throw new HttpException(401, 'API key is required in Authorization header', ErrorCode.MISSING_AUTH);
+    }
+
     // Look up project by public key only
-    const project = await prisma.project.findFirst({
-      where: {
-        public: apiKey,
-      },
-    });
+    const project = await ProjectService.public(apiKey);
 
     if (!project) {
       throw new HttpException(
@@ -237,12 +179,12 @@ export const requireSecretKey = async (req: Request, res: Response, next: NextFu
 
     const apiKey = parts[1];
 
+    if (!apiKey) {
+      throw new HttpException(401, 'API key is required in Authorization header', ErrorCode.MISSING_AUTH);
+    }
+
     // Look up project by secret key only
-    const project = await prisma.project.findFirst({
-      where: {
-        secret: apiKey,
-      },
-    });
+    const project = await ProjectService.secret(apiKey);
 
     if (!project) {
       throw new HttpException(
@@ -304,12 +246,12 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
       }
 
       const apiKey = parts[1];
+
+      if (!apiKey) {
+        throw new HttpException(401, 'API key is required in Authorization header', ErrorCode.MISSING_AUTH);
+      }
       // Look up project by secret key only (public keys not allowed)
-      const project = await prisma.project.findFirst({
-        where: {
-          secret: apiKey,
-        },
-      });
+      const project = await ProjectService.secret(apiKey);
 
       if (!project) {
         throw new HttpException(
@@ -355,10 +297,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
     // Verify user has access to this project and get project status
     const [membership, project] = await Promise.all([
       MembershipService.getMembership(userId, projectId),
-      prisma.project.findUnique({
-        where: {id: projectId},
-        select: {disabled: true},
-      }),
+      ProjectService.id(projectId),
     ]);
 
     if (!membership) {
@@ -411,10 +350,7 @@ export const requireEmailVerified = async (req: Request, res: Response, next: Ne
       throw new NotAuthenticated();
     }
 
-    const user = await prisma.user.findUnique({
-      where: {id: auth.userId},
-      select: {emailVerified: true, type: true},
-    });
+    const user = await UserService.id(auth.userId);
 
     if (!user) {
       throw new NotAuthenticated();
