@@ -25,23 +25,23 @@ export default function Layout({children}: {children: ReactNode}) {
 
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://docs.useplunk.com/" />
+        <meta property="og:url" content="https://next-wiki.useplunk.com/" />
         <meta property="og:title" content="Plunk Documentation" />
         <meta
           property="og:description"
           content="Documentation for Plunk, the open-source email platform. Learn how to integrate Plunk into your application and manage your email communications."
         />
-        <meta property="og:image" content="https://docs.useplunk.com/assets/card.png" />
+        <meta property="og:image" content="https://next-wiki.useplunk.com/assets/card.png" />
 
         {/* Twitter */}
         <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content="https://docs.useplunk.com/" />
+        <meta property="twitter:url" content="https://next-wiki.useplunk.com/" />
         <meta property="twitter:title" content="Plunk Documentation" />
         <meta
           property="twitter:description"
           content="Documentation for Plunk, the open-source email platform. Learn how to integrate Plunk into your application and manage your email communications."
         />
-        <meta property="twitter:image" content="https://docs.useplunk.com/assets/card.png" />
+        <meta property="twitter:image" content="https://next-wiki.useplunk.com/assets/card.png" />
 
         {/* Fonts */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />

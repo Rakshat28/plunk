@@ -63,7 +63,7 @@ export default function WithProviders(props: AppProps) {
           title: 'Plunk | The Open-Source Email Platform',
           description:
             'Open-source email automation platform with workflows, segments, and developer API. Scale from 0 to millions of emails at $0.001 per email. Self-hostable and privacy-first.',
-          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk'}],
+          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk'}],
         }}
         additionalMetaTags={[{property: 'title', content: 'Plunk | The Open-Source Email Platform'}]}
       />

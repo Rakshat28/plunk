@@ -53,13 +53,13 @@ export default function CustomerioComparison() {
       <NextSeo
         title="Customer.io Alternative: Open-Source & Developer-Focused | Plunk"
         description="Compare Plunk and Customer.io. Customer.io is powerful but complex. Plunk is open-source, developer-friendly, with simple workflows and transparent pricing."
-        canonical="https://www.useplunk.com/vs/customerio"
+        canonical="https://next.useplunk.com/vs/customerio"
         openGraph={{
           title: 'Customer.io Alternative: Open-Source & Developer-Focused | Plunk',
           description:
             'Compare Plunk and Customer.io. Plunk is open-source, developer-friendly, with simple workflows and transparent pricing.',
-          url: 'https://www.useplunk.com/vs/customerio',
-          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs Customer.io'}],
+          url: 'https://next.useplunk.com/vs/customerio',
+          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk vs Customer.io'}],
         }}
       />
 

@@ -10,7 +10,7 @@ export default function EmailClickThroughRate() {
       description="Learn what affects email click-through rates, industry benchmarks, and proven tactics to optimize CTAs and boost engagement."
       lastUpdated="2025-12-20"
       readTime="10 min"
-      canonical="https://www.useplunk.com/guides/email-click-through-rate"
+      canonical="https://next.useplunk.com/guides/email-click-through-rate"
     >
       {/* Introduction */}
       <section id="introduction" className="mb-12">

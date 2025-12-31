@@ -20,8 +20,8 @@ export function BillingLimitExceededEmail({
   usage = 10000,
   limit = 10000,
   sourceType = 'Transactional',
-  dashboardUrl = 'https://app.useplunk.com',
-  landingUrl = 'https://www.useplunk.com',
+  dashboardUrl = 'https://next-app.useplunk.com',
+  landingUrl = 'https://next.useplunk.com',
 }: BillingLimitExceededEmailProps) {
   return (
     <EmailLayout>

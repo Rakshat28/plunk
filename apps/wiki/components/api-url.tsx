@@ -29,7 +29,7 @@ const getRuntimeEnv = (key: keyof NonNullable<typeof window.__ENV__>) => {
 };
 
 export function ApiUrl({path = ''}: {path?: string}) {
-  const baseUrl = getRuntimeEnv('API_URI') || process.env.NEXT_PUBLIC_API_URI || 'https://api.useplunk.com';
+  const baseUrl = getRuntimeEnv('API_URI') || process.env.NEXT_PUBLIC_API_URI || 'https://next-api.useplunk.com';
   return (
     <code>
       {baseUrl}
@@ -40,7 +40,7 @@ export function ApiUrl({path = ''}: {path?: string}) {
 
 export function DashboardUrl({path = ''}: {path?: string}) {
   const baseUrl =
-    getRuntimeEnv('DASHBOARD_URI') || process.env.NEXT_PUBLIC_DASHBOARD_URI || 'https://app.useplunk.com';
+    getRuntimeEnv('DASHBOARD_URI') || process.env.NEXT_PUBLIC_DASHBOARD_URI || 'https://next-app.useplunk.com';
   return (
     <code>
       {baseUrl}

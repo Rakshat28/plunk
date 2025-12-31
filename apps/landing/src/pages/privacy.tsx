@@ -110,8 +110,8 @@ export default function Index() {
                   <span data-custom-class="body_text">
                     Visit our website <bdt className="block-component" /> at{' '}
                     <bdt className="question">
-                      <a href="https://www.useplunk.com" target="_blank" data-custom-class="link">
-                        https://www.useplunk.com
+                      <a href="https://next.useplunk.com" target="_blank" data-custom-class="link">
+                        https://next.useplunk.com
                       </a>
                     </bdt>
                     <span style={{fontSize: '15px'}}>

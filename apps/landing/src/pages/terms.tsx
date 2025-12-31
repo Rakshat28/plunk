@@ -390,8 +390,8 @@ export default function Index() {
                   data-id="fdf30452-99b8-c68b-5cdf-34af764cd1fd"
                   data-type="question"
                 >
-                  <a href="https://www.useplunk.com" target="_blank" data-custom-class="link">
-                    https://www.useplunk.com
+                  <a href="https://next.useplunk.com" target="_blank" data-custom-class="link">
+                    https://next.useplunk.com
                   </a>
                 </bdt>{' '}
                 website as well as any other media form, media channel, mobile website or mobile application related,
@@ -3165,8 +3165,8 @@ export default function Index() {
                                   data-id="d10c7fd7-0685-12ac-c717-cbc45ff916d1"
                                   data-type="question"
                                 >
-                                  <a href="https://www.useplunk.com/privacy" target="_blank" data-custom-class="link">
-                                    https://www.useplunk.com/privacy
+                                  <a href="https://next.useplunk.com/privacy" target="_blank" data-custom-class="link">
+                                    https://next.useplunk.com/privacy
                                   </a>
                                 </bdt>
                               </strong>

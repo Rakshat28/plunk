@@ -25,7 +25,7 @@ const faqs: FAQ[] = [
   {
     question: 'What is the main difference between Plunk and MailerLite?',
     answer:
-      'The main difference is that Plunk is open-source and self-hostable, while MailerLite is proprietary SaaS. Plunk uses pay-per-email pricing versus MailerLite\'s pay-per-subscriber model. Both are developer-friendly, but Plunk is API-first with full code transparency, while MailerLite focuses more on visual email builders with good API support.',
+      "The main difference is that Plunk is open-source and self-hostable, while MailerLite is proprietary SaaS. Plunk uses pay-per-email pricing versus MailerLite's pay-per-subscriber model. Both are developer-friendly, but Plunk is API-first with full code transparency, while MailerLite focuses more on visual email builders with good API support.",
   },
   {
     question: 'Is Plunk more expensive than MailerLite?',
@@ -40,12 +40,12 @@ const faqs: FAQ[] = [
   {
     question: 'Does Plunk have a drag-and-drop builder like MailerLite?',
     answer:
-      'Plunk has a basic email editor, but most users manage templates using HTML/code for full control, version control, and reusability. MailerLite excels at visual drag-and-drop building for non-technical users. If you\'re a developer who prefers code-based templates, Plunk is better. If you need rich visual builders for marketers, MailerLite is better.',
+      "Plunk has a basic email editor, but most users manage templates using HTML/code for full control, version control, and reusability. MailerLite excels at visual drag-and-drop building for non-technical users. If you're a developer who prefers code-based templates, Plunk is better. If you need rich visual builders for marketers, MailerLite is better.",
   },
   {
-    question: 'How does Plunk\'s API compare to MailerLite?',
+    question: "How does Plunk's API compare to MailerLite?",
     answer:
-      'Both have modern REST APIs, but Plunk\'s API is designed with developers as the primary user. Plunk prioritizes API-first workflows, making it easier to integrate email into your application. MailerLite has a good API but is built UI-first with API as secondary. For programmatic email sending and automation, Plunk offers a superior developer experience.',
+      "Both have modern REST APIs, but Plunk's API is designed with developers as the primary user. Plunk prioritizes API-first workflows, making it easier to integrate email into your application. MailerLite has a good API but is built UI-first with API as secondary. For programmatic email sending and automation, Plunk offers a superior developer experience.",
   },
 ];
 
@@ -58,13 +58,13 @@ export default function MailerliteComparison() {
       <NextSeo
         title="MailerLite Alternative: Open-Source & Self-Hostable | Plunk"
         description="The truly developer-first MailerLite alternative. Open-source, self-hostable, pay per email not per subscriber. Modern API, full transparency."
-        canonical="https://www.useplunk.com/vs/mailerlite"
+        canonical="https://next.useplunk.com/vs/mailerlite"
         openGraph={{
           title: 'MailerLite Alternative: Open-Source & Self-Hostable | Plunk',
           description:
             'The truly developer-first MailerLite alternative. Open-source, self-hostable, pay per email not per subscriber.',
-          url: 'https://www.useplunk.com/vs/mailerlite',
-          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs MailerLite'}],
+          url: 'https://next.useplunk.com/vs/mailerlite',
+          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk vs MailerLite'}],
         }}
       />
 
@@ -360,8 +360,8 @@ export default function MailerliteComparison() {
               </div>
               <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Unlimited Contacts</h3>
               <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Store unlimited contacts without additional cost. Your database grows freely, pricing stays
-                predictable based on emails sent.
+                Store unlimited contacts without additional cost. Your database grows freely, pricing stays predictable
+                based on emails sent.
               </p>
             </motion.div>
           </div>

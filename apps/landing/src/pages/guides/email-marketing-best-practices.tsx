@@ -9,7 +9,7 @@ export default function EmailMarketingBestPractices() {
       description="Master email marketing with proven best practices for content, design, timing, deliverability, and compliance. Comprehensive guide for 2025."
       lastUpdated="2025-12-20"
       readTime="15 min"
-      canonical="https://www.useplunk.com/guides/email-marketing-best-practices"
+      canonical="https://next.useplunk.com/guides/email-marketing-best-practices"
     >
       {/* Introduction */}
       <section id="introduction" className="mb-12">

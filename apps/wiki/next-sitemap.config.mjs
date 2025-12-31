@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 function findMdxFiles(dir, fileList = []) {
   const files = fs.readdirSync(dir);
 
-  files.forEach((file) => {
+  files.forEach(file => {
     const filePath = path.join(dir, file);
     const stat = fs.statSync(filePath);
 
@@ -46,7 +46,7 @@ function filePathToUrl(filePath) {
 }
 
 const config = {
-  siteUrl: process.env.NEXT_PUBLIC_WIKI_URI || 'https://docs.useplunk.com',
+  siteUrl: process.env.NEXT_PUBLIC_WIKI_URI || 'https://next-wiki.useplunk.com',
   generateRobotsTxt: true,
   additionalPaths: async () => {
     const contentDocsPath = path.join(__dirname, 'content', 'docs');
@@ -55,7 +55,7 @@ const config = {
     const mdxFiles = findMdxFiles(contentDocsPath);
 
     // Convert to sitemap entries
-    return mdxFiles.map((filePath) => ({
+    return mdxFiles.map(filePath => ({
       loc: filePathToUrl(filePath),
       changefreq: 'weekly',
       priority: 0.7,

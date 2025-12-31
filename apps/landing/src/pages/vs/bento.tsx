@@ -25,7 +25,7 @@ const faqs: FAQ[] = [
   {
     question: 'When should I choose Bento over Plunk?',
     answer:
-      'Choose Bento if you need an all-in-one platform with CRM, live chat, and customer relationship features alongside email. Bento is designed for small businesses and creators who want everything in one place. Choose Plunk if you\'re a developer who needs focused email automation without CRM bloat—perfect for integrating email into your product.',
+      "Choose Bento if you need an all-in-one platform with CRM, live chat, and customer relationship features alongside email. Bento is designed for small businesses and creators who want everything in one place. Choose Plunk if you're a developer who needs focused email automation without CRM bloat—perfect for integrating email into your product.",
   },
   {
     question: 'What is the pricing difference between Plunk and Bento?',
@@ -45,7 +45,7 @@ const faqs: FAQ[] = [
   {
     question: 'Is migration from Bento to Plunk easy?',
     answer:
-      'For email features, yes. Export your contacts from Bento, import them to Plunk, recreate your workflows using our API or dashboard, and integrate Plunk into your application. If you rely heavily on Bento\'s CRM, live chat, or multi-channel features, you\'ll need separate tools for those. Most email-only migrations take a few hours.',
+      "For email features, yes. Export your contacts from Bento, import them to Plunk, recreate your workflows using our API or dashboard, and integrate Plunk into your application. If you rely heavily on Bento's CRM, live chat, or multi-channel features, you'll need separate tools for those. Most email-only migrations take a few hours.",
   },
 ];
 
@@ -58,13 +58,13 @@ export default function BentoComparison() {
       <NextSeo
         title="Bento Alternative: Developer-First Email Platform | Plunk"
         description="Open-source alternative to Bento. API-first email platform without CRM bloat. Self-hostable, pay-as-you-go pricing, built for developers."
-        canonical="https://www.useplunk.com/vs/bento"
+        canonical="https://next.useplunk.com/vs/bento"
         openGraph={{
           title: 'Bento Alternative: Developer-First Email Platform | Plunk',
           description:
             'Open-source alternative to Bento. API-first email platform without CRM bloat. Self-hostable, pay-as-you-go pricing.',
-          url: 'https://www.useplunk.com/vs/bento',
-          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs Bento'}],
+          url: 'https://next.useplunk.com/vs/bento',
+          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk vs Bento'}],
         }}
       />
 
@@ -233,9 +233,7 @@ export default function BentoComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-20 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>
-              Developer-First Email Platform
-            </h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Developer-First Email Platform</h2>
           </motion.div>
 
           <div className={'grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3'}>
@@ -339,8 +337,8 @@ export default function BentoComparison() {
               </div>
               <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Self-Hostable</h3>
               <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Deploy on your infrastructure with Docker. Full data control, compliance-ready, no vendor lock-in.
-                Bento is cloud-only.
+                Deploy on your infrastructure with Docker. Full data control, compliance-ready, no vendor lock-in. Bento
+                is cloud-only.
               </p>
             </motion.div>
 
@@ -360,8 +358,8 @@ export default function BentoComparison() {
               </div>
               <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Email-Focused</h3>
               <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Do one thing exceptionally well: email. No feature bloat, no CRM complexity, no multi-channel
-                confusion. Just powerful email automation.
+                Do one thing exceptionally well: email. No feature bloat, no CRM complexity, no multi-channel confusion.
+                Just powerful email automation.
               </p>
             </motion.div>
           </div>
@@ -394,9 +392,7 @@ export default function BentoComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>
-              Get focused email automation
-            </h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Get focused email automation</h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
               Join developers choosing focused email solutions over all-in-one complexity. Start free, no credit card
               required.

@@ -58,13 +58,13 @@ export default function MailchimpComparison() {
       <NextSeo
         title="Mailchimp Alternative for Developers | Plunk"
         description="Plunk is Mailchimp for developers: code-first email platform with modern API. Pay per email, not per contact. Transactional + marketing in one platform."
-        canonical="https://www.useplunk.com/vs/mailchimp"
+        canonical="https://next.useplunk.com/vs/mailchimp"
         openGraph={{
           title: 'Mailchimp Alternative for Developers | Plunk',
           description:
             'Plunk is Mailchimp for developers: code-first email platform with modern API. Pay per email, not per contact.',
-          url: 'https://www.useplunk.com/vs/mailchimp',
-          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs Mailchimp'}],
+          url: 'https://next.useplunk.com/vs/mailchimp',
+          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk vs Mailchimp'}],
         }}
       />
 

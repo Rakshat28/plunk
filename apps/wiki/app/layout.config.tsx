@@ -26,7 +26,7 @@ export const baseOptions: BaseLayoutProps = {
     {
       icon: <AppWindowIcon />,
       text: 'Dashboard',
-      url: 'https://app.useplunk.com',
+      url: 'https://next-app.useplunk.com',
     },
     {
       icon: <GithubIcon />,

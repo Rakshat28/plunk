@@ -6,12 +6,12 @@
     "version": "1.0.0",
     "contact": {
       "name": "Plunk Support",
-      "url": "https://useplunk.com"
+      "url": "https://next.useplunk.com"
     }
   },
   "servers": [
     {
-      "url": "https://api.useplunk.com",
+      "url": "https://next-api.useplunk.com",
       "description": "Production server"
     }
   ],
@@ -694,7 +694,16 @@
                           "description": "Array of human-readable reasons describing the verification results"
                         }
                       },
-                      "required": ["email", "valid", "isDisposable", "isTypo", "isPlusAddressed", "domainExists", "hasMxRecords", "reasons"]
+                      "required": [
+                        "email",
+                        "valid",
+                        "isDisposable",
+                        "isTypo",
+                        "isPlusAddressed",
+                        "domainExists",
+                        "hasMxRecords",
+                        "reasons"
+                      ]
                     }
                   }
                 },
@@ -711,9 +720,7 @@
                         "isPlusAddressed": false,
                         "domainExists": true,
                         "hasMxRecords": true,
-                        "reasons": [
-                          "Email appears to be valid"
-                        ]
+                        "reasons": ["Email appears to be valid"]
                       }
                     }
                   },
@@ -730,10 +737,7 @@
                         "domainExists": false,
                         "hasMxRecords": false,
                         "suggestedEmail": "user@gmail.com",
-                        "reasons": [
-                          "Possible typo detected, did you mean gmail.com?",
-                          "Domain does not exist"
-                        ]
+                        "reasons": ["Possible typo detected, did you mean gmail.com?", "Domain does not exist"]
                       }
                     }
                   },
@@ -749,9 +753,7 @@
                         "isPlusAddressed": false,
                         "domainExists": true,
                         "hasMxRecords": true,
-                        "reasons": [
-                          "Email appears to be valid"
-                        ]
+                        "reasons": ["Email appears to be valid"]
                       }
                     }
                   }

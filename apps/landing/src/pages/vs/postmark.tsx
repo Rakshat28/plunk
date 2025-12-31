@@ -54,13 +54,13 @@ export default function PostmarkComparison() {
       <NextSeo
         title="Postmark Alternative: Transactional + Marketing Emails | Plunk"
         description="Plunk offers everything Postmark has for transactional emails, plus marketing campaigns, workflows, and segmentation. Open-source and self-hostable."
-        canonical="https://www.useplunk.com/vs/postmark"
+        canonical="https://next.useplunk.com/vs/postmark"
         openGraph={{
           title: 'Postmark Alternative: Transactional + Marketing Emails | Plunk',
           description:
             'Plunk offers everything Postmark has for transactional emails, plus marketing campaigns, workflows, and segmentation.',
-          url: 'https://www.useplunk.com/vs/postmark',
-          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs Postmark'}],
+          url: 'https://next.useplunk.com/vs/postmark',
+          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk vs Postmark'}],
         }}
       />
 

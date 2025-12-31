@@ -33,7 +33,7 @@ const faqs: FAQ[] = [
       'ActiveCampaign starts at $29/month for basic features and quickly scales to $149/month or more for automation features. Plunk uses pay-as-you-go pricing—you only pay for emails sent. For email-focused needs, Plunk typically costs 50-80% less than ActiveCampaign while providing the same email automation capabilities.',
   },
   {
-    question: 'Can Plunk match ActiveCampaign\'s automation capabilities?',
+    question: "Can Plunk match ActiveCampaign's automation capabilities?",
     answer:
       'For email automation, yes. Plunk supports workflow automation, event-based triggers, and audience segmentation just like ActiveCampaign. The difference is Plunk focuses purely on email, while ActiveCampaign includes CRM, sales automation, and ML-powered recommendations. If you need email automation without sales/CRM features, Plunk delivers the same capability with simpler implementation.',
   },
@@ -45,7 +45,7 @@ const faqs: FAQ[] = [
   {
     question: 'What ActiveCampaign features does Plunk not have?',
     answer:
-      'Plunk focuses on email, so it doesn\'t include ActiveCampaign\'s CRM, sales pipeline management, lead scoring, SMS marketing, or machine learning features. If you need those, ActiveCampaign is better. If you want powerful email automation without the enterprise complexity, Plunk is the simpler choice.',
+      "Plunk focuses on email, so it doesn't include ActiveCampaign's CRM, sales pipeline management, lead scoring, SMS marketing, or machine learning features. If you need those, ActiveCampaign is better. If you want powerful email automation without the enterprise complexity, Plunk is the simpler choice.",
   },
 ];
 
@@ -58,13 +58,13 @@ export default function ActiveCampaignComparison() {
       <NextSeo
         title="ActiveCampaign Alternative: Open-Source & Affordable | Plunk"
         description="Powerful email automation without ActiveCampaign's complexity and cost. Open-source, developer-friendly, pay-as-you-go pricing. No CRM bloat."
-        canonical="https://www.useplunk.com/vs/activecampaign"
+        canonical="https://next.useplunk.com/vs/activecampaign"
         openGraph={{
           title: 'ActiveCampaign Alternative: Open-Source & Affordable | Plunk',
           description:
             "Powerful email automation without ActiveCampaign's complexity and cost. Open-source, developer-friendly, pay-as-you-go pricing.",
-          url: 'https://www.useplunk.com/vs/activecampaign',
-          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs ActiveCampaign'}],
+          url: 'https://next.useplunk.com/vs/activecampaign',
+          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk vs ActiveCampaign'}],
         }}
       />
 
@@ -233,9 +233,7 @@ export default function ActiveCampaignComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-20 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>
-              Automation Without Complexity
-            </h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Automation Without Complexity</h2>
           </motion.div>
 
           <div className={'grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3'}>
@@ -318,8 +316,8 @@ export default function ActiveCampaignComparison() {
               </div>
               <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Open Source</h3>
               <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                AGPL-3.0 licensed. Full transparency into how your emails are processed. Contribute features,
-                understand the system. ActiveCampaign is proprietary.
+                AGPL-3.0 licensed. Full transparency into how your emails are processed. Contribute features, understand
+                the system. ActiveCampaign is proprietary.
               </p>
             </motion.div>
 

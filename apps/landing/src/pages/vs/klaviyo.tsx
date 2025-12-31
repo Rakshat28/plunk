@@ -45,7 +45,7 @@ const faqs: FAQ[] = [
   {
     question: 'What Klaviyo features does Plunk not have?',
     answer:
-      'Plunk focuses on email, so it doesn\'t include Klaviyo\'s SMS marketing, native e-commerce platform integrations, AI-powered product recommendations, or predictive analytics. If you need those enterprise features and have the budget, Klaviyo is better. If you want powerful email automation at a fraction of the cost, Plunk delivers.',
+      "Plunk focuses on email, so it doesn't include Klaviyo's SMS marketing, native e-commerce platform integrations, AI-powered product recommendations, or predictive analytics. If you need those enterprise features and have the budget, Klaviyo is better. If you want powerful email automation at a fraction of the cost, Plunk delivers.",
   },
 ];
 
@@ -58,13 +58,13 @@ export default function KlaviyoComparison() {
       <NextSeo
         title="Klaviyo Alternative: Affordable E-commerce Email | Plunk"
         description="E-commerce email automation without Klaviyo's price tag. Pay-as-you-go pricing, open-source, self-hostable. Perfect for developers building e-commerce."
-        canonical="https://www.useplunk.com/vs/klaviyo"
+        canonical="https://next.useplunk.com/vs/klaviyo"
         openGraph={{
           title: 'Klaviyo Alternative: Affordable E-commerce Email | Plunk',
           description:
             "E-commerce email automation without Klaviyo's price tag. Pay-as-you-go pricing, open-source, self-hostable.",
-          url: 'https://www.useplunk.com/vs/klaviyo',
-          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs Klaviyo'}],
+          url: 'https://next.useplunk.com/vs/klaviyo',
+          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk vs Klaviyo'}],
         }}
       />
 

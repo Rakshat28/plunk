@@ -10,7 +10,7 @@ export default function EmailBounceRate() {
       description="Understand email bounce rates, the difference between hard and soft bounces, and proven strategies to reduce bounces and protect your sender reputation."
       lastUpdated="2025-12-20"
       readTime="9 min"
-      canonical="https://www.useplunk.com/guides/email-bounce-rate"
+      canonical="https://next.useplunk.com/guides/email-bounce-rate"
     >
       {/* Introduction */}
       <section id="introduction" className="mb-12">

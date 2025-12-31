@@ -45,7 +45,7 @@ const faqs: FAQ[] = [
   {
     question: 'How easy is it to migrate from ConvertKit to Plunk?',
     answer:
-      'Migration is straightforward. Export your subscribers from ConvertKit as CSV, import them to Plunk via our API or dashboard, recreate your email sequences using our workflow builder, and update your forms to use Plunk\'s API. Most migrations can be completed in a few hours. You\'ll need to rebuild landing pages separately if you rely on ConvertKit\'s landing page feature.',
+      "Migration is straightforward. Export your subscribers from ConvertKit as CSV, import them to Plunk via our API or dashboard, recreate your email sequences using our workflow builder, and update your forms to use Plunk's API. Most migrations can be completed in a few hours. You'll need to rebuild landing pages separately if you rely on ConvertKit's landing page feature.",
   },
 ];
 
@@ -58,13 +58,13 @@ export default function ConvertkitComparison() {
       <NextSeo
         title="ConvertKit Alternative for Developers | Plunk"
         description="Developer-first alternative to ConvertKit. Pay per email instead of per subscriber. Open-source, self-hostable, with powerful automation—no landing page bloat."
-        canonical="https://www.useplunk.com/vs/convertkit"
+        canonical="https://next.useplunk.com/vs/convertkit"
         openGraph={{
           title: 'ConvertKit Alternative for Developers | Plunk',
           description:
             'Developer-first alternative to ConvertKit. Pay per email instead of per subscriber. Open-source, self-hostable, with powerful automation.',
-          url: 'https://www.useplunk.com/vs/convertkit',
-          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs ConvertKit'}],
+          url: 'https://next.useplunk.com/vs/convertkit',
+          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk vs ConvertKit'}],
         }}
       />
 
@@ -141,9 +141,7 @@ export default function ConvertkitComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>
-              Pay for Emails, Not Subscribers
-            </h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Pay for Emails, Not Subscribers</h2>
             <p className={'mt-4 text-lg text-neutral-600'}>Pricing that grows with usage, not list size</p>
           </motion.div>
 

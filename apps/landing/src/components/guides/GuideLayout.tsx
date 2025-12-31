@@ -25,7 +25,7 @@ export function GuideLayout({
   readTime,
   children,
   canonical,
-  ogImage = 'https://www.useplunk.com/assets/card.png',
+  ogImage = 'https://next.useplunk.com/assets/card.png',
 }: GuideLayoutProps) {
   const [headings, setHeadings] = useState<{id: string; text: string; level: number}[]>([]);
   const [activeId, setActiveId] = useState<string>('');
@@ -74,8 +74,8 @@ export function GuideLayout({
 
   // Generate breadcrumb items
   const breadcrumbItems = [
-    {position: 1, name: 'Home', item: 'https://www.useplunk.com'},
-    {position: 2, name: 'Guides', item: 'https://www.useplunk.com/guides'},
+    {position: 1, name: 'Home', item: 'https://next.useplunk.com'},
+    {position: 2, name: 'Guides', item: 'https://next.useplunk.com/guides'},
     {position: 3, name: title, item: canonical || ''},
   ];
 

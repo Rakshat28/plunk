@@ -57,13 +57,13 @@ export default function LoopsComparison() {
       <NextSeo
         title="Loops Alternative: Open Source & Self-Hostable | Plunk"
         description="Plunk offers an open-source alternative to Loops with pay-as-you-go pricing, self-hosting, and no contact limits. Same modern features, full transparency."
-        canonical="https://www.useplunk.com/vs/loops"
+        canonical="https://next.useplunk.com/vs/loops"
         openGraph={{
           title: 'Loops Alternative: Open Source & Self-Hostable | Plunk',
           description:
             'Plunk offers an open-source alternative to Loops with pay-as-you-go pricing, self-hosting, and no contact limits.',
-          url: 'https://www.useplunk.com/vs/loops',
-          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs Loops'}],
+          url: 'https://next.useplunk.com/vs/loops',
+          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk vs Loops'}],
         }}
       />
 

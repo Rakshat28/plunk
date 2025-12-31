@@ -12,17 +12,15 @@ interface PasswordResetEmailProps {
 
 export function PasswordResetEmail({
   email = 'user@example.com',
-  resetUrl = 'https://app.useplunk.com/auth/reset-password?token=abc123',
-  landingUrl = 'https://www.useplunk.com',
+  resetUrl = 'https://next-app.useplunk.com/auth/reset-password?token=abc123',
+  landingUrl = 'https://next.useplunk.com',
 }: PasswordResetEmailProps) {
   return (
     <EmailLayout>
       <Header />
 
       <Section className="px-8 pb-10 pt-10">
-        <Heading className="mb-2 mt-0 text-2xl font-semibold tracking-tight text-gray-900">
-          Reset your password
-        </Heading>
+        <Heading className="mb-2 mt-0 text-2xl font-semibold tracking-tight text-gray-900">Reset your password</Heading>
 
         <Text className="mb-8 mt-0 text-base leading-relaxed text-gray-600">
           We received a request to reset your password. Click the button below to create a new password.

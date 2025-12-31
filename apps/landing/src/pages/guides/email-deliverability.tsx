@@ -9,7 +9,7 @@ export default function EmailDeliverability() {
       description="Learn proven strategies to improve email deliverability, avoid spam filters, and maximize inbox placement rates. Complete guide with best practices."
       lastUpdated="2025-12-20"
       readTime="12 min"
-      canonical="https://www.useplunk.com/guides/email-deliverability"
+      canonical="https://next.useplunk.com/guides/email-deliverability"
     >
       {/* Introduction */}
       <section id="introduction" className="mb-12">
@@ -306,9 +306,7 @@ export default function EmailDeliverability() {
       {/* Monitoring */}
       <section id="monitoring" className="mb-12">
         <h2 className="text-3xl font-bold text-neutral-900 mb-6">Monitoring Email Deliverability</h2>
-        <p className="text-neutral-700 leading-relaxed mb-6">
-          Track these metrics to stay on top of deliverability:
-        </p>
+        <p className="text-neutral-700 leading-relaxed mb-6">Track these metrics to stay on top of deliverability:</p>
 
         <div className="grid gap-6 md:grid-cols-2">
           <div className="rounded-xl border border-neutral-200 bg-white p-6">

@@ -303,7 +303,7 @@ Successful API requests return a standardized format with `success: true` and a 
 
 ```typescript
 try {
-  const response = await fetch('https://api.useplunk.com/v1/track', {
+  const response = await fetch('https://next-api.useplunk.com/v1/track', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${publicKey}`,
@@ -361,7 +361,7 @@ try {
 import requests
 
 response = requests.post(
-    'https://api.useplunk.com/v1/track',
+    'https://next-api.useplunk.com/v1/track',
     headers={
         'Authorization': f'Bearer {public_key}',
         'Content-Type': 'application/json'
@@ -426,7 +426,7 @@ Request IDs are included in:
 
 ```javascript
 // Example: Logging request ID in your application
-const response = await fetch('https://api.useplunk.com/v1/send', {
+const response = await fetch('https://next-api.useplunk.com/v1/send', {
   // ... your request
 });
 

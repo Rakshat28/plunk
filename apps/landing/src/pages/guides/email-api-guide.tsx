@@ -10,7 +10,7 @@ export default function EmailAPIGuide() {
       description="Complete guide to email APIs: how they work, implementation examples, best practices, and choosing the right solution for your application."
       lastUpdated="2025-12-20"
       readTime="12 min"
-      canonical="https://www.useplunk.com/guides/email-api-guide"
+      canonical="https://next.useplunk.com/guides/email-api-guide"
     >
       {/* Introduction */}
       <section id="introduction" className="mb-12">
@@ -132,7 +132,7 @@ export default function EmailAPIGuide() {
               language="javascript"
               title="Node.js Example"
               code={`// Using fetch (Node.js 18+ or with node-fetch)
-const response = await fetch('https://api.useplunk.com/v1/send', {
+const response = await fetch('https://next-api.useplunk.com/v1/send', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -167,7 +167,7 @@ if (response.ok) {
               code={`import requests
 
 response = requests.post(
-    'https://api.useplunk.com/v1/send',
+    'https://next-api.useplunk.com/v1/send',
     headers={
         'Content-Type': 'application/json',
         'Authorization': 'Bearer YOUR_API_KEY'
@@ -195,7 +195,7 @@ else:
               language="php"
               title="PHP Example"
               code={`<?php
-$ch = curl_init('https://api.useplunk.com/v1/send');
+$ch = curl_init('https://next-api.useplunk.com/v1/send');
 
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -235,7 +235,7 @@ if ($httpCode === 200) {
               code={`require 'net/http'
 require 'json'
 
-uri = URI('https://api.useplunk.com/v1/send')
+uri = URI('https://next-api.useplunk.com/v1/send')
 http = Net::HTTP.new(uri.host, uri.port)
 http.use_ssl = true
 
@@ -295,7 +295,7 @@ func main() {
 
     jsonData, _ := json.Marshal(email)
 
-    req, _ := http.NewRequest("POST", "https://api.useplunk.com/v1/send", bytes.NewBuffer(jsonData))
+    req, _ := http.NewRequest("POST", "https://next-api.useplunk.com/v1/send", bytes.NewBuffer(jsonData))
     req.Header.Set("Content-Type", "application/json")
     req.Header.Set("Authorization", "Bearer YOUR_API_KEY")
 

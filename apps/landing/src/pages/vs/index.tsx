@@ -96,13 +96,13 @@ export default function CompetitorsIndex() {
       <NextSeo
         title="Plunk vs Email Competitors | Compare Email Platforms"
         description="Compare Plunk with Postmark, SendGrid, Mailgun, Mailchimp, ConvertKit, ActiveCampaign, Klaviyo, MailerLite, and more. See why Plunk offers transactional emails plus marketing features in one open-source platform."
-        canonical="https://www.useplunk.com/vs"
+        canonical="https://next.useplunk.com/vs"
         openGraph={{
           title: 'Plunk vs Email Competitors | Compare Email Platforms',
           description:
             'Compare Plunk with 13 leading email platforms. Transactional + marketing emails in one open-source solution.',
-          url: 'https://www.useplunk.com/vs',
-          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs Competitors'}],
+          url: 'https://next.useplunk.com/vs',
+          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk vs Competitors'}],
         }}
       />
 

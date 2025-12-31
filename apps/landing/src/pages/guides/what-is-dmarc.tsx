@@ -10,7 +10,7 @@ export default function WhatIsDMARC() {
       description="Learn how DMARC works with SPF and DKIM to protect your domain from email spoofing. Complete setup guide with policy examples."
       lastUpdated="2025-12-20"
       readTime="9 min"
-      canonical="https://www.useplunk.com/guides/what-is-dmarc"
+      canonical="https://next.useplunk.com/guides/what-is-dmarc"
     >
       {/* Introduction */}
       <section id="introduction" className="mb-12">

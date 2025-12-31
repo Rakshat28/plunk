@@ -67,9 +67,9 @@ to run them separately (e.g., for debugging), use `dev:server` and `dev:worker` 
     - HTTP API endpoints for the platform
     - Background cron jobs (workflow processor, domain verification)
     - **Worker process** (separate): BullMQ worker for processing email, campaign, and workflow queues
-- **web**: Next.js app (Pages Router) - Main platform (app.useplunk.com)
-- **landing**: Next.js app (Pages Router) - Marketing site (www.useplunk.com)
-- **wiki**: Next.js app - Documentation site (docs.useplunk.com)
+- **web**: Next.js app (Pages Router) - Main platform (next-app.useplunk.com)
+- **landing**: Next.js app (Pages Router) - Marketing site (next.useplunk.com)
+- **wiki**: Next.js app - Documentation site (next-wiki.useplunk.com)
 
 ### Background Job Architecture
 

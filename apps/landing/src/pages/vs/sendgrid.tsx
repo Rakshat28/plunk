@@ -57,13 +57,13 @@ export default function SendGridComparison() {
       <NextSeo
         title="SendGrid Alternative: Pay-As-You-Go & Open Source | Plunk"
         description="Plunk offers pay-as-you-go pricing instead of monthly subscriptions, with a modern API and no complex setup. Open source alternative to SendGrid."
-        canonical="https://www.useplunk.com/vs/sendgrid"
+        canonical="https://next.useplunk.com/vs/sendgrid"
         openGraph={{
           title: 'SendGrid Alternative: Pay-As-You-Go & Open Source | Plunk',
           description:
             'Plunk offers pay-as-you-go pricing instead of monthly subscriptions, with a modern API and no complex setup.',
-          url: 'https://www.useplunk.com/vs/sendgrid',
-          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs SendGrid'}],
+          url: 'https://next.useplunk.com/vs/sendgrid',
+          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk vs SendGrid'}],
         }}
       />
 

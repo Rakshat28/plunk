@@ -22,8 +22,8 @@ export function BillingLimitWarningEmail({
   limit = 10000,
   percentage = 85,
   sourceType = 'Transactional',
-  dashboardUrl = 'https://app.useplunk.com',
-  landingUrl = 'https://www.useplunk.com',
+  dashboardUrl = 'https://next-app.useplunk.com',
+  landingUrl = 'https://next.useplunk.com',
 }: BillingLimitWarningEmailProps) {
   const percentageRounded = Math.round(percentage);
   const remaining = limit - usage;

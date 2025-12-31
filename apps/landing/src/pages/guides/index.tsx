@@ -103,13 +103,13 @@ export default function GuidesIndex() {
       <NextSeo
         title="Email Marketing & Deliverability Guides | Plunk"
         description="Learn email best practices, authentication (DKIM, SPF, DMARC), deliverability optimization, and more. Free guides from Plunk."
-        canonical="https://www.useplunk.com/guides"
+        canonical="https://next.useplunk.com/guides"
         openGraph={{
           title: 'Email Marketing & Deliverability Guides | Plunk',
           description:
             'Learn email best practices, authentication (DKIM, SPF, DMARC), deliverability optimization, and more.',
-          url: 'https://www.useplunk.com/guides',
-          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk Guides'}],
+          url: 'https://next.useplunk.com/guides',
+          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk Guides'}],
         }}
       />
 
