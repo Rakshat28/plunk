@@ -320,7 +320,10 @@ describe('BillingLimitService - Critical Enforcement', () => {
         data: {billingLimitCampaigns: 10},
       });
 
+      // Create a date in the previous month
+      // Set day to 1 first to avoid month overflow issues (e.g., Jan 31 -> Feb 31 = Mar 3)
       const lastMonth = new Date();
+      lastMonth.setDate(1);
       lastMonth.setMonth(lastMonth.getMonth() - 1);
 
       await prisma.email.create({
