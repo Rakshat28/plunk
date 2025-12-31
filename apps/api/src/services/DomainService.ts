@@ -1,11 +1,12 @@
 import React from 'react';
 import signale from 'signale';
-import {DomainVerifiedEmail, DomainUnverifiedEmail, sendPlatformEmail} from '@plunk/email';
-import {DASHBOARD_URI, LANDING_URI} from '../constants.js';
+import {DomainUnverifiedEmail, DomainVerifiedEmail, sendPlatformEmail} from '@plunk/email';
+import {DASHBOARD_URI, LANDING_URI} from '../app/constants.js';
 import {prisma} from '../database/prisma.js';
 import {redis, wrapRedis} from '../database/redis.js';
 import {HttpException} from '../exceptions/index.js';
 import {Keys} from './keys.js';
+import {MembershipService} from './MembershipService.js';
 import {NtfyService} from './NtfyService.js';
 import {getDomainVerificationAttributes, verifyDomain} from './SESService.js';
 
@@ -92,11 +93,8 @@ export class DomainService {
         const cacheKey = Keys.Domain.verifiedEmail(domainId);
         const alreadySent = await redis.get(cacheKey);
         if (alreadySent !== '1') {
-          const members = await prisma.membership.findMany({
-            where: {projectId: updatedDomain.project.id},
-            include: {user: {select: {email: true}}},
-          });
-          const emails = members.map((m) => m.user.email);
+          const members = await MembershipService.getMembers(updatedDomain.project.id);
+          const emails = members.map(m => m.email);
           if (emails.length > 0) {
             const template = React.createElement(DomainVerifiedEmail, {
               projectName: updatedDomain.project.name,
@@ -105,9 +103,7 @@ export class DomainService {
               dashboardUrl: DASHBOARD_URI,
               landingUrl: LANDING_URI,
             });
-            await Promise.all(
-              emails.map((email) => sendPlatformEmail(email, 'Domain Verified Successfully', template)),
-            );
+            await Promise.all(emails.map(email => sendPlatformEmail(email, 'Domain Verified Successfully', template)));
             // Set cache to prevent duplicate emails (7 days)
             await redis.setex(cacheKey, 604800, '1');
           }
@@ -127,7 +123,11 @@ export class DomainService {
       });
 
       // Send notification about domain verification failed
-      await NtfyService.notifyDomainVerificationFailed(domain.domain, updatedDomain.project.name, updatedDomain.project.id);
+      await NtfyService.notifyDomainVerificationFailed(
+        domain.domain,
+        updatedDomain.project.name,
+        updatedDomain.project.id,
+      );
 
       // Send email notification about domain verification failed
       try {
@@ -138,11 +138,8 @@ export class DomainService {
         const cacheKey = Keys.Domain.unverifiedEmail(domainId, year, month);
         const alreadySent = await redis.get(cacheKey);
         if (alreadySent !== '1') {
-          const members = await prisma.membership.findMany({
-            where: {projectId: updatedDomain.project.id},
-            include: {user: {select: {email: true}}},
-          });
-          const emails = members.map((m) => m.user.email);
+          const members = await MembershipService.getMembers(updatedDomain.project.id);
+          const emails = members.map(m => m.email);
           if (emails.length > 0) {
             const template = React.createElement(DomainUnverifiedEmail, {
               projectName: updatedDomain.project.name,
@@ -151,9 +148,7 @@ export class DomainService {
               dashboardUrl: DASHBOARD_URI,
               landingUrl: LANDING_URI,
             });
-            await Promise.all(
-              emails.map((email) => sendPlatformEmail(email, 'Domain Verification Failed', template)),
-            );
+            await Promise.all(emails.map(email => sendPlatformEmail(email, 'Domain Verification Failed', template)));
             // Set cache to prevent duplicate emails (until end of month)
             const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
             const ttl = Math.floor((endOfMonth.getTime() - now.getTime()) / 1000);

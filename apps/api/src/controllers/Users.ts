@@ -11,6 +11,7 @@ import {ErrorCode, HttpException, NotAuthenticated, NotFound} from '../exception
 import type {AuthResponse} from '../middleware/auth.js';
 import {isAuthenticated, requireEmailVerified} from '../middleware/auth.js';
 import {BillingLimitService} from '../services/BillingLimitService.js';
+import {MembershipService} from '../services/MembershipService.js';
 import {NtfyService} from '../services/NtfyService.js';
 import {SecurityService} from '../services/SecurityService.js';
 import {UserService} from '../services/UserService.js';
@@ -108,20 +109,8 @@ export class Users {
     const {id} = UtilitySchemas.id.parse(req.params);
     const data = ProjectSchemas.update.parse(req.body);
 
-    // Verify user has access to this project
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: id,
-        role: {
-          in: ['ADMIN', 'OWNER'],
-        },
-      },
-    });
-
-    if (!membership) {
-      throw new NotFound('Project not found or you do not have permission to update it');
-    }
+    // Verify user has admin/owner access to this project
+    await MembershipService.requireAdminAccess(auth.userId!, id);
 
     // Update the project
     const project = await prisma.project.update({
@@ -140,19 +129,7 @@ export class Users {
     const {id} = UtilitySchemas.id.parse(req.params);
 
     // Verify user has admin/owner access to this project
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: id,
-        role: {
-          in: ['ADMIN', 'OWNER'],
-        },
-      },
-    });
-
-    if (!membership) {
-      throw new NotFound('Project not found or you do not have permission to regenerate keys');
-    }
+    await MembershipService.requireAdminAccess(auth.userId!, id);
 
     // Generate new unique API keys
     const publicKey = `pk_${randomBytes(32).toString('hex')}`;
@@ -197,20 +174,8 @@ export class Users {
       return res.status(404).json({error: 'Billing is not enabled'});
     }
 
-    // Verify user has access to this project
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: id,
-        role: {
-          in: ['ADMIN', 'OWNER'],
-        },
-      },
-    });
-
-    if (!membership) {
-      throw new NotFound('Project not found or you do not have permission to manage billing');
-    }
+    // Verify user has admin/owner access to this project
+    await MembershipService.requireAdminAccess(auth.userId!, id);
 
     // Get the project
     const project = await prisma.project.findUnique({
@@ -288,20 +253,8 @@ export class Users {
       return res.status(404).json({error: 'Billing is not enabled'});
     }
 
-    // Verify user has access to this project
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: id,
-        role: {
-          in: ['ADMIN', 'OWNER'],
-        },
-      },
-    });
-
-    if (!membership) {
-      throw new NotFound('Project not found or you do not have permission to manage billing');
-    }
+    // Verify user has admin/owner access to this project
+    await MembershipService.requireAdminAccess(auth.userId!, id);
 
     // Get the project
     const project = await prisma.project.findUnique({
@@ -342,16 +295,7 @@ export class Users {
     }
 
     // Verify user has access to this project
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: id,
-      },
-    });
-
-    if (!membership) {
-      throw new NotFound('Project not found or you do not have permission to view billing limits');
-    }
+    await MembershipService.requireAccess(auth.userId!, id);
 
     // Get billing limits and usage
     const limitsAndUsage = await BillingLimitService.getLimitsAndUsage(id);
@@ -377,19 +321,7 @@ export class Users {
     const data = BillingLimitSchemas.update.parse(req.body);
 
     // Verify user has admin/owner access to this project
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: id,
-        role: {
-          in: ['ADMIN', 'OWNER'],
-        },
-      },
-    });
-
-    if (!membership) {
-      throw new NotFound('Project not found or you do not have permission to update billing limits');
-    }
+    await MembershipService.requireAdminAccess(auth.userId!, id);
 
     // Get the project with current limits
     const project = await prisma.project.findUnique({
@@ -459,16 +391,7 @@ export class Users {
     }
 
     // Verify user has access to this project
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: id,
-      },
-    });
-
-    if (!membership) {
-      throw new NotFound('Project not found or you do not have permission to view billing');
-    }
+    await MembershipService.requireAccess(auth.userId!, id);
 
     const project = await prisma.project.findUnique({
       where: {id},
@@ -585,16 +508,7 @@ export class Users {
     }
 
     // Verify user has access to this project
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: id,
-      },
-    });
-
-    if (!membership) {
-      throw new NotFound('Project not found or you do not have permission to view billing');
-    }
+    await MembershipService.requireAccess(auth.userId!, id);
 
     // Get the project
     const project = await prisma.project.findUnique({
@@ -668,16 +582,7 @@ export class Users {
     }
 
     // Verify user has access to this project
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: id,
-      },
-    });
-
-    if (!membership) {
-      throw new NotFound('Project not found or you do not have permission to view security metrics');
-    }
+    await MembershipService.requireAccess(auth.userId!, id);
 
     // Get security metrics
     const metrics = await SecurityService.getProjectSecurityMetrics(id);
@@ -701,19 +606,7 @@ export class Users {
     }
 
     // Verify user has admin/owner access to this project
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: id,
-        role: {
-          in: ['ADMIN', 'OWNER'],
-        },
-      },
-    });
-
-    if (!membership) {
-      throw new NotFound('Project not found or you do not have permission to reset it');
-    }
+    await MembershipService.requireAdminAccess(auth.userId!, id);
 
     // Check if project is disabled - block reset operation
     const isDisabled = await SecurityService.isProjectDisabled(id);
@@ -787,21 +680,7 @@ export class Users {
     }
 
     // Verify user has owner or admin access to this project
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: id,
-        role: {
-          in: ['OWNER', 'ADMIN'],
-        },
-      },
-    });
-
-    if (!membership) {
-      throw new NotFound(
-        'Project not found or you do not have permission to delete it. Only project owners and admins can delete projects.',
-      );
-    }
+    await MembershipService.requireAdminAccess(auth.userId!, id);
 
     // Get project to check for active subscription and disabled status
     const project = await prisma.project.findUnique({

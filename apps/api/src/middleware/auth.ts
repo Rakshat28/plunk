@@ -5,6 +5,7 @@ import jsonwebtoken from 'jsonwebtoken';
 import {JWT_SECRET, PLUNK_ENABLED} from '../app/constants.js';
 import {prisma} from '../database/prisma.js';
 import {ErrorCode, HttpException, NotAuthenticated} from '../exceptions/index.js';
+import {MembershipService} from '../services/MembershipService.js';
 
 export interface AuthResponse {
   type: 'jwt' | 'apiKey';
@@ -101,14 +102,7 @@ export const requireProjectAccess = async (req: Request, res: Response, next: Ne
 
     // Verify user has access to this project and get project status
     const [membership, project] = await Promise.all([
-      prisma.membership.findUnique({
-        where: {
-          userId_projectId: {
-            userId,
-            projectId,
-          },
-        },
-      }),
+      MembershipService.getMembership(userId, projectId),
       prisma.project.findUnique({
         where: {id: projectId},
         select: {disabled: true},
@@ -360,14 +354,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
 
     // Verify user has access to this project and get project status
     const [membership, project] = await Promise.all([
-      prisma.membership.findUnique({
-        where: {
-          userId_projectId: {
-            userId,
-            projectId,
-          },
-        },
-      }),
+      MembershipService.getMembership(userId, projectId),
       prisma.project.findUnique({
         where: {id: projectId},
         select: {disabled: true},

@@ -8,11 +8,12 @@
 
 import React from 'react';
 import signale from 'signale';
-import {DomainVerifiedEmail, DomainUnverifiedEmail, sendPlatformEmail} from '@plunk/email';
+import {DomainUnverifiedEmail, DomainVerifiedEmail, sendPlatformEmail} from '@plunk/email';
 
-import {DASHBOARD_URI, LANDING_URI} from '../constants.js';
+import {DASHBOARD_URI, LANDING_URI} from '../app/constants.js';
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
+import {MembershipService} from '../services/MembershipService.js';
 import {disableFeedbackForwarding, getIdentities, verifyDomain} from '../services/SESService.js';
 import {Keys} from '../services/keys.js';
 
@@ -75,7 +76,11 @@ export async function checkDomainVerifications() {
               signale.success(`[DOMAIN-VERIFICATION] Restarted verification for ${sesIdentity.domain}`);
             } catch (e: unknown) {
               const error = e as {Code?: string; name?: string; message?: string};
-              if (error?.Code === 'Throttling' || error?.name === 'Throttling' || error?.message?.includes('Throttling')) {
+              if (
+                error?.Code === 'Throttling' ||
+                error?.name === 'Throttling' ||
+                error?.message?.includes('Throttling')
+              ) {
                 signale.warn(
                   `[DOMAIN-VERIFICATION] Throttling detected, waiting ${delay / 1000} seconds (attempt ${attempt + 1})`,
                 );
@@ -83,7 +88,9 @@ export async function checkDomainVerifications() {
                 delay *= 2; // Exponential backoff
                 attempt++;
               } else {
-                signale.error(`[DOMAIN-VERIFICATION] Error restarting verification: ${error?.message || 'Unknown error'}`);
+                signale.error(
+                  `[DOMAIN-VERIFICATION] Error restarting verification: ${error?.message || 'Unknown error'}`,
+                );
                 throw e;
               }
             }
@@ -118,11 +125,8 @@ export async function checkDomainVerifications() {
             const cacheKey = Keys.Domain.verifiedEmail(dbDomain.id);
             const alreadySent = await redis.get(cacheKey);
             if (alreadySent !== '1') {
-              const members = await prisma.membership.findMany({
-                where: {projectId: dbDomain.projectId},
-                include: {user: {select: {email: true}}},
-              });
-              const emails = members.map((m) => m.user.email);
+              const members = await MembershipService.getMembers(dbDomain.projectId);
+              const emails = members.map(m => m.email);
               if (emails.length > 0) {
                 const template = React.createElement(DomainVerifiedEmail, {
                   projectName: dbDomain.project.name,
@@ -132,7 +136,7 @@ export async function checkDomainVerifications() {
                   landingUrl: LANDING_URI,
                 });
                 await Promise.all(
-                  emails.map((email) => sendPlatformEmail(email, 'Domain Verified Successfully', template)),
+                  emails.map(email => sendPlatformEmail(email, 'Domain Verified Successfully', template)),
                 );
                 await redis.setex(cacheKey, 604800, '1'); // 7 days
               }
@@ -158,11 +162,8 @@ export async function checkDomainVerifications() {
             const cacheKey = Keys.Domain.unverifiedEmail(dbDomain.id, year, month);
             const alreadySent = await redis.get(cacheKey);
             if (alreadySent !== '1') {
-              const members = await prisma.membership.findMany({
-                where: {projectId: dbDomain.projectId},
-                include: {user: {select: {email: true}}},
-              });
-              const emails = members.map((m) => m.user.email);
+              const members = await MembershipService.getMembers(dbDomain.projectId);
+              const emails = members.map(m => m.email);
               if (emails.length > 0) {
                 const template = React.createElement(DomainUnverifiedEmail, {
                   projectName: dbDomain.project.name,
@@ -172,7 +173,7 @@ export async function checkDomainVerifications() {
                   landingUrl: LANDING_URI,
                 });
                 await Promise.all(
-                  emails.map((email) => sendPlatformEmail(email, 'Domain Verification Failed', template)),
+                  emails.map(email => sendPlatformEmail(email, 'Domain Verification Failed', template)),
                 );
                 const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
                 const ttl = Math.floor((endOfMonth.getTime() - now.getTime()) / 1000);

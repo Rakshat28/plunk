@@ -6,6 +6,7 @@ import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
 import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth, requireEmailVerified} from '../middleware/auth.js';
+import {MembershipService} from '../services/MembershipService.js';
 import {SecurityService} from '../services/SecurityService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
 
@@ -23,16 +24,7 @@ export class Projects {
     const {id} = UtilitySchemas.id.parse(req.params);
 
     // Verify user has access to this project
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: id,
-      },
-    });
-
-    if (!membership) {
-      throw new HttpException(404, 'Project not found or you do not have access');
-    }
+    await MembershipService.requireAccess(auth.userId!, id);
 
     // Get project with relevant data
     const project = await prisma.project.findUnique({
@@ -96,16 +88,7 @@ export class Projects {
     const {id} = UtilitySchemas.id.parse(req.params);
 
     // Verify user has access to this project
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: id,
-      },
-    });
-
-    if (!membership) {
-      throw new HttpException(404, 'Project not found or you do not have access');
-    }
+    await MembershipService.requireAccess(auth.userId!, id);
 
     // Use existing SecurityService
     const metrics = await SecurityService.getProjectSecurityMetrics(id);
@@ -128,39 +111,14 @@ export class Projects {
     const {id} = UtilitySchemas.id.parse(req.params);
 
     // Verify user has access to this project
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: id,
-      },
-    });
-
-    if (!membership) {
-      throw new HttpException(404, 'Project not found or you do not have access');
-    }
+    await MembershipService.requireAccess(auth.userId!, id);
 
     // Get all members of the project
-    const members = await prisma.membership.findMany({
-      where: {
-        projectId: id,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-          },
-        },
-      },
-    });
+    const members = await MembershipService.getMembers(id);
 
     return res.json({
       success: true,
-      data: members.map(m => ({
-        userId: m.user.id,
-        email: m.user.email,
-        role: m.role,
-      })),
+      data: members,
     });
   }
 
@@ -190,19 +148,7 @@ export class Projects {
     const {email, role} = parseResult.data;
 
     // Verify current user is ADMIN or OWNER
-    const currentMembership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: id,
-        role: {
-          in: ['ADMIN', 'OWNER'],
-        },
-      },
-    });
-
-    if (!currentMembership) {
-      throw new HttpException(403, 'Only project admins and owners can add members');
-    }
+    await MembershipService.requireAdminAccess(auth.userId!, id);
 
     // Find user by email
     const userToAdd = await prisma.user.findUnique({
@@ -214,28 +160,8 @@ export class Projects {
       throw new HttpException(404, 'User with this email does not have an account');
     }
 
-    // Check if user is already a member
-    const existingMembership = await prisma.membership.findUnique({
-      where: {
-        userId_projectId: {
-          userId: userToAdd.id,
-          projectId: id,
-        },
-      },
-    });
-
-    if (existingMembership) {
-      throw new HttpException(409, 'User is already a member of this project');
-    }
-
-    // Create membership
-    const newMembership = await prisma.membership.create({
-      data: {
-        userId: userToAdd.id,
-        projectId: id,
-        role,
-      },
-    });
+    // Add member to project
+    const newMembership = await MembershipService.addMember(id, userToAdd.id, role);
 
     return res.json({
       success: true,
@@ -276,38 +202,7 @@ export class Projects {
     const {role} = parseResult.data;
 
     // Verify current user is ADMIN or OWNER
-    const currentMembership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: id,
-        role: {
-          in: ['ADMIN', 'OWNER'],
-        },
-      },
-    });
-
-    if (!currentMembership) {
-      throw new HttpException(403, 'Only project admins and owners can update member roles');
-    }
-
-    // Get target membership
-    const targetMembership = await prisma.membership.findUnique({
-      where: {
-        userId_projectId: {
-          userId,
-          projectId: id,
-        },
-      },
-    });
-
-    if (!targetMembership) {
-      throw new HttpException(404, 'Member not found');
-    }
-
-    // Cannot change OWNER role
-    if (targetMembership.role === 'OWNER') {
-      throw new HttpException(403, 'Cannot change the role of the project owner');
-    }
+    await MembershipService.requireAdminAccess(auth.userId!, id);
 
     // Get user info
     const user = await prisma.user.findUnique({
@@ -319,16 +214,8 @@ export class Projects {
       throw new HttpException(404, 'User not found');
     }
 
-    // Update role
-    await prisma.membership.update({
-      where: {
-        userId_projectId: {
-          userId,
-          projectId: id,
-        },
-      },
-      data: {role},
-    });
+    // Update role (service handles validation)
+    await MembershipService.updateRole(id, userId, role);
 
     return res.json({
       success: true,
@@ -360,53 +247,15 @@ export class Projects {
     }
 
     // Verify current user is ADMIN or OWNER
-    const currentMembership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: id,
-        role: {
-          in: ['ADMIN', 'OWNER'],
-        },
-      },
-    });
-
-    if (!currentMembership) {
-      throw new HttpException(403, 'Only project admins and owners can remove members');
-    }
-
-    // Get target membership
-    const targetMembership = await prisma.membership.findUnique({
-      where: {
-        userId_projectId: {
-          userId,
-          projectId: id,
-        },
-      },
-    });
-
-    if (!targetMembership) {
-      throw new HttpException(404, 'Member not found');
-    }
-
-    // Cannot remove OWNER
-    if (targetMembership.role === 'OWNER') {
-      throw new HttpException(403, 'Cannot remove the project owner');
-    }
+    await MembershipService.requireAdminAccess(auth.userId!, id);
 
     // Cannot remove yourself
     if (userId === auth.userId) {
       throw new HttpException(403, 'You cannot remove yourself from the project');
     }
 
-    // Delete membership
-    await prisma.membership.delete({
-      where: {
-        userId_projectId: {
-          userId,
-          projectId: id,
-        },
-      },
-    });
+    // Remove member (service handles validation)
+    await MembershipService.removeMember(id, userId);
 
     return res.json({
       success: true,

@@ -70,4 +70,18 @@ export const Keys = {
       return `workflows:enabled:${projectId}`;
     },
   },
+  Membership: {
+    access(userId: string, projectId: string): string {
+      return `membership:access:${userId}:${projectId}`;
+    },
+    admin(userId: string, projectId: string): string {
+      return `membership:admin:${userId}:${projectId}`;
+    },
+    full(userId: string, projectId: string): string {
+      return `membership:full:${userId}:${projectId}`;
+    },
+    owner(projectId: string): string {
+      return `membership:owner:${projectId}`;
+    },
+  },
 } as const;

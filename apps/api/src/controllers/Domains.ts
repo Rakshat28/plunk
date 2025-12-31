@@ -8,6 +8,7 @@ import type {AuthResponse} from '../middleware/auth.js';
 import {isAuthenticated, requireEmailVerified} from '../middleware/auth.js';
 import {DomainService} from '../services/DomainService.js';
 import {Keys} from '../services/keys.js';
+import {MembershipService} from '../services/MembershipService.js';
 import {prisma} from '../database/prisma.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
 
@@ -24,16 +25,7 @@ export class Domains {
     const {projectId} = DomainSchemas.projectId.parse(req.params);
 
     // Verify user has access to this project
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId,
-      },
-    });
-
-    if (!membership) {
-      throw new NotFound('Project not found or you do not have access');
-    }
+    await MembershipService.requireAccess(auth.userId!, projectId);
 
     const domains = await DomainService.getProjectDomains(projectId);
 
@@ -55,19 +47,7 @@ export class Domains {
     }
 
     // Verify user has admin access to this project
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId,
-        role: {
-          in: ['ADMIN', 'OWNER'],
-        },
-      },
-    });
-
-    if (!membership) {
-      throw new NotFound('Project not found or you do not have permission');
-    }
+    await MembershipService.requireAdminAccess(auth.userId!, projectId);
 
     // Check if domain is already linked to another project
     const ownershipCheck = await DomainService.checkDomainOwnership(domain, auth.userId);
@@ -117,16 +97,7 @@ export class Domains {
     }
 
     // Verify user has access to the project this domain belongs to
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: domain.projectId,
-      },
-    });
-
-    if (!membership) {
-      throw new NotFound('Domain not found or you do not have access');
-    }
+    await MembershipService.requireAccess(auth.userId!, domain.projectId);
 
     const verificationStatus = await DomainService.checkVerification(id);
 
@@ -154,19 +125,7 @@ export class Domains {
     }
 
     // Verify user has admin access to the project this domain belongs to
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: auth.userId,
-        projectId: domain.projectId,
-        role: {
-          in: ['ADMIN', 'OWNER'],
-        },
-      },
-    });
-
-    if (!membership) {
-      throw new NotFound('Domain not found or you do not have permission');
-    }
+    await MembershipService.requireAdminAccess(auth.userId!, domain.projectId);
 
     await DomainService.removeDomain(id);
 

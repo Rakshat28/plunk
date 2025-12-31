@@ -5,6 +5,7 @@ import signale from 'signale';
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
 import {Keys} from './keys.js';
+import {MembershipService} from './MembershipService.js';
 import {NtfyService} from './NtfyService.js';
 import {QueueService} from './QueueService.js';
 import {AUTO_PROJECT_DISABLE, DASHBOARD_URI, LANDING_URI} from '../app/constants.js';
@@ -177,26 +178,7 @@ export class SecurityService {
     hasDisabledProject: boolean;
     disabledProjectNames: string[];
   }> {
-    const disabledMemberships = await prisma.membership.findMany({
-      where: {
-        userId,
-        project: {
-          disabled: true,
-        },
-      },
-      include: {
-        project: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    });
-
-    return {
-      hasDisabledProject: disabledMemberships.length > 0,
-      disabledProjectNames: disabledMemberships.map(m => m.project.name),
-    };
+    return MembershipService.userHasDisabledProject(userId);
   }
 
   /**
@@ -408,11 +390,8 @@ export class SecurityService {
 
       // Send email notification to project members
       try {
-        const members = await prisma.membership.findMany({
-          where: {projectId},
-          include: {user: {select: {email: true}}},
-        });
-        const emails = members.map(m => m.user.email);
+        const members = await MembershipService.getMembers(projectId);
+        const emails = members.map(m => m.email);
         if (emails.length > 0) {
           const template = React.createElement(ProjectDisabledEmail, {
             projectName: project.name,

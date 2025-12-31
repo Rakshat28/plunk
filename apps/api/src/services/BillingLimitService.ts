@@ -8,6 +8,7 @@ import {stripe} from '../app/stripe.js';
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
 import {Keys} from './keys.js';
+import {MembershipService} from './MembershipService.js';
 import {NtfyService} from './NtfyService.js';
 
 /**
@@ -616,11 +617,8 @@ export class BillingLimitService {
         return;
       }
 
-      const members = await prisma.membership.findMany({
-        where: {projectId},
-        include: {user: {select: {email: true}}},
-      });
-      const emails = members.map(m => m.user.email);
+      const members = await MembershipService.getMembers(projectId);
+      const emails = members.map(m => m.email);
       if (emails.length === 0) {
         return;
       }
@@ -669,11 +667,8 @@ export class BillingLimitService {
         return;
       }
 
-      const members = await prisma.membership.findMany({
-        where: {projectId},
-        include: {user: {select: {email: true}}},
-      });
-      const emails = members.map(m => m.user.email);
+      const members = await MembershipService.getMembers(projectId);
+      const emails = members.map(m => m.email);
       if (emails.length === 0) {
         return;
       }
