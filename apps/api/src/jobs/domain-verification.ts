@@ -6,8 +6,11 @@
  * Scheduled to run every 5 minutes via repeatable jobs
  */
 
+import React from 'react';
 import signale from 'signale';
+import {DomainVerifiedEmail, DomainUnverifiedEmail, sendPlatformEmail} from '@plunk/email';
 
+import {DASHBOARD_URI, LANDING_URI} from '../constants.js';
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
 import {disableFeedbackForwarding, getIdentities, verifyDomain} from '../services/SESService.js';
@@ -26,7 +29,15 @@ export async function checkDomainVerifications() {
     // Process domains in batches of 99 (AWS SES limit is 100)
     for (let i = 0; i < count; i += 99) {
       const domains = await prisma.domain.findMany({
-        select: {id: true, domain: true, projectId: true, verified: true},
+        select: {
+          id: true,
+          domain: true,
+          projectId: true,
+          verified: true,
+          project: {
+            select: {name: true},
+          },
+        },
         skip: i,
         take: 99,
       });
@@ -102,6 +113,34 @@ export async function checkDomainVerifications() {
             signale.error(`[DOMAIN-VERIFICATION] Error disabling feedback forwarding: ${error}`);
           }
 
+          // Send email notification about domain verified
+          try {
+            const cacheKey = Keys.Domain.verifiedEmail(dbDomain.id);
+            const alreadySent = await redis.get(cacheKey);
+            if (alreadySent !== '1') {
+              const members = await prisma.membership.findMany({
+                where: {projectId: dbDomain.projectId},
+                include: {user: {select: {email: true}}},
+              });
+              const emails = members.map((m) => m.user.email);
+              if (emails.length > 0) {
+                const template = React.createElement(DomainVerifiedEmail, {
+                  projectName: dbDomain.project.name,
+                  projectId: dbDomain.projectId,
+                  domain: sesIdentity.domain,
+                  dashboardUrl: DASHBOARD_URI,
+                  landingUrl: LANDING_URI,
+                });
+                await Promise.all(
+                  emails.map((email) => sendPlatformEmail(email, 'Domain Verified Successfully', template)),
+                );
+                await redis.setex(cacheKey, 604800, '1'); // 7 days
+              }
+            }
+          } catch (error) {
+            signale.error(`[DOMAIN-VERIFICATION] Error sending verified email: ${error}`);
+          }
+
           // Invalidate cache
           await redis.del(Keys.Domain.id(dbDomain.id));
           await redis.del(Keys.Domain.project(dbDomain.projectId));
@@ -110,6 +149,39 @@ export async function checkDomainVerifications() {
         // If domain was unverified, invalidate cache
         if (dbDomain.verified && !isVerified) {
           signale.warn(`[DOMAIN-VERIFICATION] Domain ${sesIdentity.domain} is no longer verified`);
+
+          // Send email notification about domain verification failed
+          try {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const cacheKey = Keys.Domain.unverifiedEmail(dbDomain.id, year, month);
+            const alreadySent = await redis.get(cacheKey);
+            if (alreadySent !== '1') {
+              const members = await prisma.membership.findMany({
+                where: {projectId: dbDomain.projectId},
+                include: {user: {select: {email: true}}},
+              });
+              const emails = members.map((m) => m.user.email);
+              if (emails.length > 0) {
+                const template = React.createElement(DomainUnverifiedEmail, {
+                  projectName: dbDomain.project.name,
+                  projectId: dbDomain.projectId,
+                  domain: sesIdentity.domain,
+                  dashboardUrl: DASHBOARD_URI,
+                  landingUrl: LANDING_URI,
+                });
+                await Promise.all(
+                  emails.map((email) => sendPlatformEmail(email, 'Domain Verification Failed', template)),
+                );
+                const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                const ttl = Math.floor((endOfMonth.getTime() - now.getTime()) / 1000);
+                await redis.setex(cacheKey, ttl, '1');
+              }
+            }
+          } catch (error) {
+            signale.error(`[DOMAIN-VERIFICATION] Error sending unverified email: ${error}`);
+          }
 
           await redis.del(Keys.Domain.id(dbDomain.id));
           await redis.del(Keys.Domain.project(dbDomain.projectId));

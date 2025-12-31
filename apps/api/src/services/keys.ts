@@ -26,6 +26,12 @@ export const Keys = {
     project(projectId: string): string {
       return `domain:project:${projectId}`;
     },
+    verifiedEmail(domainId: string): string {
+      return `domain:verified_email:${domainId}`;
+    },
+    unverifiedEmail(domainId: string, year: number, month: string): string {
+      return `domain:unverified_email:${domainId}:${year}-${month}`;
+    },
   },
   Billing: {
     usage(projectId: string, sourceType: string, year: number, month: string): string {

@@ -1,5 +1,9 @@
+import React from 'react';
+import signale from 'signale';
+import {DomainVerifiedEmail, DomainUnverifiedEmail, sendPlatformEmail} from '@plunk/email';
+import {DASHBOARD_URI, LANDING_URI} from '../constants.js';
 import {prisma} from '../database/prisma.js';
-import {wrapRedis} from '../database/redis.js';
+import {redis, wrapRedis} from '../database/redis.js';
 import {HttpException} from '../exceptions/index.js';
 import {Keys} from './keys.js';
 import {NtfyService} from './NtfyService.js';
@@ -81,6 +85,36 @@ export class DomainService {
 
       // Send notification about domain verified
       await NtfyService.notifyDomainVerified(domain.domain, updatedDomain.project.name, updatedDomain.project.id);
+
+      // Send email notification about domain verified
+      try {
+        // Check deduplication cache
+        const cacheKey = Keys.Domain.verifiedEmail(domainId);
+        const alreadySent = await redis.get(cacheKey);
+        if (alreadySent !== '1') {
+          const members = await prisma.membership.findMany({
+            where: {projectId: updatedDomain.project.id},
+            include: {user: {select: {email: true}}},
+          });
+          const emails = members.map((m) => m.user.email);
+          if (emails.length > 0) {
+            const template = React.createElement(DomainVerifiedEmail, {
+              projectName: updatedDomain.project.name,
+              projectId: updatedDomain.project.id,
+              domain: domain.domain,
+              dashboardUrl: DASHBOARD_URI,
+              landingUrl: LANDING_URI,
+            });
+            await Promise.all(
+              emails.map((email) => sendPlatformEmail(email, 'Domain Verified Successfully', template)),
+            );
+            // Set cache to prevent duplicate emails (7 days)
+            await redis.setex(cacheKey, 604800, '1');
+          }
+        }
+      } catch (emailError) {
+        signale.error('[DOMAIN-EMAIL] Failed to send domain verified email:', emailError);
+      }
     } else if (attributes.status !== 'Success' && domain.verified) {
       const updatedDomain = await prisma.domain.update({
         where: {id: domainId},
@@ -94,6 +128,41 @@ export class DomainService {
 
       // Send notification about domain verification failed
       await NtfyService.notifyDomainVerificationFailed(domain.domain, updatedDomain.project.name, updatedDomain.project.id);
+
+      // Send email notification about domain verification failed
+      try {
+        // Check deduplication cache (monthly)
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const cacheKey = Keys.Domain.unverifiedEmail(domainId, year, month);
+        const alreadySent = await redis.get(cacheKey);
+        if (alreadySent !== '1') {
+          const members = await prisma.membership.findMany({
+            where: {projectId: updatedDomain.project.id},
+            include: {user: {select: {email: true}}},
+          });
+          const emails = members.map((m) => m.user.email);
+          if (emails.length > 0) {
+            const template = React.createElement(DomainUnverifiedEmail, {
+              projectName: updatedDomain.project.name,
+              projectId: updatedDomain.project.id,
+              domain: domain.domain,
+              dashboardUrl: DASHBOARD_URI,
+              landingUrl: LANDING_URI,
+            });
+            await Promise.all(
+              emails.map((email) => sendPlatformEmail(email, 'Domain Verification Failed', template)),
+            );
+            // Set cache to prevent duplicate emails (until end of month)
+            const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            const ttl = Math.floor((endOfMonth.getTime() - now.getTime()) / 1000);
+            await redis.setex(cacheKey, ttl, '1');
+          }
+        }
+      } catch (emailError) {
+        signale.error('[DOMAIN-EMAIL] Failed to send domain unverified email:', emailError);
+      }
     }
 
     return {
