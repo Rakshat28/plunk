@@ -3104,6 +3104,7 @@ __metadata:
   resolution: "@plunk/shared@workspace:packages/shared"
   dependencies:
     "@plunk/db": "npm:*"
+    "@plunk/types": "npm:*"
     "@plunk/typescript-config": "npm:*"
     "@types/node": "npm:^24.10.0"
     typescript: "npm:^5.7.2"
