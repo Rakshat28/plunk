@@ -1,5 +1,6 @@
 import {type Contact, Prisma, type Segment} from '@plunk/db';
-import type {FilterCondition, FilterGroup, SegmentFilter, PaginatedResponse} from '@plunk/types';
+import type {FilterCondition, FilterGroup, PaginatedResponse, SegmentFilter} from '@plunk/types';
+import {fromPrismaJson, toPrismaJson} from '@plunk/types';
 import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
@@ -66,7 +67,7 @@ export class SegmentService {
     pageSize = 20,
   ): Promise<PaginatedResponse<Contact>> {
     const segment = await this.get(projectId, segmentId);
-    const condition = segment.condition as unknown as FilterCondition;
+    const condition = fromPrismaJson<FilterCondition>(segment.condition);
 
     const where = this.buildWhereClause(projectId, condition);
     const skip = (page - 1) * pageSize;
@@ -114,7 +115,7 @@ export class SegmentService {
         projectId,
         name: data.name,
         description: data.description,
-        condition: data.condition as unknown as Prisma.InputJsonValue,
+        condition: toPrismaJson(data.condition),
         trackMembership: data.trackMembership ?? false,
         memberCount,
       },
@@ -161,7 +162,7 @@ export class SegmentService {
       updateData.description = data.description;
     }
     if (data.condition !== undefined) {
-      updateData.condition = data.condition as unknown as Prisma.InputJsonValue;
+      updateData.condition = toPrismaJson(data.condition);
 
       // Recompute member count when condition changes
       const where = this.buildWhereClause(projectId, data.condition);
@@ -229,7 +230,7 @@ export class SegmentService {
    */
   public static async refreshMemberCount(projectId: string, segmentId: string): Promise<number> {
     const segment = await this.get(projectId, segmentId);
-    const condition = segment.condition as unknown as FilterCondition;
+    const condition = fromPrismaJson<FilterCondition>(segment.condition);
     const where = this.buildWhereClause(projectId, condition);
 
     const memberCount = await prisma.contact.count({where});
@@ -260,7 +261,7 @@ export class SegmentService {
       await Promise.all(
         batch.map(async segment => {
           try {
-            const condition = segment.condition as unknown as FilterCondition;
+            const condition = fromPrismaJson<FilterCondition>(segment.condition);
             const where = this.buildWhereClause(projectId, condition);
             const memberCount = await prisma.contact.count({where});
 
@@ -290,7 +291,7 @@ export class SegmentService {
       throw new HttpException(400, 'Segment does not have membership tracking enabled');
     }
 
-    const condition = segment.condition as unknown as FilterCondition;
+    const condition = fromPrismaJson<FilterCondition>(segment.condition);
     const where = this.buildWhereClause(projectId, condition);
 
     // Get all matching contacts using cursor-based pagination to avoid memory issues
@@ -489,6 +490,19 @@ export class SegmentService {
   }
 
   /**
+   * Build Prisma clause from filter condition (recursive)
+   */
+  public static buildConditionClause(condition: FilterCondition): Prisma.ContactWhereInput {
+    const groupClauses = condition.groups.map(group => this.buildGroupClause(group));
+
+    if (condition.logic === 'AND') {
+      return {AND: groupClauses};
+    } else {
+      return {OR: groupClauses};
+    }
+  }
+
+  /**
    * Validate filter group (recursive)
    */
   private static validateGroup(group: FilterGroup): void {
@@ -584,19 +598,6 @@ export class SegmentService {
       projectId,
       ...this.buildConditionClause(condition),
     };
-  }
-
-  /**
-   * Build Prisma clause from filter condition (recursive)
-   */
-  public static buildConditionClause(condition: FilterCondition): Prisma.ContactWhereInput {
-    const groupClauses = condition.groups.map(group => this.buildGroupClause(group));
-
-    if (condition.logic === 'AND') {
-      return {AND: groupClauses};
-    } else {
-      return {OR: groupClauses};
-    }
   }
 
   /**

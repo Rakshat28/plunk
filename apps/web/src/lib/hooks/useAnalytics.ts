@@ -47,7 +47,6 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): AnalyticsData {
     const start = options.startDate || new Date(now - days * 24 * 60 * 60 * 1000).toISOString();
 
     return {startDate: start, endDate: end};
-
   }, [days, options.startDate, options.endDate]);
   /* eslint-enable react-hooks/purity */
 

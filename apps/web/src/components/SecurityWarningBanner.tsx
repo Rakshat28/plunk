@@ -30,9 +30,7 @@ export function SecurityWarningBanner({status}: SecurityWarningBannerProps) {
       <AlertTitle>{title}</AlertTitle>
       <AlertDescription className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div className="space-y-2 flex-1">
-          <p className="text-sm font-medium">
-            Your project has exceeded the following security thresholds:
-          </p>
+          <p className="text-sm font-medium">Your project has exceeded the following security thresholds:</p>
           <ul className={`list-disc list-inside space-y-1 text-sm ${messageColor}`}>
             {issues.map((issue, idx) => (
               <li key={idx}>{issue}</li>

@@ -1,5 +1,6 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {Prisma, StepExecutionStatus, WorkflowExecutionStatus, WorkflowStepType} from '@plunk/db';
+import {StepExecutionStatus, WorkflowExecutionStatus, WorkflowStepType} from '@plunk/db';
+import {toPrismaJson} from '@plunk/types';
 import {WorkflowExecutionService} from '../WorkflowExecutionService';
 import {factories, getPrismaClient} from '../../../../../test/helpers';
 
@@ -59,11 +60,11 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.CONDITION,
           name: 'Check Premium Status',
           position: {x: 100, y: 0},
-          config: {
+          config: toPrismaJson({
             field: 'data.isPremium',
             operator: 'equals',
             value: true,
-          },
+          }),
         },
       });
 
@@ -74,7 +75,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.EXIT,
           name: 'Premium Path',
           position: {x: 200, y: -50},
-          config: {reason: 'Premium customer'},
+          config: toPrismaJson({reason: 'Premium customer'}),
         },
       });
 
@@ -84,7 +85,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.EXIT,
           name: 'Standard Path',
           position: {x: 200, y: 50},
-          config: {reason: 'Standard customer'},
+          config: toPrismaJson({reason: 'Standard customer'}),
         },
       });
 
@@ -97,7 +98,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         data: {
           fromStepId: conditionStep.id,
           toStepId: yesStep.id,
-          condition: {branch: 'yes'},
+          condition: toPrismaJson({branch: 'yes'}),
           priority: 1,
         },
       });
@@ -106,7 +107,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         data: {
           fromStepId: conditionStep.id,
           toStepId: noStep.id,
-          condition: {branch: 'no'},
+          condition: toPrismaJson({branch: 'no'}),
           priority: 2,
         },
       });
@@ -118,7 +119,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           contactId: contact.id,
           status: WorkflowExecutionStatus.RUNNING,
           currentStepId: triggerStep.id,
-          context: {},
+          context: toPrismaJson({}),
         },
       });
 
@@ -160,11 +161,11 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.CONDITION,
           name: 'Check Premium',
           position: {x: 100, y: 0},
-          config: {
+          config: toPrismaJson({
             field: 'data.isPremium',
             operator: 'equals',
             value: true,
-          },
+          }),
         },
       });
 
@@ -174,7 +175,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.EXIT,
           name: 'Premium',
           position: {x: 200, y: -50},
-          config: {},
+          config: toPrismaJson({}),
         },
       });
 
@@ -184,7 +185,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.EXIT,
           name: 'Standard',
           position: {x: 200, y: 50},
-          config: {},
+          config: toPrismaJson({}),
         },
       });
 
@@ -196,7 +197,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         data: {
           fromStepId: conditionStep.id,
           toStepId: yesStep.id,
-          condition: {branch: 'yes'},
+          condition: toPrismaJson({branch: 'yes'}),
         },
       });
 
@@ -204,7 +205,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         data: {
           fromStepId: conditionStep.id,
           toStepId: noStep.id,
-          condition: {branch: 'no'},
+          condition: toPrismaJson({branch: 'no'}),
         },
       });
 
@@ -214,7 +215,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           contactId: contact.id,
           status: WorkflowExecutionStatus.RUNNING,
           currentStepId: triggerStep.id,
-          context: {},
+          context: toPrismaJson({}),
         },
       });
 
@@ -250,7 +251,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.CONDITION,
           name: 'Check Country',
           position: {x: 100, y: 0},
-          config: {field: 'data.country', operator: 'equals', value: 'US'},
+          config: toPrismaJson({field: 'data.country', operator: 'equals', value: 'US'}),
         },
       });
 
@@ -261,7 +262,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.CONDITION,
           name: 'Check Premium (US)',
           position: {x: 200, y: -50},
-          config: {field: 'data.isPremium', operator: 'equals', value: true},
+          config: toPrismaJson({field: 'data.isPremium', operator: 'equals', value: true}),
         },
       });
 
@@ -271,7 +272,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.EXIT,
           name: 'US Premium',
           position: {x: 300, y: -75},
-          config: {},
+          config: toPrismaJson({}),
         },
       });
 
@@ -281,7 +282,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.EXIT,
           name: 'US Standard',
           position: {x: 300, y: -25},
-          config: {},
+          config: toPrismaJson({}),
         },
       });
 
@@ -291,7 +292,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.EXIT,
           name: 'Non-US',
           position: {x: 200, y: 50},
-          config: {},
+          config: toPrismaJson({}),
         },
       });
 
@@ -304,7 +305,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         data: {
           fromStepId: condition1.id,
           toStepId: condition2.id,
-          condition: {branch: 'yes'},
+          condition: toPrismaJson({branch: 'yes'}),
         },
       });
 
@@ -312,7 +313,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         data: {
           fromStepId: condition1.id,
           toStepId: nonUsExit.id,
-          condition: {branch: 'no'},
+          condition: toPrismaJson({branch: 'no'}),
         },
       });
 
@@ -320,7 +321,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         data: {
           fromStepId: condition2.id,
           toStepId: usPremiumExit.id,
-          condition: {branch: 'yes'},
+          condition: toPrismaJson({branch: 'yes'}),
         },
       });
 
@@ -328,7 +329,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         data: {
           fromStepId: condition2.id,
           toStepId: usStandardExit.id,
-          condition: {branch: 'no'},
+          condition: toPrismaJson({branch: 'no'}),
         },
       });
 
@@ -338,7 +339,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           contactId: contact.id,
           status: WorkflowExecutionStatus.RUNNING,
           currentStepId: triggerStep.id,
-          context: {},
+          context: toPrismaJson({}),
         },
       });
 
@@ -378,10 +379,10 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.WAIT_FOR_EVENT,
           name: 'Wait for Purchase',
           position: {x: 100, y: 0},
-          config: {
+          config: toPrismaJson({
             eventName: 'purchase.completed',
             timeout: 3600, // 1 hour
-          },
+          }),
         },
       });
 
@@ -391,7 +392,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.EXIT,
           name: 'Complete',
           position: {x: 200, y: 0},
-          config: {},
+          config: toPrismaJson({}),
         },
       });
 
@@ -409,7 +410,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           contactId: contact.id,
           status: WorkflowExecutionStatus.RUNNING,
           currentStepId: triggerStep.id,
-          context: {},
+          context: toPrismaJson({}),
         },
       });
 
@@ -447,10 +448,10 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.WAIT_FOR_EVENT,
           name: 'Wait for Event',
           position: {x: 100, y: 0},
-          config: {
+          config: toPrismaJson({
             eventName: 'user.verified',
             timeout: 3600,
-          },
+          }),
         },
       });
 
@@ -460,7 +461,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.EXIT,
           name: 'Done',
           position: {x: 200, y: 0},
-          config: {},
+          config: toPrismaJson({}),
         },
       });
 
@@ -478,7 +479,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           contactId: contact.id,
           status: WorkflowExecutionStatus.RUNNING,
           currentStepId: triggerStep.id,
-          context: {},
+          context: toPrismaJson({}),
         },
       });
 
@@ -526,7 +527,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.DELAY,
           name: 'Wait 1 day',
           position: {x: 100, y: 0},
-          config: {amount: 1, unit: 'days'},
+          config: toPrismaJson({amount: 1, unit: 'days'}),
         },
       });
 
@@ -536,7 +537,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.CONDITION,
           name: 'Check Status',
           position: {x: 200, y: 0},
-          config: {field: 'contact.subscribed', operator: 'equals', value: true},
+          config: toPrismaJson({field: 'contact.subscribed', operator: 'equals', value: true}),
         },
       });
 
@@ -546,7 +547,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.EXIT,
           name: 'Complete',
           position: {x: 300, y: 0},
-          config: {},
+          config: toPrismaJson({}),
         },
       });
 
@@ -561,7 +562,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         data: {
           fromStepId: condition.id,
           toStepId: exit.id,
-          condition: {branch: 'yes'},
+          condition: toPrismaJson({branch: 'yes'}),
         },
       });
 
@@ -571,7 +572,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           contactId: contact.id,
           status: WorkflowExecutionStatus.RUNNING,
           currentStepId: triggerStep.id,
-          context: {},
+          context: toPrismaJson({}),
         },
       });
 
@@ -611,7 +612,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.CONDITION,
           name: 'A/B Split',
           position: {x: 100, y: 0},
-          config: {field: 'data.segment', operator: 'equals', value: 'A'},
+          config: toPrismaJson({field: 'data.segment', operator: 'equals', value: 'A'}),
         },
       });
 
@@ -621,7 +622,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.DELAY,
           name: 'Path A Delay',
           position: {x: 200, y: -50},
-          config: {amount: 1, unit: 'hours'},
+          config: toPrismaJson({amount: 1, unit: 'hours'}),
         },
       });
 
@@ -631,7 +632,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.DELAY,
           name: 'Path B Delay',
           position: {x: 200, y: 50},
-          config: {amount: 2, unit: 'hours'},
+          config: toPrismaJson({amount: 2, unit: 'hours'}),
         },
       });
 
@@ -641,7 +642,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.EXIT,
           name: 'Merge Point',
           position: {x: 300, y: 0},
-          config: {},
+          config: toPrismaJson({}),
         },
       });
 
@@ -653,7 +654,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         data: {
           fromStepId: condition.id,
           toStepId: pathA.id,
-          condition: {branch: 'yes'},
+          condition: toPrismaJson({branch: 'yes'}),
         },
       });
 
@@ -661,7 +662,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         data: {
           fromStepId: condition.id,
           toStepId: pathB.id,
-          condition: {branch: 'no'},
+          condition: toPrismaJson({branch: 'no'}),
         },
       });
 
@@ -679,7 +680,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           contactId: contact.id,
           status: WorkflowExecutionStatus.RUNNING,
           currentStepId: triggerStep.id,
-          context: {},
+          context: toPrismaJson({}),
         },
       });
 
@@ -717,7 +718,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.CONDITION,
           name: 'Bad Condition',
           position: {x: 100, y: 0},
-          config: {}, // Invalid - missing required fields
+          config: toPrismaJson({}), // Invalid - missing required fields
         },
       });
 
@@ -731,7 +732,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           contactId: contact.id,
           status: WorkflowExecutionStatus.RUNNING,
           currentStepId: triggerStep.id,
-          context: {},
+          context: toPrismaJson({}),
         },
       });
 
@@ -764,11 +765,11 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.CONDITION,
           name: 'Check Missing Field',
           position: {x: 100, y: 0},
-          config: {
+          config: toPrismaJson({
             field: 'data.nonExistentField',
             operator: 'equals',
             value: 'something',
-          },
+          }),
         },
       });
 
@@ -778,7 +779,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.EXIT,
           name: 'Exit',
           position: {x: 200, y: 0},
-          config: {},
+          config: toPrismaJson({}),
         },
       });
 
@@ -790,7 +791,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         data: {
           fromStepId: condition.id,
           toStepId: noStep.id,
-          condition: {branch: 'no'},
+          condition: toPrismaJson({branch: 'no'}),
         },
       });
 
@@ -800,7 +801,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           contactId: contact.id,
           status: WorkflowExecutionStatus.RUNNING,
           currentStepId: triggerStep.id,
-          context: {},
+          context: toPrismaJson({}),
         },
       });
 
@@ -834,7 +835,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.EXIT,
           name: 'Early Exit',
           position: {x: 100, y: 0},
-          config: {reason: 'User already converted'},
+          config: toPrismaJson({reason: 'User already converted'}),
         },
       });
 
@@ -848,7 +849,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           contactId: contact.id,
           status: WorkflowExecutionStatus.RUNNING,
           currentStepId: triggerStep.id,
-          context: {},
+          context: toPrismaJson({}),
         },
       });
 
@@ -882,7 +883,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         type: WorkflowStepType.TRIGGER,
         name: 'Start',
         position: {x: 0, y: 0},
-        config: {},
+        config: toPrismaJson({}),
       });
 
       const exitStep = await factories.createWorkflowStep({
@@ -890,7 +891,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         type: WorkflowStepType.EXIT,
         name: 'End',
         position: {x: 100, y: 0},
-        config: {},
+        config: toPrismaJson({}),
       });
 
       await prisma.workflowTransition.create({
@@ -910,7 +911,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           contactId: contact.id,
           status: WorkflowExecutionStatus.RUNNING,
           currentStepId: triggerStep.id,
-          context: contextData as Prisma.InputJsonValue,
+          context: toPrismaJson(contextData),
         },
       });
 
@@ -974,11 +975,11 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.CONDITION,
           name: 'Check if first open',
           position: {x: 100, y: 0},
-          config: {
+          config: toPrismaJson({
             field: 'event.isFirstOpen',
             operator: 'equals',
             value: true, // Use boolean, not string
-          } as Prisma.InputJsonValue,
+          }),
         },
       });
 
@@ -988,7 +989,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.EXIT,
           name: 'First Open',
           position: {x: 200, y: 0},
-          config: {reason: 'first_open'} as Prisma.InputJsonValue,
+          config: toPrismaJson({reason: 'first_open'}),
         },
       });
 
@@ -998,7 +999,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.EXIT,
           name: 'Not First Open',
           position: {x: 200, y: 100},
-          config: {reason: 'not_first_open'} as Prisma.InputJsonValue,
+          config: toPrismaJson({reason: 'not_first_open'}),
         },
       });
 
@@ -1007,10 +1008,10 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         data: {fromStepId: triggerStep!.id, toStepId: conditionStep.id},
       });
       await prisma.workflowTransition.create({
-        data: {fromStepId: conditionStep.id, toStepId: yesStep.id, condition: {branch: 'yes'} as Prisma.InputJsonValue},
+        data: {fromStepId: conditionStep.id, toStepId: yesStep.id, condition: toPrismaJson({branch: 'yes'})},
       });
       await prisma.workflowTransition.create({
-        data: {fromStepId: conditionStep.id, toStepId: noStep.id, condition: {branch: 'no'} as Prisma.InputJsonValue},
+        data: {fromStepId: conditionStep.id, toStepId: noStep.id, condition: toPrismaJson({branch: 'no'})},
       });
 
       // Create execution with event data
@@ -1020,12 +1021,12 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           contactId: contact.id,
           status: WorkflowExecutionStatus.RUNNING,
           currentStepId: triggerStep!.id,
-          context: {
+          context: toPrismaJson({
             subject: 'Welcome Email',
             from: 'hello@example.com',
             isFirstOpen: true,
             openedAt: new Date().toISOString(),
-          } as Prisma.InputJsonValue,
+          }),
         },
       });
 
@@ -1056,11 +1057,11 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.CONDITION,
           name: 'Check subject',
           position: {x: 100, y: 0},
-          config: {
+          config: toPrismaJson({
             field: 'event.subject',
             operator: 'contains',
             value: 'Welcome',
-          } as Prisma.InputJsonValue,
+          }),
         },
       });
 
@@ -1070,7 +1071,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.EXIT,
           name: 'Done',
           position: {x: 200, y: 0},
-          config: {reason: 'matched'} as Prisma.InputJsonValue,
+          config: toPrismaJson({reason: 'matched'}),
         },
       });
 
@@ -1081,7 +1082,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         data: {
           fromStepId: conditionStep.id,
           toStepId: exitStep.id,
-          condition: {branch: 'yes'} as Prisma.InputJsonValue,
+          condition: toPrismaJson({branch: 'yes'}),
         },
       });
 
@@ -1091,10 +1092,10 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           contactId: contact.id,
           status: WorkflowExecutionStatus.RUNNING,
           currentStepId: triggerStep!.id,
-          context: {
+          context: toPrismaJson({
             subject: 'Welcome to Plunk!',
             from: 'team@plunk.com',
-          } as Prisma.InputJsonValue,
+          }),
         },
       });
 
@@ -1122,11 +1123,11 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.CONDITION,
           name: 'Check opens count',
           position: {x: 100, y: 0},
-          config: {
+          config: toPrismaJson({
             field: 'event.opens',
             operator: 'greaterThan',
             value: '3',
-          } as Prisma.InputJsonValue,
+          }),
         },
       });
 
@@ -1136,7 +1137,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.EXIT,
           name: 'Done',
           position: {x: 200, y: 0},
-          config: {reason: 'engaged'} as Prisma.InputJsonValue,
+          config: toPrismaJson({reason: 'engaged'}),
         },
       });
 
@@ -1147,7 +1148,7 @@ describe('WorkflowExecutionService - Integration Tests', () => {
         data: {
           fromStepId: conditionStep.id,
           toStepId: exitStep.id,
-          condition: {branch: 'yes'} as Prisma.InputJsonValue,
+          condition: toPrismaJson({branch: 'yes'}),
         },
       });
 
@@ -1157,10 +1158,10 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           contactId: contact.id,
           status: WorkflowExecutionStatus.RUNNING,
           currentStepId: triggerStep!.id,
-          context: {
+          context: toPrismaJson({
             subject: 'Newsletter',
             opens: 5,
-          } as Prisma.InputJsonValue,
+          }),
         },
       });
 
@@ -1204,10 +1205,10 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           type: WorkflowStepType.WEBHOOK,
           name: 'Send Webhook',
           position: {x: 100, y: 0},
-          config: {
+          config: toPrismaJson({
             url: 'https://webhook.example.com/test',
             method: 'POST',
-          } as Prisma.InputJsonValue,
+          }),
         },
       });
 
@@ -1221,13 +1222,13 @@ describe('WorkflowExecutionService - Integration Tests', () => {
           contactId: contact.id,
           status: WorkflowExecutionStatus.RUNNING,
           currentStepId: triggerStep!.id,
-          context: {
+          context: toPrismaJson({
             subject: 'Welcome Email',
             from: 'hello@example.com',
             messageId: 'msg-123',
             isFirstOpen: true,
             openedAt: '2024-01-15T10:00:00Z',
-          } as Prisma.InputJsonValue,
+          }),
         },
       });
 

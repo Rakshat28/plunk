@@ -1,8 +1,6 @@
 import {Controller, Delete, Get, Middleware, Patch, Post} from '@overnightjs/core';
 import {TemplateType} from '@plunk/db';
 import type {NextFunction, Request, Response} from 'express';
-
-import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth, requireEmailVerified} from '../middleware/auth.js';
 import {DomainService} from '../services/DomainService.js';
 import {TemplateService} from '../services/TemplateService.js';
@@ -18,7 +16,7 @@ export class Templates {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async list(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const page = parseInt(req.query.page as string) || 1;
     const pageSize = Math.min(parseInt(req.query.pageSize as string) || 20, 100);
     const search = req.query.search as string | undefined;
@@ -37,7 +35,7 @@ export class Templates {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async get(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const templateId = req.params.id;
 
     if (!templateId) {
@@ -57,7 +55,7 @@ export class Templates {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async create(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {name, description, subject, body, from, fromName, replyTo, type} = req.body;
 
     if (!name) {
@@ -101,7 +99,7 @@ export class Templates {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async update(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const templateId = req.params.id;
     const {name, description, subject, body, from, fromName, replyTo, type} = req.body;
 
@@ -136,7 +134,7 @@ export class Templates {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async delete(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const templateId = req.params.id;
 
     if (!templateId) {
@@ -156,7 +154,7 @@ export class Templates {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async duplicate(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const templateId = req.params.id;
 
     if (!templateId) {
@@ -176,7 +174,7 @@ export class Templates {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getUsage(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const templateId = req.params.id;
 
     if (!templateId) {

@@ -20,7 +20,7 @@ import {
   SMTP_ENABLED,
   STRIPE_ENABLED,
   TRACKING_TOGGLE_ENABLED,
-  WIKI_URI
+  WIKI_URI,
 } from './app/constants.js';
 import {Actions} from './controllers/Actions.js';
 import {Activity} from './controllers/Activity.js';

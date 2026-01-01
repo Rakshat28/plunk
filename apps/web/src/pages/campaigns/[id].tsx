@@ -26,7 +26,7 @@ import {
   SelectItemWithDescription,
   SelectTrigger,
   SelectValue,
-  StickySaveBar
+  StickySaveBar,
 } from '@plunk/ui';
 import type {Campaign, Segment} from '@plunk/db';
 import {CampaignAudienceType, CampaignStatus} from '@plunk/db';
@@ -50,7 +50,7 @@ import {
   Trash2,
   TrendingUp,
   Users,
-  XCircle
+  XCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
@@ -1023,9 +1023,7 @@ export default function CampaignDetailsPage() {
                   <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">Sent On</p>
                   <div className="flex items-center gap-2">
                     <Send className="h-4 w-4 text-neutral-400" />
-                    <p className="text-sm font-medium text-neutral-900">
-                      {formatFullDateTime(new Date(c.sentAt))}
-                    </p>
+                    <p className="text-sm font-medium text-neutral-900">{formatFullDateTime(new Date(c.sentAt))}</p>
                   </div>
                 </div>
               )}

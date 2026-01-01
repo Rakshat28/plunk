@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {Node, mergeAttributes} from '@tiptap/core';
-import {ReactNodeViewRenderer, NodeViewWrapper, type ReactNodeViewProps} from '@tiptap/react';
+import {mergeAttributes, Node} from '@tiptap/core';
+import {NodeViewWrapper, type ReactNodeViewProps, ReactNodeViewRenderer} from '@tiptap/react';
 import {useEffect, useRef, useState} from 'react';
 
 interface ImageAttrs {

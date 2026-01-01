@@ -1,6 +1,7 @@
 import type {Campaign, Contact, Prisma} from '@plunk/db';
 import {CampaignAudienceType, CampaignStatus, EmailSourceType} from '@plunk/db';
-import type {FilterCondition, CreateCampaignData, UpdateCampaignData} from '@plunk/types';
+import type {CreateCampaignData, FilterCondition, UpdateCampaignData} from '@plunk/types';
+import {fromPrismaJson, toPrismaJson} from '@plunk/types';
 import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
@@ -59,7 +60,7 @@ export class CampaignService {
         fromName: data.fromName,
         replyTo: data.replyTo,
         audienceType: data.audienceType,
-        audienceCondition: (data.audienceCondition || null) as unknown as Prisma.InputJsonValue,
+        audienceCondition: toPrismaJson(data.audienceCondition || null),
         segmentId: data.segmentId,
         status: CampaignStatus.DRAFT,
         totalRecipients: 0, // Will be updated below
@@ -107,7 +108,7 @@ export class CampaignService {
       if (data.audienceCondition) {
         SegmentService.validateCondition(data.audienceCondition);
       }
-      updateData.audienceCondition = (data.audienceCondition || null) as unknown as Prisma.InputJsonValue;
+      updateData.audienceCondition = toPrismaJson(data.audienceCondition || null);
     }
 
     if (data.segmentId !== undefined) {
@@ -721,7 +722,7 @@ export class CampaignService {
         return this.buildSegmentWhereAsync(projectId, campaign.segmentId, baseWhere);
 
       case CampaignAudienceType.FILTERED: {
-        const condition = campaign.audienceCondition as unknown as FilterCondition;
+        const condition = fromPrismaJson<FilterCondition>(campaign.audienceCondition);
         if (!condition) {
           throw new HttpException(400, 'Audience condition is required for FILTERED audience type');
         }
@@ -757,7 +758,7 @@ export class CampaignService {
       throw new HttpException(404, 'Segment not found');
     }
 
-    const condition = segment.condition as unknown as FilterCondition;
+    const condition = fromPrismaJson<FilterCondition>(segment.condition);
     const segmentWhere = SegmentService.buildConditionClause(condition);
 
     return {

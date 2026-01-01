@@ -8,7 +8,6 @@ import {DASHBOARD_URI, STRIPE_ENABLED, STRIPE_PRICE_EMAIL_USAGE, STRIPE_PRICE_ON
 import {stripe} from '../app/stripe.js';
 import {prisma} from '../database/prisma.js';
 import {ErrorCode, HttpException, NotAuthenticated, NotFound} from '../exceptions/index.js';
-import type {AuthResponse} from '../middleware/auth.js';
 import {isAuthenticated, requireEmailVerified} from '../middleware/auth.js';
 import {BillingLimitService} from '../services/BillingLimitService.js';
 import {MembershipService} from '../services/MembershipService.js';
@@ -24,7 +23,7 @@ export class Users {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async me(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
 
     if (!auth.userId) {
       throw new NotAuthenticated();
@@ -43,7 +42,7 @@ export class Users {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async meProjects(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
 
     if (!auth.userId) {
       throw new NotAuthenticated();
@@ -58,7 +57,7 @@ export class Users {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async createProject(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
 
     if (!auth.userId) {
       throw new NotAuthenticated();
@@ -105,7 +104,7 @@ export class Users {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async updateProject(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
     const data = ProjectSchemas.update.parse(req.body);
 
@@ -125,7 +124,7 @@ export class Users {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async regenerateProjectKeys(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     // Verify user has admin/owner access to this project
@@ -165,7 +164,7 @@ export class Users {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async createCheckoutSession(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
     const {currency} = req.query;
 
@@ -245,7 +244,7 @@ export class Users {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async createBillingPortalSession(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     // Check if billing is enabled
@@ -283,7 +282,7 @@ export class Users {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async getBillingLimits(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     if (!auth.userId) {
@@ -307,7 +306,7 @@ export class Users {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async updateBillingLimits(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     if (!auth.userId) {
@@ -374,7 +373,7 @@ export class Users {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async getBillingConsumption(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     // Check if billing is enabled
@@ -491,7 +490,7 @@ export class Users {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async getBillingInvoices(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     // Check if billing is enabled
@@ -570,7 +569,7 @@ export class Users {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async getSecurityHealth(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     if (!auth.userId) {
@@ -594,7 +593,7 @@ export class Users {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async resetProject(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     if (!auth.userId) {
@@ -668,7 +667,7 @@ export class Users {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async deleteProject(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     if (!auth.userId) {

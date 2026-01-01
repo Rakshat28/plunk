@@ -2,17 +2,13 @@ import dayjs from 'dayjs';
 import type {NextFunction, Request, Response} from 'express';
 import jsonwebtoken from 'jsonwebtoken';
 
+import type {AuthResponse} from '@plunk/types';
+
 import {JWT_SECRET, PLUNK_ENABLED} from '../app/constants.js';
 import {ErrorCode, HttpException, NotAuthenticated} from '../exceptions/index.js';
 import {MembershipService} from '../services/MembershipService.js';
 import {ProjectService} from '../services/ProjectService.js';
 import {UserService} from '../services/UserService.js';
-
-export interface AuthResponse {
-  type: 'jwt' | 'apiKey';
-  userId?: string;
-  projectId: string;
-}
 
 /**
  * Middleware to check if this unsubscribe is authenticated on the dashboard
@@ -129,7 +125,7 @@ export const requirePublicKey = async (req: Request, res: Response, next: NextFu
     res.locals.auth = {
       type: 'apiKey',
       projectId: project.id,
-    } as AuthResponse;
+    };
 
     // Check if project is disabled - block write operations
     if (project.disabled) {
@@ -198,7 +194,7 @@ export const requireSecretKey = async (req: Request, res: Response, next: NextFu
     res.locals.auth = {
       type: 'apiKey',
       projectId: project.id,
-    } as AuthResponse;
+    };
 
     // Check if project is disabled - block write operations
     if (project.disabled) {
@@ -309,7 +305,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
       type: 'jwt',
       userId,
       projectId,
-    } as AuthResponse;
+    };
 
     // Check if project is disabled - block write operations
     if (project?.disabled) {
@@ -340,7 +336,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
  */
 export const requireEmailVerified = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
 
     if (auth.type === 'apiKey') {
       return next();

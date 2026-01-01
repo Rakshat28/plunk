@@ -1,6 +1,7 @@
 # Plunk SMTP Relay Server
 
-A production-ready SMTP relay server that accepts emails via SMTP protocol and forwards them to the Plunk API's `/v1/send` endpoint.
+A production-ready SMTP relay server that accepts emails via SMTP protocol and forwards them to the Plunk API's
+`/v1/send` endpoint.
 
 ## Features
 
@@ -19,6 +20,7 @@ SMTP Client → SMTP Server → Email Parser → API /v1/send → AWS SES
 ```
 
 The SMTP server acts as a relay:
+
 1. Accepts SMTP connections with authentication
 2. Validates sender domains against the database
 3. Parses incoming emails
@@ -27,15 +29,15 @@ The SMTP server acts as a relay:
 
 ## Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `API_URI` | `http://localhost:3000` | Plunk API base URL |
-| `SMTP_DOMAIN` | *(empty)* | SMTP domain - required when using Traefik acme.json with multiple certificates |
-| `PORT_SECURE` | `465` | SMTPS port (implicit TLS) |
-| `PORT_SUBMISSION` | `587` | SMTP submission port (STARTTLS) |
-| `MAX_RECIPIENTS` | `5` | Maximum recipients per email |
-| `CERT_PATH` | `/certs` | Path to certificate files |
-| `ACME_JSON_PATH` | `/certs/acme.json` | Path to Traefik acme.json file |
+| Variable          | Default                 | Description                                                                    |
+|-------------------|-------------------------|--------------------------------------------------------------------------------|
+| `API_URI`         | `http://localhost:3000` | Plunk API base URL                                                             |
+| `SMTP_DOMAIN`     | *(empty)*               | SMTP domain - required when using Traefik acme.json with multiple certificates |
+| `PORT_SECURE`     | `465`                   | SMTPS port (implicit TLS)                                                      |
+| `PORT_SUBMISSION` | `587`                   | SMTP submission port (STARTTLS)                                                |
+| `MAX_RECIPIENTS`  | `5`                     | Maximum recipients per email                                                   |
+| `CERT_PATH`       | `/certs`                | Path to certificate files                                                      |
+| `ACME_JSON_PATH`  | `/certs/acme.json`      | Path to Traefik acme.json file                                                 |
 
 See `.env.self-host.example` in the repository root for full configuration options.
 
@@ -57,7 +59,8 @@ yarn install
 yarn workspace smtp dev
 ```
 
-The SMTP server will start on ports 465 and 587. For local testing without TLS certificates, it will run in plaintext mode on port 587.
+The SMTP server will start on ports 465 and 587. For local testing without TLS certificates, it will run in plaintext
+mode on port 587.
 
 ### Testing with Telnet
 
@@ -85,6 +88,7 @@ QUIT
 ### Testing with Mail Clients
 
 Configure your email client with:
+
 - **SMTP Server**: `localhost` (or your domain in production)
 - **Port**: 587 (STARTTLS) or 465 (SSL/TLS)
 - **Username**: `plunk`
@@ -98,14 +102,14 @@ Configure your email client with:
 The SMTP server supports TLS certificates through two methods:
 
 1. **Traefik acme.json** (recommended for Traefik/Dokploy users)
-   - Mount your Traefik acme.json file to `/certs/acme.json`
-   - Set `SMTP_DOMAIN` environment variable to select the correct certificate
-   - The server will automatically use the certificate for your domain
+    - Mount your Traefik acme.json file to `/certs/acme.json`
+    - Set `SMTP_DOMAIN` environment variable to select the correct certificate
+    - The server will automatically use the certificate for your domain
 
 2. **PEM Files** (standard certificate files)
-   - Mount `privkey.pem` and `fullchain.pem` to `/certs/`
-   - These are standard Let's Encrypt/Certbot filenames
-   - `SMTP_DOMAIN` is optional when using PEM files
+    - Mount `privkey.pem` and `fullchain.pem` to `/certs/`
+    - These are standard Let's Encrypt/Certbot filenames
+    - `SMTP_DOMAIN` is optional when using PEM files
 
 If no certificates are mounted, the server will run without TLS (not recommended for production).
 
@@ -114,6 +118,7 @@ If no certificates are mounted, the server will run without TLS (not recommended
 The SMTP server is included in the main Plunk Docker image:
 
 **Option 1: With Traefik acme.json**
+
 ```bash
 docker run -d \
   -p 465:465 \
@@ -128,6 +133,7 @@ docker run -d \
 ```
 
 **Option 2: With PEM files**
+
 ```bash
 docker run -d \
   -p 465:465 \
@@ -142,6 +148,7 @@ docker run -d \
 ```
 
 **Option 3: Without TLS (Development Only)**
+
 ```bash
 docker run -d \
   -p 587:587 \
@@ -206,6 +213,7 @@ Use PM2 or similar process managers to monitor the service in production.
 ### TLS Certificate Issues
 
 If TLS is not working:
+
 1. Verify certificates are mounted correctly:
    ```bash
    docker exec <container> ls -la /certs/
@@ -221,6 +229,7 @@ If TLS is not working:
 ### Connection Refused
 
 If clients cannot connect:
+
 1. Verify ports 465 and 587 are exposed and not blocked by firewall
 2. Check if the service is running: `pm2 list`
 3. Review logs: `pm2 logs smtp`
@@ -228,6 +237,7 @@ If clients cannot connect:
 ### Authentication Failures
 
 If authentication fails:
+
 1. Verify username is exactly `plunk`
 2. Verify password is the project secret, not public key
 3. Check database connectivity
@@ -235,6 +245,7 @@ If authentication fails:
 ### Domain Verification Errors
 
 If emails are rejected with domain errors:
+
 1. Verify domain is added to your project
 2. Check domain verification status in Plunk dashboard
 3. Ensure DNS records are properly configured
@@ -249,6 +260,7 @@ The SMTP server is designed for high-scale email sending:
 - **Fast Authentication**: Single database query per connection
 
 For high-volume sending:
+
 - Deploy multiple SMTP server instances behind a load balancer
 - Use connection pooling in your SMTP clients
 - Monitor API rate limits and adjust accordingly
@@ -271,6 +283,7 @@ Authorization: Bearer {project_secret}
 ```
 
 The API response is translated to SMTP status codes:
+
 - `200 OK` → `250 Message accepted`
 - `4xx/5xx` → `554 Transaction failed`
 

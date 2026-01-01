@@ -12,6 +12,9 @@ export * from './jobs/index.js';
 // API service types
 export * from './api/index.js';
 
+// Authentication types
+export * from './auth/index.js';
+
 // Notification types
 export * from './notifications/index.js';
 

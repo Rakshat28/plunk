@@ -31,7 +31,7 @@ const detectCustomHtmlPatterns = (html: string): boolean => {
     const classValue = match[1];
     if (!classValue) continue;
     // Split by whitespace to get individual classes
-    const classes = classValue.split(/\s+/).filter((c) => c.length > 0);
+    const classes = classValue.split(/\s+/).filter(c => c.length > 0);
     // Check if any class is NOT in the allowed list
     const allowedPrefixes = [
       'prose',
@@ -42,7 +42,7 @@ const detectCustomHtmlPatterns = (html: string): boolean => {
       'selected',
       'resize-handle',
     ];
-    const hasDisallowedClass = classes.some((cls) => !allowedPrefixes.some((prefix) => cls.startsWith(prefix)));
+    const hasDisallowedClass = classes.some(cls => !allowedPrefixes.some(prefix => cls.startsWith(prefix)));
     if (hasDisallowedClass) {
       hasCustomClasses = true;
       break;

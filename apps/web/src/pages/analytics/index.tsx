@@ -15,7 +15,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from '@plunk/ui';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {useAnalytics} from '../../lib/hooks/useAnalytics';
@@ -30,7 +30,7 @@ import {
   Megaphone,
   MousePointerClick,
   Send,
-  Zap
+  Zap,
 } from 'lucide-react';
 import {NextSeo} from 'next-seo';
 import {useMemo, useState} from 'react';

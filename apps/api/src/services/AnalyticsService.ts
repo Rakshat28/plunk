@@ -58,7 +58,11 @@ export class AnalyticsService {
     const limitedStartDate = effectiveStartDate < maxStartDate ? maxStartDate : effectiveStartDate;
 
     // Check cache first
-    const cacheKey = Keys.Analytics.timeseries(projectId, limitedStartDate.toISOString(), effectiveEndDate.toISOString());
+    const cacheKey = Keys.Analytics.timeseries(
+      projectId,
+      limitedStartDate.toISOString(),
+      effectiveEndDate.toISOString(),
+    );
     const cached = await redis.get(cacheKey);
     if (cached) {
       return JSON.parse(cached);
@@ -191,7 +195,11 @@ export class AnalyticsService {
     const effectiveEndDate = endDate || now;
 
     // Check cache
-    const cacheKey = Keys.Analytics.campaignStats(projectId, effectiveStartDate.toISOString(), effectiveEndDate.toISOString());
+    const cacheKey = Keys.Analytics.campaignStats(
+      projectId,
+      effectiveStartDate.toISOString(),
+      effectiveEndDate.toISOString(),
+    );
     const cached = await redis.get(cacheKey);
     if (cached) {
       return JSON.parse(cached);
@@ -295,7 +303,12 @@ export class AnalyticsService {
     const effectiveEndDate = endDate || now;
 
     // Check cache
-    const cacheKey = Keys.Analytics.topEvents(projectId, limit, effectiveStartDate.toISOString(), effectiveEndDate.toISOString());
+    const cacheKey = Keys.Analytics.topEvents(
+      projectId,
+      limit,
+      effectiveStartDate.toISOString(),
+      effectiveEndDate.toISOString(),
+    );
     const cached = await redis.get(cacheKey);
     if (cached) {
       return JSON.parse(cached);

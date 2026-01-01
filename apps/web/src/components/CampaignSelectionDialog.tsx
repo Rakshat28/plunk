@@ -63,9 +63,7 @@ export function CampaignSelectionDialog({open, onOpenChange, onSelectCampaign}: 
   });
 
   const {data, isLoading} = useSWR<PaginatedCampaigns>(
-    open
-      ? `/campaigns?page=${page}&pageSize=10${statusFilter !== 'ALL' ? `&status=${statusFilter}` : ''}`
-      : null,
+    open ? `/campaigns?page=${page}&pageSize=10${statusFilter !== 'ALL' ? `&status=${statusFilter}` : ''}` : null,
     {revalidateOnFocus: false},
   );
 
@@ -408,11 +406,7 @@ export function CampaignSelectionDialog({open, onOpenChange, onSelectCampaign}: 
               <Button variant="outline" onClick={handleBack} className="flex-1">
                 Back
               </Button>
-              <Button
-                onClick={handleConfirm}
-                className="flex-1"
-                disabled={!Object.values(selectedFields).some(v => v)}
-              >
+              <Button onClick={handleConfirm} className="flex-1" disabled={!Object.values(selectedFields).some(v => v)}>
                 Create Campaign
               </Button>
             </div>

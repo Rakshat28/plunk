@@ -42,8 +42,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should match exact string values in standard fields (case-insensitive)', async () => {
@@ -61,8 +61,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should match boolean values', async () => {
@@ -80,8 +80,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should match numeric values as strings in JSON fields', async () => {
@@ -99,8 +99,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
     });
 
@@ -120,8 +120,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should exclude boolean false values', async () => {
@@ -139,8 +139,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should NOT include contacts where field does not exist (only excludes matching values)', async () => {
@@ -162,7 +162,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map(c => c.id);
+        const ids = result.data.map(c => c.id);
         // notEquals only matches where field exists and has different value
         expect(ids).toContain(withDifferentValue.id);
         expect(ids).not.toContain(withMatchingField.id);
@@ -186,8 +186,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should match substring in email field (case-insensitive)', async () => {
@@ -209,10 +209,10 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map(c => c.id);
+        const ids = result.data.map(c => c.id);
         expect(ids).toContain(match1.id);
         expect(ids).toContain(match2.id);
-        expect(result.contacts).toHaveLength(2);
+        expect(result.data).toHaveLength(2);
       });
 
       it('should not match when field does not exist', async () => {
@@ -226,7 +226,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(0);
+        expect(result.data).toHaveLength(0);
       });
 
       it('should match partial domain in email', async () => {
@@ -244,8 +244,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(gmailUser.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(gmailUser.id);
       });
     });
 
@@ -265,8 +265,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should NOT include contacts where field does not exist (only excludes matching substrings)', async () => {
@@ -288,7 +288,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map(c => c.id);
+        const ids = result.data.map(c => c.id);
         // notContains only matches where field exists and doesn't contain substring
         expect(ids).toContain(withDifferentValue.id);
         expect(ids).not.toContain(withMatchingSubstring.id);
@@ -314,8 +314,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
     });
   });
@@ -344,10 +344,10 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map(c => c.id);
+        const ids = result.data.map(c => c.id);
         expect(ids).toContain(high.id);
         expect(ids).toContain(veryHigh.id);
-        expect(result.contacts).toHaveLength(2);
+        expect(result.data).toHaveLength(2);
       });
 
       it('should exclude values equal to threshold', async () => {
@@ -361,7 +361,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(0);
+        expect(result.data).toHaveLength(0);
       });
 
       it('should work with negative numbers', async () => {
@@ -379,8 +379,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should work with decimal values', async () => {
@@ -398,8 +398,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
     });
 
@@ -423,10 +423,10 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map(c => c.id);
+        const ids = result.data.map(c => c.id);
         expect(ids).toContain(equal.id);
         expect(ids).toContain(greater.id);
-        expect(result.contacts).toHaveLength(2);
+        expect(result.data).toHaveLength(2);
       });
     });
 
@@ -450,10 +450,10 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map(c => c.id);
+        const ids = result.data.map(c => c.id);
         expect(ids).toContain(low.id);
         expect(ids).toContain(veryLow.id);
-        expect(result.contacts).toHaveLength(2);
+        expect(result.data).toHaveLength(2);
       });
 
       it('should exclude values equal to threshold', async () => {
@@ -467,7 +467,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(0);
+        expect(result.data).toHaveLength(0);
       });
     });
 
@@ -491,10 +491,10 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map(c => c.id);
+        const ids = result.data.map(c => c.id);
         expect(ids).toContain(equal.id);
         expect(ids).toContain(less.id);
-        expect(result.contacts).toHaveLength(2);
+        expect(result.data).toHaveLength(2);
       });
     });
 
@@ -515,8 +515,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(positive.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(positive.id);
       });
 
       it('should handle very large numbers', async () => {
@@ -534,8 +534,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
     });
   });
@@ -560,8 +560,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(withField.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(withField.id);
       });
 
       it('should exclude contacts where field is null', async () => {
@@ -579,8 +579,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(withValue.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(withValue.id);
       });
 
       it('should match fields with empty string values', async () => {
@@ -594,8 +594,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(withEmptyString.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(withEmptyString.id);
       });
 
       it('should match fields with zero values', async () => {
@@ -609,8 +609,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(withZero.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(withZero.id);
       });
 
       it('should match fields with boolean false values', async () => {
@@ -624,8 +624,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(withFalse.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(withFalse.id);
       });
     });
 
@@ -645,8 +645,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(withoutField.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(withoutField.id);
       });
 
       it('should match contacts where field is null', async () => {
@@ -664,8 +664,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(withNull.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(withNull.id);
       });
 
       it('should exclude fields with empty string values', async () => {
@@ -679,7 +679,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(0);
+        expect(result.data).toHaveLength(0);
       });
 
       it('should exclude fields with zero values', async () => {
@@ -693,7 +693,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(0);
+        expect(result.data).toHaveLength(0);
       });
     });
   });
@@ -718,7 +718,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map(c => c.id);
+        const ids = result.data.map(c => c.id);
         expect(ids).toContain(recent.id);
       });
 
@@ -737,7 +737,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map(c => c.id);
+        const ids = result.data.map(c => c.id);
         expect(ids).toContain(veryRecent.id);
       });
 
@@ -756,7 +756,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map(c => c.id);
+        const ids = result.data.map(c => c.id);
         expect(ids).toContain(justNow.id);
       });
     });
@@ -794,8 +794,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should match contacts with JSON date field within specified hours', async () => {
@@ -819,8 +819,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should match contacts with JSON date field within specified minutes', async () => {
@@ -844,8 +844,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should NOT match contacts with JSON date field outside the time range', async () => {
@@ -870,7 +870,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(0);
+        expect(result.data).toHaveLength(0);
       });
 
       it('should NOT match contacts where JSON date field does not exist', async () => {
@@ -893,7 +893,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(0);
+        expect(result.data).toHaveLength(0);
       });
 
       it('should handle null values in JSON date fields gracefully', async () => {
@@ -916,7 +916,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(0);
+        expect(result.data).toHaveLength(0);
       });
 
       it('should work correctly with combined filters (AND logic)', async () => {
@@ -953,8 +953,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should require unit parameter for within operator', async () => {
@@ -1002,7 +1002,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       });
 
       const result = await SegmentService.getContacts(projectId, segment.id);
-      const ids = result.contacts.map(c => c.id);
+      const ids = result.data.map(c => c.id);
       expect(ids).toContain(newer.id);
       expect(ids).not.toContain(older.id);
     });
@@ -1025,7 +1025,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       });
 
       const result = await SegmentService.getContacts(projectId, segment.id);
-      const ids = result.contacts.map(c => c.id);
+      const ids = result.data.map(c => c.id);
       expect(ids).toContain(first.id);
       expect(ids).toContain(second.id);
       expect(ids).not.toContain(third.id);
@@ -1069,7 +1069,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map(c => c.id);
+        const ids = result.data.map(c => c.id);
         expect(ids).toContain(match1.id);
         expect(ids).toContain(match2.id);
         expect(ids).not.toContain(noMatch.id);
@@ -1107,7 +1107,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map(c => c.id);
+        const ids = result.data.map(c => c.id);
         expect(ids).toContain(match1.id);
         expect(ids).toContain(match2.id);
         expect(ids).not.toContain(noMatch.id);
@@ -1133,7 +1133,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map(c => c.id);
+        const ids = result.data.map(c => c.id);
         expect(ids).toContain(match.id);
       });
 
@@ -1162,8 +1162,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
     });
 
@@ -1205,7 +1205,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map(c => c.id);
+        const ids = result.data.map(c => c.id);
         expect(ids).toContain(match1.id);
         expect(ids).toContain(match2.id);
         expect(ids).not.toContain(noMatch.id);
@@ -1247,7 +1247,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        const ids = result.contacts.map(c => c.id);
+        const ids = result.data.map(c => c.id);
         expect(ids).toContain(match1.id);
         expect(ids).toContain(match2.id);
         expect(ids).not.toContain(noMatch.id);
@@ -1298,8 +1298,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       });
 
       const result = await SegmentService.getContacts(projectId, segment.id);
-      expect(result.contacts).toHaveLength(1);
-      expect(result.contacts[0].id).toBe(match.id);
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].id).toBe(match.id);
     });
 
     it('should combine existence checks with value comparisons', async () => {
@@ -1329,8 +1329,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
       });
 
       const result = await SegmentService.getContacts(projectId, segment.id);
-      expect(result.contacts).toHaveLength(1);
-      expect(result.contacts[0].id).toBe(match.id);
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].id).toBe(match.id);
     });
   });
 
@@ -1357,8 +1357,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should not match contacts who have not triggered the event', async () => {
@@ -1379,7 +1379,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(0);
+        expect(result.data).toHaveLength(0);
       });
 
       it('should match contacts with multiple occurrences of the same event', async () => {
@@ -1400,8 +1400,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
     });
 
@@ -1440,8 +1440,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should match contacts with event within time range (hours)', async () => {
@@ -1476,8 +1476,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should match contacts with event within time range (minutes)', async () => {
@@ -1512,8 +1512,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should handle events at exact boundary', async () => {
@@ -1538,7 +1538,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
 
         const result = await SegmentService.getContacts(projectId, segment.id);
         // Should not match because events at exact boundary are excluded
-        expect(result.contacts).toHaveLength(0);
+        expect(result.data).toHaveLength(0);
       });
 
       it('should not match contacts with event outside time range', async () => {
@@ -1562,7 +1562,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(0);
+        expect(result.data).toHaveLength(0);
       });
 
       it('should match contact if any of their events is within range', async () => {
@@ -1598,8 +1598,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
     });
 
@@ -1623,8 +1623,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should not match contacts who have triggered the event', async () => {
@@ -1644,7 +1644,7 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(0);
+        expect(result.data).toHaveLength(0);
       });
 
       it('should match contacts with other events but not the target event', async () => {
@@ -1664,8 +1664,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
     });
 
@@ -1697,8 +1697,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
 
       it('should combine multiple event filters', async () => {
@@ -1727,8 +1727,8 @@ describe('SegmentService - Comprehensive Operator Tests', () => {
         });
 
         const result = await SegmentService.getContacts(projectId, segment.id);
-        expect(result.contacts).toHaveLength(1);
-        expect(result.contacts[0].id).toBe(match.id);
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].id).toBe(match.id);
       });
     });
   });

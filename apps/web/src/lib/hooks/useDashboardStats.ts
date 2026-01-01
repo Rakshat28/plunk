@@ -20,13 +20,25 @@ export interface DashboardStats {
  */
 export function useDashboardStats(): DashboardStats {
   // Fetch activity stats (last 30 days by default)
-  const {data: activityStats, error: activityError, isLoading: isLoadingActivity} = useSWR<ActivityStats>('/activity/stats');
+  const {
+    data: activityStats,
+    error: activityError,
+    isLoading: isLoadingActivity,
+  } = useSWR<ActivityStats>('/activity/stats');
 
   // Fetch contacts (only need the total count)
-  const {data: contactsData, error: contactsError, isLoading: isLoadingContacts} = useSWR<ContactsResponse>('/contacts?limit=1');
+  const {
+    data: contactsData,
+    error: contactsError,
+    isLoading: isLoadingContacts,
+  } = useSWR<ContactsResponse>('/contacts?limit=1');
 
   // Fetch campaigns (only need the total count)
-  const {data: campaignsData, error: campaignsError, isLoading: isLoadingCampaigns} = useSWR<CampaignsResponse>('/campaigns?page=1&limit=1');
+  const {
+    data: campaignsData,
+    error: campaignsError,
+    isLoading: isLoadingCampaigns,
+  } = useSWR<CampaignsResponse>('/campaigns?page=1&limit=1');
 
   // Still loading if ANY of the requests are still in progress
   const isLoading = isLoadingActivity || isLoadingContacts || isLoadingCampaigns;

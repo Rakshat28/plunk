@@ -12,7 +12,7 @@ import {
   SelectItemWithDescription,
   SelectTrigger,
   SelectValue,
-  Textarea
+  Textarea,
 } from '@plunk/ui';
 import type {Segment} from '@plunk/db';
 import {CampaignAudienceType} from '@plunk/db';

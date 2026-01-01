@@ -1,5 +1,5 @@
-import type {Membership, Role} from '@plunk/db';
-import type {MemberWithEmail, OwnerInfo, DisabledProjectInfo} from '@plunk/types';
+import type {Membership} from '@plunk/db';
+import type {DisabledProjectInfo, MemberWithEmail, OwnerInfo} from '@plunk/types';
 
 import {prisma} from '../database/prisma.js';
 import {redis, REDIS_ONE_MINUTE, wrapRedis} from '../database/redis.js';
@@ -141,7 +141,7 @@ export class MembershipService {
       },
     });
 
-    return memberships.map((m) => ({
+    return memberships.map(m => ({
       userId: m.userId,
       email: m.user.email,
       role: m.role,
@@ -193,11 +193,7 @@ export class MembershipService {
    * Add a member to a project
    * Invalidates cache for the project
    */
-  public static async addMember(
-    projectId: string,
-    userId: string,
-    role: 'ADMIN' | 'MEMBER',
-  ): Promise<Membership> {
+  public static async addMember(projectId: string, userId: string, role: 'ADMIN' | 'MEMBER'): Promise<Membership> {
     // Check if membership already exists
     const existingMembership = await prisma.membership.findUnique({
       where: {
@@ -232,11 +228,7 @@ export class MembershipService {
    * Throws if trying to change OWNER role
    * Invalidates cache
    */
-  public static async updateRole(
-    projectId: string,
-    userId: string,
-    newRole: 'ADMIN' | 'MEMBER',
-  ): Promise<Membership> {
+  public static async updateRole(projectId: string, userId: string, newRole: 'ADMIN' | 'MEMBER'): Promise<Membership> {
     // Get existing membership
     const existingMembership = await prisma.membership.findUnique({
       where: {
@@ -341,7 +333,7 @@ export class MembershipService {
 
     return {
       hasDisabledProject: disabledMemberships.length > 0,
-      disabledProjectNames: disabledMemberships.map((m) => m.project.name),
+      disabledProjectNames: disabledMemberships.map(m => m.project.name),
     };
   }
 

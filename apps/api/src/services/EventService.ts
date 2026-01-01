@@ -1,6 +1,7 @@
 import type {Event} from '@plunk/db';
 import {Prisma} from '@plunk/db';
 import type {FilterCondition, FilterGroup} from '@plunk/types';
+import {toPrismaJson} from '@plunk/types';
 import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
@@ -32,7 +33,7 @@ export class EventService {
         contactId,
         emailId,
         name: eventName,
-        data: data ? (data as Prisma.InputJsonValue) : undefined,
+        data: data ? toPrismaJson(data) : undefined,
       },
     });
 
@@ -472,7 +473,7 @@ export class EventService {
           contactId,
           status: 'RUNNING',
           currentStepId: triggerStep.id,
-          context: context ? (context as Prisma.InputJsonValue) : undefined,
+          context: context ? toPrismaJson(context) : undefined,
         },
       });
 

@@ -1,9 +1,9 @@
-import {describe, it, expect, beforeEach} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vitest';
 import {
-  WorkflowStepType,
   StepExecutionStatus,
-  WorkflowExecutionStatus,
   TemplateType,
+  WorkflowExecutionStatus,
+  WorkflowStepType,
   WorkflowTriggerType,
 } from '@plunk/db';
 import {WorkflowExecutionService} from '../WorkflowExecutionService';

@@ -10,7 +10,7 @@ import {
   NotAuthenticated,
   NotFound,
   RateLimitError,
-  ValidationError
+  ValidationError,
 } from '../../exceptions/index.js';
 import {EmailService} from '../../services/EmailService.js';
 

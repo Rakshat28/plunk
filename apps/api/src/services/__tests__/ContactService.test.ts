@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vitest';
 import {ContactService} from '../ContactService';
 import {factories, getPrismaClient} from '../../../../../test/helpers';
 
@@ -687,12 +687,7 @@ describe('ContactService - Duplicate Prevention & Data Merging', () => {
         const p2Contact1 = await factories.createContact({projectId: project2.id, subscribed: false});
         const p2Contact2 = await factories.createContact({projectId: project2.id, subscribed: false});
 
-        await ContactService.bulkSubscribe(project1.id, [
-          p1Contact1.id,
-          p1Contact2.id,
-          p2Contact1.id,
-          p2Contact2.id,
-        ]);
+        await ContactService.bulkSubscribe(project1.id, [p1Contact1.id, p1Contact2.id, p2Contact1.id, p2Contact2.id]);
 
         const p1ContactsAfter = await prisma.contact.findMany({
           where: {projectId: project1.id},

@@ -18,10 +18,7 @@ interface ErrorResponse {
   error: string;
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<VerifyEmailResponse | ErrorResponse>,
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<VerifyEmailResponse | ErrorResponse>) {
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({error: 'Method not allowed'});
@@ -49,7 +46,7 @@ export default async function handler(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${secretKey}`,
+        'Authorization': `Bearer ${secretKey}`,
       },
       body: JSON.stringify({email}),
     });

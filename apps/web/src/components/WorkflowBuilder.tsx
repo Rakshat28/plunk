@@ -12,7 +12,7 @@ import {
   ReactFlow,
   useEdgesState,
   useNodesState,
-  useReactFlow
+  useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type {WorkflowStep} from '@plunk/db';
@@ -29,7 +29,7 @@ import {
   Timer,
   Trash2,
   UserCog,
-  Webhook
+  Webhook,
 } from 'lucide-react';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import dagre from 'dagre';

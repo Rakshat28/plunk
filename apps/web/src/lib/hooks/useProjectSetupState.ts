@@ -17,9 +17,7 @@ export interface SetupStateResponse {
  * Hook to fetch project setup state for dashboard quick start
  */
 export function useProjectSetupState(projectId: string | undefined) {
-  const {data, error, isLoading} = useSWR<SetupStateResponse>(
-    projectId ? `/projects/${projectId}/setup-state` : null,
-  );
+  const {data, error, isLoading} = useSWR<SetupStateResponse>(projectId ? `/projects/${projectId}/setup-state` : null);
 
   return {
     setupState: data?.data,

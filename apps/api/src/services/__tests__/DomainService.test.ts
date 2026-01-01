@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {factories, getPrismaClient} from '../../../../../test/helpers';
 import {DomainService} from '../DomainService.js';
 import {HttpException} from '../../exceptions/index.js';
@@ -110,9 +110,7 @@ describe('DomainService', () => {
     it('should throw error for invalid email format', async () => {
       const {project} = await factories.createUserWithProject();
 
-      await expect(DomainService.verifyEmailDomain('invalid-email', project.id)).rejects.toThrow(
-        HttpException,
-      );
+      await expect(DomainService.verifyEmailDomain('invalid-email', project.id)).rejects.toThrow(HttpException);
 
       await expect(DomainService.verifyEmailDomain('invalid-email', project.id)).rejects.toThrow(
         /invalid email format/i,
@@ -122,13 +120,13 @@ describe('DomainService', () => {
     it('should throw error when domain is not registered', async () => {
       const {project} = await factories.createUserWithProject();
 
-      await expect(
-        DomainService.verifyEmailDomain('sender@unregistered.com', project.id),
-      ).rejects.toThrow(HttpException);
+      await expect(DomainService.verifyEmailDomain('sender@unregistered.com', project.id)).rejects.toThrow(
+        HttpException,
+      );
 
-      await expect(
-        DomainService.verifyEmailDomain('sender@unregistered.com', project.id),
-      ).rejects.toThrow(/not registered/i);
+      await expect(DomainService.verifyEmailDomain('sender@unregistered.com', project.id)).rejects.toThrow(
+        /not registered/i,
+      );
     });
 
     it('should throw error when domain belongs to different project', async () => {
@@ -141,13 +139,11 @@ describe('DomainService', () => {
         data: {verified: true},
       });
 
-      await expect(
-        DomainService.verifyEmailDomain('sender@project1.com', project2.id),
-      ).rejects.toThrow(HttpException);
+      await expect(DomainService.verifyEmailDomain('sender@project1.com', project2.id)).rejects.toThrow(HttpException);
 
-      await expect(
-        DomainService.verifyEmailDomain('sender@project1.com', project2.id),
-      ).rejects.toThrow(/belongs to a different project/i);
+      await expect(DomainService.verifyEmailDomain('sender@project1.com', project2.id)).rejects.toThrow(
+        /belongs to a different project/i,
+      );
     });
 
     it('should throw error when domain is not verified', async () => {
@@ -155,13 +151,11 @@ describe('DomainService', () => {
 
       await DomainService.addDomain(project.id, 'unverified.com');
 
-      await expect(
-        DomainService.verifyEmailDomain('sender@unverified.com', project.id),
-      ).rejects.toThrow(HttpException);
+      await expect(DomainService.verifyEmailDomain('sender@unverified.com', project.id)).rejects.toThrow(HttpException);
 
-      await expect(
-        DomainService.verifyEmailDomain('sender@unverified.com', project.id),
-      ).rejects.toThrow(/not verified/i);
+      await expect(DomainService.verifyEmailDomain('sender@unverified.com', project.id)).rejects.toThrow(
+        /not verified/i,
+      );
     });
 
     it('should return domain when all checks pass', async () => {
@@ -358,9 +352,9 @@ describe('DomainService', () => {
     });
 
     it('should throw error for non-existent domain', async () => {
-      await expect(
-        DomainService.checkVerification('00000000-0000-0000-0000-000000000000'),
-      ).rejects.toThrow(/domain not found/i);
+      await expect(DomainService.checkVerification('00000000-0000-0000-0000-000000000000')).rejects.toThrow(
+        /domain not found/i,
+      );
     });
   });
 
@@ -391,9 +385,7 @@ describe('DomainService', () => {
 
       await expect(DomainService.removeDomain(domain.id)).rejects.toThrow(HttpException);
 
-      await expect(DomainService.removeDomain(domain.id)).rejects.toThrow(
-        /used in.*template/i,
-      );
+      await expect(DomainService.removeDomain(domain.id)).rejects.toThrow(/used in.*template/i);
     });
 
     it('should throw error when domain is used in active campaigns', async () => {
@@ -409,9 +401,7 @@ describe('DomainService', () => {
 
       await expect(DomainService.removeDomain(domain.id)).rejects.toThrow(HttpException);
 
-      await expect(DomainService.removeDomain(domain.id)).rejects.toThrow(
-        /used in.*campaign/i,
-      );
+      await expect(DomainService.removeDomain(domain.id)).rejects.toThrow(/used in.*campaign/i);
     });
 
     it('should allow removal when campaign is SENT (completed)', async () => {
@@ -433,9 +423,9 @@ describe('DomainService', () => {
     });
 
     it('should throw error for non-existent domain', async () => {
-      await expect(
-        DomainService.removeDomain('00000000-0000-0000-0000-000000000000'),
-      ).rejects.toThrow(/domain not found/i);
+      await expect(DomainService.removeDomain('00000000-0000-0000-0000-000000000000')).rejects.toThrow(
+        /domain not found/i,
+      );
     });
 
     it('should check usage in multiple templates', async () => {
@@ -492,17 +482,15 @@ describe('DomainService', () => {
       expect(result.domain).toBe('mail.example.com');
 
       // Different subdomain should fail
-      await expect(
-        DomainService.verifyEmailDomain('sender@other.example.com', project.id),
-      ).rejects.toThrow(/not registered/i);
+      await expect(DomainService.verifyEmailDomain('sender@other.example.com', project.id)).rejects.toThrow(
+        /not registered/i,
+      );
     });
 
     it('should handle email with no @ sign', async () => {
       const {project} = await factories.createUserWithProject();
 
-      await expect(DomainService.verifyEmailDomain('nodomain', project.id)).rejects.toThrow(
-        /invalid email format/i,
-      );
+      await expect(DomainService.verifyEmailDomain('nodomain', project.id)).rejects.toThrow(/invalid email format/i);
     });
 
     it('should handle email with multiple @ signs', async () => {
@@ -516,9 +504,7 @@ describe('DomainService', () => {
     it('should handle empty email string', async () => {
       const {project} = await factories.createUserWithProject();
 
-      await expect(DomainService.verifyEmailDomain('', project.id)).rejects.toThrow(
-        /invalid email format/i,
-      );
+      await expect(DomainService.verifyEmailDomain('', project.id)).rejects.toThrow(/invalid email format/i);
     });
   });
 
@@ -537,11 +523,7 @@ describe('DomainService', () => {
       ]);
 
       expect(results).toHaveLength(3);
-      expect(results.map(d => d.domain).sort()).toEqual([
-        'concurrent1.com',
-        'concurrent2.com',
-        'concurrent3.com',
-      ]);
+      expect(results.map(d => d.domain).sort()).toEqual(['concurrent1.com', 'concurrent2.com', 'concurrent3.com']);
     });
 
     it('should handle concurrent ownership checks', async () => {

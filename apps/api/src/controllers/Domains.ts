@@ -4,12 +4,10 @@ import type {NextFunction, Request, Response} from 'express';
 
 import {redis} from '../database/redis.js';
 import {NotFound} from '../exceptions/index.js';
-import type {AuthResponse} from '../middleware/auth.js';
 import {isAuthenticated, requireEmailVerified} from '../middleware/auth.js';
 import {DomainService} from '../services/DomainService.js';
 import {Keys} from '../services/keys.js';
 import {MembershipService} from '../services/MembershipService.js';
-import {prisma} from '../database/prisma.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
 
 @Controller('domains')
@@ -21,7 +19,7 @@ export class Domains {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async getProjectDomains(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {projectId} = DomainSchemas.projectId.parse(req.params);
 
     // Verify user has access to this project
@@ -39,7 +37,7 @@ export class Domains {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async addDomain(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {projectId, domain} = DomainSchemas.create.parse(req.body);
 
     if (!auth.userId) {
@@ -87,7 +85,7 @@ export class Domains {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async checkVerification(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     const domain = await DomainService.id(id);
@@ -115,7 +113,7 @@ export class Domains {
   @Middleware([isAuthenticated, requireEmailVerified])
   @CatchAsync
   public async removeDomain(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     const domain = await DomainService.id(id);

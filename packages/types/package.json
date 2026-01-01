@@ -2,8 +2,10 @@
   "name": "@plunk/types",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "clean": "rimraf node_modules .turbo"
+    "clean": "rimraf node_modules .turbo dist",
+    "build": "tsc"
   },
   "devDependencies": {
     "@plunk/typescript-config": "*",
@@ -12,8 +14,8 @@
     "typescript": "^5.7.2"
   },
   "exports": {
-    "./integrations/*": "./src/integrations/*.ts",
-    "./swyp/*": "./src/swyp/*.ts",
-    ".": "./src/index.ts"
+    "./integrations/*": "./dist/integrations/*.js",
+    "./swyp/*": "./dist/swyp/*.js",
+    ".": "./dist/index.js"
   }
 }

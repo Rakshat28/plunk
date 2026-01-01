@@ -27,7 +27,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from '@plunk/ui';
 import {Code2, Eye, Monitor, Smartphone, Tablet, Upload, X} from 'lucide-react';
 import {network} from '../../lib/network';
@@ -298,7 +298,7 @@ export function EmailEditor({value, onChange, placeholder, subject, from, replyT
       subscribeUrl: `${window.location.origin}/subscribe/${contact.id}`,
       manageUrl: `${window.location.origin}/manage/${contact.id}`,
       data: contact.data || {},
-      ...(contact.data as Record<string, unknown> | null || {}),
+      ...((contact.data as Record<string, unknown> | null) || {}),
     };
 
     return replaceVariables(currentHtml, contactData);
@@ -317,7 +317,7 @@ export function EmailEditor({value, onChange, placeholder, subject, from, replyT
       subscribeUrl: `${window.location.origin}/subscribe/${contact.id}`,
       manageUrl: `${window.location.origin}/manage/${contact.id}`,
       data: contact.data || {},
-      ...(contact.data as Record<string, unknown> | null || {}),
+      ...((contact.data as Record<string, unknown> | null) || {}),
     };
 
     return replaceVariables(subject, contactData);

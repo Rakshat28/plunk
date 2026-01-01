@@ -19,7 +19,15 @@ dayjs.extend(relativeTime);
 dayjs.extend(advancedFormat);
 
 // Routes that don't require authentication
-const PUBLIC_ROUTES = ['/auth/login', '/auth/signup', '/auth/reset-password', '/auth/verify-email', '/unsubscribe', '/subscribe', '/manage'];
+const PUBLIC_ROUTES = [
+  '/auth/login',
+  '/auth/signup',
+  '/auth/reset-password',
+  '/auth/verify-email',
+  '/unsubscribe',
+  '/subscribe',
+  '/manage',
+];
 
 // Routes that don't require a project
 const NO_PROJECT_ROUTES = ['/projects/create'];

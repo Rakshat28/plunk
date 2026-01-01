@@ -1,21 +1,21 @@
 import {
-  S3Client,
-  PutObjectCommand,
   CreateBucketCommand,
   HeadBucketCommand,
   PutBucketPolicyCommand,
+  PutObjectCommand,
+  S3Client,
 } from '@aws-sdk/client-s3';
 import crypto from 'crypto';
 import signale from 'signale';
 
 import {
-  S3_ENDPOINT,
   S3_ACCESS_KEY_ID,
   S3_ACCESS_KEY_SECRET,
   S3_BUCKET,
-  S3_PUBLIC_URL,
-  S3_FORCE_PATH_STYLE,
   S3_ENABLED,
+  S3_ENDPOINT,
+  S3_FORCE_PATH_STYLE,
+  S3_PUBLIC_URL,
 } from '../app/constants.js';
 
 /**

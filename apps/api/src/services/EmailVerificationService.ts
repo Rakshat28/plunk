@@ -12,59 +12,6 @@ export class EmailVerificationService {
   private static disposableDomainsSet: Set<string> | null = null;
 
   /**
-   * Fetch and cache the disposable domains list from GitHub
-   * Uses Redis for caching with 24-hour TTL
-   * Falls back to in-memory cache if Redis fails
-   */
-  private static async getDisposableDomains(): Promise<Set<string>> {
-    // Return in-memory cache if available
-    if (this.disposableDomainsSet) {
-      return this.disposableDomainsSet;
-    }
-
-    try {
-      // Try to get from Redis cache first
-      const cached = await redis.get(DISPOSABLE_DOMAINS_CACHE_KEY);
-      if (cached) {
-        const domains = JSON.parse(cached) as string[];
-        this.disposableDomainsSet = new Set(domains);
-        return this.disposableDomainsSet;
-      }
-
-      // Fetch from GitHub if not in cache
-      const response = await fetch(DISPOSABLE_DOMAINS_URL);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch disposable domains: ${response.statusText}`);
-      }
-
-      const text = await response.text();
-      const domains = text
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line && !line.startsWith('#')); // Filter empty lines and comments
-
-      // Cache in Redis
-      await redis.set(DISPOSABLE_DOMAINS_CACHE_KEY, JSON.stringify(domains), 'EX', CACHE_TTL_SECONDS);
-
-      // Cache in memory
-      this.disposableDomainsSet = new Set(domains);
-      return this.disposableDomainsSet;
-    } catch (error) {
-      console.error('Error fetching disposable domains:', error);
-      // Return empty set as fallback - don't block email verification
-      return new Set<string>();
-    }
-  }
-
-  /**
-   * Check if a domain is disposable
-   */
-  private static async isDisposableDomain(domain: string): Promise<boolean> {
-    const disposableDomains = await this.getDisposableDomains();
-    return disposableDomains.has(domain.toLowerCase());
-  }
-
-  /**
    * Verify an email address
    * - Checks if domain exists (DNS A/AAAA records)
    * - Checks for MX records
@@ -145,5 +92,58 @@ export class EmailVerificationService {
     }
 
     return result;
+  }
+
+  /**
+   * Fetch and cache the disposable domains list from GitHub
+   * Uses Redis for caching with 24-hour TTL
+   * Falls back to in-memory cache if Redis fails
+   */
+  private static async getDisposableDomains(): Promise<Set<string>> {
+    // Return in-memory cache if available
+    if (this.disposableDomainsSet) {
+      return this.disposableDomainsSet;
+    }
+
+    try {
+      // Try to get from Redis cache first
+      const cached = await redis.get(DISPOSABLE_DOMAINS_CACHE_KEY);
+      if (cached) {
+        const domains = JSON.parse(cached) as string[];
+        this.disposableDomainsSet = new Set(domains);
+        return this.disposableDomainsSet;
+      }
+
+      // Fetch from GitHub if not in cache
+      const response = await fetch(DISPOSABLE_DOMAINS_URL);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch disposable domains: ${response.statusText}`);
+      }
+
+      const text = await response.text();
+      const domains = text
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line && !line.startsWith('#')); // Filter empty lines and comments
+
+      // Cache in Redis
+      await redis.set(DISPOSABLE_DOMAINS_CACHE_KEY, JSON.stringify(domains), 'EX', CACHE_TTL_SECONDS);
+
+      // Cache in memory
+      this.disposableDomainsSet = new Set(domains);
+      return this.disposableDomainsSet;
+    } catch (error) {
+      console.error('Error fetching disposable domains:', error);
+      // Return empty set as fallback - don't block email verification
+      return new Set<string>();
+    }
+  }
+
+  /**
+   * Check if a domain is disposable
+   */
+  private static async isDisposableDomain(domain: string): Promise<boolean> {
+    const disposableDomains = await this.getDisposableDomains();
+    return disposableDomains.has(domain.toLowerCase());
   }
 }

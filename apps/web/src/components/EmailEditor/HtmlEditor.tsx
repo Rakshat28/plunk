@@ -64,7 +64,7 @@ export function HtmlEditor({value, onChange, placeholder}: HtmlEditorProps) {
       theme,
       EditorView.lineWrapping, // Enable line wrapping for long lines
     ],
-    [theme]
+    [theme],
   );
 
   return (

@@ -205,7 +205,7 @@ describe('WorkflowService', () => {
 
       const page1 = await WorkflowService.list(projectId, 1, 10);
 
-      expect(page1.workflows).toHaveLength(10);
+      expect(page1.data).toHaveLength(10);
       expect(page1.total).toBe(25);
       expect(page1.totalPages).toBe(3);
     });
@@ -218,7 +218,7 @@ describe('WorkflowService', () => {
       const result = await WorkflowService.list(projectId, 1, 20, 'welcome');
 
       expect(result.total).toBe(2);
-      expect(result.workflows.every(w => w.name.toLowerCase().includes('welcome'))).toBe(true);
+      expect(result.data.every(w => w.name.toLowerCase().includes('welcome'))).toBe(true);
     });
 
     it('should include step and execution counts', async () => {
@@ -234,8 +234,8 @@ describe('WorkflowService', () => {
 
       const result = await WorkflowService.list(projectId);
 
-      const found = result.workflows.find(w => w.id === workflow.id) as
-        | ((typeof result.workflows)[number] & {_count: {steps: number; executions: number}})
+      const found = result.data.find(w => w.id === workflow.id) as
+        | ((typeof result.data)[number] & {_count: {steps: number; executions: number}})
         | undefined;
       expect(found?._count.steps).toBe(3); // TRIGGER + 2 added
       expect(found?._count.executions).toBe(1);

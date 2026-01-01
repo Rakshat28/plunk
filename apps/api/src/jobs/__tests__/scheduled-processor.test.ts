@@ -1,6 +1,6 @@
-import {describe, it, expect, beforeEach, afterEach} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it} from 'vitest';
 import {CampaignStatus} from '@plunk/db';
-import {factories, getPrismaClient, createTimeControl} from '../../../../../test/helpers';
+import {createTimeControl, factories, getPrismaClient} from '../../../../../test/helpers';
 
 describe('Scheduled Campaign Processor', () => {
   let projectId: string;

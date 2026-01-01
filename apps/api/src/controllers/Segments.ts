@@ -1,7 +1,5 @@
 import {Controller, Delete, Get, Middleware, Patch, Post} from '@overnightjs/core';
 import type {NextFunction, Request, Response} from 'express';
-
-import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth, requireEmailVerified} from '../middleware/auth.js';
 import {SegmentService} from '../services/SegmentService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
@@ -16,7 +14,7 @@ export class Segments {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async list(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
 
     const segments = await SegmentService.list(auth.projectId!);
 
@@ -31,7 +29,7 @@ export class Segments {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async get(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const segmentId = req.params.id;
 
     if (!segmentId) {
@@ -51,7 +49,7 @@ export class Segments {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getContacts(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const segmentId = req.params.id;
     const page = parseInt(req.query.page as string) || 1;
     const pageSize = Math.min(parseInt(req.query.pageSize as string) || 20, 100);
@@ -73,7 +71,7 @@ export class Segments {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async create(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {name, description, condition, trackMembership} = req.body;
 
     if (!name) {
@@ -102,7 +100,7 @@ export class Segments {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async update(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const segmentId = req.params.id;
     const {name, description, condition, trackMembership} = req.body;
 
@@ -132,7 +130,7 @@ export class Segments {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async delete(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const segmentId = req.params.id;
 
     if (!segmentId) {
@@ -152,7 +150,7 @@ export class Segments {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async compute(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const segmentId = req.params.id;
 
     if (!segmentId) {
@@ -172,7 +170,7 @@ export class Segments {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async refresh(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const segmentId = req.params.id;
 
     if (!segmentId) {

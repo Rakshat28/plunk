@@ -32,8 +32,8 @@ describe('SegmentService', () => {
 
       const result = await SegmentService.getContacts(projectId, segment.id);
 
-      expect(result.contacts).toHaveLength(1);
-      expect(result.contacts[0].id).toBe(subscribed.id);
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].id).toBe(subscribed.id);
     });
 
     it('should filter contacts by custom data fields', async () => {
@@ -53,8 +53,8 @@ describe('SegmentService', () => {
 
       const result = await SegmentService.getContacts(projectId, segment.id);
 
-      expect(result.contacts).toHaveLength(1);
-      expect(result.contacts[0].id).toBe(proUser.id);
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].id).toBe(proUser.id);
     });
 
     it('should filter contacts with multiple conditions', async () => {
@@ -85,8 +85,8 @@ describe('SegmentService', () => {
 
       const result = await SegmentService.getContacts(projectId, segment.id);
 
-      expect(result.contacts).toHaveLength(1);
-      expect(result.contacts[0].id).toBe(target.id);
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].id).toBe(target.id);
     });
 
     it('should support notEquals operator', async () => {
@@ -106,8 +106,8 @@ describe('SegmentService', () => {
 
       const result = await SegmentService.getContacts(projectId, segment.id);
 
-      expect(result.contacts).toHaveLength(1);
-      expect(result.contacts[0].id).toBe(pro.id);
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].id).toBe(pro.id);
     });
 
     it('should support contains operator for strings', async () => {
@@ -127,8 +127,8 @@ describe('SegmentService', () => {
 
       const result = await SegmentService.getContacts(projectId, segment.id);
 
-      expect(result.contacts).toHaveLength(1);
-      expect(result.contacts[0].id).toBe(match.id);
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].id).toBe(match.id);
     });
 
     it('should support exists operator for custom fields', async () => {
@@ -148,8 +148,8 @@ describe('SegmentService', () => {
 
       const result = await SegmentService.getContacts(projectId, segment.id);
 
-      expect(result.contacts).toHaveLength(1);
-      expect(result.contacts[0].id).toBe(withField.id);
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].id).toBe(withField.id);
     });
 
     it('should handle empty segments', async () => {
@@ -165,7 +165,7 @@ describe('SegmentService', () => {
 
       const result = await SegmentService.getContacts(projectId, segment.id);
 
-      expect(result.contacts).toHaveLength(0);
+      expect(result.data).toHaveLength(0);
       expect(result.total).toBe(0);
     });
   });
@@ -192,7 +192,7 @@ describe('SegmentService', () => {
       const result = await SegmentService.getContacts(projectId, segment.id);
 
       expect(result.total).toBe(2);
-      expect(result.contacts).toHaveLength(2);
+      expect(result.data).toHaveLength(2);
     });
 
     it('should support pagination', async () => {
@@ -209,15 +209,15 @@ describe('SegmentService', () => {
       });
 
       const page1 = await SegmentService.getContacts(projectId, segment.id, 1, 10);
-      expect(page1.contacts).toHaveLength(10);
+      expect(page1.data).toHaveLength(10);
       expect(page1.total).toBe(25);
       expect(page1.totalPages).toBe(3);
 
       const page2 = await SegmentService.getContacts(projectId, segment.id, 2, 10);
-      expect(page2.contacts).toHaveLength(10);
+      expect(page2.data).toHaveLength(10);
 
       const page3 = await SegmentService.getContacts(projectId, segment.id, 3, 10);
-      expect(page3.contacts).toHaveLength(5);
+      expect(page3.data).toHaveLength(5);
     });
   });
 
@@ -278,7 +278,7 @@ describe('SegmentService', () => {
 
       // Initially not in segment
       let result = await SegmentService.getContacts(projectId, proSegment.id);
-      expect(result.contacts).toHaveLength(0);
+      expect(result.data).toHaveLength(0);
 
       // Update contact to pro plan
       await prisma.contact.update({
@@ -288,8 +288,8 @@ describe('SegmentService', () => {
 
       // Should now be in segment
       result = await SegmentService.getContacts(projectId, proSegment.id);
-      expect(result.contacts).toHaveLength(1);
-      expect(result.contacts[0].id).toBe(contact.id);
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].id).toBe(contact.id);
     });
 
     it('should be removed from segment when criteria no longer met', async () => {
@@ -304,7 +304,7 @@ describe('SegmentService', () => {
 
       // Initially in segment
       let result = await SegmentService.getContacts(projectId, segment.id);
-      expect(result.contacts).toHaveLength(1);
+      expect(result.data).toHaveLength(1);
 
       // Unsubscribe contact
       await prisma.contact.update({
@@ -314,7 +314,7 @@ describe('SegmentService', () => {
 
       // Should no longer be in segment
       result = await SegmentService.getContacts(projectId, segment.id);
-      expect(result.contacts).toHaveLength(0);
+      expect(result.data).toHaveLength(0);
     });
   });
 
@@ -506,8 +506,8 @@ describe('SegmentService', () => {
 
       const result = await SegmentService.getContacts(projectId, segment.id);
 
-      expect(result.contacts.map(c => c.id).sort()).toEqual([other.id].sort());
-      expect(result.contacts.map(c => c.id)).not.toContain(match.id);
+      expect(result.data.map(c => c.id).sort()).toEqual([other.id].sort());
+      expect(result.data.map(c => c.id)).not.toContain(match.id);
     });
 
     it('should support case-insensitive equals/contains for email strings', async () => {
@@ -526,7 +526,7 @@ describe('SegmentService', () => {
       });
 
       const equalsResult = await SegmentService.getContacts(projectId, equalsSegment.id);
-      const equalsIds = equalsResult.contacts.map(c => c.id);
+      const equalsIds = equalsResult.data.map(c => c.id);
       expect(equalsIds).toContain(lower.id);
       expect(equalsIds).toContain(upper.id);
 
@@ -536,7 +536,7 @@ describe('SegmentService', () => {
       });
 
       const containsResult = await SegmentService.getContacts(projectId, containsSegment.id);
-      const containsIds = containsResult.contacts.map(c => c.id);
+      const containsIds = containsResult.data.map(c => c.id);
       expect(containsIds).toContain(lower.id);
       expect(containsIds).toContain(upper.id);
     });
@@ -557,7 +557,7 @@ describe('SegmentService', () => {
       });
 
       const result = await SegmentService.getContacts(projectId, segment.id);
-      const ids = result.contacts.map(c => c.id);
+      const ids = result.data.map(c => c.id);
 
       expect(ids).toContain(unsubscribed.id);
       expect(ids).not.toContain(subscribed.id);
@@ -579,7 +579,7 @@ describe('SegmentService', () => {
       });
 
       const notContainsResult = await SegmentService.getContacts(projectId, notContainsSegment.id);
-      const notContainsIds = notContainsResult.contacts.map(c => c.id);
+      const notContainsIds = notContainsResult.data.map(c => c.id);
       expect(notContainsIds).toContain(other.id);
       expect(notContainsIds).not.toContain(acme.id);
 
@@ -589,7 +589,7 @@ describe('SegmentService', () => {
       });
 
       const notEqualsResult = await SegmentService.getContacts(projectId, notEqualsSegment.id);
-      const notEqualsIds = notEqualsResult.contacts.map(c => c.id);
+      const notEqualsIds = notEqualsResult.data.map(c => c.id);
       expect(notEqualsIds).toContain(other.id);
       expect(notEqualsIds).not.toContain(acme.id);
     });
@@ -610,7 +610,7 @@ describe('SegmentService', () => {
       });
 
       const existsResult = await SegmentService.getContacts(projectId, existsSegment.id);
-      const existsIds = new Set(existsResult.contacts.map(c => c.id));
+      const existsIds = new Set(existsResult.data.map(c => c.id));
       expect(existsIds.has(withCompany.id)).toBe(true);
       expect(existsIds.has(withNullCompany.id)).toBe(false);
 
@@ -620,7 +620,7 @@ describe('SegmentService', () => {
       });
 
       const notExistsResult = await SegmentService.getContacts(projectId, notExistsSegment.id);
-      const notExistsIds = new Set(notExistsResult.contacts.map(c => c.id));
+      const notExistsIds = new Set(notExistsResult.data.map(c => c.id));
       expect(notExistsIds.has(withCompany.id)).toBe(false);
       expect(notExistsIds.has(withNullCompany.id)).toBe(true);
     });
@@ -645,7 +645,7 @@ describe('SegmentService', () => {
       });
 
       const greaterThanResult = await SegmentService.getContacts(projectId, greaterThanSegment.id);
-      const gtIds = greaterThanResult.contacts.map(c => c.id);
+      const gtIds = greaterThanResult.data.map(c => c.id);
       expect(gtIds).toContain(mid.id);
       expect(gtIds).toContain(high.id);
       expect(gtIds).not.toContain(low.id);
@@ -656,7 +656,7 @@ describe('SegmentService', () => {
       });
 
       const lteResult = await SegmentService.getContacts(projectId, lessThanOrEqualSegment.id);
-      const lteIds = lteResult.contacts.map(c => c.id);
+      const lteIds = lteResult.data.map(c => c.id);
       expect(lteIds).toContain(low.id);
       expect(lteIds).toContain(mid.id);
       expect(lteIds).not.toContain(high.id);
@@ -674,7 +674,7 @@ describe('SegmentService', () => {
       });
 
       const gtResult = await SegmentService.getContacts(projectId, gtSegment.id);
-      const gtIds = gtResult.contacts.map(c => c.id);
+      const gtIds = gtResult.data.map(c => c.id);
       expect(gtIds).toContain(newer.id);
       expect(gtIds).not.toContain(older.id);
 
@@ -684,7 +684,7 @@ describe('SegmentService', () => {
       });
 
       const lteResult = await SegmentService.getContacts(projectId, lteSegment.id);
-      const lteIds = lteResult.contacts.map(c => c.id);
+      const lteIds = lteResult.data.map(c => c.id);
       expect(lteIds).toContain(older.id);
       expect(lteIds).toContain(newer.id);
     });
@@ -705,7 +705,7 @@ describe('SegmentService', () => {
       });
 
       const result = await SegmentService.getContacts(projectId, segment.id);
-      const ids = result.contacts.map(c => c.id);
+      const ids = result.data.map(c => c.id);
       expect(ids).toContain(recent.id);
     });
   });

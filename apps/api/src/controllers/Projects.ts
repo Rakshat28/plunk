@@ -4,7 +4,6 @@ import {MembershipSchemas, UtilitySchemas} from '@plunk/shared';
 
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
-import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth, requireEmailVerified} from '../middleware/auth.js';
 import {MembershipService} from '../services/MembershipService.js';
 import {SecurityService} from '../services/SecurityService.js';
@@ -20,7 +19,7 @@ export class Projects {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async getSetupState(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     // Verify user has access to this project
@@ -84,7 +83,7 @@ export class Projects {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async getSecurityMetrics(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     // Verify user has access to this project
@@ -107,7 +106,7 @@ export class Projects {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async getMembers(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     // Verify user has access to this project
@@ -131,7 +130,7 @@ export class Projects {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async addMember(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     // Validate params
@@ -182,7 +181,7 @@ export class Projects {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async updateMemberRole(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id, userId} = req.params;
 
     // Validate params
@@ -235,7 +234,7 @@ export class Projects {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async removeMember(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id, userId} = req.params;
 
     // Validate params

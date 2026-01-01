@@ -1,39 +1,11 @@
 import {Button} from '@plunk/ui';
+import type {Activity, CursorPaginatedResponse} from '@plunk/types';
 import {network} from '../lib/network';
 import {ActivityItem} from './ActivityItem';
 import {Loader2} from 'lucide-react';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 
-export enum ActivityType {
-  EVENT_TRIGGERED = 'event.triggered',
-  EMAIL_SENT = 'email.sent',
-  EMAIL_DELIVERED = 'email.delivered',
-  EMAIL_OPENED = 'email.opened',
-  EMAIL_CLICKED = 'email.clicked',
-  EMAIL_BOUNCED = 'email.bounced',
-  CAMPAIGN_SENT = 'campaign.sent',
-  CAMPAIGN_SCHEDULED = 'campaign.scheduled',
-  WORKFLOW_STARTED = 'workflow.started',
-  WORKFLOW_COMPLETED = 'workflow.completed',
-  WORKFLOW_EMAIL_SCHEDULED = 'workflow.email.scheduled',
-}
-
-export interface Activity {
-  id: string;
-  type: ActivityType;
-  timestamp: string;
-  contactEmail?: string;
-  contactId?: string;
-  metadata: Record<string, unknown>;
-}
-
-interface PaginatedActivities {
-  activities: Activity[];
-  nextCursor?: string;
-  hasMore: boolean;
-}
-
-interface ActivityFeedProps {
+export interface ActivityFeedProps {
   typeFilter?: string;
   dateRangeDays?: number;
   contactId?: string;
@@ -84,17 +56,17 @@ export function ActivityFeed({typeFilter, dateRangeDays = 30, contactId}: Activi
           params.set('contactId', contactId);
         }
 
-        const result = await network.fetch<PaginatedActivities>('GET', `/activity?${params.toString()}`);
+        const result = await network.fetch<CursorPaginatedResponse<Activity>>('GET', `/activity?${params.toString()}`);
 
         if (cursor) {
           // Append to existing activities
-          setActivities(prev => [...prev, ...result.activities]);
+          setActivities(prev => [...prev, ...result.data]);
         } else {
           // Replace activities
-          setActivities(result.activities);
+          setActivities(result.data);
         }
 
-        setNextCursor(result.nextCursor);
+        setNextCursor(result.cursor);
         setHasMore(result.hasMore);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load activities');

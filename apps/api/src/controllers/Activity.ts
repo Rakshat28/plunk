@@ -1,8 +1,6 @@
 import {Controller, Get, Middleware} from '@overnightjs/core';
 import type {NextFunction, Request, Response} from 'express';
 import {ActivityType} from '@plunk/types';
-
-import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth, requireEmailVerified} from '../middleware/auth.js';
 import {ActivityService} from '../services/ActivityService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
@@ -25,7 +23,7 @@ export class Activity {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getActivities(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
     const cursor = req.query.cursor as string | undefined;
     const contactId = req.query.contactId as string | undefined;
@@ -66,7 +64,7 @@ export class Activity {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getStats(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
 
@@ -86,7 +84,7 @@ export class Activity {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getRecentCount(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const minutes = Math.min(parseInt(req.query.minutes as string) || 5, 60); // Max 60 minutes
 
     const count = await ActivityService.getRecentActivityCount(auth.projectId, minutes);
@@ -118,7 +116,7 @@ export class Activity {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getUpcoming(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
     const daysAhead = Math.min(parseInt(req.query.daysAhead as string) || 30, 90);
 

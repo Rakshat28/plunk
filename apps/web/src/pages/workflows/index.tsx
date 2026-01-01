@@ -221,11 +221,7 @@ export default function WorkflowsPage() {
                             size="sm"
                             onClick={() => handleToggleEnabled(workflow.id, workflow.enabled)}
                           >
-                            {workflow.enabled ? (
-                              <PowerOff className="h-4 w-4" />
-                            ) : (
-                              <Power className="h-4 w-4" />
-                            )}
+                            {workflow.enabled ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
                           </Button>
                           <Link href={`/workflows/${workflow.id}`}>
                             <Button variant="ghost" size="sm">

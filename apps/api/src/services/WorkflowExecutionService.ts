@@ -1,14 +1,15 @@
 import type {
   Contact,
   Prisma,
+  Template,
+  Workflow,
   WorkflowExecution,
   WorkflowStep,
   WorkflowStepExecution,
-  Template,
-  Workflow,
 } from '@plunk/db';
 import {StepExecutionStatus, WorkflowExecutionStatus} from '@plunk/db';
-import {WorkflowStepConfigSchemas, renderTemplate} from '@plunk/shared';
+import {toPrismaJson} from '@plunk/types';
+import {renderTemplate, WorkflowStepConfigSchemas} from '@plunk/shared';
 import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
@@ -80,7 +81,9 @@ export class WorkflowExecutionService {
       signale.info(`[WORKFLOW] Execution ${executionId} is WAITING, resuming from delay`);
       // This is a delayed step - continue with execution
     } else if (initialExecution.status !== WorkflowExecutionStatus.RUNNING) {
-      signale.info(`[WORKFLOW] Execution ${executionId} already completed or cancelled with status ${initialExecution.status}, skipping`);
+      signale.info(
+        `[WORKFLOW] Execution ${executionId} already completed or cancelled with status ${initialExecution.status}, skipping`,
+      );
       return; // Already completed or cancelled
     }
 
@@ -241,7 +244,7 @@ export class WorkflowExecutionService {
         data: {
           status: StepExecutionStatus.COMPLETED,
           completedAt: new Date(),
-          output: result ? (result as Prisma.InputJsonValue) : undefined,
+          output: result ? toPrismaJson(result) : undefined,
         },
       });
 
@@ -440,11 +443,11 @@ export class WorkflowExecutionService {
           data: {
             status: StepExecutionStatus.COMPLETED,
             completedAt: new Date(),
-            output: {
+            output: toPrismaJson({
               eventName,
-              eventData: data ? (data as Prisma.InputJsonValue) : undefined,
+              eventData: data ? toPrismaJson(data) : undefined,
               receivedAt: new Date().toISOString(),
-            } as Prisma.InputJsonValue,
+            }),
           },
         });
 
@@ -866,7 +869,7 @@ export class WorkflowExecutionService {
     await prisma.contact.update({
       where: {id: contact.id},
       data: {
-        data: newData ? (newData as Prisma.InputJsonValue) : undefined,
+        data: newData ? toPrismaJson(newData) : undefined,
       },
     });
 

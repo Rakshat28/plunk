@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import type {Prisma} from '@plunk/db';
 import {EmailSourceType, EmailStatus, TrackingMode} from '@plunk/db';
+import {toPrismaJson} from '@plunk/types';
 import {createServiceMocks, factories, getPrismaClient} from '../../../../../test/helpers';
 
 // Mock MeterService
@@ -261,13 +261,13 @@ describe('Email Processor', () => {
           from: 'test@example.com',
           status: EmailStatus.PENDING,
           sourceType: EmailSourceType.TRANSACTIONAL,
-          attachments: [
+          attachments: toPrismaJson([
             {
               filename: 'document.pdf',
               content: 'base64encodedcontent',
               contentType: 'application/pdf',
             },
-          ] as unknown as Prisma.InputJsonValue,
+          ]),
         },
       });
 
@@ -306,9 +306,7 @@ describe('Email Processor', () => {
           from: 'test@example.com',
           status: EmailStatus.PENDING,
           sourceType: EmailSourceType.TRANSACTIONAL,
-          attachments: [
-            {filename: 'file.pdf', content: 'base64', contentType: 'application/pdf'},
-          ] as unknown as Prisma.InputJsonValue,
+          attachments: toPrismaJson([{filename: 'file.pdf', content: 'base64', contentType: 'application/pdf'}]),
         },
         include: {
           project: true,

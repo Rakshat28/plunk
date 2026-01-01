@@ -74,9 +74,7 @@ export class NotFound extends HttpException {
    * @param id Optional resource identifier to include in the message
    */
   public constructor(resource: string, id?: string) {
-    const message = id
-      ? `${resource} with ID "${id}" was not found`
-      : `That ${resource.toLowerCase()} was not found`;
+    const message = id ? `${resource} with ID "${id}" was not found` : `That ${resource.toLowerCase()} was not found`;
 
     // Map common resources to specific error codes
     const errorCodeMap: Record<string, ErrorCode> = {

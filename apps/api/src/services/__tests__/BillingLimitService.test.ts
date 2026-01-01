@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {EmailSourceType} from '@plunk/db';
 import {BillingLimitService} from '../BillingLimitService';
 import {EmailService} from '../EmailService';

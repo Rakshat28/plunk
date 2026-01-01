@@ -1,5 +1,5 @@
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, Alert} from '@plunk/ui';
-import {AlertCircle, TrendingUp, Coins} from 'lucide-react';
+import {Alert, Card, CardContent, CardDescription, CardHeader, CardTitle} from '@plunk/ui';
+import {AlertCircle, Coins, TrendingUp} from 'lucide-react';
 import {useBillingConsumption} from '../lib/hooks/useBillingConsumption';
 import {useConfig} from '../lib/hooks/useConfig';
 import {useCallback} from 'react';

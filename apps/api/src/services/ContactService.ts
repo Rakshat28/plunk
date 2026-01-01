@@ -1,6 +1,7 @@
 import {type Contact, Prisma} from '@plunk/db';
 import {isValidLanguageCode} from '@plunk/shared';
-import type {FilterCondition, FilterGroup, CursorPaginatedResponse} from '@plunk/types';
+import type {CursorPaginatedResponse, FilterCondition, FilterGroup} from '@plunk/types';
+import {toPrismaJson} from '@plunk/types';
 
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
@@ -229,10 +230,7 @@ export class ContactService {
         if (key === 'locale') {
           if (typeof value === 'string') {
             if (!isValidLanguageCode(value)) {
-              throw new HttpException(
-                400,
-                `Invalid locale code: ${value}. Must be one of: en, nl, fr, hi, de`,
-              );
+              throw new HttpException(400, `Invalid locale code: ${value}. Must be one of: en, nl, fr, hi, de`);
             }
           } else if (value !== null && value !== undefined) {
             throw new HttpException(400, 'Locale must be a string');
@@ -265,7 +263,7 @@ export class ContactService {
       const updated = await prisma.contact.update({
         where: {id: existing.id},
         data: {
-          data: Object.keys(mergedData).length > 0 ? (mergedData as Prisma.InputJsonValue) : Prisma.JsonNull,
+          data: Object.keys(mergedData).length > 0 ? toPrismaJson(mergedData) : Prisma.JsonNull,
           ...(subscribed !== undefined ? {subscribed} : {}),
         },
       });
@@ -285,7 +283,7 @@ export class ContactService {
         data: {
           projectId,
           email,
-          data: Object.keys(mergedData).length > 0 ? (mergedData as Prisma.InputJsonValue) : Prisma.JsonNull,
+          data: Object.keys(mergedData).length > 0 ? toPrismaJson(mergedData) : Prisma.JsonNull,
           subscribed: subscribed ?? true,
         },
       });
@@ -672,58 +670,10 @@ export class ContactService {
   }
 
   /**
-   * Helper: Check if a field is used in a filter condition (recursive)
-   */
-  private static fieldUsedInCondition(field: string, condition: FilterCondition | null): boolean {
-    if (!condition || typeof condition !== 'object') {
-      return false;
-    }
-
-    // Check groups in the condition
-    if (Array.isArray(condition.groups)) {
-      for (const group of condition.groups) {
-        if (this.fieldUsedInGroup(field, group)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Helper: Check if a field is used in a filter group (recursive)
-   */
-  private static fieldUsedInGroup(field: string, group: FilterGroup): boolean {
-    if (!group || typeof group !== 'object') {
-      return false;
-    }
-
-    // Check filters in the group
-    if (Array.isArray(group.filters)) {
-      for (const filter of group.filters) {
-        if (filter.field === field) {
-          return true;
-        }
-      }
-    }
-
-    // Check nested conditions
-    if (group.conditions) {
-      return this.fieldUsedInCondition(field, group.conditions);
-    }
-
-    return false;
-  }
-
-  /**
    * Bulk subscribe contacts
    * Updates multiple contacts to subscribed=true in batches
    */
-  public static async bulkSubscribe(
-    projectId: string,
-    contactIds: string[],
-  ): Promise<{updated: number}> {
+  public static async bulkSubscribe(projectId: string, contactIds: string[]): Promise<{updated: number}> {
     // Verify all contacts belong to this project
     const contacts = await prisma.contact.findMany({
       where: {
@@ -772,10 +722,7 @@ export class ContactService {
   /**
    * Bulk unsubscribe contacts
    */
-  public static async bulkUnsubscribe(
-    projectId: string,
-    contactIds: string[],
-  ): Promise<{updated: number}> {
+  public static async bulkUnsubscribe(projectId: string, contactIds: string[]): Promise<{updated: number}> {
     const contacts = await prisma.contact.findMany({
       where: {
         id: {in: contactIds},
@@ -822,10 +769,7 @@ export class ContactService {
   /**
    * Bulk delete contacts
    */
-  public static async bulkDelete(
-    projectId: string,
-    contactIds: string[],
-  ): Promise<{deleted: number}> {
+  public static async bulkDelete(projectId: string, contactIds: string[]): Promise<{deleted: number}> {
     const result = await prisma.contact.deleteMany({
       where: {
         id: {in: contactIds},
@@ -834,6 +778,51 @@ export class ContactService {
     });
 
     return {deleted: result.count};
+  }
+
+  /**
+   * Helper: Check if a field is used in a filter condition (recursive)
+   */
+  private static fieldUsedInCondition(field: string, condition: FilterCondition | null): boolean {
+    if (!condition || typeof condition !== 'object') {
+      return false;
+    }
+
+    // Check groups in the condition
+    if (Array.isArray(condition.groups)) {
+      for (const group of condition.groups) {
+        if (this.fieldUsedInGroup(field, group)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Helper: Check if a field is used in a filter group (recursive)
+   */
+  private static fieldUsedInGroup(field: string, group: FilterGroup): boolean {
+    if (!group || typeof group !== 'object') {
+      return false;
+    }
+
+    // Check filters in the group
+    if (Array.isArray(group.filters)) {
+      for (const filter of group.filters) {
+        if (filter.field === field) {
+          return true;
+        }
+      }
+    }
+
+    // Check nested conditions
+    if (group.conditions) {
+      return this.fieldUsedInCondition(field, group.conditions);
+    }
+
+    return false;
   }
 
   /**

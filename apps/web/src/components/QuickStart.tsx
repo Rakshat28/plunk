@@ -234,10 +234,7 @@ export function QuickStart({setupState, isLoading}: QuickStartProps) {
                   <p className="text-xs text-neutral-600 leading-relaxed">{step.description}</p>
                 </div>
                 <Link href={step.link} className="flex-shrink-0">
-                  <Button
-                    size="sm"
-                    variant={step.isCompleted ? 'outline' : 'default'}
-                  >
+                  <Button size="sm" variant={step.isCompleted ? 'outline' : 'default'}>
                     {step.linkText}
                   </Button>
                 </Link>

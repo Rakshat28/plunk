@@ -1,6 +1,17 @@
 import {zodResolver} from '@hookform/resolvers/zod';
 import {AuthenticationSchemas} from '@plunk/shared';
-import {Button, Card, CardContent, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Input} from '@plunk/ui';
+import {
+  Button,
+  Card,
+  CardContent,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  Input,
+} from '@plunk/ui';
 import {AnimatePresence, motion} from 'framer-motion';
 import {NextSeo} from 'next-seo';
 import Link from 'next/link';
@@ -115,12 +126,7 @@ export default function ResetPassword() {
                     </div>
                   </motion.div>
                 ) : (
-                  <motion.div
-                    key="form"
-                    initial={{opacity: 1}}
-                    exit={{opacity: 0}}
-                    className="p-8"
-                  >
+                  <motion.div key="form" initial={{opacity: 1}} exit={{opacity: 0}} className="p-8">
                     <Form {...form}>
                       <form
                         onSubmit={e => {

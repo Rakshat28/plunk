@@ -2,8 +2,6 @@ import {Controller, Middleware, Post} from '@overnightjs/core';
 import type {NextFunction, Request, Response} from 'express';
 import multer from 'multer';
 import signale from 'signale';
-
-import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth, requireEmailVerified} from '../middleware/auth.js';
 import * as S3Service from '../services/S3Service.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
@@ -36,7 +34,7 @@ export class Uploads {
   @Middleware([requireAuth, requireEmailVerified, upload.single('image')])
   @CatchAsync
   public async uploadImage(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
 
     try {
       if (!S3Service.isS3Enabled()) {

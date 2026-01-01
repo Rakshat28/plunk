@@ -178,7 +178,9 @@ export default function Unsubscribe() {
                     <path d="M5 13l4 4L19 7" />
                   </svg>
                 </motion.div>
-                <h1 className="text-2xl font-bold text-neutral-900">{translator.t('pages.unsubscribe.successTitle')}</h1>
+                <h1 className="text-2xl font-bold text-neutral-900">
+                  {translator.t('pages.unsubscribe.successTitle')}
+                </h1>
                 <p className="text-neutral-500">
                   {translator.t('pages.unsubscribe.successDescription', {email: contact?.email || ''})}
                 </p>

@@ -76,93 +76,94 @@ export default function ActivityPage() {
       <NextSeo title="Activity" />
       <DashboardLayout>
         <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Activity</h1>
-          <p className="text-neutral-500 mt-2 text-sm sm:text-base">
-            Real-time overview of events, emails, and workflow executions across your project.
-          </p>
-        </div>
+          {/* Header */}
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Activity</h1>
+            <p className="text-neutral-500 mt-2 text-sm sm:text-base">
+              Real-time overview of events, emails, and workflow executions across your project.
+            </p>
+          </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statsCards.map(stat => {
-            const Icon = stat.icon;
-            return (
-              <Card key={stat.name}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardDescription>{stat.name}</CardDescription>
-                    <div className={`h-10 w-10 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
-                      <Icon className={`h-5 w-5 ${stat.color}`} />
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {statsCards.map(stat => {
+              const Icon = stat.icon;
+              return (
+                <Card key={stat.name}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardDescription>{stat.name}</CardDescription>
+                      <div className={`h-10 w-10 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
+                        <Icon className={`h-5 w-5 ${stat.color}`} />
+                      </div>
                     </div>
-                  </div>
-                  <CardTitle className="text-2xl">{stat.value}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xs text-neutral-500">{stat.description}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
+                    <CardTitle className="text-2xl">{stat.value}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-xs text-neutral-500">{stat.description}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Filters */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Activity Types" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">All Activity Types</SelectItem>
+                      <SelectItem value="event.triggered">Events</SelectItem>
+                      <SelectItem value="email.sent,email.delivered,email.opened,email.clicked,email.bounced">
+                        Emails
+                      </SelectItem>
+                      <SelectItem value="email.sent">Emails Sent</SelectItem>
+                      <SelectItem value="email.opened">Emails Opened</SelectItem>
+                      <SelectItem value="email.clicked">Emails Clicked</SelectItem>
+                      <SelectItem value="workflow.started,workflow.completed">Workflows</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1">
+                  <Select value={dateRange} onValueChange={setDateRange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Last 30 days" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">Last 24 hours</SelectItem>
+                      <SelectItem value="7">Last 7 days</SelectItem>
+                      <SelectItem value="30">Last 30 days</SelectItem>
+                      <SelectItem value="90">Last 90 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Activity Feed */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>
+                Live feed of all activities happening across your project. Updates automatically as new activities
+                occur.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ActivityFeed
+                typeFilter={typeFilter === 'ALL' ? undefined : typeFilter}
+                dateRangeDays={parseInt(dateRange)}
+              />
+            </CardContent>
+          </Card>
         </div>
-
-        {/* Filters */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Activity Types" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">All Activity Types</SelectItem>
-                    <SelectItem value="event.triggered">Events</SelectItem>
-                    <SelectItem value="email.sent,email.delivered,email.opened,email.clicked,email.bounced">
-                      Emails
-                    </SelectItem>
-                    <SelectItem value="email.sent">Emails Sent</SelectItem>
-                    <SelectItem value="email.opened">Emails Opened</SelectItem>
-                    <SelectItem value="email.clicked">Emails Clicked</SelectItem>
-                    <SelectItem value="workflow.started,workflow.completed">Workflows</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex-1">
-                <Select value={dateRange} onValueChange={setDateRange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Last 30 days" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">Last 24 hours</SelectItem>
-                    <SelectItem value="7">Last 7 days</SelectItem>
-                    <SelectItem value="30">Last 30 days</SelectItem>
-                    <SelectItem value="90">Last 90 days</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Activity Feed */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>
-              Live feed of all activities happening across your project. Updates automatically as new activities occur.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ActivityFeed
-              typeFilter={typeFilter === 'ALL' ? undefined : typeFilter}
-              dateRangeDays={parseInt(dateRange)}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    </DashboardLayout>
+      </DashboardLayout>
     </>
   );
 }

@@ -78,11 +78,14 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
     setShowLinkInput(false);
   }, [editor]);
 
-  const setColor = useCallback((color: string) => {
-    if (!editor) return;
-    editor.chain().focus().setColor(color).run();
-    setSelectedColor(color);
-  }, [editor]);
+  const setColor = useCallback(
+    (color: string) => {
+      if (!editor) return;
+      editor.chain().focus().setColor(color).run();
+      setSelectedColor(color);
+    },
+    [editor],
+  );
 
   const applyCustomColor = useCallback(() => {
     if (customColor && /^#[0-9A-F]{6}$/i.test(customColor)) {

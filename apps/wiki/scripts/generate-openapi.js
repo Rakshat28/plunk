@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { config } from 'dotenv';
+import {fileURLToPath} from 'url';
+import {config} from 'dotenv';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
@@ -10,7 +10,7 @@ const projectRoot = path.join(__dirname, '..');
 // Load environment variables from .env file (optional - for local development)
 const envPath = path.join(projectRoot, '.env');
 if (fs.existsSync(envPath)) {
-  config({ path: envPath });
+  config({path: envPath});
 }
 
 const templatePath = path.join(projectRoot, 'openapi.json');
@@ -24,8 +24,8 @@ if (!fs.existsSync(templatePath)) {
 try {
   // In development: Replace URLs with local values
   // In Docker: Just copy the file - URLs will be replaced at container startup
-  const isDevelopment = process.env.API_URI?.includes('localhost') ||
-                        process.env.NEXT_PUBLIC_API_URI?.includes('localhost');
+  const isDevelopment =
+    process.env.API_URI?.includes('localhost') || process.env.NEXT_PUBLIC_API_URI?.includes('localhost');
 
   if (isDevelopment) {
     // Local development - replace with localhost URLs
@@ -33,14 +33,8 @@ try {
     const apiUrl = process.env.API_URI || process.env.NEXT_PUBLIC_API_URI || 'http://localhost:8080';
     const description = 'Development server';
 
-    content = content.replace(
-      /"url":\s*"https:\/\/api\.useplunk\.com"/,
-      `"url": "${apiUrl}"`
-    );
-    content = content.replace(
-      /"description":\s*"Production server"/,
-      `"description": "${description}"`
-    );
+    content = content.replace(/"url":\s*"https:\/\/api\.useplunk\.com"/, `"url": "${apiUrl}"`);
+    content = content.replace(/"description":\s*"Production server"/, `"description": "${description}"`);
 
     fs.writeFileSync(localPath, content, 'utf-8');
     console.log(`✓ Generated openapi.local.json with server URL: ${apiUrl}`);

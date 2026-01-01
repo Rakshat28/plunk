@@ -7,7 +7,7 @@ import {
   CardTitle,
   ConfirmDialog,
   Input,
-  Label
+  Label,
 } from '@plunk/ui';
 import type {Contact} from '@plunk/db';
 import {DashboardLayout} from '../../components/DashboardLayout';

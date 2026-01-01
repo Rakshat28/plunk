@@ -1,11 +1,12 @@
 import type {Contact, Email, Prisma, Project} from '@plunk/db';
 import {EmailSourceType, EmailStatus, TrackingMode} from '@plunk/db';
+import {toPrismaJson} from '@plunk/types';
 import signale from 'signale';
 
 import {DASHBOARD_URI, LANDING_URI, STRIPE_ENABLED} from '../app/constants.js';
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
-import {renderTemplate, createTranslatorSync} from '@plunk/shared';
+import {createTranslatorSync, renderTemplate} from '@plunk/shared';
 
 import {BillingLimitService} from './BillingLimitService.js';
 import {DomainService} from './DomainService.js';
@@ -91,8 +92,8 @@ export class EmailService {
         fromName: params.fromName,
         toName: params.toName,
         replyTo: params.replyTo,
-        headers: params.headers ? (params.headers as Prisma.InputJsonValue) : undefined,
-        attachments: params.attachments ? (params.attachments as unknown as Prisma.InputJsonValue) : undefined,
+        headers: params.headers ? toPrismaJson(params.headers) : undefined,
+        attachments: params.attachments ? toPrismaJson(params.attachments) : undefined,
         sourceType: EmailSourceType.TRANSACTIONAL,
         templateId: params.templateId,
         status: EmailStatus.PENDING,
@@ -152,8 +153,8 @@ export class EmailService {
         from: params.from,
         fromName: params.fromName,
         replyTo: params.replyTo,
-        headers: params.headers ? (params.headers as Prisma.InputJsonValue) : undefined,
-        attachments: params.attachments ? (params.attachments as unknown as Prisma.InputJsonValue) : undefined,
+        headers: params.headers ? toPrismaJson(params.headers) : undefined,
+        attachments: params.attachments ? toPrismaJson(params.attachments) : undefined,
         sourceType,
         templateId: params.templateId,
         campaignId: params.campaignId,
@@ -213,8 +214,8 @@ export class EmailService {
             from: params.from,
             fromName: params.fromName,
             replyTo: params.replyTo,
-            headers: params.headers ? (params.headers as Prisma.InputJsonValue) : undefined,
-            attachments: params.attachments ? (params.attachments as unknown as Prisma.InputJsonValue) : undefined,
+            headers: params.headers ? toPrismaJson(params.headers) : undefined,
+            attachments: params.attachments ? toPrismaJson(params.attachments) : undefined,
             sourceType,
             templateId: params.templateId,
             workflowExecutionId: params.workflowExecutionId,
@@ -250,8 +251,8 @@ export class EmailService {
         from: params.from,
         fromName: params.fromName,
         replyTo: params.replyTo,
-        headers: params.headers ? (params.headers as Prisma.InputJsonValue) : undefined,
-        attachments: params.attachments ? (params.attachments as unknown as Prisma.InputJsonValue) : undefined,
+        headers: params.headers ? toPrismaJson(params.headers) : undefined,
+        attachments: params.attachments ? toPrismaJson(params.attachments) : undefined,
         sourceType,
         templateId: params.templateId,
         workflowExecutionId: params.workflowExecutionId,
@@ -509,7 +510,7 @@ export class EmailService {
         contactId: email.contactId,
         emailId: email.id,
         name: `email.${eventType}`,
-        data: metadata ? (metadata as Prisma.InputJsonValue) : undefined,
+        data: metadata ? toPrismaJson(metadata) : undefined,
       },
     });
   }

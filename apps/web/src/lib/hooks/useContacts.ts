@@ -19,13 +19,10 @@ export function useContacts(options: UseContactsOptions = {}) {
     params.set('search', search);
   }
 
-  const {data, error, mutate, isLoading} = useSWR<CursorPaginatedResponse<Contact>>(
-    `/contacts?${params.toString()}`,
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 10000, // Prevent duplicate requests within 10 seconds
-    },
-  );
+  const {data, error, mutate, isLoading} = useSWR<CursorPaginatedResponse<Contact>>(`/contacts?${params.toString()}`, {
+    revalidateOnFocus: false,
+    dedupingInterval: 10000, // Prevent duplicate requests within 10 seconds
+  });
 
   return {
     contacts: data?.data || [],

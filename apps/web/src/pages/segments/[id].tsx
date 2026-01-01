@@ -10,6 +10,7 @@ import {
   Label,
 } from '@plunk/ui';
 import type {Contact, Segment} from '@plunk/db';
+import type {PaginatedResponse} from '@plunk/types';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {network} from '../../lib/network';
 import {ArrowLeft, Database, Filter, MailCheck, MailX, RefreshCw, Save, Trash2, Users} from 'lucide-react';
@@ -22,14 +23,6 @@ import type {FilterCondition} from '@plunk/types';
 import {SegmentSchemas} from '@plunk/shared';
 import {SegmentFilterBuilder} from '../../components/SegmentFilterBuilder';
 import dayjs from 'dayjs';
-
-interface PaginatedContacts {
-  contacts: Contact[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
 
 // Count total filters in a condition (recursive)
 function countFilters(condition: FilterCondition): number {
@@ -49,7 +42,7 @@ export default function SegmentDetailPage() {
 
   const {data: segment, mutate, isLoading} = useSWR<Segment>(id ? `/segments/${id}` : null);
   const [contactsPage, setContactsPage] = useState(1);
-  const {data: contactsData, isLoading: isLoadingContacts} = useSWR<PaginatedContacts>(
+  const {data: contactsData, isLoading: isLoadingContacts} = useSWR<PaginatedResponse<Contact>>(
     id ? `/segments/${id}/contacts?page=${contactsPage}&pageSize=10` : null,
   );
 
@@ -289,7 +282,7 @@ export default function SegmentDetailPage() {
                   <div className="text-center py-8">
                     <p className="text-sm text-neutral-500">Loading contacts...</p>
                   </div>
-                ) : contactsData?.contacts.length === 0 ? (
+                ) : contactsData?.data.length === 0 ? (
                   <div className="text-center py-8">
                     <Users className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
                     <p className="text-neutral-500">No contacts match this segment</p>
@@ -297,7 +290,7 @@ export default function SegmentDetailPage() {
                 ) : (
                   <>
                     <div className="space-y-2">
-                      {contactsData?.contacts.map(contact => (
+                      {contactsData?.data.map(contact => (
                         <div key={contact.id} className="flex items-center justify-between p-3 border rounded-lg">
                           <div className="flex items-center gap-2">
                             {contact.subscribed ? (

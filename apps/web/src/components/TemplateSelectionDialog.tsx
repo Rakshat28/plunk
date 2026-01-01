@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   Input,
-  Label
+  Label,
 } from '@plunk/ui';
 import type {Template} from '@plunk/db';
 import {ArrowLeft, FileText, Search} from 'lucide-react';

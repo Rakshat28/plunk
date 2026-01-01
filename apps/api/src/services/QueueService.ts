@@ -2,15 +2,15 @@ import {type Job, Queue} from 'bullmq';
 import type {RedisOptions} from 'ioredis';
 import signale from 'signale';
 import type {
-  SendEmailJobData,
-  CampaignBatchJobData,
-  ScheduledCampaignJobData,
-  WorkflowStepJobData,
-  ContactImportJobData,
-  BulkContactActionJobData,
-  SegmentCountJobData,
-  DomainVerificationJobData,
   ApiRequestCleanupJobData,
+  BulkContactActionJobData,
+  CampaignBatchJobData,
+  ContactImportJobData,
+  DomainVerificationJobData,
+  ScheduledCampaignJobData,
+  SegmentCountJobData,
+  SendEmailJobData,
+  WorkflowStepJobData,
 } from '@plunk/types';
 
 import {REDIS_URL} from '../app/constants.js';

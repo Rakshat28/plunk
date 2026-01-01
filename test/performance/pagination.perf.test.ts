@@ -31,7 +31,7 @@ describe('Performance: Cursor Pagination at Scale', () => {
       // Paginate through all contacts using cursor
       while (true) {
         const result = await ContactService.list(projectId, pageSize, cursor);
-        totalFetched += result.contacts.length;
+        totalFetched += result.data.length;
 
         if (!result.hasMore) break;
         cursor = result.cursor;
@@ -50,15 +50,15 @@ describe('Performance: Cursor Pagination at Scale', () => {
       const pageSize = 10;
 
       const page1 = await ContactService.list(projectId, pageSize);
-      expect(page1.contacts).toHaveLength(10);
+      expect(page1.data).toHaveLength(10);
       expect(page1.hasMore).toBe(true);
 
       const page2 = await ContactService.list(projectId, pageSize, page1.cursor);
-      expect(page2.contacts).toHaveLength(10);
+      expect(page2.data).toHaveLength(10);
       expect(page2.hasMore).toBe(true);
 
       const page3 = await ContactService.list(projectId, pageSize, page2.cursor);
-      expect(page3.contacts).toHaveLength(5);
+      expect(page3.data).toHaveLength(5);
       expect(page3.hasMore).toBe(false);
     });
 
@@ -81,7 +81,7 @@ describe('Performance: Cursor Pagination at Scale', () => {
       // Paginate through filtered results
       while (true) {
         const result = await ContactService.list(projectId, pageSize, cursor, 'vip');
-        totalFetched += result.contacts.length;
+        totalFetched += result.data.length;
 
         if (!result.hasMore) break;
         cursor = result.cursor;
@@ -194,7 +194,7 @@ describe('Performance: Cursor Pagination at Scale', () => {
       const result = await SegmentService.getContacts(projectId, segment.id, 1, 20);
       const duration = Date.now() - start;
 
-      expect(result.contacts.length).toBeLessThanOrEqual(20);
+      expect(result.data.length).toBeLessThanOrEqual(20);
       expect(duration).toBeLessThan(200); // < 200ms target
     }, 30000);
 
@@ -209,9 +209,9 @@ describe('Performance: Cursor Pagination at Scale', () => {
       const page10 = await SegmentService.getContacts(projectId, segment.id, 10, 100);
       const page50 = await SegmentService.getContacts(projectId, segment.id, 50, 100);
 
-      expect(page1.contacts.length).toBeLessThanOrEqual(100);
-      expect(page10.contacts.length).toBeLessThanOrEqual(100);
-      expect(page50.contacts.length).toBeLessThanOrEqual(100);
+      expect(page1.data.length).toBeLessThanOrEqual(100);
+      expect(page10.data.length).toBeLessThanOrEqual(100);
+      expect(page50.data.length).toBeLessThanOrEqual(100);
     }, 45000);
   });
 
@@ -248,7 +248,7 @@ describe('Performance: Cursor Pagination at Scale', () => {
     it('should handle empty dataset gracefully', async () => {
       const result = await ContactService.list(projectId, 20);
 
-      expect(result.contacts).toHaveLength(0);
+      expect(result.data).toHaveLength(0);
       expect(result.hasMore).toBe(false);
       expect(result.cursor).toBeUndefined();
       expect(result.total).toBe(0);
@@ -259,7 +259,7 @@ describe('Performance: Cursor Pagination at Scale', () => {
 
       const result = await ContactService.list(projectId, 20);
 
-      expect(result.contacts).toHaveLength(5);
+      expect(result.data).toHaveLength(5);
       expect(result.hasMore).toBe(false);
       expect(result.cursor).toBeUndefined();
     });
@@ -269,7 +269,7 @@ describe('Performance: Cursor Pagination at Scale', () => {
 
       const result = await ContactService.list(projectId, 20);
 
-      expect(result.contacts).toHaveLength(20);
+      expect(result.data).toHaveLength(20);
       expect(result.hasMore).toBe(false);
     });
 
@@ -278,12 +278,12 @@ describe('Performance: Cursor Pagination at Scale', () => {
 
       const page1 = await ContactService.list(projectId, 20);
 
-      expect(page1.contacts).toHaveLength(20);
+      expect(page1.data).toHaveLength(20);
       expect(page1.hasMore).toBe(true);
 
       const page2 = await ContactService.list(projectId, 20, page1.cursor);
 
-      expect(page2.contacts).toHaveLength(1);
+      expect(page2.data).toHaveLength(1);
       expect(page2.hasMore).toBe(false);
     });
 
@@ -297,7 +297,7 @@ describe('Performance: Cursor Pagination at Scale', () => {
 
         while (true) {
           const result = await ContactService.list(projectId, 100, cursor);
-          totalFetched += result.contacts.length;
+          totalFetched += result.data.length;
           if (!result.hasMore) break;
           cursor = result.cursor;
         }

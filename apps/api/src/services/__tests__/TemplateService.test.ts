@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vitest';
 import {TemplateType} from '@plunk/db';
 import {TemplateService} from '../TemplateService';
 import {factories, getPrismaClient} from '../../../../../test/helpers';
@@ -104,18 +104,18 @@ describe('TemplateService', () => {
       }
 
       const page1 = await TemplateService.list(projectId, 1, 10);
-      expect(page1.templates).toHaveLength(10);
+      expect(page1.data).toHaveLength(10);
       expect(page1.total).toBe(25);
       expect(page1.page).toBe(1);
       expect(page1.pageSize).toBe(10);
       expect(page1.totalPages).toBe(3);
 
       const page2 = await TemplateService.list(projectId, 2, 10);
-      expect(page2.templates).toHaveLength(10);
+      expect(page2.data).toHaveLength(10);
       expect(page2.page).toBe(2);
 
       const page3 = await TemplateService.list(projectId, 3, 10);
-      expect(page3.templates).toHaveLength(5);
+      expect(page3.data).toHaveLength(5);
       expect(page3.page).toBe(3);
     });
 
@@ -127,7 +127,7 @@ describe('TemplateService', () => {
       const result = await TemplateService.list(projectId, 1, 20, 'welcome');
 
       expect(result.total).toBe(2);
-      expect(result.templates.every(t => t.name.toLowerCase().includes('welcome'))).toBe(true);
+      expect(result.data.every(t => t.name.toLowerCase().includes('welcome'))).toBe(true);
     });
 
     it('should filter templates by search query (description)', async () => {
@@ -165,7 +165,7 @@ describe('TemplateService', () => {
       const result = await TemplateService.list(projectId, 1, 20, 'new');
 
       expect(result.total).toBe(2);
-      expect(result.templates.map(t => t.description)).toEqual(
+      expect(result.data.map(t => t.description)).toEqual(
         expect.arrayContaining([expect.stringContaining('new')]),
       );
     });
@@ -196,11 +196,11 @@ describe('TemplateService', () => {
 
       const marketingResult = await TemplateService.list(projectId, 1, 20, undefined, TemplateType.MARKETING);
       expect(marketingResult.total).toBe(2);
-      expect(marketingResult.templates.every(t => t.type === TemplateType.MARKETING)).toBe(true);
+      expect(marketingResult.data.every(t => t.type === TemplateType.MARKETING)).toBe(true);
 
       const transactionalResult = await TemplateService.list(projectId, 1, 20, undefined, TemplateType.TRANSACTIONAL);
       expect(transactionalResult.total).toBe(1);
-      expect(transactionalResult.templates[0].type).toBe(TemplateType.TRANSACTIONAL);
+      expect(transactionalResult.data[0].type).toBe(TemplateType.TRANSACTIONAL);
     });
 
     it('should combine search and type filters', async () => {
@@ -223,7 +223,7 @@ describe('TemplateService', () => {
       const result = await TemplateService.list(projectId, 1, 20, 'welcome', TemplateType.MARKETING);
 
       expect(result.total).toBe(1);
-      expect(result.templates[0].name).toBe('Welcome Email');
+      expect(result.data[0].name).toBe('Welcome Email');
     });
 
     it('should return templates ordered by creation date (newest first)', async () => {
@@ -236,9 +236,9 @@ describe('TemplateService', () => {
 
       const result = await TemplateService.list(projectId, 1, 20);
 
-      expect(result.templates[0].id).toBe(template3.id); // Newest
-      expect(result.templates[1].id).toBe(template2.id);
-      expect(result.templates[2].id).toBe(template1.id); // Oldest
+      expect(result.data[0].id).toBe(template3.id); // Newest
+      expect(result.data[1].id).toBe(template2.id);
+      expect(result.data[2].id).toBe(template1.id); // Oldest
     });
 
     it('should only return templates for the specified project', async () => {

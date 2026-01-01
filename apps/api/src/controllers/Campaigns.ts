@@ -4,7 +4,6 @@ import {CampaignSchemas, UtilitySchemas} from '@plunk/shared';
 import type {NextFunction, Request, Response} from 'express';
 
 import {HttpException} from '../exceptions/index.js';
-import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth, requireEmailVerified} from '../middleware/auth.js';
 import {CampaignService} from '../services/CampaignService.js';
 import {DomainService} from '../services/DomainService.js';
@@ -20,7 +19,7 @@ export class Campaigns {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async create(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {name, description, subject, body, from, fromName, replyTo, audienceType, audienceCondition, segmentId} =
       CampaignSchemas.create.parse(req.body);
 
@@ -63,7 +62,7 @@ export class Campaigns {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async list(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const status = req.query.status as CampaignStatus | undefined;
     const page = parseInt(req.query.page as string) || 1;
     const pageSize = parseInt(req.query.pageSize as string) || 20;
@@ -96,7 +95,7 @@ export class Campaigns {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async get(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     const campaign = await CampaignService.get(auth.projectId, id!);
@@ -115,7 +114,7 @@ export class Campaigns {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async update(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
     const {name, description, subject, body, from, fromName, replyTo, audienceType, audienceCondition, segmentId} =
       req.body;
@@ -161,7 +160,7 @@ export class Campaigns {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async delete(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     await CampaignService.delete(auth.projectId, id!);
@@ -180,7 +179,7 @@ export class Campaigns {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async duplicate(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     const campaign = await CampaignService.duplicate(auth.projectId, id!);
@@ -200,7 +199,7 @@ export class Campaigns {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async send(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
     const scheduledFor = req.body?.scheduledFor;
 
@@ -231,7 +230,7 @@ export class Campaigns {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async cancel(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     const campaign = await CampaignService.cancel(auth.projectId, id!);
@@ -251,7 +250,7 @@ export class Campaigns {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async stats(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
 
     const stats = await CampaignService.getStats(auth.projectId, id!);
@@ -270,7 +269,7 @@ export class Campaigns {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   private async sendTest(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
     const {email} = CampaignSchemas.sendTest.parse(req.body);
 

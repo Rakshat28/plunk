@@ -17,6 +17,7 @@ import {
   Switch,
 } from '@plunk/ui';
 import type {Contact} from '@plunk/db';
+import type {CursorPaginatedResponse} from '@plunk/types';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {KeyValueEditor} from '../../components/KeyValueEditor';
 import {network} from '../../lib/network';
@@ -44,13 +45,6 @@ import useSWR from 'swr';
 import {ContactSchemas} from '@plunk/shared';
 import dayjs from 'dayjs';
 
-interface PaginatedContacts {
-  contacts: Contact[];
-  total: number;
-  cursor?: string;
-  hasMore: boolean;
-}
-
 export default function ContactsPage() {
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [cursorHistory, setCursorHistory] = useState<(string | undefined)[]>([undefined]);
@@ -68,7 +62,7 @@ export default function ContactsPage() {
   const [bulkOperation, setBulkOperation] = useState<'subscribe' | 'unsubscribe' | 'delete' | null>(null);
   const pageSize = 50;
 
-  const {data, mutate, isLoading} = useSWR<PaginatedContacts>(
+  const {data, mutate, isLoading} = useSWR<CursorPaginatedResponse<Contact>>(
     `/contacts?limit=${pageSize}${cursor ? `&cursor=${cursor}` : ''}${search ? `&search=${search}` : ''}`,
     {revalidateOnFocus: false},
   );
@@ -76,9 +70,9 @@ export default function ContactsPage() {
   // Update contacts when data changes
   useEffect(() => {
     if (data) {
-      setContacts(data.contacts);
+      setContacts(data.data);
       if (!cursor) {
-        setTotalCount(data.total || data.contacts.length);
+        setTotalCount(data.total || data.data.length);
       }
     }
   }, [data, cursor]);

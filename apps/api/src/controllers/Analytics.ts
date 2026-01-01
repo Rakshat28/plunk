@@ -1,7 +1,5 @@
 import {Controller, Get, Middleware} from '@overnightjs/core';
 import type {NextFunction, Request, Response} from 'express';
-
-import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth, requireEmailVerified} from '../middleware/auth.js';
 import {AnalyticsService} from '../services/AnalyticsService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
@@ -22,7 +20,7 @@ export class Analytics {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getTimeSeries(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
 
@@ -44,7 +42,7 @@ export class Analytics {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getTopCampaigns(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
     const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
@@ -68,7 +66,7 @@ export class Analytics {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getCampaignStats(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
 
@@ -92,7 +90,7 @@ export class Analytics {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getTopEvents(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const limit = Math.min(parseInt(req.query.limit as string) || 5, 20);
     const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;

@@ -1,6 +1,7 @@
-import type {Workflow, WorkflowExecution, WorkflowStep, WorkflowStepExecution, WorkflowTransition} from '@plunk/db';
+import type {Workflow, WorkflowExecution, WorkflowStep, WorkflowTransition} from '@plunk/db';
 import {Prisma, WorkflowExecutionStatus} from '@plunk/db';
-import type {PaginatedResponse, WorkflowWithDetails, WorkflowExecutionWithDetails} from '@plunk/types';
+import type {PaginatedResponse, WorkflowExecutionWithDetails, WorkflowWithDetails} from '@plunk/types';
+import {toPrismaJson} from '@plunk/types';
 import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
@@ -15,7 +16,12 @@ export class WorkflowService {
   /**
    * Get all workflows for a project with pagination
    */
-  public static async list(projectId: string, page = 1, pageSize = 20, search?: string): Promise<PaginatedResponse<Workflow>> {
+  public static async list(
+    projectId: string,
+    page = 1,
+    pageSize = 20,
+    search?: string,
+  ): Promise<PaginatedResponse<Workflow>> {
     const skip = (page - 1) * pageSize;
 
     const where: Prisma.WorkflowWhereInput = {
@@ -299,8 +305,8 @@ export class WorkflowService {
         workflowId,
         type: data.type,
         name: data.name,
-        position: data.position as Prisma.InputJsonValue,
-        config: data.config as Prisma.InputJsonValue,
+        position: toPrismaJson(data.position),
+        config: toPrismaJson(data.config),
         templateId: data.templateId,
       },
     });
@@ -381,8 +387,8 @@ export class WorkflowService {
     const updateData: Prisma.WorkflowStepUpdateInput = {};
 
     if (data.name !== undefined) updateData.name = data.name;
-    if (data.position !== undefined) updateData.position = data.position as Prisma.InputJsonValue;
-    if (data.config !== undefined) updateData.config = data.config as Prisma.InputJsonValue;
+    if (data.position !== undefined) updateData.position = toPrismaJson(data.position);
+    if (data.config !== undefined) updateData.config = toPrismaJson(data.config);
     if (data.templateId !== undefined) {
       if (data.templateId === null) {
         updateData.template = {disconnect: true};
@@ -574,7 +580,7 @@ export class WorkflowService {
             fromStepId: data.fromStepId,
             condition: {
               path: ['branch'],
-              equals: conditionObj.branch as Prisma.InputJsonValue,
+              equals: toPrismaJson(conditionObj.branch),
             },
           },
         });

@@ -167,4 +167,3 @@ export function convertToCompleteEmailHtml(html: string): string {
   const fragment = convertToEmailHtml(html);
   return wrapEmailHtml(fragment);
 }
-

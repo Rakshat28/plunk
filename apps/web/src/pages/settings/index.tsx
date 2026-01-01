@@ -38,16 +38,7 @@ import {
 } from '@plunk/ui';
 import {AnimatePresence, motion} from 'framer-motion';
 import {NextSeo} from 'next-seo';
-import {
-  AlertTriangle,
-  CreditCard,
-  Database,
-  Globe,
-  Mail,
-  Settings as SettingsIcon,
-  Shield,
-  Users,
-} from 'lucide-react';
+import {AlertTriangle, CreditCard, Database, Globe, Mail, Settings as SettingsIcon, Shield, Users} from 'lucide-react';
 import type {z} from 'zod';
 import {useRouter} from 'next/router';
 import {DashboardLayout} from '../../components/DashboardLayout';
@@ -480,7 +471,7 @@ export default function Settings() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {SUPPORTED_LANGUAGES.map((lang) => (
+                                {SUPPORTED_LANGUAGES.map(lang => (
                                   <SelectItem key={lang.code} value={lang.code}>
                                     <div className="flex items-center gap-2">
                                       <span>{lang.flag}</span>
@@ -712,7 +703,10 @@ export default function Settings() {
 
                           <div className="flex flex-col gap-2">
                             <div className="flex justify-start">
-                              <Button onClick={() => handleStartSubscription(selectedCurrency)} disabled={isLoadingBilling}>
+                              <Button
+                                onClick={() => handleStartSubscription(selectedCurrency)}
+                                disabled={isLoadingBilling}
+                              >
                                 {isLoadingBilling ? 'Loading...' : 'Start Subscription'}
                               </Button>
                             </div>

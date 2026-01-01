@@ -26,7 +26,7 @@ import {
   SelectItemWithDescription,
   SelectTrigger,
   SelectValue,
-  Switch
+  Switch,
 } from '@plunk/ui';
 import type {Template, Workflow, WorkflowExecution, WorkflowStep, WorkflowTransition} from '@plunk/db';
 import {DashboardLayout} from '../../components/DashboardLayout';
@@ -47,7 +47,7 @@ import {
   Trash2,
   UserCog,
   Users,
-  Webhook
+  Webhook,
 } from 'lucide-react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';

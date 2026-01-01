@@ -1,8 +1,6 @@
 import {Controller, Middleware, Post} from '@overnightjs/core';
 import {ActionSchemas} from '@plunk/shared';
 import type {NextFunction, Request, Response} from 'express';
-
-import type {AuthResponse} from '../middleware/auth.js';
 import {requirePublicKey, requireSecretKey} from '../middleware/auth.js';
 import {prisma} from '../database/prisma.js';
 import {ContactService} from '../services/ContactService.js';
@@ -52,7 +50,7 @@ export class Actions {
   @Middleware([requirePublicKey])
   @CatchAsync
   public async track(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
 
     // Zod validation - errors automatically handled by global error handler
     const {event, email, subscribed, data} = ActionSchemas.track.parse(req.body);
@@ -173,7 +171,7 @@ export class Actions {
   @Middleware([requireSecretKey])
   @CatchAsync
   public async send(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
 
     // Zod validation - errors automatically handled by global error handler
     const {to, subject, body, subscribed, name, from, reply, headers, data, template, attachments} =

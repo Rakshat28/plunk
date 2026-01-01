@@ -2,8 +2,6 @@ import {Controller, Delete, Get, Middleware, Patch, Post} from '@overnightjs/cor
 import type {NextFunction, Request, Response} from 'express';
 import multer from 'multer';
 import signale from 'signale';
-
-import type {AuthResponse} from '../middleware/auth.js';
 import {requireAuth, requireEmailVerified} from '../middleware/auth.js';
 import {ContactService} from '../services/ContactService.js';
 import {QueueService} from '../services/QueueService.js';
@@ -35,7 +33,7 @@ export class Contacts {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async list(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
     const cursor = req.query.cursor as string | undefined;
     const search = req.query.search as string | undefined;
@@ -54,7 +52,7 @@ export class Contacts {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getAvailableFields(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
 
     try {
       const fieldsWithTypes = await ContactService.getAvailableFields(auth.projectId!);
@@ -80,7 +78,7 @@ export class Contacts {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getFieldValues(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const field = req.params.field;
     const limit = Math.min(parseInt(req.query.limit as string) || 100, 200);
 
@@ -113,7 +111,7 @@ export class Contacts {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async get(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const contactId = req.params.id;
 
     if (!contactId) {
@@ -133,7 +131,7 @@ export class Contacts {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async create(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {email, data, subscribed} = req.body;
 
     if (!email) {
@@ -163,7 +161,7 @@ export class Contacts {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async update(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const contactId = req.params.id;
     const {email, data, subscribed} = req.body;
 
@@ -184,7 +182,7 @@ export class Contacts {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async delete(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const contactId = req.params.id;
 
     if (!contactId) {
@@ -284,7 +282,7 @@ export class Contacts {
   @Middleware([requireAuth, upload.single('file')])
   @CatchAsync
   public async importCsv(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
 
     if (!req.file) {
       return res.status(400).json({error: 'CSV file is required'});
@@ -349,7 +347,7 @@ export class Contacts {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getFieldUsage(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const field = req.params.field;
 
     if (!field) {
@@ -376,7 +374,7 @@ export class Contacts {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async deleteField(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const field = req.params.field;
 
     if (!field) {
@@ -402,7 +400,7 @@ export class Contacts {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async bulkSubscribe(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {contactIds} = req.body;
 
     if (!Array.isArray(contactIds) || contactIds.length === 0) {
@@ -437,7 +435,7 @@ export class Contacts {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async bulkUnsubscribe(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {contactIds} = req.body;
 
     if (!Array.isArray(contactIds) || contactIds.length === 0) {
@@ -471,7 +469,7 @@ export class Contacts {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async bulkDelete(req: Request, res: Response, _next: NextFunction) {
-    const auth = res.locals.auth as AuthResponse;
+    const auth = res.locals.auth;
     const {contactIds} = req.body;
 
     if (!Array.isArray(contactIds) || contactIds.length === 0) {
