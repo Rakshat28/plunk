@@ -9,7 +9,6 @@ import {HttpException} from '../exceptions/index.js';
 import {EventService} from './EventService.js';
 import {NtfyService} from './NtfyService.js';
 
-// Re-export types for use in other services
 export type {FilterCondition, FilterGroup, SegmentFilter} from '@plunk/types';
 
 /**

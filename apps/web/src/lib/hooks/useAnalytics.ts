@@ -50,8 +50,7 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): AnalyticsData {
   }, [days, options.startDate, options.endDate]);
   /* eslint-enable react-hooks/purity */
 
-  // Fetch activity stats
-  const {
+    const {
     data: stats,
     error: statsError,
     isLoading: statsLoading,
@@ -61,8 +60,7 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): AnalyticsData {
     dedupingInterval: 10000, // Prevent duplicate requests within 10 seconds
   });
 
-  // Fetch time series data (if endpoint exists)
-  const {
+    const {
     data: timeSeries,
     error: timeSeriesError,
     isLoading: timeSeriesLoading,

@@ -46,7 +46,6 @@ export async function initializeBucket(): Promise<void> {
   let bucketExists = true;
 
   try {
-    // Check if bucket exists
     await s3Client.send(
       new HeadBucketCommand({
         Bucket: S3_BUCKET,

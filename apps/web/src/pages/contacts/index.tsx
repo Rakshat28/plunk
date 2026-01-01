@@ -67,8 +67,7 @@ export default function ContactsPage() {
     {revalidateOnFocus: false},
   );
 
-  // Update contacts when data changes
-  useEffect(() => {
+    useEffect(() => {
     if (data) {
       setContacts(data.data);
       if (!cursor) {

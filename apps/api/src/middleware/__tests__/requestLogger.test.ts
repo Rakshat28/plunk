@@ -16,7 +16,6 @@ describe('Request Logger Middleware', () => {
     projectId = project.id;
     userId = user.id;
 
-    // Mock request object
     req = {
       method: 'POST',
       path: '/v1/send',
@@ -334,12 +333,7 @@ describe('Request Logger Middleware', () => {
       await res.json!({success: true});
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // TODO: Add assertion to verify request was NOT logged when disabled
-      // const loggedRequest = await prisma.apiRequest.findUnique({
-      //   where: {id: 'test-request-id-123'},
-      // });
-      // expect(loggedRequest).toBeNull();
-
+ 
       // Restore original value
       if (originalEnv !== undefined) {
         process.env.REQUEST_LOGGING = originalEnv;

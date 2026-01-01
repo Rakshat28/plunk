@@ -16,6 +16,8 @@ export default function VerifyEmail() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isResending, setIsResending] = useState(false);
   const [resendMessage, setResendMessage] = useState<string>('');
+  const [cooldownExpiry, setCooldownExpiry] = useState<number | null>(null);
+  const [remainingSeconds, setRemainingSeconds] = useState(0);
   const processedToken = useRef<string | undefined>(undefined);
 
   useEffect(() => {
@@ -67,6 +69,45 @@ export default function VerifyEmail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.isReady, token]);
 
+  // Initialize cooldown from localStorage on mount
+  useEffect(() => {
+    const storedExpiry = localStorage.getItem('plunk:email-verification-cooldown');
+    if (storedExpiry) {
+      const expiryTime = parseInt(storedExpiry, 10);
+      // Validate: not NaN, in the future, and within reasonable range (< 1 hour from now)
+      if (!isNaN(expiryTime) && expiryTime > Date.now() && expiryTime < Date.now() + 3600000) {
+        setCooldownExpiry(expiryTime);
+      } else {
+        // Clean up invalid/expired cooldown
+        localStorage.removeItem('plunk:email-verification-cooldown');
+      }
+    }
+  }, []);
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (!cooldownExpiry) {
+      setRemainingSeconds(0);
+      return;
+    }
+
+    // Update immediately
+    const updateRemaining = () => {
+      const remaining = Math.max(0, Math.ceil((cooldownExpiry - Date.now()) / 1000));
+      setRemainingSeconds(remaining);
+
+      if (remaining === 0) {
+        setCooldownExpiry(null);
+        localStorage.removeItem('plunk:email-verification-cooldown');
+      }
+    };
+
+    updateRemaining();
+    const interval = setInterval(updateRemaining, 1000);
+
+    return () => clearInterval(interval);
+  }, [cooldownExpiry]);
+
   async function handleResend() {
     setIsResending(true);
     setResendMessage('');
@@ -75,11 +116,20 @@ export default function VerifyEmail() {
 
       if (response.success) {
         setResendMessage('Verification email sent! Please check your inbox.');
+        // Set 60-second cooldown
+        const expiryTime = Date.now() + 60000;
+        setCooldownExpiry(expiryTime);
+        localStorage.setItem('plunk:email-verification-cooldown', expiryTime.toString());
       } else {
         setResendMessage('Failed to send verification email. Please try again.');
       }
-    } catch {
-      setResendMessage('Failed to send verification email. Please try again.');
+    } catch (error) {
+      // Show error message but still apply cooldown to prevent spam
+      setResendMessage(error instanceof Error ? error.message : 'Failed to send verification email. Please try again.');
+      // Apply cooldown even on error to prevent retry spam
+      const expiryTime = Date.now() + 60000;
+      setCooldownExpiry(expiryTime);
+      localStorage.setItem('plunk:email-verification-cooldown', expiryTime.toString());
     } finally {
       setIsResending(false);
     }
@@ -119,8 +169,8 @@ export default function VerifyEmail() {
                       </p>
 
                       <div className="flex flex-col gap-3 w-full mt-4">
-                        <Button onClick={handleResend} disabled={isResending} className="w-full">
-                          {isResending ? 'Sending...' : 'Resend verification email'}
+                        <Button onClick={handleResend} disabled={isResending || cooldownExpiry !== null} className="w-full">
+                          {isResending ? 'Sending...' : cooldownExpiry !== null ? `Resend in ${remainingSeconds}s` : 'Resend verification email'}
                         </Button>
 
                         {resendMessage && (
@@ -205,8 +255,8 @@ export default function VerifyEmail() {
                       <p className="text-neutral-600">{errorMessage}</p>
 
                       <div className="flex flex-col gap-3 w-full mt-4">
-                        <Button onClick={handleResend} disabled={isResending} className="w-full">
-                          {isResending ? 'Sending...' : 'Resend verification email'}
+                        <Button onClick={handleResend} disabled={isResending || cooldownExpiry !== null} className="w-full">
+                          {isResending ? 'Sending...' : cooldownExpiry !== null ? `Resend in ${remainingSeconds}s` : 'Resend verification email'}
                         </Button>
 
                         {resendMessage && (

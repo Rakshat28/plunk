@@ -46,8 +46,7 @@ export function useContactFields() {
     },
   );
 
-  // Extract just the field names as strings
-  const fieldNames = (data?.fields || []).map(f => f.field);
+    const fieldNames = (data?.fields || []).map(f => f.field);
 
   return {
     fields: fieldNames,

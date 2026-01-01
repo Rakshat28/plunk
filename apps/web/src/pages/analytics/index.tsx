@@ -72,8 +72,7 @@ export default function AnalyticsPage() {
     return {startDate: start.toISOString(), endDate: end.toISOString()};
   }, [days]);
 
-  // Fetch campaign stats from API
-  const {data: campaignStats} = useSWR<{
+    const {data: campaignStats} = useSWR<{
     total: number;
     active: number;
     completed: number;
@@ -85,8 +84,7 @@ export default function AnalyticsPage() {
     dedupingInterval: 10000,
   });
 
-  // Fetch top events from API
-  const {data: topEvents} = useSWR<
+    const {data: topEvents} = useSWR<
     {
       name: string;
       count: number;
@@ -98,8 +96,7 @@ export default function AnalyticsPage() {
     dedupingInterval: 10000,
   });
 
-  // Fetch top campaigns from API
-  const {data: topCampaigns} = useSWR<
+    const {data: topCampaigns} = useSWR<
     {
       id: string;
       subject: string;
@@ -115,8 +112,7 @@ export default function AnalyticsPage() {
     dedupingInterval: 10000,
   });
 
-  // Process time series data for charts
-  const chartData = useMemo(() => {
+    const chartData = useMemo(() => {
     if (timeSeries && timeSeries.length > 0) {
       return timeSeries.map(point => ({
         date: new Date(point.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}),
@@ -131,13 +127,11 @@ export default function AnalyticsPage() {
     return [];
   }, [timeSeries]);
 
-  // Check if we have any real data
-  const hasData = useMemo(() => {
+    const hasData = useMemo(() => {
     return chartData.some(point => point.emails > 0 || point.opens > 0 || point.clicks > 0);
   }, [chartData]);
 
-  // Calculate cumulative totals
-  const cumulativeTotals = useMemo(() => {
+    const cumulativeTotals = useMemo(() => {
     return chartData.reduce(
       (acc, day) => ({
         emails: acc.emails + (day.emails || 0),

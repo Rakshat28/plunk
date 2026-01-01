@@ -1556,8 +1556,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
   const [name, setName] = useState(step.name);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Get icon and colors for this step type
-  const Icon = STEP_TYPE_ICONS[step.type as keyof typeof STEP_TYPE_ICONS] || GitBranch;
+    const Icon = STEP_TYPE_ICONS[step.type as keyof typeof STEP_TYPE_ICONS] || GitBranch;
   const color = STEP_TYPE_COLORS[step.type as keyof typeof STEP_TYPE_COLORS] || '#6b7280';
   const bgColor = STEP_TYPE_BG[step.type as keyof typeof STEP_TYPE_BG] || '#f3f4f6';
 
