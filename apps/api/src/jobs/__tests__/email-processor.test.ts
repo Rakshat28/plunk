@@ -29,12 +29,6 @@ describe('Email Processor', () => {
         status: EmailStatus.PENDING,
       });
 
-      // Mock the email processor logic
-      // In a real implementation, you would:
-      // 1. Create job tester
-      // 2. Mock SES service
-      // 3. Process the job
-      // 4. Verify status changes
 
       // Simulate processing
       await prisma.email.update({

@@ -27,8 +27,7 @@ export function ActivityFeed({typeFilter, dateRangeDays = 30, contactId}: Activi
     return date.toISOString();
   }, [dateRangeDays]);
 
-  // Fetch activities
-  const fetchActivities = useCallback(
+    const fetchActivities = useCallback(
     async (cursor?: string) => {
       try {
         if (cursor) {

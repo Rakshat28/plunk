@@ -157,3 +157,9 @@ Required for builds and deployment (see turbo.json and .env.example):
   runtime
 - **Frontend Variables**: Next.js apps use `NEXT_PUBLIC_*` prefixed variables that are embedded at build time for
   client-side access
+
+## Plugins
+There are two plugins installed for you to use.
+
+- frontend-design: This plugin can help you to create polished user interfaces. Use it when working on design-related tasks.
+- superpowers: This plugin can help you with advanced tasks such as refactorings, new features or architectural changes. Use it when you need extra assistance beyond basic coding.

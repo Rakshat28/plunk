@@ -20,7 +20,6 @@ import {EmailService} from './EmailService.js';
 import {NtfyService} from './NtfyService.js';
 import {QueueService} from './QueueService.js';
 
-// Type aliases for workflow execution context
 type StepConfig = Prisma.JsonValue;
 type StepResult = Record<string, unknown>;
 type WorkflowExecutionWithRelations = WorkflowExecution & {contact: Contact; workflow: Workflow};

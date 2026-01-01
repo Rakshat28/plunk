@@ -14,7 +14,6 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024, // 5MB max file size
   },
   fileFilter: (_req, file, cb) => {
-    // Only accept CSV files
     if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
       cb(null, true);
     } else {

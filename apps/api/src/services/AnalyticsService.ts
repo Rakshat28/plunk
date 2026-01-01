@@ -68,8 +68,6 @@ export class AnalyticsService {
       return JSON.parse(cached);
     }
 
-    // Raw SQL query for efficient daily aggregation
-    // Using raw SQL because Prisma's groupBy is less efficient for date truncation
     const result = await prisma.$queryRaw<
       {
         date: Date;

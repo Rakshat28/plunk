@@ -57,8 +57,7 @@ export default function SegmentDetailPage() {
   const [isComputing, setIsComputing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  // Initialize form when segment loads
-  useEffect(() => {
+    useEffect(() => {
     if (segment) {
       setName(segment.name);
       setDescription(segment.description || '');

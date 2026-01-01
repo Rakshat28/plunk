@@ -33,8 +33,7 @@ export default function Manage() {
         const data = await network.fetch<ContactInfo>('GET', `/contacts/public/${id}`);
         setContact(data);
 
-        // Load translations for the project's language
-        const t = await createTranslator(data.language || 'en');
+                const t = await createTranslator(data.language || 'en');
         setTranslator(t);
 
         setError(null);

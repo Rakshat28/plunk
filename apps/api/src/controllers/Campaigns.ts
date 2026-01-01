@@ -23,7 +23,6 @@ export class Campaigns {
     const {name, description, subject, body, from, fromName, replyTo, audienceType, audienceCondition, segmentId} =
       CampaignSchemas.create.parse(req.body);
 
-    // Validate audience-specific fields
     if (audienceType === CampaignAudienceType.SEGMENT && !segmentId) {
       throw new HttpException(400, 'Segment ID is required for SEGMENT audience type');
     }
