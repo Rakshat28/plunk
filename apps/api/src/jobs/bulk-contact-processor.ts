@@ -3,11 +3,12 @@
  * Processes bulk subscribe, unsubscribe, and delete operations
  */
 
+import type {BulkContactActionJobData} from '@plunk/types';
 import {type Job, Worker} from 'bullmq';
 import signale from 'signale';
 
 import {ContactService} from '../services/ContactService.js';
-import {type BulkContactActionJobData, bulkContactQueue} from '../services/QueueService.js';
+import {bulkContactQueue} from '../services/QueueService.js';
 
 const BATCH_SIZE = 100; // Process contacts in batches of 100
 

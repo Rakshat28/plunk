@@ -1,29 +1,9 @@
+import type {ActivityStats, CursorPaginatedResponse, PaginatedResponse} from '@plunk/types';
 import useSWR from 'swr';
 
-export interface ActivityStats {
-  totalEvents: number;
-  totalEmailsSent: number;
-  totalEmailsOpened: number;
-  totalEmailsClicked: number;
-  totalWorkflowsStarted: number;
-  openRate: number;
-  clickRate: number;
-}
-
-export interface ContactsResponse {
-  contacts: unknown[];
-  total: number;
-  cursor?: string;
-  hasMore: boolean;
-}
-
-export interface CampaignsResponse {
-  campaigns: unknown[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
+// Specific response types for dashboard (using unknown[] since we only need counts)
+type ContactsResponse = CursorPaginatedResponse<unknown>;
+type CampaignsResponse = PaginatedResponse<unknown>;
 
 export interface DashboardStats {
   totalContacts: number;
@@ -46,7 +26,7 @@ export function useDashboardStats(): DashboardStats {
   const {data: contactsData, error: contactsError, isLoading: isLoadingContacts} = useSWR<ContactsResponse>('/contacts?limit=1');
 
   // Fetch campaigns (only need the total count)
-  const {data: campaignsData, error: campaignsError, isLoading: isLoadingCampaigns} = useSWR<CampaignsResponse>('/campaigns?pageSize=1');
+  const {data: campaignsData, error: campaignsError, isLoading: isLoadingCampaigns} = useSWR<CampaignsResponse>('/campaigns?page=1&limit=1');
 
   // Still loading if ANY of the requests are still in progress
   const isLoading = isLoadingActivity || isLoadingContacts || isLoadingCampaigns;

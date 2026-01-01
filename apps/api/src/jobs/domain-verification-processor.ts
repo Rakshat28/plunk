@@ -3,10 +3,11 @@
  * Processes domain verification jobs from the BullMQ queue
  */
 
+import type {DomainVerificationJobData} from '@plunk/types';
 import {type Job, Worker} from 'bullmq';
 import signale from 'signale';
 
-import {type DomainVerificationJobData, domainVerificationQueue} from '../services/QueueService.js';
+import {domainVerificationQueue} from '../services/QueueService.js';
 
 import {checkDomainVerifications} from './domain-verification.js';
 

@@ -3,11 +3,12 @@
  * Processes campaign batches (queues emails for each contact in the batch)
  */
 
+import type {CampaignBatchJobData} from '@plunk/types';
 import {type Job, Worker} from 'bullmq';
 import signale from 'signale';
 
 import {CampaignService} from '../services/CampaignService.js';
-import {type CampaignBatchJobData, campaignQueue} from '../services/QueueService.js';
+import {campaignQueue} from '../services/QueueService.js';
 
 export function createCampaignWorker() {
   const worker = new Worker<CampaignBatchJobData>(

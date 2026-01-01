@@ -1,18 +1,7 @@
 import {promises as dns} from 'dns';
 import {run} from '@zootools/email-spell-checker';
+import type {EmailVerificationResult} from '@plunk/types';
 import {redis} from '../database/redis.js';
-
-export interface EmailVerificationResult {
-  email: string;
-  valid: boolean;
-  isDisposable: boolean;
-  isTypo: boolean;
-  isPlusAddressed: boolean;
-  domainExists: boolean;
-  hasMxRecords: boolean;
-  suggestedEmail?: string;
-  reasons: string[];
-}
 
 const DISPOSABLE_DOMAINS_URL =
   'https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/main/disposable_email_blocklist.conf';

@@ -1,17 +1,10 @@
 import {type Contact, Prisma} from '@plunk/db';
 import {isValidLanguageCode} from '@plunk/shared';
-import type {FilterCondition, FilterGroup} from '@plunk/types';
+import type {FilterCondition, FilterGroup, CursorPaginatedResponse} from '@plunk/types';
 
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
 import {EventService} from './EventService.js';
-
-export interface PaginatedContacts {
-  contacts: Contact[];
-  total: number;
-  cursor?: string;
-  hasMore: boolean;
-}
 
 export class ContactService {
   /**
@@ -23,7 +16,7 @@ export class ContactService {
     limit = 20,
     cursor?: string,
     search?: string,
-  ): Promise<PaginatedContacts> {
+  ): Promise<CursorPaginatedResponse<Contact>> {
     const where: Prisma.ContactWhereInput = {
       projectId,
       ...(search
@@ -58,7 +51,7 @@ export class ContactService {
     const total = !cursor ? await prisma.contact.count({where}) : 0;
 
     return {
-      contacts: results,
+      data: results,
       total,
       cursor: nextCursor,
       hasMore,

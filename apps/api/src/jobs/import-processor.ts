@@ -3,6 +3,7 @@
  * Processes CSV contact imports with validation and batch processing
  */
 
+import type {ContactImportJobData} from '@plunk/types';
 import {type Job, Worker} from 'bullmq';
 import {parse} from 'csv-parse/sync';
 import signale from 'signale';
@@ -10,7 +11,7 @@ import signale from 'signale';
 import {prisma} from '../database/prisma.js';
 import {ContactService} from '../services/ContactService.js';
 import {NtfyService} from '../services/NtfyService.js';
-import {type ContactImportJobData, importQueue} from '../services/QueueService.js';
+import {importQueue} from '../services/QueueService.js';
 
 const BATCH_SIZE = 100; // Process contacts in batches of 100
 

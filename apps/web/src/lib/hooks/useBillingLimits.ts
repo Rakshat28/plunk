@@ -1,19 +1,9 @@
+import type {BillingLimitsResponse, CategoryUsage} from '@plunk/types';
 import useSWR from 'swr';
 
-export interface CategoryLimit {
-  usage: number;
-  limit: number | null;
-  percentage: number;
-  isWarning: boolean;
-  isBlocked: boolean;
-}
-
-export interface BillingLimitsData {
-  workflows: CategoryLimit;
-  campaigns: CategoryLimit;
-  transactional: CategoryLimit;
-  currency: string | null;
-}
+// Re-export for backward compatibility
+export type CategoryLimit = CategoryUsage;
+export type BillingLimitsData = BillingLimitsResponse;
 
 /**
  * Hook to fetch billing limits for a project
@@ -22,7 +12,7 @@ export interface BillingLimitsData {
  * Paid tier projects (with subscription): Shows per-category usage with custom limits
  */
 export function useBillingLimits(projectId: string | undefined, billingEnabled: boolean) {
-  const {data, error, mutate, isLoading} = useSWR<BillingLimitsData>(
+  const {data, error, mutate, isLoading} = useSWR<BillingLimitsResponse>(
     projectId && billingEnabled ? `/users/@me/projects/${projectId}/billing-limits` : null,
     {
       revalidateOnFocus: false,

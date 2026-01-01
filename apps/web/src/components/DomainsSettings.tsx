@@ -107,7 +107,7 @@ export function DomainsSettings({projectId}: DomainsSettingsProps) {
         setVerificationStatus(prev => ({
           ...prev,
           [newDomain.id]: {
-            tokens: newDomain.dkimTokens,
+            tokens: newDomain.dkimTokens as string[] | null,
             status: 'Pending',
             verified: false,
           },

@@ -1,5 +1,5 @@
 import {type Contact, Prisma, type Segment} from '@plunk/db';
-import type {FilterCondition, FilterGroup, SegmentFilter} from '@plunk/types';
+import type {FilterCondition, FilterGroup, SegmentFilter, PaginatedResponse} from '@plunk/types';
 import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
@@ -10,14 +10,6 @@ import {NtfyService} from './NtfyService.js';
 
 // Re-export types for use in other services
 export type {FilterCondition, FilterGroup, SegmentFilter} from '@plunk/types';
-
-export interface PaginatedContacts {
-  contacts: Contact[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
 
 /**
  * Convert segment name to a URL-safe slug for event names
@@ -72,7 +64,7 @@ export class SegmentService {
     segmentId: string,
     page = 1,
     pageSize = 20,
-  ): Promise<PaginatedContacts> {
+  ): Promise<PaginatedResponse<Contact>> {
     const segment = await this.get(projectId, segmentId);
     const condition = segment.condition as unknown as FilterCondition;
 
@@ -90,7 +82,7 @@ export class SegmentService {
     ]);
 
     return {
-      contacts,
+      data: contacts,
       total,
       page,
       pageSize,

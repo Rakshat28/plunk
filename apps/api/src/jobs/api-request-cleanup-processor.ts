@@ -1,3 +1,4 @@
+import type {ApiRequestCleanupJobData} from '@plunk/types';
 import type {Job} from 'bullmq';
 import {Worker} from 'bullmq';
 import type {RedisOptions} from 'ioredis';
@@ -5,7 +6,6 @@ import signale from 'signale';
 
 import {REDIS_URL} from '../app/constants.js';
 import {prisma} from '../database/prisma.js';
-import type {ApiRequestCleanupJobData} from '../services/QueueService.js';
 
 /**
  * API Request Cleanup Worker

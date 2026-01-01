@@ -1,15 +1,6 @@
+import type {Contact} from '@plunk/db';
+import type {CursorPaginatedResponse} from '@plunk/types';
 import useSWR from 'swr';
-
-export interface Contact {
-  id: string;
-  email: string;
-  data?: Record<string, unknown>;
-}
-
-export interface ContactsResponse {
-  contacts: Contact[];
-  total: number;
-}
 
 interface UseContactsOptions {
   limit?: number;
@@ -28,7 +19,7 @@ export function useContacts(options: UseContactsOptions = {}) {
     params.set('search', search);
   }
 
-  const {data, error, mutate, isLoading} = useSWR<ContactsResponse>(
+  const {data, error, mutate, isLoading} = useSWR<CursorPaginatedResponse<Contact>>(
     `/contacts?${params.toString()}`,
     {
       revalidateOnFocus: false,
@@ -37,7 +28,7 @@ export function useContacts(options: UseContactsOptions = {}) {
   );
 
   return {
-    contacts: data?.contacts || [],
+    contacts: data?.data || [],
     total: data?.total || 0,
     error,
     isLoading,

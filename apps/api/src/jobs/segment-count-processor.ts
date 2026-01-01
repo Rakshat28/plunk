@@ -3,12 +3,13 @@
  * Processes segment count update jobs from the BullMQ queue
  */
 
+import type {SegmentCountJobData} from '@plunk/types';
 import {type Job, Worker} from 'bullmq';
 import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {NtfyService} from '../services/NtfyService.js';
-import {type SegmentCountJobData, segmentCountQueue} from '../services/QueueService.js';
+import {segmentCountQueue} from '../services/QueueService.js';
 import {SegmentService} from '../services/SegmentService.js';
 
 /**

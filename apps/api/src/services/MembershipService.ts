@@ -1,4 +1,5 @@
 import type {Membership, Role} from '@plunk/db';
+import type {MemberWithEmail, OwnerInfo, DisabledProjectInfo} from '@plunk/types';
 
 import {prisma} from '../database/prisma.js';
 import {redis, REDIS_ONE_MINUTE, wrapRedis} from '../database/redis.js';
@@ -6,23 +7,6 @@ import {HttpException} from '../exceptions/index.js';
 import {Keys} from './keys.js';
 
 const FIVE_MINUTES_IN_SECONDS = 5 * 60;
-
-export interface MemberWithEmail {
-  userId: string;
-  email: string;
-  role: Role;
-  createdAt: Date;
-}
-
-export interface OwnerInfo {
-  userId: string;
-  email: string;
-}
-
-export interface DisabledProjectInfo {
-  hasDisabledProject: boolean;
-  disabledProjectNames: string[];
-}
 
 /**
  * Service for managing project memberships

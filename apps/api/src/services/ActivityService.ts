@@ -1,60 +1,11 @@
 import type {Prisma} from '@plunk/db';
+import {ActivityType} from '@plunk/types';
+import type {Activity, ActivityStats, CursorPaginatedResponse} from '@plunk/types';
 import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {redis} from '../database/redis.js';
 import {Keys} from './keys.js';
-
-/**
- * Activity types that can be tracked
- */
-export enum ActivityType {
-  EVENT_TRIGGERED = 'event.triggered',
-  EMAIL_SENT = 'email.sent',
-  EMAIL_DELIVERED = 'email.delivered',
-  EMAIL_OPENED = 'email.opened',
-  EMAIL_CLICKED = 'email.clicked',
-  EMAIL_BOUNCED = 'email.bounced',
-  CAMPAIGN_SENT = 'campaign.sent',
-  CAMPAIGN_SCHEDULED = 'campaign.scheduled',
-  WORKFLOW_STARTED = 'workflow.started',
-  WORKFLOW_COMPLETED = 'workflow.completed',
-  WORKFLOW_EMAIL_SCHEDULED = 'workflow.email.scheduled',
-}
-
-/**
- * Unified activity item
- */
-export interface Activity {
-  id: string;
-  type: ActivityType;
-  timestamp: Date;
-  contactEmail?: string;
-  contactId?: string;
-  metadata: Record<string, unknown>;
-}
-
-/**
- * Paginated activity response
- */
-export interface PaginatedActivities {
-  activities: Activity[];
-  nextCursor?: string;
-  hasMore: boolean;
-}
-
-/**
- * Activity stats for dashboard
- */
-export interface ActivityStats {
-  totalEvents: number;
-  totalEmailsSent: number;
-  totalEmailsOpened: number;
-  totalEmailsClicked: number;
-  totalWorkflowsStarted: number;
-  openRate: number;
-  clickRate: number;
-}
 
 /**
  * Activity Service
@@ -107,7 +58,7 @@ export class ActivityService {
     contactId?: string,
     startDate?: Date,
     endDate?: Date,
-  ): Promise<PaginatedActivities> {
+  ): Promise<CursorPaginatedResponse<Activity>> {
     // Cap limit to prevent abuse
     const effectiveLimit = Math.min(limit, this.MAX_LIMIT);
 
@@ -158,8 +109,8 @@ export class ActivityService {
     const nextCursor = hasMore && lastActivity ? `${lastActivity.timestamp.getTime()}_${lastActivity.id}` : undefined;
 
     return {
-      activities: results,
-      nextCursor,
+      data: results,
+      cursor: nextCursor,
       hasMore,
     };
   }

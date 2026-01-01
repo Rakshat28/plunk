@@ -1,62 +1,20 @@
 import {type Job, Queue} from 'bullmq';
 import type {RedisOptions} from 'ioredis';
 import signale from 'signale';
+import type {
+  SendEmailJobData,
+  CampaignBatchJobData,
+  ScheduledCampaignJobData,
+  WorkflowStepJobData,
+  ContactImportJobData,
+  BulkContactActionJobData,
+  SegmentCountJobData,
+  DomainVerificationJobData,
+  ApiRequestCleanupJobData,
+} from '@plunk/types';
 
 import {REDIS_URL} from '../app/constants.js';
 import {prisma} from '../database/prisma.js';
-
-/**
- * Queue Job Data Types
- */
-
-export interface SendEmailJobData {
-  emailId: string;
-}
-
-export interface CampaignBatchJobData {
-  campaignId: string;
-  batchNumber: number;
-  offset: number;
-  limit: number;
-  cursor?: string; // For cursor-based pagination
-}
-
-export interface WorkflowStepJobData {
-  executionId: string;
-  stepId: string;
-  type?: 'process-step' | 'timeout'; // Job type for different handling
-  stepExecutionId?: string; // For timeout jobs, reference to the step execution
-}
-
-export interface ScheduledCampaignJobData {
-  campaignId: string;
-}
-
-export interface ContactImportJobData {
-  projectId: string;
-  csvData: string; // Base64 encoded CSV content
-  filename: string;
-}
-
-export interface SegmentCountJobData {
-  projectId?: string; // Optional: if provided, only update this project's segments
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface DomainVerificationJobData {
-  // Empty for now - processes all domains
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ApiRequestCleanupJobData {
-  // Empty - cleans up old API request logs
-}
-
-export interface BulkContactActionJobData {
-  projectId: string;
-  contactIds: string[];
-  operation: 'subscribe' | 'unsubscribe' | 'delete';
-}
 
 /**
  * Queue Configuration

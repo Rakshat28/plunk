@@ -1,17 +1,8 @@
+import type {Domain} from '@plunk/db';
+import {DomainSchemas} from '@plunk/shared';
 import useSWR from 'swr';
 
-import {DomainSchemas} from '@plunk/shared';
 import {network} from '../network';
-
-export interface Domain {
-  id: string;
-  domain: string;
-  verified: boolean;
-  dkimTokens: string[] | null;
-  projectId: string;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface DomainVerificationStatus {
   domain: string;

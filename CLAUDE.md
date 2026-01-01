@@ -108,6 +108,7 @@ between groups.
 - Consistent type imports preferred: `import type { ... }`
 - Unused vars allowed with `_` prefix
 - Strict type checking enabled across all packages
+- Try to avoid inline types in favor of shared types in `@plunk/types`
 
 ### Component Structure
 

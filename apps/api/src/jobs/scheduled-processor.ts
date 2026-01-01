@@ -4,12 +4,13 @@
  */
 
 import {CampaignStatus} from '@plunk/db';
+import type {ScheduledCampaignJobData} from '@plunk/types';
 import {type Job, Worker} from 'bullmq';
 import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
 import {CampaignService} from '../services/CampaignService.js';
-import {type ScheduledCampaignJobData, scheduledQueue} from '../services/QueueService.js';
+import {scheduledQueue} from '../services/QueueService.js';
 
 export function createScheduledCampaignWorker() {
   const worker = new Worker<ScheduledCampaignJobData>(

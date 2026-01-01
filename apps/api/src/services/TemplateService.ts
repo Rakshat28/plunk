@@ -1,17 +1,10 @@
 import type {Template} from '@plunk/db';
 import {Prisma} from '@plunk/db';
+import type {PaginatedResponse} from '@plunk/types';
 
 import {prisma} from '../database/prisma.js';
 import {HttpException} from '../exceptions/index.js';
 import {buildEmailFieldsUpdate} from '../utils/modelUpdate.js';
-
-export interface PaginatedTemplates {
-  templates: Template[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
 
 export class TemplateService {
   /**
@@ -23,7 +16,7 @@ export class TemplateService {
     pageSize = 20,
     search?: string,
     type?: Template['type'],
-  ): Promise<PaginatedTemplates> {
+  ): Promise<PaginatedResponse<Template>> {
     const skip = (page - 1) * pageSize;
 
     const where: Prisma.TemplateWhereInput = {
@@ -51,7 +44,7 @@ export class TemplateService {
     ]);
 
     return {
-      templates,
+      data: templates,
       total,
       page,
       pageSize,

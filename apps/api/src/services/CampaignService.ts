@@ -1,6 +1,6 @@
 import type {Campaign, Contact, Prisma} from '@plunk/db';
 import {CampaignAudienceType, CampaignStatus, EmailSourceType} from '@plunk/db';
-import type {FilterCondition} from '@plunk/types';
+import type {FilterCondition, CreateCampaignData, UpdateCampaignData} from '@plunk/types';
 import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
@@ -17,32 +17,6 @@ import {DASHBOARD_URI, STRIPE_ENABLED} from '../app/constants.js';
 import {sendRawEmail} from './SESService.js';
 
 const BATCH_SIZE = 500; // Number of emails to process per batch (increased for better performance)
-
-export interface CreateCampaignData {
-  name: string;
-  description?: string;
-  subject: string;
-  body: string;
-  from: string;
-  fromName?: string | null;
-  replyTo?: string | null;
-  audienceType: CampaignAudienceType;
-  audienceCondition?: FilterCondition;
-  segmentId?: string;
-}
-
-export interface UpdateCampaignData {
-  name?: string;
-  description?: string;
-  subject?: string;
-  body?: string;
-  from?: string;
-  fromName?: string | null;
-  replyTo?: string | null;
-  audienceType?: CampaignAudienceType;
-  audienceCondition?: FilterCondition;
-  segmentId?: string;
-}
 
 export class CampaignService {
   /**

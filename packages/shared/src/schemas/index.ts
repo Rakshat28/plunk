@@ -1,4 +1,5 @@
 import {CampaignAudienceType, TemplateType, TrackingMode, WorkflowStepType, WorkflowTriggerType} from '@plunk/db';
+import type {FilterCondition, FilterGroup} from '@plunk/types';
 import {z} from 'zod';
 
 const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null(), z.date()]);
@@ -103,16 +104,6 @@ const segmentFilterSchema = z.object({
   value: z.any().optional(),
   unit: z.enum(['days', 'hours', 'minutes']).optional(),
 });
-
-type FilterGroup = {
-  filters: z.infer<typeof segmentFilterSchema>[];
-  conditions?: FilterCondition;
-};
-
-type FilterCondition = {
-  logic: 'AND' | 'OR';
-  groups: FilterGroup[];
-};
 
 const filterGroupSchema: z.ZodType<FilterGroup> = z.lazy(() =>
   z.object({

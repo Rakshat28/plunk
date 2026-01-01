@@ -1,5 +1,6 @@
 import type {Workflow, WorkflowExecution, WorkflowStep, WorkflowStepExecution, WorkflowTransition} from '@plunk/db';
 import {Prisma, WorkflowExecutionStatus} from '@plunk/db';
+import type {PaginatedResponse, WorkflowWithDetails, WorkflowExecutionWithDetails} from '@plunk/types';
 import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
@@ -10,34 +11,11 @@ import {EventService} from './EventService.js';
 import {NtfyService} from './NtfyService.js';
 import {WorkflowExecutionService} from './WorkflowExecutionService.js';
 
-export interface PaginatedWorkflows {
-  workflows: Workflow[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
-
-export interface WorkflowWithDetails extends Workflow {
-  steps: (WorkflowStep & {
-    template?: {id: string; name: string} | null;
-    outgoingTransitions: WorkflowTransition[];
-    incomingTransitions: WorkflowTransition[];
-  })[];
-}
-
-export interface WorkflowExecutionWithDetails extends WorkflowExecution {
-  workflow: Workflow;
-  contact: {id: string; email: string};
-  currentStep?: WorkflowStep | null;
-  stepExecutions: WorkflowStepExecution[];
-}
-
 export class WorkflowService {
   /**
    * Get all workflows for a project with pagination
    */
-  public static async list(projectId: string, page = 1, pageSize = 20, search?: string): Promise<PaginatedWorkflows> {
+  public static async list(projectId: string, page = 1, pageSize = 20, search?: string): Promise<PaginatedResponse<Workflow>> {
     const skip = (page - 1) * pageSize;
 
     const where: Prisma.WorkflowWhereInput = {
@@ -71,7 +49,7 @@ export class WorkflowService {
     ]);
 
     return {
-      workflows: workflows as Workflow[],
+      data: workflows as Workflow[],
       total,
       page,
       pageSize,

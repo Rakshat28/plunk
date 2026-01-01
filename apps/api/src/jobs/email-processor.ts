@@ -4,16 +4,17 @@
  */
 
 import {CampaignStatus, EmailSourceType, EmailStatus} from '@plunk/db';
+import type {SendEmailJobData} from '@plunk/types';
 import {type Job, Worker} from 'bullmq';
 import signale from 'signale';
 
+import {DASHBOARD_URI, EMAIL_RATE_LIMIT_PER_SECOND} from '../app/constants.js';
 import {prisma} from '../database/prisma.js';
 import {EmailService} from '../services/EmailService.js';
 import {EventService} from '../services/EventService.js';
 import {MeterService} from '../services/MeterService.js';
-import {emailQueue, type SendEmailJobData} from '../services/QueueService.js';
+import {emailQueue} from '../services/QueueService.js';
 import {getSendingQuota, sendRawEmail} from '../services/SESService.js';
-import {DASHBOARD_URI, EMAIL_RATE_LIMIT_PER_SECOND} from '../app/constants.js';
 
 /**
  * Determine the email sending rate limit (emails per second)
