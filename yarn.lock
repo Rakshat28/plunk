@@ -3116,6 +3116,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@plunk/types@workspace:packages/types"
   dependencies:
+    "@plunk/db": "npm:*"
     "@plunk/typescript-config": "npm:*"
     "@types/node": "npm:^24.10.0"
     "@types/react": "npm:^19.2.7"

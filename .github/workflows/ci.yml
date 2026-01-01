@@ -103,7 +103,7 @@ jobs:
           EOF
 
       - name: Build shared packages
-        run: yarn build --filter="@plunk/shared" --filter="@plunk/db" --filter="@plunk/types"
+        run: yarn build --filter="@plunk/db" --filter="@plunk/types" --filter="@plunk/shared"
 
       - name: Generate Prisma Client
         run: yarn workspace @plunk/db db:generate
@@ -188,7 +188,7 @@ jobs:
           EOF
 
       - name: Build shared packages
-        run: yarn build --filter="@plunk/shared" --filter="@plunk/db" --filter="@plunk/types"
+        run: yarn build --filter="@plunk/db" --filter="@plunk/types" --filter="@plunk/shared"
 
       - name: Run linter
         run: yarn lint
