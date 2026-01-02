@@ -319,6 +319,19 @@ export class NtfyService {
   }
 
   /**
+   * Notify about failed signup attempt with invalid email - LOW priority
+   */
+  public static async notifyFailedSignupAttempt(email: string, reasons: string[]): Promise<void> {
+    const reasonText = reasons.join(', ');
+    await this.send({
+      title: 'Failed Signup - Invalid Email',
+      message: `Signup attempt blocked for email: ${email}\nReasons: ${reasonText}`,
+      priority: NtfyPriority.LOW,
+      tags: [NtfyTag.WARNING, NtfyTag.SHIELD],
+    });
+  }
+
+  /**
    * Notify about new user account created via OAuth - LOW priority
    */
   public static async notifyUserOAuthSignup(

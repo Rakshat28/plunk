@@ -21,6 +21,7 @@ import {redis, REDIS_ONE_MINUTE} from '../database/redis.js';
 import {BadRequest, NotAuthenticated, RateLimitError} from '../exceptions/index.js';
 import {jwt, parseJwt} from '../middleware/auth.js';
 import {AuthService} from '../services/AuthService.js';
+import {EmailVerificationService} from '../services/EmailVerificationService.js';
 import {NtfyService} from '../services/NtfyService.js';
 import {UserService} from '../services/UserService.js';
 import {Keys} from '../services/keys.js';
@@ -63,6 +64,31 @@ export class Auth {
   @CatchAsync
   public async signup(req: Request, res: Response, _next: NextFunction) {
     const {email, password} = AuthenticationSchemas.login.parse(req.body);
+
+    // Verify email is valid and not disposable/plus-addressed
+    const verification = await EmailVerificationService.verifyEmail(email);
+
+    if (
+      verification.isDisposable ||
+      verification.isPlusAddressed ||
+      !verification.domainExists ||
+      !verification.hasMxRecords
+    ) {
+      // Build list of reasons for notification
+      const reasons: string[] = [];
+      if (verification.isDisposable) reasons.push('disposable email');
+      if (verification.isPlusAddressed) reasons.push('plus addressing');
+      if (!verification.domainExists) reasons.push('domain does not exist');
+      if (!verification.hasMxRecords) reasons.push('no MX records');
+
+      // Send notification about failed signup attempt
+      await NtfyService.notifyFailedSignupAttempt(email, reasons);
+
+      return res.json({
+        success: false,
+        data: 'This email address cannot be used for signup',
+      });
+    }
 
     const user = await UserService.email(email);
 
