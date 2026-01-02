@@ -164,7 +164,7 @@ describe('CampaignService', () => {
 
       const result = await CampaignService.list(projectId, {page: 1, pageSize: 10});
 
-      expect(result.campaigns).toHaveLength(10);
+      expect(result.data).toHaveLength(10);
       expect(result.total).toBe(25);
       expect(result.totalPages).toBe(3);
       expect(result.page).toBe(1);
@@ -177,8 +177,8 @@ describe('CampaignService', () => {
 
       const result = await CampaignService.list(projectId, {status: CampaignStatus.DRAFT});
 
-      expect(result.campaigns).toHaveLength(2);
-      expect(result.campaigns.every(c => c.status === CampaignStatus.DRAFT)).toBe(true);
+      expect(result.data).toHaveLength(2);
+      expect(result.data.every(c => c.status === CampaignStatus.DRAFT)).toBe(true);
     });
   });
 
