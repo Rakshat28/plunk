@@ -19,10 +19,10 @@ const SECURITY_THRESHOLDS = {
   MIN_EMAILS_FOR_ENFORCEMENT: 100,
 
   // Bounce rate thresholds (hard bounces only)
-  BOUNCE_7DAY_WARNING: 3,
-  BOUNCE_7DAY_CRITICAL: 8,
-  BOUNCE_ALLTIME_WARNING: 2,
-  BOUNCE_ALLTIME_CRITICAL: 5,
+  BOUNCE_7DAY_WARNING: 5,
+  BOUNCE_7DAY_CRITICAL: 10,
+  BOUNCE_ALLTIME_WARNING: 4,
+  BOUNCE_ALLTIME_CRITICAL: 8,
 
   // Complaint rate thresholds (spam reports)
   COMPLAINT_7DAY_WARNING: 0.05,
@@ -275,10 +275,11 @@ export class SecurityService {
     const warnings: string[] = [];
 
     // Only enforce if minimum emails threshold is met
-    const hasMinimumVolume = allTime.total >= SECURITY_THRESHOLDS.MIN_EMAILS_FOR_ENFORCEMENT;
+    const hasMinimumVolumeAllTime = allTime.total >= SECURITY_THRESHOLDS.MIN_EMAILS_FOR_ENFORCEMENT;
+    const hasMinimumVolume7Day = sevenDay.total >= SECURITY_THRESHOLDS.MIN_EMAILS_FOR_ENFORCEMENT;
 
-    if (hasMinimumVolume) {
-      // Check 7-day bounce rate
+    // Check 7-day bounce rate (only if 7-day volume is sufficient)
+    if (hasMinimumVolume7Day) {
       if (sevenDay.bounceRate >= SECURITY_THRESHOLDS.BOUNCE_7DAY_CRITICAL) {
         violations.push(
           `7-day bounce rate (${sevenDay.bounceRate.toFixed(2)}%) exceeds critical threshold (${SECURITY_THRESHOLDS.BOUNCE_7DAY_CRITICAL}%)`,
@@ -288,7 +289,23 @@ export class SecurityService {
           `7-day bounce rate (${sevenDay.bounceRate.toFixed(2)}%) exceeds warning threshold (${SECURITY_THRESHOLDS.BOUNCE_7DAY_WARNING}%)`,
         );
       }
+    }
 
+    // Check 7-day complaint rate (only if 7-day volume is sufficient)
+    if (hasMinimumVolume7Day) {
+      if (sevenDay.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_7DAY_CRITICAL) {
+        violations.push(
+          `7-day complaint rate (${sevenDay.complaintRate.toFixed(3)}%) exceeds critical threshold (${SECURITY_THRESHOLDS.COMPLAINT_7DAY_CRITICAL}%)`,
+        );
+      } else if (sevenDay.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_7DAY_WARNING) {
+        warnings.push(
+          `7-day complaint rate (${sevenDay.complaintRate.toFixed(3)}%) exceeds warning threshold (${SECURITY_THRESHOLDS.COMPLAINT_7DAY_WARNING}%)`,
+        );
+      }
+    }
+
+    // Check all-time rates (only if all-time volume is sufficient)
+    if (hasMinimumVolumeAllTime) {
       // Check all-time bounce rate
       if (allTime.bounceRate >= SECURITY_THRESHOLDS.BOUNCE_ALLTIME_CRITICAL) {
         violations.push(
@@ -297,17 +314,6 @@ export class SecurityService {
       } else if (allTime.bounceRate >= SECURITY_THRESHOLDS.BOUNCE_ALLTIME_WARNING) {
         warnings.push(
           `All-time bounce rate (${allTime.bounceRate.toFixed(2)}%) exceeds warning threshold (${SECURITY_THRESHOLDS.BOUNCE_ALLTIME_WARNING}%)`,
-        );
-      }
-
-      // Check 7-day complaint rate
-      if (sevenDay.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_7DAY_CRITICAL) {
-        violations.push(
-          `7-day complaint rate (${sevenDay.complaintRate.toFixed(3)}%) exceeds critical threshold (${SECURITY_THRESHOLDS.COMPLAINT_7DAY_CRITICAL}%)`,
-        );
-      } else if (sevenDay.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_7DAY_WARNING) {
-        warnings.push(
-          `7-day complaint rate (${sevenDay.complaintRate.toFixed(3)}%) exceeds warning threshold (${SECURITY_THRESHOLDS.COMPLAINT_7DAY_WARNING}%)`,
         );
       }
 
