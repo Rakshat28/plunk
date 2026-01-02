@@ -273,8 +273,7 @@ COPY --from=builder --chown=plunk:nodejs /app/packages/shared/dist ./packages/sh
 COPY --from=builder --chown=plunk:nodejs /app/packages/shared/package.json ./packages/shared/package.json
 COPY --from=builder --chown=plunk:nodejs /app/packages/email/dist ./packages/email/dist
 COPY --from=builder --chown=plunk:nodejs /app/packages/email/package.json ./packages/email/package.json
-# @plunk/types exports source TypeScript files directly (no build output)
-COPY --from=builder --chown=plunk:nodejs /app/packages/types/src ./packages/types/src
+COPY --from=builder --chown=plunk:nodejs /app/packages/types/dist ./packages/types/dist
 COPY --from=builder --chown=plunk:nodejs /app/packages/types/package.json ./packages/types/package.json
 
 # Copy Prisma schema (needed for migrations at runtime)
