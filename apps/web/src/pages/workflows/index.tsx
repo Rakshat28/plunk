@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@plunk/ui';
 import type {Workflow} from '@plunk/db';
+import type {PaginatedResponse} from '@plunk/types';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {network} from '../../lib/network';
 import {formatRelativeTime} from '../../lib/dateUtils';
@@ -33,14 +34,6 @@ import useSWR from 'swr';
 import {WorkflowSchemas} from '@plunk/shared';
 import dayjs from 'dayjs';
 
-interface PaginatedWorkflows {
-  workflows: (Workflow & {_count?: {steps: number; executions: number}})[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
-
 export default function WorkflowsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -49,10 +42,9 @@ export default function WorkflowsPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [workflowToDelete, setWorkflowToDelete] = useState<string | null>(null);
 
-  const {data, mutate, isLoading} = useSWR<PaginatedWorkflows>(
-    `/workflows?page=${page}&pageSize=20${search ? `&search=${search}` : ''}`,
-    {revalidateOnFocus: false},
-  );
+  const {data, mutate, isLoading} = useSWR<
+    PaginatedResponse<Workflow & {_count?: {steps: number; executions: number}}>
+  >(`/workflows?page=${page}&pageSize=20${search ? `&search=${search}` : ''}`, {revalidateOnFocus: false});
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,7 +156,7 @@ export default function WorkflowsPage() {
                   </div>
                 </CardContent>
               </Card>
-            ) : data?.workflows.length === 0 ? (
+            ) : data?.data.length === 0 ? (
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center py-12">
@@ -184,7 +176,7 @@ export default function WorkflowsPage() {
               </Card>
             ) : (
               <>
-                {data?.workflows.map(workflow => (
+                {data?.data.map(workflow => (
                   <Card key={workflow.id} className={workflow.enabled ? 'border-green-200' : ''}>
                     <CardHeader>
                       <div className="flex items-start justify-between">

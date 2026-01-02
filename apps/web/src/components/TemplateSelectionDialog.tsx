@@ -16,17 +16,10 @@ import {
   Label,
 } from '@plunk/ui';
 import type {Template} from '@plunk/db';
+import type {PaginatedResponse} from '@plunk/types';
 import {ArrowLeft, FileText, Search} from 'lucide-react';
 import {useState} from 'react';
 import useSWR from 'swr';
-
-interface PaginatedTemplates {
-  templates: Template[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
 
 interface TemplateSelectionDialogProps {
   open: boolean;
@@ -57,7 +50,7 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
     replyTo: true,
   });
 
-  const {data, isLoading} = useSWR<PaginatedTemplates>(
+  const {data, isLoading} = useSWR<PaginatedResponse<Template>>(
     open
       ? `/templates?page=${page}&pageSize=10${search ? `&search=${search}` : ''}${typeFilter !== 'ALL' ? `&type=${typeFilter}` : ''}`
       : null,
@@ -219,7 +212,7 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
                 </div>
               )}
 
-              {!isLoading && data?.templates.length === 0 && (
+              {!isLoading && data?.data.length === 0 && (
                 <div className="text-center py-12">
                   <FileText className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-neutral-900 mb-2">No templates found</h3>
@@ -229,7 +222,7 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
                 </div>
               )}
 
-              {data?.templates.map(template => (
+              {data?.data.map(template => (
                 <Card
                   key={template.id}
                   className="cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"

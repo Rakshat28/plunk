@@ -21,17 +21,10 @@ import {
 } from '@plunk/ui';
 import type {Campaign} from '@plunk/db';
 import {CampaignStatus} from '@plunk/db';
+import type {PaginatedResponse} from '@plunk/types';
 import {ArrowLeft, Calendar, Mail, Users} from 'lucide-react';
 import {useState} from 'react';
 import useSWR from 'swr';
-
-interface PaginatedCampaigns {
-  campaigns: Campaign[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
 
 interface CampaignSelectionDialogProps {
   open: boolean;
@@ -62,7 +55,7 @@ export function CampaignSelectionDialog({open, onOpenChange, onSelectCampaign}: 
     audience: true,
   });
 
-  const {data, isLoading} = useSWR<PaginatedCampaigns>(
+  const {data, isLoading} = useSWR<PaginatedResponse<Campaign>>(
     open ? `/campaigns?page=${page}&pageSize=10${statusFilter !== 'ALL' ? `&status=${statusFilter}` : ''}` : null,
     {revalidateOnFocus: false},
   );
@@ -192,7 +185,7 @@ export function CampaignSelectionDialog({open, onOpenChange, onSelectCampaign}: 
                 </div>
               )}
 
-              {!isLoading && data?.campaigns.length === 0 && (
+              {!isLoading && data?.data.length === 0 && (
                 <div className="text-center py-12">
                   <Mail className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-neutral-900 mb-2">No campaigns found</h3>
@@ -202,7 +195,7 @@ export function CampaignSelectionDialog({open, onOpenChange, onSelectCampaign}: 
                 </div>
               )}
 
-              {data?.campaigns.map(campaign => (
+              {data?.data.map(campaign => (
                 <Card
                   key={campaign.id}
                   className="cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"

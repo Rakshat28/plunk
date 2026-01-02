@@ -19,6 +19,7 @@ import {
 } from '@plunk/ui';
 import type {Campaign, Template} from '@plunk/db';
 import {CampaignStatus} from '@plunk/db';
+import type {PaginatedResponse} from '@plunk/types';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {TemplateSelectionDialog} from '../../components/TemplateSelectionDialog';
 import {CampaignSelectionDialog} from '../../components/CampaignSelectionDialog';
@@ -33,14 +34,6 @@ import {toast} from 'sonner';
 import useSWR from 'swr';
 import dayjs from 'dayjs';
 
-interface PaginatedCampaigns {
-  campaigns: Campaign[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
-
 export default function CampaignsPage() {
   const router = useRouter();
   const [page, setPage] = useState(1);
@@ -52,7 +45,7 @@ export default function CampaignsPage() {
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   const [showCampaignDialog, setShowCampaignDialog] = useState(false);
 
-  const {data, mutate, isLoading} = useSWR<PaginatedCampaigns>(
+  const {data, mutate, isLoading} = useSWR<PaginatedResponse<Campaign>>(
     `/campaigns?page=${page}&pageSize=20${statusFilter !== 'ALL' ? `&status=${statusFilter}` : ''}`,
     {revalidateOnFocus: false},
   );
@@ -293,7 +286,7 @@ export default function CampaignsPage() {
               </Card>
             )}
 
-            {!isLoading && data?.campaigns.length === 0 && (
+            {!isLoading && data?.data.length === 0 && (
               <Card>
                 <CardContent className="py-16 text-center">
                   <div className="max-w-md mx-auto">
@@ -367,7 +360,7 @@ export default function CampaignsPage() {
               </Card>
             )}
 
-            {data?.campaigns.map(campaign => {
+            {data?.data.map(campaign => {
               const openRate = campaign.sentCount > 0 ? (campaign.openedCount / campaign.sentCount) * 100 : 0;
               const clickRate = campaign.sentCount > 0 ? (campaign.clickedCount / campaign.sentCount) * 100 : 0;
               const deliveryProgress =

@@ -77,13 +77,7 @@ export class Campaigns {
       pageSize,
     });
 
-    return res.json({
-      campaigns: result.campaigns,
-      page: result.page,
-      pageSize: result.pageSize,
-      total: result.total,
-      totalPages: result.totalPages,
-    });
+    return res.json(result);
   }
 
   /**

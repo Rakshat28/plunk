@@ -1,6 +1,6 @@
 import type {Campaign, Contact, Prisma} from '@plunk/db';
 import {CampaignAudienceType, CampaignStatus, EmailSourceType} from '@plunk/db';
-import type {CreateCampaignData, FilterCondition, UpdateCampaignData} from '@plunk/types';
+import type {CreateCampaignData, FilterCondition, PaginatedResponse, UpdateCampaignData} from '@plunk/types';
 import {fromPrismaJson, toPrismaJson} from '@plunk/types';
 import signale from 'signale';
 
@@ -184,7 +184,7 @@ export class CampaignService {
       page?: number;
       pageSize?: number;
     } = {},
-  ): Promise<{campaigns: Campaign[]; total: number; page: number; pageSize: number; totalPages: number}> {
+  ): Promise<PaginatedResponse<Campaign>> {
     const {status, page = 1, pageSize = 20} = options;
     const skip = (page - 1) * pageSize;
 
@@ -207,7 +207,7 @@ export class CampaignService {
     ]);
 
     return {
-      campaigns,
+      data: campaigns,
       total,
       page,
       pageSize,

@@ -10,6 +10,7 @@ import {
   Input,
 } from '@plunk/ui';
 import type {Template} from '@plunk/db';
+import type {PaginatedResponse} from '@plunk/types';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {network} from '../../lib/network';
 import {formatRelativeTime} from '../../lib/dateUtils';
@@ -21,14 +22,6 @@ import {toast} from 'sonner';
 import useSWR from 'swr';
 import dayjs from 'dayjs';
 
-interface PaginatedTemplates {
-  templates: Template[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
-
 export default function TemplatesPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -37,7 +30,7 @@ export default function TemplatesPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
 
-  const {data, mutate, isLoading} = useSWR<PaginatedTemplates>(
+  const {data, mutate, isLoading} = useSWR<PaginatedResponse<Template>>(
     `/templates?page=${page}&pageSize=20${search ? `&search=${search}` : ''}${typeFilter !== 'ALL' ? `&type=${typeFilter}` : ''}`,
     {revalidateOnFocus: false},
   );
@@ -182,7 +175,7 @@ export default function TemplatesPage() {
                   </div>
                 </CardContent>
               </Card>
-            ) : data?.templates.length === 0 ? (
+            ) : data?.data.length === 0 ? (
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center py-12">
@@ -204,7 +197,7 @@ export default function TemplatesPage() {
               </Card>
             ) : (
               <>
-                {data?.templates.map(template => (
+                {data?.data.map(template => (
                   <Card key={template.id}>
                     <CardHeader>
                       <div className="flex items-start justify-between">
