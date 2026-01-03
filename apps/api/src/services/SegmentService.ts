@@ -356,14 +356,42 @@ export class SegmentService {
     for (let i = 0; i < toAdd.length; i += ADD_BATCH_SIZE) {
       const batch = toAdd.slice(i, i + ADD_BATCH_SIZE);
 
-      await prisma.segmentMembership.createMany({
-        data: batch.map(contactId => ({
+      // Check which contacts already have a membership record (inactive)
+      const existingMemberships = await prisma.segmentMembership.findMany({
+        where: {
           segmentId,
-          contactId,
-          enteredAt: new Date(),
-        })),
-        skipDuplicates: true,
+          contactId: {in: batch},
+        },
+        select: {contactId: true},
       });
+
+      const existingContactIds = new Set(existingMemberships.map(m => m.contactId));
+      const newEntries = batch.filter(id => !existingContactIds.has(id));
+      const reEntries = batch.filter(id => existingContactIds.has(id));
+
+      if (newEntries.length > 0) {
+        await prisma.segmentMembership.createMany({
+          data: newEntries.map(contactId => ({
+            segmentId,
+            contactId,
+            enteredAt: new Date(),
+          })),
+          skipDuplicates: true,
+        });
+      }
+
+      if (reEntries.length > 0) {
+        await prisma.segmentMembership.updateMany({
+          where: {
+            segmentId,
+            contactId: {in: reEntries},
+          },
+          data: {
+            exitedAt: null,
+            enteredAt: new Date(),
+          },
+        });
+      }
 
       // Create segment-specific entry events for each contact in the batch
       for (const contactId of batch) {
