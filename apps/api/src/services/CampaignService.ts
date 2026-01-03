@@ -564,6 +564,7 @@ export class CampaignService {
     await prisma.campaign.update({
       where: {id: campaignId},
       data: {
+        sentCount: sentEmails,
         deliveredCount: deliveredEmails,
         openedCount: openedEmails,
         clickedCount: clickedEmails,

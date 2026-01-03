@@ -204,6 +204,7 @@ export async function createEmailWorker() {
                 where: {id: email.campaignId},
                 data: {
                   status: CampaignStatus.SENT,
+                  sentCount,
                 },
               });
 

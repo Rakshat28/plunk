@@ -25,7 +25,20 @@ import {TemplateSelectionDialog} from '../../components/TemplateSelectionDialog'
 import {CampaignSelectionDialog} from '../../components/CampaignSelectionDialog';
 import {network} from '../../lib/network';
 import {formatRelativeTime} from '../../lib/dateUtils';
-import {Calendar, ChevronDown, Copy, FileText, Info, Mail, Plus, RefreshCw, Trash2, Users} from 'lucide-react';
+import {
+  AlertCircle,
+  Calendar,
+  ChevronDown,
+  Copy,
+  FileText,
+  Info,
+  Mail,
+  MousePointerClick,
+  Plus,
+  RefreshCw,
+  Trash2,
+  Users,
+} from 'lucide-react';
 import {NextSeo} from 'next-seo';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
@@ -426,13 +439,27 @@ export default function CampaignsPage() {
                       {campaign.clickedCount > 0 && (
                         <div className="bg-orange-50 border border-orange-100 rounded-lg p-3">
                           <div className="flex items-center gap-2 mb-1">
-                            <Mail className="h-3.5 w-3.5 text-orange-600" />
+                            <MousePointerClick className="h-3.5 w-3.5 text-orange-600" />
                             <span className="text-xs font-medium text-orange-900">Clicks</span>
                           </div>
                           <p className="text-lg font-bold text-orange-900">{clickRate.toFixed(1)}%</p>
                           <p className="text-xs text-orange-700 mt-1">
                             {campaign.clickedCount.toLocaleString()} clicked
                           </p>
+                        </div>
+                      )}
+
+                      {/* Bounced Rate */}
+                      {campaign.bouncedCount > 0 && campaign.sentCount > 0 && (
+                        <div className="bg-red-50 border border-red-100 rounded-lg p-3">
+                          <div className="flex items-center gap-2 mb-1">
+                            <AlertCircle className="h-3.5 w-3.5 text-red-600" />
+                            <span className="text-xs font-medium text-red-900">Bounced</span>
+                          </div>
+                          <p className="text-lg font-bold text-red-900">
+                            {((campaign.bouncedCount / campaign.sentCount) * 100).toFixed(1)}%
+                          </p>
+                          <p className="text-xs text-red-700 mt-1">{campaign.bouncedCount.toLocaleString()} bounced</p>
                         </div>
                       )}
 

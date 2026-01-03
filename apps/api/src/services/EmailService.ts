@@ -503,6 +503,42 @@ export class EmailService {
       data: updateData,
     });
 
+    // Update campaign stats if applicable
+    if (email.campaignId) {
+      const campaignUpdate: Prisma.CampaignUpdateInput = {};
+
+      switch (eventType) {
+        case 'delivered':
+          campaignUpdate.deliveredCount = {increment: 1};
+          break;
+
+        case 'opened':
+          // Only increment unique opens to match getStats logic
+          if (!email.openedAt) {
+            campaignUpdate.openedCount = {increment: 1};
+          }
+          break;
+
+        case 'clicked':
+          // Only increment unique clicks to match getStats logic
+          if (!email.clickedAt) {
+            campaignUpdate.clickedCount = {increment: 1};
+          }
+          break;
+
+        case 'bounced':
+          campaignUpdate.bouncedCount = {increment: 1};
+          break;
+      }
+
+      if (Object.keys(campaignUpdate).length > 0) {
+        await prisma.campaign.update({
+          where: {id: email.campaignId},
+          data: campaignUpdate,
+        });
+      }
+    }
+
     // Track event
     await prisma.event.create({
       data: {
