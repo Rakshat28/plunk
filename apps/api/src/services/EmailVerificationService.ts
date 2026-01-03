@@ -8,6 +8,35 @@ const DISPOSABLE_DOMAINS_URL =
 const DISPOSABLE_DOMAINS_CACHE_KEY = 'email:disposable_domains';
 const CACHE_TTL_SECONDS = 24 * 60 * 60; // 24 hours (list updates daily)
 
+// Known email forwarding/alias services
+const FORWARDING_DOMAINS = new Set([
+  'privaterelay.appleid.com', // Apple Sign In
+  'mozmail.com', // Firefox Relay
+  'simplelogin.com', // SimpleLogin
+  'simplelogin.fr',
+  'simplelogin.co',
+  'simplelogin.io',
+  'aleeas.com',
+  'slmail.me',
+  'dralias.com',
+  '8shield.net',
+  'anonaddy.com', // Addy.io
+  'anonaddy.me',
+  'addy.io',
+  'duck.com', // DuckDuckGo
+  '33mail.com', // 33mail
+  '33m.co',
+  'passmail.com', // Proton Pass
+  'passmail.net',
+  'passinbox.com',
+  'passfwd.com',
+  'y.yo.fr',
+  'opayq.com', // IronVest (formerly Blur)
+  'cloak.id', // Cloaked
+  'erine.email', // Erine
+  'use.startmail.com', // StartMail
+]);
+
 export class EmailVerificationService {
   private static disposableDomainsSet: Set<string> | null = null;
 
@@ -16,6 +45,7 @@ export class EmailVerificationService {
    * - Checks if domain exists (DNS A/AAAA records)
    * - Checks for MX records
    * - Detects disposable email addresses
+   * - Detects forwarding/alias email addresses
    * - Suggests corrections for common typos
    */
   static async verifyEmail(email: string): Promise<EmailVerificationResult> {
@@ -23,6 +53,7 @@ export class EmailVerificationService {
       email,
       valid: true,
       isDisposable: false,
+      isAlias: false,
       isTypo: false,
       isPlusAddressed: false,
       domainExists: false,
@@ -42,6 +73,9 @@ export class EmailVerificationService {
 
     // Check if email is from a disposable domain using GitHub list
     result.isDisposable = await this.isDisposableDomain(domain);
+
+    // Check if email is from a known forwarding/alias service
+    result.isAlias = this.isForwardingDomain(domain);
 
     // Check for plus addressing
     result.isPlusAddressed = emailParts[0]!.includes('+');
@@ -145,5 +179,12 @@ export class EmailVerificationService {
   private static async isDisposableDomain(domain: string): Promise<boolean> {
     const disposableDomains = await this.getDisposableDomains();
     return disposableDomains.has(domain.toLowerCase());
+  }
+
+  /**
+   * Check if a domain is a known forwarding/alias service
+   */
+  private static isForwardingDomain(domain: string): boolean {
+    return FORWARDING_DOMAINS.has(domain.toLowerCase());
   }
 }

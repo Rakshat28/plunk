@@ -664,6 +664,10 @@
                           "type": "boolean",
                           "description": "Whether the email is from a disposable/temporary email domain"
                         },
+                        "isAlias": {
+                          "type": "boolean",
+                          "description": "Whether the email is from a forwarding/alias service"
+                        },
                         "isTypo": {
                           "type": "boolean",
                           "description": "Whether a potential typo was detected in the email address"
@@ -698,6 +702,7 @@
                         "email",
                         "valid",
                         "isDisposable",
+                        "isAlias",
                         "isTypo",
                         "isPlusAddressed",
                         "domainExists",
@@ -716,6 +721,7 @@
                         "email": "user@gmail.com",
                         "valid": true,
                         "isDisposable": false,
+                        "isAlias": false,
                         "isTypo": false,
                         "isPlusAddressed": false,
                         "domainExists": true,
@@ -732,6 +738,7 @@
                         "email": "user@gmial.com",
                         "valid": false,
                         "isDisposable": false,
+                        "isAlias": false,
                         "isTypo": true,
                         "isPlusAddressed": false,
                         "domainExists": false,
@@ -749,6 +756,7 @@
                         "email": "user@tempmail.com",
                         "valid": true,
                         "isDisposable": true,
+                        "isAlias": false,
                         "isTypo": false,
                         "isPlusAddressed": false,
                         "domainExists": true,

@@ -9,6 +9,7 @@ export interface EmailVerificationResult {
   email: string;
   valid: boolean;
   isDisposable: boolean;
+  isAlias: boolean;
   isTypo: boolean;
   isPlusAddressed: boolean;
   domainExists: boolean;

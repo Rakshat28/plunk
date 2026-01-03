@@ -1,4 +1,15 @@
-import {AlertCircle, AlertTriangle, CheckCircle, Info, Mail, Server, Shield, Trash2, XCircle} from 'lucide-react';
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle,
+  Info,
+  Mail,
+  Server,
+  Shield,
+  Trash2,
+  XCircle,
+  Forward,
+} from 'lucide-react';
 import type {EmailVerificationResult as VerificationResult} from '../../lib/emailVerification';
 
 interface EmailVerificationResultProps {
@@ -78,6 +89,22 @@ export function EmailVerificationResult({result}: EmailVerificationResultProps) 
             </div>
             {result.isDisposable ? (
               <AlertTriangle className="h-5 w-5 text-yellow-600" />
+            ) : (
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            )}
+          </div>
+
+          {/* Alias/Forwarding Email */}
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center gap-3">
+              <Forward className="h-5 w-5 text-neutral-600" />
+              <div>
+                <p className="font-medium text-neutral-900">Forwarding Service</p>
+                <p className="text-sm text-neutral-600">Email alias/forwarding detected</p>
+              </div>
+            </div>
+            {result.isAlias ? (
+              <Info className="h-5 w-5 text-blue-600" />
             ) : (
               <CheckCircle className="h-5 w-5 text-green-600" />
             )}
