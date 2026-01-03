@@ -207,12 +207,25 @@ export class NtfyService {
    * Notify about security warning (non-critical)
    */
   public static async notifySecurityWarning(projectName: string, projectId: string, warnings: string[]): Promise<void> {
+    // Import redis at runtime to avoid circular dependencies
+    const {redis} = await import('../database/redis.js');
+
+    const cacheKey = `ntfy:security:warning:${projectId}`;
+    const exists = await redis.exists(cacheKey);
+
+    if (exists) {
+      return;
+    }
+
     const warningText = warnings.join(', ');
     await this.sendDefault(
       'Security Warning',
       `Project "${projectName}" (${projectId}) has security warnings: ${warningText}`,
       [NtfyTag.WARNING, NtfyTag.SHIELD],
     );
+
+    // Throttle for 1 hour
+    await redis.setex(cacheKey, 3600, '1');
   }
 
   /**
@@ -589,11 +602,24 @@ export class NtfyService {
     percentage: number,
     sourceType: string,
   ): Promise<void> {
+    // Import redis at runtime to avoid circular dependencies
+    const {redis} = await import('../database/redis.js');
+
+    const cacheKey = `ntfy:billing:warning:${projectId}:${sourceType}`;
+    const exists = await redis.exists(cacheKey);
+
+    if (exists) {
+      return;
+    }
+
     await this.sendDefault(
       'Billing Limit Warning',
       `Email usage at ${Math.round(percentage)}% (${usage}/${limit}) for ${sourceType} in project "${projectName}" (${projectId})`,
       [NtfyTag.WARNING, NtfyTag.MONEY, NtfyTag.CHART],
     );
+
+    // Throttle for 24 hours
+    await redis.setex(cacheKey, 86400, '1');
   }
 
   // ===== Billing and usage limit notifications =====
@@ -608,11 +634,24 @@ export class NtfyService {
     limit: number,
     sourceType: string,
   ): Promise<void> {
+    // Import redis at runtime to avoid circular dependencies
+    const {redis} = await import('../database/redis.js');
+
+    const cacheKey = `ntfy:billing:exceeded:${projectId}:${sourceType}`;
+    const exists = await redis.exists(cacheKey);
+
+    if (exists) {
+      return;
+    }
+
     await this.sendUrgent(
       'Billing Limit Exceeded',
       `Email usage limit reached (${usage}/${limit}) for ${sourceType} in project "${projectName}" (${projectId}). Further emails are blocked.`,
       [NtfyTag.ERROR, NtfyTag.MONEY, NtfyTag.SKULL],
     );
+
+    // Throttle for 24 hours
+    await redis.setex(cacheKey, 86400, '1');
   }
 
   /**
