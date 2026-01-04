@@ -154,6 +154,34 @@ interface ErrorResponse {
 server.app.use((error: Error, req: Request, res: Response, _next: NextFunction) => {
   const requestId = res.locals.requestId as string | undefined;
 
+  // Handle JSON parsing errors (from express.json() middleware)
+  if (error instanceof SyntaxError && 'body' in error) {
+    const statusCode = 400;
+
+    logger.warn(
+      'JSON parsing failed',
+      {
+        endpoint: `${req.method} ${req.path}`,
+        contentType: req.get('content-type'),
+      },
+      res,
+    );
+
+    const response: ErrorResponse = {
+      success: false,
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+        message: 'Invalid JSON in request body',
+        statusCode,
+        requestId,
+        suggestion: 'Ensure your request body is valid JSON and Content-Type header is set to "application/json".',
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(statusCode).json(response);
+  }
+
   // Handle Zod validation errors
   if (error instanceof ZodError) {
     const fieldErrors: FieldError[] = error.errors.map(err => ({
