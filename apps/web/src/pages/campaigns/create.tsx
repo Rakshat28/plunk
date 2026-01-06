@@ -14,7 +14,7 @@ import {
   SelectValue,
   Textarea,
 } from '@plunk/ui';
-import type {Segment} from '@plunk/db';
+import type {Segment, Template} from '@plunk/db';
 import {CampaignAudienceType} from '@plunk/db';
 import {NextSeo} from 'next-seo';
 import {DashboardLayout} from '../../components/DashboardLayout';
@@ -68,7 +68,7 @@ export default function CreateCampaignPage() {
         setLoadingTemplate(true);
         try {
           // Fetch the full template to get the body content
-          const template = await network.fetch<{data: {body: string}}>('GET', `/templates/${templateId}`);
+          const template = await network.fetch<Template>('GET', `/templates/${templateId}`);
 
           // Pre-fill form with template data
           if (queryName && typeof queryName === 'string') setName(queryName);
@@ -76,7 +76,7 @@ export default function CreateCampaignPage() {
           if (queryFrom && typeof queryFrom === 'string') setFrom(queryFrom);
           if (queryFromName && typeof queryFromName === 'string') setFromName(queryFromName);
           if (queryReplyTo && typeof queryReplyTo === 'string') setReplyTo(queryReplyTo);
-          setBody(template.data.body);
+          setBody(template.body);
 
           toast.success('Template loaded successfully');
         } catch {
