@@ -29,6 +29,7 @@ import {
   Switch,
 } from '@plunk/ui';
 import type {Template, Workflow, WorkflowExecution, WorkflowStep, WorkflowTransition} from '@plunk/db';
+import type {PaginatedResponse} from '@plunk/types';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {network} from '../../lib/network';
 import {
@@ -878,7 +879,7 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const {data: templatesData} = useSWR<{templates: Template[]}>('/templates?pageSize=100');
+  const {data: templatesData} = useSWR<PaginatedResponse<Template>>('/templates?pageSize=100');
   const {data: workflow} = useSWR<WorkflowWithDetails>(workflowId ? `/workflows/${workflowId}` : null);
 
   // Fetch available event names when dialog opens
@@ -1167,7 +1168,7 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                   <SelectValue placeholder="Select a template..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {templatesData?.templates.map(template => (
+                  {templatesData?.data.map(template => (
                     <SelectItemWithDescription
                       key={template.id}
                       value={template.id}
@@ -1556,7 +1557,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
   const [name, setName] = useState(step.name);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const Icon = STEP_TYPE_ICONS[step.type as keyof typeof STEP_TYPE_ICONS] || GitBranch;
+  const Icon = STEP_TYPE_ICONS[step.type as keyof typeof STEP_TYPE_ICONS] || GitBranch;
   const color = STEP_TYPE_COLORS[step.type as keyof typeof STEP_TYPE_COLORS] || '#6b7280';
   const bgColor = STEP_TYPE_BG[step.type as keyof typeof STEP_TYPE_BG] || '#f3f4f6';
 
@@ -1667,7 +1668,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
   // EXIT fields
   const [exitReason, setExitReason] = useState(String(config?.reason || 'completed'));
 
-  const {data: templatesData} = useSWR<{templates: Template[]}>('/templates?pageSize=100');
+  const {data: templatesData} = useSWR<PaginatedResponse<Template>>('/templates?pageSize=100');
   const {data: workflow} = useSWR<WorkflowWithDetails>(workflowId ? `/workflows/${workflowId}` : null);
 
   // Fetch available event names when dialog opens
@@ -1878,7 +1879,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                   <SelectValue placeholder="Select a template..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {templatesData?.templates.map(template => (
+                  {templatesData?.data.map(template => (
                     <SelectItemWithDescription
                       key={template.id}
                       value={template.id}
