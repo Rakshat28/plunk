@@ -44,6 +44,7 @@ interface EmailEditorProps {
 }
 
 const commonVariables = [
+  {name: 'id', description: 'Contact ID'},
   {name: 'email', description: 'Recipient email address'},
   {name: 'unsubscribeUrl', description: 'Unsubscribe link'},
   {name: 'subscribeUrl', description: 'Subscribe link'},

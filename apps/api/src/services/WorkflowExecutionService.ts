@@ -545,6 +545,7 @@ export class WorkflowExecutionService {
         : {};
 
     const variables = {
+      id: contact.id,
       email: contact.email,
       ...contactData,
       ...executionContext,

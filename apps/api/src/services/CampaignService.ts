@@ -451,6 +451,7 @@ export class CampaignService {
         const contactData =
           contact.data && typeof contact.data === 'object' && !Array.isArray(contact.data) ? contact.data : {};
         const variables = {
+          id: contact.id,
           email: contact.email,
           ...contactData,
           data: contactData,

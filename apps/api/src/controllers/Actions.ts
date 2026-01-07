@@ -275,6 +275,7 @@ export class Actions {
       // These are always available for template rendering
       const dataWithSystemVars = {
         ...mergedData,
+        id: contact.id,
         email: contact.email,
         data: mergedData, // Also available as nested data for {{data.fieldName}} syntax
         unsubscribeUrl: `${DASHBOARD_URI}/unsubscribe/${contact.id}`,

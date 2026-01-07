@@ -117,7 +117,7 @@ export const VariableMention = Mention.configure({
 
     items: ({query}) => {
       const safeVariables = Array.isArray(availableVariables) ? availableVariables : [];
-      const allVariables = ['email', 'unsubscribeUrl', 'subscribeUrl', 'manageUrl', 'locale', ...safeVariables];
+      const allVariables = ['id', 'email', 'unsubscribeUrl', 'subscribeUrl', 'manageUrl', 'locale', ...safeVariables];
       const uniqueVariables = Array.from(new Set(allVariables)).filter(v => typeof v === 'string');
 
       if (!query) {

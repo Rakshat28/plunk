@@ -221,7 +221,15 @@ export class ContactService {
       for (const [key, value] of Object.entries(data)) {
         // Skip reserved system-generated fields
         // These fields are dynamically added during template rendering and cannot be overridden
-        const reservedFields = ['plunk_id', 'plunk_email', 'email', 'unsubscribeUrl', 'subscribeUrl', 'manageUrl'];
+        const reservedFields = [
+          'plunk_id',
+          'plunk_email',
+          'id',
+          'email',
+          'unsubscribeUrl',
+          'subscribeUrl',
+          'manageUrl',
+        ];
         if (reservedFields.includes(key)) {
           continue;
         }

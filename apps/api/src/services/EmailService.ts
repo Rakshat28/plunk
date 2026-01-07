@@ -333,6 +333,7 @@ export class EmailService {
         subject: email.subject,
         body: email.body,
         data: {
+          id: email.contact.id,
           email: email.contact.email,
           ...contactData,
           data: contactData,
