@@ -87,9 +87,41 @@ const server = new (class extends Server {
         ? [/.*\.localhost:1000/, 'http://localhost:3000', 'http://localhost:4000']
         : [DASHBOARD_URI, LANDING_URI, WIKI_URI];
 
+    // Log CORS configuration on startup
+    signale.info('CORS configuration', {
+      environment: NODE_ENV,
+      allowedOrigins: allowedOrigins.map(o => (o instanceof RegExp ? o.toString() : o)),
+    });
+
     this.app.use(
       cors({
-        origin: allowedOrigins,
+        origin: (origin, callback) => {
+          // Allow requests with no origin (e.g., mobile apps, curl, server-to-server)
+          if (!origin) {
+            return callback(null, true);
+          }
+
+          // Check if origin matches any allowed origin (string or regex)
+          const isAllowed = allowedOrigins.some(allowed => {
+            if (allowed instanceof RegExp) {
+              return allowed.test(origin);
+            }
+            return allowed === origin;
+          });
+
+          if (isAllowed) {
+            callback(null, true);
+          } else {
+            // Log CORS rejection with helpful information
+            signale.warn('CORS request rejected', {
+              origin,
+              allowedOrigins: allowedOrigins.map(o => (o instanceof RegExp ? o.toString() : o)),
+              hint: 'If using HTTPS, ensure USE_HTTPS=true is set in your environment variables',
+            });
+            // Reject the CORS request by passing false (don't send CORS headers)
+            callback(null, false);
+          }
+        },
         credentials: true,
       }),
     );
