@@ -68,7 +68,11 @@ export const ProjectSchemas = {
   update: z.object({
     name: z.string().min(1).max(100).optional(),
     tracking: z.nativeEnum(TrackingMode).optional(),
-    language: z.string().length(2).regex(/^[a-z]{2}$/).optional(),
+    language: z
+      .string()
+      .length(2)
+      .regex(/^[a-z]{2}$/)
+      .optional(),
   }),
 } as const;
 
@@ -342,14 +346,29 @@ export const ActionSchemas = {
       template: uuid.optional(),
       subscribed: z.boolean().optional(),
       name: z.string().optional(),
-      from: z.union([
-        email, // Simple email string (backward compatible)
-        z.object({
-          // Object with name and email
-          name: z.string().optional(),
-          email: email,
-        }),
-      ]),
+      from: z
+        .union(
+          [
+            email, // Simple email string (backward compatible)
+            z.object({
+              // Object with name and email
+              name: z.string().optional(),
+              email: email,
+            }),
+          ],
+          {
+            errorMap: (issue, ctx) => {
+              if (issue.code === z.ZodIssueCode.invalid_union) {
+                return {
+                  message:
+                    'Invalid "from" field. Expected a valid email string (e.g., "hello@example.com") or an object with an email field and optional name (e.g., {email: "hello@example.com", name: "My App"})',
+                };
+              }
+              return {message: ctx.defaultError};
+            },
+          },
+        )
+        .optional(),
       reply: email.optional(),
       headers: z.record(z.string().max(998)).optional(),
       data: jsonSchema.optional(),
@@ -364,23 +383,29 @@ export const ActionSchemas = {
         .max(10) // Maximum 10 attachments per email
         .optional(),
     })
-    .refine(data => data.template ?? (data.subject && data.body), {
-      message: 'Either template ID or both subject and body are required',
-    })
-    .refine(
-      data => {
-        // Validate total attachment size (sum of base64 strings should be reasonable)
-        if (!data.attachments || data.attachments.length === 0) {
-          return true;
-        }
-        // Each base64 char = ~0.75 bytes, so 13.3M base64 chars ≈ 10MB actual data
+    .superRefine((data, ctx) => {
+      // Validate that either template or subject+body are provided
+      if (!data.template && !(data.subject && data.body)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Either template ID or both subject and body are required',
+          path: ['template'],
+        });
+      }
+
+      // Validate total attachment size
+      if (data.attachments && data.attachments.length > 0) {
         const totalBase64Length = data.attachments.reduce((sum, att) => sum + att.content.length, 0);
-        return totalBase64Length <= 13333333; // ~10MB limit
-      },
-      {
-        message: 'Total attachment size must not exceed 10MB',
-      },
-    ),
+        if (totalBase64Length > 13333333) {
+          // ~10MB limit
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Total attachment size must not exceed 10MB',
+            path: ['attachments'],
+          });
+        }
+      }
+    }),
   verify: z.object({
     email,
   }),

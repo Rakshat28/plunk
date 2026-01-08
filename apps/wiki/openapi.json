@@ -186,7 +186,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["to"],
+                "required": ["to", "from"],
                 "properties": {
                   "to": {
                     "oneOf": [
@@ -277,7 +277,7 @@
                         "description": "Sender with name and email"
                       }
                     ],
-                    "description": "Custom from address (requires verified domain). Can be a string or an object with {name, email}."
+                    "description": "Sender email address (requires verified domain). Required unless using a template that has a 'from' address configured. Can be a string (e.g., 'hello@example.com') or an object with {name, email} (e.g., {name: 'My App', email: 'hello@example.com'})."
                   },
                   "name": {
                     "type": "string",
