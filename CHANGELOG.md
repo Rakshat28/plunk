@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.4.0](https://github.com/useplunk/plunk/compare/v0.3.0...v0.4.0) (2026-01-08)
+
+
+### Features
+
+* Add cooldown to resend verification email ([457c829](https://github.com/useplunk/plunk/commit/457c829b2d59debc41ac69f907f758dd5ded1c1a))
+* Add email verification on signup ([fb02051](https://github.com/useplunk/plunk/commit/fb02051538029d8a6b806ce69b25fb9e75622693))
+* Add forwarding domains as verification check ([e732c76](https://github.com/useplunk/plunk/commit/e732c76490e015b87a9165a98f1f1b5084552f84))
+* Add id as reserved field in templates, campaigns and workflows ([7386441](https://github.com/useplunk/plunk/commit/7386441e6137ac9f059a3818895f1b1059e2d99d))
+* Add platform emails for domain verification and expiration ([19554e6](https://github.com/useplunk/plunk/commit/19554e6e8f94fbcf74006017454aa83a707617ea))
+
+
+### Bug Fixes
+
+* Add better validation for sender email ([e75e07f](https://github.com/useplunk/plunk/commit/e75e07f73f5928ded281d2704b0fd06fedeb9077))
+* Catch unknown content-type headers ([a5c5754](https://github.com/useplunk/plunk/commit/a5c575444ba698624b3932b4d6414c5ad9df282a))
+* Check email volume for 7-day window ([492beb0](https://github.com/useplunk/plunk/commit/492beb095fd7be0cfd3de9761420d7ce1170d56f))
+* Copy types build files ([49824af](https://github.com/useplunk/plunk/commit/49824aff93c7ce09caa0cb57cfef68ae296f6626))
+* Enhance CORS handling to allow requests with rejection logging ([718251c](https://github.com/useplunk/plunk/commit/718251c67c876352a5dfca7592613e33f6713061))
+* Migrate over to new pagination format in dashboard ([8790c45](https://github.com/useplunk/plunk/commit/8790c45edc1374f9649b8438563fc8844a645367))
+* Reentry into segment not working after exit ([4dce71a](https://github.com/useplunk/plunk/commit/4dce71a1fe22774391bf0d0e87f1564c3b93b496))
+* Refactor CORS handling to allow unrestricted access for public API endpoints ([940c893](https://github.com/useplunk/plunk/commit/940c8938f163879da5be205bcc8bb82ecd69279a))
+* Update sentCount on campaign sent for correct overview stats ([ee00eb3](https://github.com/useplunk/plunk/commit/ee00eb34811270473d1f79729853eaada883a477))
+* Update template fetching to use Template type and simplify body access ([b6c5471](https://github.com/useplunk/plunk/commit/b6c5471d272e8ba835282691946a418385896c98))
+* Update templates data fetching to use PaginatedResponse type ([fa22b82](https://github.com/useplunk/plunk/commit/fa22b8220a909e7234948aeeb2a6734ae51aeec9))
+
+
+### Documentation
+
+* Add more details about personalisation ([940a4d2](https://github.com/useplunk/plunk/commit/940a4d225b86ba5af5377851ab758a43b3aa71ff))
+
 ## [0.3.0](https://github.com/useplunk/plunk/compare/v0.2.0...v0.3.0) (2025-12-29)
 
 
