@@ -76,24 +76,42 @@ const server = new (class extends Server {
     // Log all requests to database for historical tracking and analytics
     this.app.use(databaseRequestLogger);
 
-    this.app.use(['/v1', '/v1/track', '/v1/send'], (req, res, next) => {
-      res.set({'Access-Control-Allow-Origin': '*'});
-      next();
-    });
-
     // Build allowed origins from environment variables
     const allowedOrigins =
       NODE_ENV === 'development'
         ? [/.*\.localhost:1000/, 'http://localhost:3000', 'http://localhost:4000']
         : [DASHBOARD_URI, LANDING_URI, WIKI_URI];
 
+    // Public API endpoints that should allow all origins
+    const publicApiPaths = ['/v1', '/v1/track', '/v1/send'];
+
     // Log CORS configuration on startup
     signale.info('CORS configuration', {
       environment: NODE_ENV,
       allowedOrigins: allowedOrigins.map(o => (o instanceof RegExp ? o.toString() : o)),
+      publicApiPaths,
     });
 
-    this.app.use(
+    // Apply restrictive CORS to all routes EXCEPT public API endpoints
+    this.app.use((req, res, next) => {
+      // Check if this is a public API endpoint
+      const isPublicApi = publicApiPaths.some(path => req.path === path || req.path.startsWith(path + '/'));
+
+      if (isPublicApi) {
+        // For public API endpoints, allow all origins
+        res.set({
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        });
+        // Handle preflight
+        if (req.method === 'OPTIONS') {
+          return res.sendStatus(200);
+        }
+        return next();
+      }
+
+      // For other endpoints, apply restrictive CORS
       cors({
         origin: (origin, callback) => {
           // Allow requests with no origin (e.g., mobile apps, curl, server-to-server)
@@ -123,8 +141,8 @@ const server = new (class extends Server {
           }
         },
         credentials: true,
-      }),
-    );
+      })(req, res, next);
+    });
 
     this.app.use(morgan(NODE_ENV === 'development' ? 'dev' : 'short'));
 
