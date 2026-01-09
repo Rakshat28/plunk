@@ -202,8 +202,8 @@ services:
 
     ports:
       # SMTP ports (for email relay)
-      - "465:465"    # SMTPS (implicit TLS)
-      - "587:587"    # SMTP Submission (STARTTLS)
+      - "${PORT_SECURE:-465}:465"    # SMTPS (implicit TLS)
+      - "${PORT_SUBMISSION:-587}:587"    # SMTP Submission (STARTTLS)
       # Optional: Expose individual service ports for debugging
       # - "8080:8080"  # API
       # - "3000:3000"  # Web
