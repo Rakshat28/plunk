@@ -152,29 +152,62 @@ export class Webhooks {
           break;
         }
 
-        case 'Bounce':
-          signale.warn(`[WEBHOOK] Bounce received for ${email.contact.email} from ${email.project.name}`);
-          updateData.status = EmailStatus.BOUNCED;
-          updateData.bouncedAt = now;
-          // Unsubscribe contact on bounce
-          await prisma.contact.update({
-            where: {id: email.contactId},
-            data: {subscribed: false},
-          });
-          eventData = {
-            ...baseEventData,
-            bounceType: body.bounce?.bounceType,
-            bouncedAt: now.toISOString(),
-          };
+        case 'Bounce': {
+          const bounceType = body.bounce?.bounceType;
+          const isPermanentBounce = bounceType === 'Permanent';
+          const isTransientBounce = bounceType === 'Transient';
 
-          // Send notification about bounce
-          await NtfyService.notifyEmailBounce(
-            email.project.name,
-            email.projectId,
-            email.contact.email,
-            body.bounce?.bounceType,
-          );
+          if (isPermanentBounce) {
+            // Hard bounce - counts toward bounce rate and unsubscribes contact
+            signale.warn(`[WEBHOOK] Permanent bounce received for ${email.contact.email} from ${email.project.name}`);
+            updateData.status = EmailStatus.BOUNCED;
+            updateData.bouncedAt = now;
+            // Unsubscribe contact on permanent bounce
+            await prisma.contact.update({
+              where: {id: email.contactId},
+              data: {subscribed: false},
+            });
+            eventData = {
+              ...baseEventData,
+              bounceType,
+              bouncedAt: now.toISOString(),
+            };
+
+            // Send notification about permanent bounce
+            await NtfyService.notifyEmailBounce(email.project.name, email.projectId, email.contact.email, bounceType);
+          } else if (isTransientBounce) {
+            // Soft bounce (e.g., out-of-office, mailbox full) - don't count toward bounce rate
+            signale.info(
+              `[WEBHOOK] Transient bounce received for ${email.contact.email} from ${email.project.name} (not counted toward bounce rate)`,
+            );
+            // Don't update email status or unsubscribe contact
+            // Just track the event for visibility
+            eventData = {
+              ...baseEventData,
+              bounceType,
+              transientBounce: true,
+            };
+          } else {
+            // Unknown bounce type - treat as permanent to be safe
+            signale.warn(
+              `[WEBHOOK] Unknown bounce type (${bounceType}) received for ${email.contact.email} from ${email.project.name} - treating as permanent`,
+            );
+            updateData.status = EmailStatus.BOUNCED;
+            updateData.bouncedAt = now;
+            await prisma.contact.update({
+              where: {id: email.contactId},
+              data: {subscribed: false},
+            });
+            eventData = {
+              ...baseEventData,
+              bounceType,
+              bouncedAt: now.toISOString(),
+            };
+
+            await NtfyService.notifyEmailBounce(email.project.name, email.projectId, email.contact.email, bounceType);
+          }
           break;
+        }
 
         case 'Complaint':
           signale.warn(`[WEBHOOK] Complaint received for ${email.contact.email} from ${email.project.name}`);
@@ -208,8 +241,10 @@ export class Webhooks {
       // Track event (this will trigger workflows)
       await EventService.trackEvent(email.projectId, eventName, email.contactId, email.id, eventData);
 
-      // Check security limits for bounce and complaint events
-      if (eventType === 'Bounce' || eventType === 'Complaint') {
+      // Check security limits only for permanent bounces and complaints
+      // Transient bounces (soft bounces) don't count toward bounce rate
+      const isPermanentBounce = eventType === 'Bounce' && body.bounce?.bounceType === 'Permanent';
+      if (isPermanentBounce || eventType === 'Complaint') {
         await SecurityService.checkAndEnforceSecurityLimits(email.projectId);
       }
 
