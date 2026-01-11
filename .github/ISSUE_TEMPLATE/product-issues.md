@@ -2,7 +2,7 @@
 name: Product Issues
 about: Use this template for bugs and issues on Plunk
 title: ''
-labels: bug, self-hosting
+labels: bug
 assignees: ''
 
 ---
