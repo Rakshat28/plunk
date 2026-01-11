@@ -40,7 +40,7 @@ if [ -d "$APP_DIR/.next/static" ]; then
   echo "   Scanning .next/static directory..."
   find "$APP_DIR/.next/static" -type f \( -name "*.js" -o -name "*.json" -o -name "*.html" \) \
     -exec grep -l -E "$PLACEHOLDER_API|$PLACEHOLDER_DASHBOARD|$PLACEHOLDER_LANDING|$PLACEHOLDER_WIKI" {} \; \
-    2>/dev/null | sed "s|$APP_DIR/|.next/|g" >> "$MANIFEST_FILE" || true
+    2>/dev/null | sed "s|$APP_DIR/||g" >> "$MANIFEST_FILE" || true
 fi
 
 # 2. Scan standalone server files  
