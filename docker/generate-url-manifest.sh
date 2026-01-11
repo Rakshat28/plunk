@@ -25,23 +25,31 @@ PLACEHOLDER_WIKI="https://next-wiki.useplunk.com"
 # Output manifest file
 MANIFEST_FILE="$APP_DIR/.next/url-manifest.txt"
 
-# Find all files that contain placeholder URLs and save to manifest
-# IMPORTANT: Only scan the standalone directory, not the entire .next directory
-# This avoids including server-only files that won't exist in the runtime container
-STANDALONE_DIR="$APP_DIR/.next/standalone/apps/$APP_NAME"
+# At build time, Next.js creates:
+# - .next/static/* - Static assets (copied separately to standalone in Dockerfile)
+# - .next/standalone/apps/<app>/.next/* - Server files
+# 
+# We need to scan BOTH and store paths relative to where they'll be at runtime:
+# Runtime location: /app/apps/<app>/.next/standalone/apps/<app>/
 
-if [ -d "$STANDALONE_DIR" ]; then
-  # Search in standalone directory for files that will be deployed
-  # Store paths RELATIVE to the standalone directory for easier runtime processing
+# Clear manifest file
+> "$MANIFEST_FILE"
+
+# 1. Scan static assets (these will be copied to standalone/.next/static at runtime)
+if [ -d "$APP_DIR/.next/static" ]; then
+  echo "   Scanning .next/static directory..."
+  find "$APP_DIR/.next/static" -type f \( -name "*.js" -o -name "*.json" -o -name "*.html" \) \
+    -exec grep -l -E "$PLACEHOLDER_API|$PLACEHOLDER_DASHBOARD|$PLACEHOLDER_LANDING|$PLACEHOLDER_WIKI" {} \; \
+    2>/dev/null | sed "s|$APP_DIR/|.next/|g" >> "$MANIFEST_FILE" || true
+fi
+
+# 2. Scan standalone server files  
+STANDALONE_DIR="$APP_DIR/.next/standalone/apps/$APP_NAME"
+if [ -d "$STANDALONE_DIR/.next" ]; then
+  echo "   Scanning standalone directory..."
   find "$STANDALONE_DIR/.next" -type f \( -name "*.js" -o -name "*.json" -o -name "*.html" -o -name "*.rsc" \) \
     -exec grep -l -E "$PLACEHOLDER_API|$PLACEHOLDER_DASHBOARD|$PLACEHOLDER_LANDING|$PLACEHOLDER_WIKI" {} \; \
-    2>/dev/null | sed "s|$STANDALONE_DIR/||g" > "$MANIFEST_FILE" || true
-else
-  echo "⚠️  Warning: Standalone directory not found at $STANDALONE_DIR"
-  echo "   Falling back to scanning entire .next directory"
-  find "$APP_DIR/.next" -type f \( -name "*.js" -o -name "*.json" -o -name "*.html" -o -name "*.rsc" \) \
-    -exec grep -l -E "$PLACEHOLDER_API|$PLACEHOLDER_DASHBOARD|$PLACEHOLDER_LANDING|$PLACEHOLDER_WIKI" {} \; \
-    2>/dev/null > "$MANIFEST_FILE" || true
+    2>/dev/null | sed "s|$STANDALONE_DIR/||g" >> "$MANIFEST_FILE" || true
 fi
 
 # Count files
@@ -53,13 +61,12 @@ echo "   Manifest saved to: $MANIFEST_FILE"
 # Also generate manifest for sitemap/robots files in standalone public directory
 SITEMAP_MANIFEST_FILE="$APP_DIR/.next/sitemap-manifest.txt"
 
-if [ -d "$STANDALONE_DIR/public" ]; then
-  # Store paths RELATIVE to the standalone directory
-  find "$STANDALONE_DIR/public" -type f \( -name "sitemap*.xml" -o -name "robots.txt" \) \
-    2>/dev/null | sed "s|$STANDALONE_DIR/||g" > "$SITEMAP_MANIFEST_FILE" || true
+# Scan public directory (will be copied to standalone/public at runtime)
+if [ -d "$APP_DIR/public" ]; then
+  find "$APP_DIR/public" -type f \( -name "sitemap*.xml" -o -name "robots.txt" \) \
+    2>/dev/null | sed "s|$APP_DIR/||g" > "$SITEMAP_MANIFEST_FILE" || true
 else
-  # Fallback to app public directory
-  find "$APP_DIR/public" -type f \( -name "sitemap*.xml" -o -name "robots.txt" \) 2>/dev/null > "$SITEMAP_MANIFEST_FILE" || true
+  > "$SITEMAP_MANIFEST_FILE"
 fi
 
 SITEMAP_COUNT=$(wc -l < "$SITEMAP_MANIFEST_FILE" | tr -d ' ')
