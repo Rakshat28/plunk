@@ -37,36 +37,24 @@ replace_urls_in_app() {
   echo "   📊 Processing $file_count files from manifest"
 
   if [ "$file_count" -gt 0 ]; then
-    # Process files using xargs for better performance
-    # Use -P 4 to process up to 4 files in parallel
-    # This significantly speeds up processing of many files
-    #
-    # IMPORTANT: The manifest contains build-time paths (e.g., /app/apps/web/.next/...)
-    # but we need to translate them to runtime standalone paths
-    # (e.g., /app/apps/web/.next/standalone/apps/web/.next/...)
-    cat "$manifest_file" | while IFS= read -r build_path; do
-      # Translate build path to runtime standalone path
-      # Build path format: /app/apps/<app>/.next/...
-      # Runtime path format: /app/apps/<app>/.next/standalone/apps/<app>/.next/...
-
-      # Extract the relative path after /app/apps/<app>/
-      rel_path="${build_path#/app/apps/${app}/}"
-
-      # Construct runtime path in standalone directory
+    # Process files line by line
+    # The manifest now contains RELATIVE paths (e.g., .next/static/chunks/abc.js)
+    # We just need to prepend the app_dir
+    
+    cat "$manifest_file" | while IFS= read -r rel_path; do
+      # Construct full runtime path
       runtime_path="$app_dir/$rel_path"
-
+      
       if [ -f "$runtime_path" ]; then
         sed -e "s|$PLACEHOLDER_API|$API_URI|g" \
             -e "s|$PLACEHOLDER_DASHBOARD|$DASHBOARD_URI|g" \
             -e "s|$PLACEHOLDER_LANDING|$LANDING_URI|g" \
             -e "s|$PLACEHOLDER_WIKI|$WIKI_URI|g" \
             "$runtime_path" > "${runtime_path}.tmp" && mv "${runtime_path}.tmp" "$runtime_path"
-      else
-        echo "   ⚠️  Warning: File not found at runtime: $runtime_path"
       fi
     done
 
-    echo "   ✅ Successfully replaced URLs in $file_count files"
+    echo "   ✅ Successfully replaced URLs in files"
   else
     echo "   ℹ️  No files found with placeholder URLs"
   fi
@@ -76,25 +64,16 @@ replace_urls_in_app() {
   local sitemap_manifest="$app_dir/.next/sitemap-manifest.txt"
 
   if [ -f "$sitemap_manifest" ]; then
-    while IFS= read -r build_sitemap_path; do
-      # Translate build path to runtime path
-      # Build path format: /app/apps/<app>/public/...
-      # Runtime path format: /app/apps/<app>/.next/standalone/apps/<app>/public/...
-
-      # Extract the relative path after /app/apps/<app>/
-      rel_path="${build_sitemap_path#/app/apps/${app}/}"
-
-      # Construct runtime path in standalone directory
+    while IFS= read -r rel_path; do
+      # Manifest contains relative paths, just prepend app_dir
       runtime_sitemap_path="$app_dir/$rel_path"
-
+      
       if [ -f "$runtime_sitemap_path" ]; then
         sed -e "s|$PLACEHOLDER_API|$API_URI|g" \
             -e "s|$PLACEHOLDER_DASHBOARD|$DASHBOARD_URI|g" \
             -e "s|$PLACEHOLDER_LANDING|$LANDING_URI|g" \
             -e "s|$PLACEHOLDER_WIKI|$WIKI_URI|g" \
             "$runtime_sitemap_path" > "${runtime_sitemap_path}.tmp" && mv "${runtime_sitemap_path}.tmp" "$runtime_sitemap_path"
-      else
-        echo "   ⚠️  Warning: Sitemap file not found at runtime: $runtime_sitemap_path"
       fi
     done < "$sitemap_manifest"
   else
