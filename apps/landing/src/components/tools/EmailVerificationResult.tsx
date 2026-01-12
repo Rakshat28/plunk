@@ -2,15 +2,16 @@ import {
   AlertCircle,
   AlertTriangle,
   CheckCircle,
+  Forward,
   Info,
   Mail,
   Server,
   Shield,
   Trash2,
+  User,
   XCircle,
-  Forward,
 } from 'lucide-react';
-import type {EmailVerificationResult as VerificationResult} from '../../lib/emailVerification';
+import type {EmailVerificationResult as VerificationResult} from '@plunk/types';
 
 interface EmailVerificationResultProps {
   result: VerificationResult;
@@ -52,7 +53,7 @@ export function EmailVerificationResult({result}: EmailVerificationResultProps) 
               <Server className="h-5 w-5 text-neutral-600" />
               <div>
                 <p className="font-medium text-neutral-900">Domain Exists</p>
-                <p className="text-sm text-neutral-600">DNS A/AAAA records found</p>
+                <p className="text-sm text-neutral-600">Domain has nameservers (NS records)</p>
               </div>
             </div>
             {result.domainExists ? (
@@ -78,6 +79,22 @@ export function EmailVerificationResult({result}: EmailVerificationResultProps) 
             )}
           </div>
 
+          {/* Website/A Records */}
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center gap-3">
+              <Server className="h-5 w-5 text-neutral-600" />
+              <div>
+                <p className="font-medium text-neutral-900">Has Website</p>
+                <p className="text-sm text-neutral-600">DNS A/AAAA records found</p>
+              </div>
+            </div>
+            {result.hasWebsite ? (
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            ) : (
+              <Info className="h-5 w-5 text-neutral-400" />
+            )}
+          </div>
+
           {/* Disposable Email */}
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center gap-3">
@@ -91,6 +108,22 @@ export function EmailVerificationResult({result}: EmailVerificationResultProps) 
               <AlertTriangle className="h-5 w-5 text-yellow-600" />
             ) : (
               <CheckCircle className="h-5 w-5 text-green-600" />
+            )}
+          </div>
+
+          {/* Personal Email */}
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center gap-3">
+              <User className="h-5 w-5 text-neutral-600" />
+              <div>
+                <p className="font-medium text-neutral-900">Personal Email</p>
+                <p className="text-sm text-neutral-600">Free email provider (Gmail, Hotmail, etc.)</p>
+              </div>
+            </div>
+            {result.isPersonalEmail ? (
+              <Info className="h-5 w-5 text-blue-600" />
+            ) : (
+              <span className="text-sm text-neutral-500">No</span>
             )}
           </div>
 

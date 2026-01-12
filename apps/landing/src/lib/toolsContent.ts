@@ -1,4 +1,4 @@
-import {CheckCircle, Mail, Search, Shield} from 'lucide-react';
+import {CheckCircle, Mail, Search, Shield, User} from 'lucide-react';
 
 /**
  * Educational content for the email verification tool
@@ -28,6 +28,11 @@ export const EMAIL_VERIFICATION_FEATURES = [
     title: 'Disposable Detection',
     description: 'Identify temporary email addresses that are often used for spam or fake signups.',
     icon: Mail,
+  },
+  {
+    title: 'Personal Email Detection',
+    description: 'Detect personal/free email providers like Gmail, Hotmail, Yahoo for B2B validation.',
+    icon: User,
   },
   {
     title: 'Plus Addressing',

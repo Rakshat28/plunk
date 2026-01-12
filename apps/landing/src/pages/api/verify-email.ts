@@ -1,24 +1,16 @@
 import type {NextApiRequest, NextApiResponse} from 'next';
+import type {EmailVerificationResult} from '@plunk/types';
 import {UtilitySchemas} from '@plunk/shared';
 import {API_URI} from '../../lib/constants';
-
-interface VerifyEmailResponse {
-  email: string;
-  valid: boolean;
-  isDisposable: boolean;
-  isTypo: boolean;
-  isPlusAddressed: boolean;
-  domainExists: boolean;
-  hasMxRecords: boolean;
-  suggestedEmail?: string;
-  reasons: string[];
-}
 
 interface ErrorResponse {
   error: string;
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse<VerifyEmailResponse | ErrorResponse>) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<EmailVerificationResult | ErrorResponse>,
+) {
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({error: 'Method not allowed'});

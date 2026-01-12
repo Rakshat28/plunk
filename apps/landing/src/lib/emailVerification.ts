@@ -1,15 +1,4 @@
-export interface EmailVerificationResult {
-  email: string;
-  valid: boolean;
-  isDisposable: boolean;
-  isAlias: boolean;
-  isTypo: boolean;
-  isPlusAddressed: boolean;
-  domainExists: boolean;
-  hasMxRecords: boolean;
-  suggestedEmail?: string;
-  reasons: string[];
-}
+import type {EmailVerificationResult} from '@plunk/types';
 
 export async function verifyEmail(email: string): Promise<EmailVerificationResult> {
   const response = await fetch('/api/verify-email', {

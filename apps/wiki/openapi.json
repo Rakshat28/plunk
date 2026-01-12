@@ -596,7 +596,7 @@
       "post": {
         "tags": ["Public API"],
         "summary": "Verify email address",
-        "description": "Verify an email address for validity, check if it's from a disposable domain, verify MX records, and detect potential typos with suggestions.",
+        "description": "Verify an email address for validity, check if it's from a disposable domain or personal email provider, verify MX records, and detect potential typos with suggestions.",
         "operationId": "verifyEmail",
         "requestBody": {
           "required": true,
@@ -676,9 +676,17 @@
                           "type": "boolean",
                           "description": "Whether the email uses plus addressing (contains a + in the local part)"
                         },
+                        "isPersonalEmail": {
+                          "type": "boolean",
+                          "description": "Whether the email is from a personal/free email provider (Gmail, Hotmail, Yahoo, etc.)"
+                        },
                         "domainExists": {
                           "type": "boolean",
-                          "description": "Whether the domain exists (has DNS A or AAAA records)"
+                          "description": "Whether the domain exists in DNS (has NS records)"
+                        },
+                        "hasWebsite": {
+                          "type": "boolean",
+                          "description": "Whether the domain has a website (has DNS A or AAAA records) - informational only"
                         },
                         "hasMxRecords": {
                           "type": "boolean",
@@ -705,7 +713,9 @@
                         "isAlias",
                         "isTypo",
                         "isPlusAddressed",
+                        "isPersonalEmail",
                         "domainExists",
+                        "hasWebsite",
                         "hasMxRecords",
                         "reasons"
                       ]
@@ -724,7 +734,9 @@
                         "isAlias": false,
                         "isTypo": false,
                         "isPlusAddressed": false,
+                        "isPersonalEmail": true,
                         "domainExists": true,
+                        "hasWebsite": true,
                         "hasMxRecords": true,
                         "reasons": ["Email appears to be valid"]
                       }
@@ -741,10 +753,15 @@
                         "isAlias": false,
                         "isTypo": true,
                         "isPlusAddressed": false,
+                        "isPersonalEmail": false,
                         "domainExists": false,
+                        "hasWebsite": false,
                         "hasMxRecords": false,
                         "suggestedEmail": "user@gmail.com",
-                        "reasons": ["Possible typo detected, did you mean gmail.com?", "Domain does not exist"]
+                        "reasons": [
+                          "Possible typo detected, did you mean gmail.com?",
+                          "Domain does not exist (no nameservers found)"
+                        ]
                       }
                     }
                   },
@@ -759,7 +776,9 @@
                         "isAlias": false,
                         "isTypo": false,
                         "isPlusAddressed": false,
+                        "isPersonalEmail": false,
                         "domainExists": true,
+                        "hasWebsite": true,
                         "hasMxRecords": true,
                         "reasons": ["Email appears to be valid"]
                       }
