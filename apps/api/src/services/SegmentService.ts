@@ -584,8 +584,10 @@ export class SegmentService {
       'exists',
       'notExists',
       'within',
+      'olderThan',
       'triggered',
       'triggeredWithin',
+      'triggeredOlderThan',
       'notTriggered',
     ];
 
@@ -604,7 +606,9 @@ export class SegmentService {
       'greaterThanOrEqual',
       'lessThanOrEqual',
       'within',
+      'olderThan',
       'triggeredWithin',
+      'triggeredOlderThan',
     ];
 
     if (operatorsNeedingValue.includes(filter.operator) && filter.value === undefined) {
@@ -612,7 +616,7 @@ export class SegmentService {
     }
 
     // Validate unit for time-based operators
-    if (['within', 'triggeredWithin'].includes(filter.operator) && !filter.unit) {
+    if (['within', 'triggeredWithin', 'olderThan', 'triggeredOlderThan'].includes(filter.operator) && !filter.unit) {
       throw new HttpException(400, `"${filter.operator}" operator requires a unit (days, hours, or minutes)`);
     }
   }
@@ -729,6 +733,20 @@ export class SegmentService {
         // Use ISO string for lexicographic comparison in JSON
         return {data: {path, gte: since.toISOString() as Prisma.InputJsonValue}};
       }
+      case 'olderThan': {
+        // Note: Requires JSON date fields in ISO 8601 format for proper comparison
+        if (!unit) {
+          throw new HttpException(400, 'Unit is required for "olderThan" operator');
+        }
+
+        // Calculate the "before" date (X time units ago from now)
+        const now = new Date();
+        const milliseconds = this.getMilliseconds(value as number, unit);
+        const before = new Date(now.getTime() - milliseconds);
+
+        // Use ISO string for lexicographic comparison in JSON
+        return {data: {path, lt: before.toISOString() as Prisma.InputJsonValue}};
+      }
       default:
         throw new HttpException(400, `Unsupported operator for JSON field: ${operator}`);
     }
@@ -821,6 +839,18 @@ export class SegmentService {
         const since = new Date(now.getTime() - milliseconds);
 
         return {[field]: {gte: since}};
+      }
+      case 'olderThan': {
+        // "olderThan X days/hours/minutes" means more than X time units ago
+        if (!unit) {
+          throw new HttpException(400, 'Unit is required for "olderThan" operator');
+        }
+
+        const now = new Date();
+        const milliseconds = this.getMilliseconds(value as number, unit);
+        const before = new Date(now.getTime() - milliseconds);
+
+        return {[field]: {lt: before}};
       }
       default:
         throw new HttpException(400, `Unsupported operator for date field: ${operator}`);
@@ -921,6 +951,42 @@ export class SegmentService {
         };
       }
 
+      case 'triggeredOlderThan': {
+        // Contact triggered this event, but only more than X time ago (not recently)
+        // This means: has event AND all occurrences are before the cutoff
+        if (!unit) {
+          throw new HttpException(400, 'Unit is required for "triggeredOlderThan" operator');
+        }
+
+        const now = new Date();
+        const milliseconds = this.getMilliseconds(value as number, unit);
+        const before = new Date(now.getTime() - milliseconds);
+
+        return {
+          AND: [
+            // Must have triggered the event at some point
+            {
+              events: {
+                some: {
+                  name: eventName,
+                },
+              },
+            },
+            // But NOT within the recent timeframe
+            {
+              events: {
+                none: {
+                  name: eventName,
+                  createdAt: {
+                    gte: before,
+                  },
+                },
+              },
+            },
+          ],
+        };
+      }
+
       case 'notTriggered':
         // Contact has never triggered this event
         return {
@@ -992,6 +1058,42 @@ export class SegmentService {
               },
             },
           },
+        };
+      }
+
+      case 'triggeredOlderThan': {
+        // Contact had this email activity, but only more than X time ago (not recently)
+        if (!unit) {
+          throw new HttpException(400, 'Unit is required for "triggeredOlderThan" operator');
+        }
+
+        const now = new Date();
+        const milliseconds = this.getMilliseconds(value as number, unit);
+        const before = new Date(now.getTime() - milliseconds);
+
+        return {
+          AND: [
+            // Must have the email activity at some point
+            {
+              emails: {
+                some: {
+                  [field]: {
+                    not: null,
+                  },
+                },
+              },
+            },
+            // But NOT within the recent timeframe
+            {
+              emails: {
+                none: {
+                  [field]: {
+                    gte: before,
+                  },
+                },
+              },
+            },
+          ],
         };
       }
 
