@@ -64,9 +64,9 @@ to run them separately (e.g., for debugging), use `dev:server` and `dev:worker` 
 ### Applications (`apps/`)
 
 - **api**: Express.js API server with TypeScript (ESM), uses @overnightjs/core
-    - HTTP API endpoints for the platform
-    - Background cron jobs (workflow processor, domain verification)
-    - **Worker process** (separate): BullMQ worker for processing email, campaign, and workflow queues
+  - HTTP API endpoints for the platform
+  - Background cron jobs (workflow processor, domain verification)
+  - **Worker process** (separate): BullMQ worker for processing email, campaign, and workflow queues
 - **web**: Next.js app (Pages Router) - Main platform (next-app.useplunk.com)
 - **landing**: Next.js app (Pages Router) - Marketing site (next.useplunk.com)
 - **wiki**: Next.js app - Documentation site (next-wiki.useplunk.com)
@@ -148,6 +148,12 @@ Required for builds and deployment (see turbo.json and .env.example):
 - Notifications (optional): `NTFY_URL` (ntfy.sh topic URL or self-hosted server for system notifications)
 - Platform Email Notifications (optional): `PLUNK_API_KEY` (enables email notifications to users for critical events like
   project disabled, billing limits, etc. If not set, only ntfy notifications are sent)
+- Self-hosting User Management (optional):
+  - `DISABLE_SIGNUPS` (default: false) - When set to true, prevents new user signups via the API
+  - `VERIFY_EMAIL_ON_SIGNUP` (default: false) - When set to true, validates emails on signup for disposable domains,
+    plus-addressing, domain existence, and MX records
+- Security (optional): `AUTO_PROJECT_DISABLE` (default: true) - Controls whether projects are automatically disabled when
+  bounce/complaint rate thresholds are exceeded
 
 **Important Notes:**
 
@@ -159,6 +165,7 @@ Required for builds and deployment (see turbo.json and .env.example):
   client-side access
 
 ## Plugins
+
 There are two plugins installed for you to use.
 
 - frontend-design: This plugin can help you to create polished user interfaces. Use it when working on design-related tasks.

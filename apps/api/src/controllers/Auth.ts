@@ -7,6 +7,7 @@ import * as React from 'react';
 
 import {
   DASHBOARD_URI,
+  DISABLE_SIGNUPS,
   EMAIL_VERIFICATION_RATE_LIMIT,
   EMAIL_VERIFICATION_RATE_WINDOW,
   GITHUB_OAUTH_ENABLED,
@@ -15,6 +16,7 @@ import {
   PASSWORD_RESET_RATE_LIMIT,
   PLUNK_ENABLED,
   TOKEN_EXPIRY_SECONDS,
+  VERIFY_EMAIL_ON_SIGNUP,
 } from '../app/constants.js';
 import {prisma} from '../database/prisma.js';
 import {redis, REDIS_ONE_MINUTE} from '../database/redis.js';
@@ -63,31 +65,41 @@ export class Auth {
   @Post('signup')
   @CatchAsync
   public async signup(req: Request, res: Response, _next: NextFunction) {
-    const {email, password} = AuthenticationSchemas.login.parse(req.body);
-
-    // Verify email is valid and not disposable/plus-addressed
-    const verification = await EmailVerificationService.verifyEmail(email);
-
-    if (
-      verification.isDisposable ||
-      verification.isPlusAddressed ||
-      !verification.domainExists ||
-      !verification.hasMxRecords
-    ) {
-      // Build list of reasons for notification
-      const reasons: string[] = [];
-      if (verification.isDisposable) reasons.push('disposable email');
-      if (verification.isPlusAddressed) reasons.push('plus addressing');
-      if (!verification.domainExists) reasons.push('domain does not exist');
-      if (!verification.hasMxRecords) reasons.push('no MX records');
-
-      // Send notification about failed signup attempt
-      await NtfyService.notifyFailedSignupAttempt(email, reasons);
-
+    // Check if signups are disabled
+    if (DISABLE_SIGNUPS) {
       return res.json({
         success: false,
-        data: 'This email address cannot be used for signup',
+        data: 'New user signups are currently disabled',
       });
+    }
+
+    const {email, password} = AuthenticationSchemas.login.parse(req.body);
+
+    // Verify email is valid and not disposable/plus-addressed (if verification enabled)
+    if (VERIFY_EMAIL_ON_SIGNUP) {
+      const verification = await EmailVerificationService.verifyEmail(email);
+
+      if (
+        verification.isDisposable ||
+        verification.isPlusAddressed ||
+        !verification.domainExists ||
+        !verification.hasMxRecords
+      ) {
+        // Build list of reasons for notification
+        const reasons: string[] = [];
+        if (verification.isDisposable) reasons.push('disposable email');
+        if (verification.isPlusAddressed) reasons.push('plus addressing');
+        if (!verification.domainExists) reasons.push('domain does not exist');
+        if (!verification.hasMxRecords) reasons.push('no MX records');
+
+        // Send notification about failed signup attempt
+        await NtfyService.notifyFailedSignupAttempt(email, reasons);
+
+        return res.json({
+          success: false,
+          data: 'This email address cannot be used for signup',
+        });
+      }
     }
 
     const user = await UserService.email(email);

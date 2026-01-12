@@ -4,11 +4,13 @@ import type {NextFunction, Request, Response} from 'express';
 import {
   API_URI,
   DASHBOARD_URI,
+  DISABLE_SIGNUPS,
   GOOGLE_OAUTH_CLIENT,
   GOOGLE_OAUTH_ENABLED,
   GOOGLE_OAUTH_SECRET,
 } from '../../app/constants.js';
 import {prisma} from '../../database/prisma.js';
+import {BadRequest} from '../../exceptions/index.js';
 import {jwt} from '../../middleware/auth.js';
 import {NtfyService} from '../../services/NtfyService.js';
 import {UserService} from '../../services/UserService.js';
@@ -71,6 +73,11 @@ export class Google {
     let isNewUser = false;
 
     if (!user) {
+      // Check if signups are disabled
+      if (DISABLE_SIGNUPS) {
+        throw new BadRequest('New user signups are currently disabled');
+      }
+
       user = await prisma.user.create({
         data: {
           email,
