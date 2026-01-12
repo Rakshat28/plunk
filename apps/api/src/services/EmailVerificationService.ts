@@ -42,8 +42,8 @@ export class EmailVerificationService {
 
   /**
    * Verify an email address
-   * - Checks if domain exists (DNS A/AAAA records)
-   * - Checks for MX records
+   * - Checks for MX records (required for receiving email)
+   * - Checks if domain exists (DNS A/AAAA records) - informational only
    * - Detects disposable email addresses
    * - Detects forwarding/alias email addresses
    * - Suggests corrections for common typos
@@ -88,7 +88,23 @@ export class EmailVerificationService {
       result.isTypo = true;
     }
 
-    // Check if domain exists (has any DNS records)
+    // Check MX records first - this is what matters for email delivery
+    // A domain can receive email with only MX records, no A/AAAA records needed
+    try {
+      const mxRecords = await dns.resolveMx(domain);
+      result.hasMxRecords = mxRecords && mxRecords.length > 0;
+      if (!result.hasMxRecords) {
+        result.valid = false;
+        result.reasons.push('No MX records found for domain');
+      }
+    } catch {
+      result.hasMxRecords = false;
+      result.valid = false;
+      result.reasons.push('No MX records found for domain');
+    }
+
+    // Check if domain exists (has A/AAAA records) - informational only
+    // This doesn't affect validity since email delivery only requires MX records
     try {
       await dns.resolve(domain, 'A');
       result.domainExists = true;
@@ -98,25 +114,8 @@ export class EmailVerificationService {
         await dns.resolve(domain, 'AAAA');
         result.domainExists = true;
       } catch {
+        // Domain doesn't have A/AAAA records, but this is OK if it has MX records
         result.domainExists = false;
-        result.valid = false;
-        result.reasons.push('Domain does not exist');
-      }
-    }
-
-    // Check MX records (only if domain exists)
-    if (result.domainExists) {
-      try {
-        const mxRecords = await dns.resolveMx(domain);
-        result.hasMxRecords = mxRecords && mxRecords.length > 0;
-        if (!result.hasMxRecords) {
-          result.valid = false;
-          result.reasons.push('No MX records found for domain');
-        }
-      } catch {
-        result.hasMxRecords = false;
-        result.valid = false;
-        result.reasons.push('No MX records found for domain');
       }
     }
 
