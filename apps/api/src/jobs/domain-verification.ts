@@ -122,9 +122,13 @@ export async function checkDomainVerifications() {
 
           // Send email notification about domain verified
           try {
+            // Use SETNX to atomically check and set the flag (prevents race conditions)
             const cacheKey = Keys.Domain.verifiedEmail(dbDomain.id);
-            const alreadySent = await redis.get(cacheKey);
-            if (alreadySent !== '1') {
+            const ttl = 604800; // 7 days
+
+            // SETNX returns 1 if key was set (didn't exist), 0 if key already existed
+            const wasSet = await redis.set(cacheKey, '1', 'EX', ttl, 'NX');
+            if (wasSet) {
               const members = await MembershipService.getMembers(dbDomain.projectId);
               const emails = members.map(m => m.email);
               if (emails.length > 0) {
@@ -138,7 +142,6 @@ export async function checkDomainVerifications() {
                 await Promise.all(
                   emails.map(email => sendPlatformEmail(email, 'Domain Verified Successfully', template)),
                 );
-                await redis.setex(cacheKey, 604800, '1'); // 7 days
               }
             }
           } catch (error) {
@@ -156,12 +159,17 @@ export async function checkDomainVerifications() {
 
           // Send email notification about domain verification failed
           try {
+            // Use SETNX to atomically check and set the flag (prevents race conditions)
             const now = new Date();
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const cacheKey = Keys.Domain.unverifiedEmail(dbDomain.id, year, month);
-            const alreadySent = await redis.get(cacheKey);
-            if (alreadySent !== '1') {
+            const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            const ttl = Math.floor((endOfMonth.getTime() - now.getTime()) / 1000);
+
+            // SETNX returns 1 if key was set (didn't exist), 0 if key already existed
+            const wasSet = await redis.set(cacheKey, '1', 'EX', ttl, 'NX');
+            if (wasSet) {
               const members = await MembershipService.getMembers(dbDomain.projectId);
               const emails = members.map(m => m.email);
               if (emails.length > 0) {
@@ -175,9 +183,6 @@ export async function checkDomainVerifications() {
                 await Promise.all(
                   emails.map(email => sendPlatformEmail(email, 'Domain Verification Failed', template)),
                 );
-                const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-                const ttl = Math.floor((endOfMonth.getTime() - now.getTime()) / 1000);
-                await redis.setex(cacheKey, ttl, '1');
               }
             }
           } catch (error) {

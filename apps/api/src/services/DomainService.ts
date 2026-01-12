@@ -89,10 +89,13 @@ export class DomainService {
 
       // Send email notification about domain verified
       try {
-        // Check deduplication cache
+        // Use SETNX to atomically check and set the flag (prevents race conditions)
         const cacheKey = Keys.Domain.verifiedEmail(domainId);
-        const alreadySent = await redis.get(cacheKey);
-        if (alreadySent !== '1') {
+        const ttl = 604800; // 7 days
+
+        // SETNX returns 1 if key was set (didn't exist), 0 if key already existed
+        const wasSet = await redis.set(cacheKey, '1', 'EX', ttl, 'NX');
+        if (wasSet) {
           const members = await MembershipService.getMembers(updatedDomain.project.id);
           const emails = members.map(m => m.email);
           if (emails.length > 0) {
@@ -104,8 +107,6 @@ export class DomainService {
               landingUrl: LANDING_URI,
             });
             await Promise.all(emails.map(email => sendPlatformEmail(email, 'Domain Verified Successfully', template)));
-            // Set cache to prevent duplicate emails (7 days)
-            await redis.setex(cacheKey, 604800, '1');
           }
         }
       } catch (emailError) {
@@ -131,13 +132,17 @@ export class DomainService {
 
       // Send email notification about domain verification failed
       try {
-        // Check deduplication cache (monthly)
+        // Use SETNX to atomically check and set the flag (prevents race conditions)
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const cacheKey = Keys.Domain.unverifiedEmail(domainId, year, month);
-        const alreadySent = await redis.get(cacheKey);
-        if (alreadySent !== '1') {
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        const ttl = Math.floor((endOfMonth.getTime() - now.getTime()) / 1000);
+
+        // SETNX returns 1 if key was set (didn't exist), 0 if key already existed
+        const wasSet = await redis.set(cacheKey, '1', 'EX', ttl, 'NX');
+        if (wasSet) {
           const members = await MembershipService.getMembers(updatedDomain.project.id);
           const emails = members.map(m => m.email);
           if (emails.length > 0) {
@@ -149,10 +154,6 @@ export class DomainService {
               landingUrl: LANDING_URI,
             });
             await Promise.all(emails.map(email => sendPlatformEmail(email, 'Domain Verification Failed', template)));
-            // Set cache to prevent duplicate emails (until end of month)
-            const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-            const ttl = Math.floor((endOfMonth.getTime() - now.getTime()) / 1000);
-            await redis.setex(cacheKey, ttl, '1');
           }
         }
       } catch (emailError) {

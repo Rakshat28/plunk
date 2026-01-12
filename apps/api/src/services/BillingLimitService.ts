@@ -580,8 +580,15 @@ export class BillingLimitService {
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const cacheKey = Keys.Billing.warningEmail(projectId, sourceType, year, month);
 
-      const alreadySent = await redis.get(cacheKey);
-      if (alreadySent === '1') {
+      // Use SETNX (SET if Not eXists) to atomically check and set the flag
+      // This prevents race conditions where multiple concurrent requests could all pass the check
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      const ttl = Math.floor((endOfMonth.getTime() - now.getTime()) / 1000);
+
+      // SETNX returns 1 if key was set (didn't exist), 0 if key already existed
+      const wasSet = await redis.set(cacheKey, '1', 'EX', ttl, 'NX');
+      if (!wasSet) {
+        // Email was already sent this month
         return;
       }
 
@@ -603,11 +610,6 @@ export class BillingLimitService {
       });
 
       await Promise.all(emails.map(email => sendPlatformEmail(email, 'Billing Limit Warning', template)));
-
-      // Mark that we've sent the warning email (expires at end of month)
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-      const ttl = Math.floor((endOfMonth.getTime() - now.getTime()) / 1000);
-      await redis.setex(cacheKey, ttl, '1');
     } catch (error) {
       signale.error(`[BILLING_LIMIT] Failed to send warning email:`, error);
     }
@@ -630,8 +632,15 @@ export class BillingLimitService {
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const cacheKey = Keys.Billing.limitEmail(projectId, sourceType, year, month);
 
-      const alreadySent = await redis.get(cacheKey);
-      if (alreadySent === '1') {
+      // Use SETNX (SET if Not eXists) to atomically check and set the flag
+      // This prevents race conditions where multiple concurrent requests could all pass the check
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      const ttl = Math.floor((endOfMonth.getTime() - now.getTime()) / 1000);
+
+      // SETNX returns 1 if key was set (didn't exist), 0 if key already existed
+      const wasSet = await redis.set(cacheKey, '1', 'EX', ttl, 'NX');
+      if (!wasSet) {
+        // Email was already sent this month
         return;
       }
 
@@ -652,11 +661,6 @@ export class BillingLimitService {
       });
 
       await Promise.all(emails.map(email => sendPlatformEmail(email, 'Billing Limit Exceeded', template)));
-
-      // Mark that we've sent the limit email (expires at end of month)
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-      const ttl = Math.floor((endOfMonth.getTime() - now.getTime()) / 1000);
-      await redis.setex(cacheKey, ttl, '1');
     } catch (error) {
       signale.error(`[BILLING_LIMIT] Failed to send limit exceeded email:`, error);
     }

@@ -211,9 +211,11 @@ export class NtfyService {
     const {redis} = await import('../database/redis.js');
 
     const cacheKey = `ntfy:security:warning:${projectId}`;
-    const exists = await redis.exists(cacheKey);
+    const ttl = 3600; // 1 hour
 
-    if (exists) {
+    // Use SETNX to atomically check and set the flag (prevents race conditions)
+    const wasSet = await redis.set(cacheKey, '1', 'EX', ttl, 'NX');
+    if (!wasSet) {
       return;
     }
 
@@ -223,9 +225,6 @@ export class NtfyService {
       `Project "${projectName}" (${projectId}) has security warnings: ${warningText}`,
       [NtfyTag.WARNING, NtfyTag.SHIELD],
     );
-
-    // Throttle for 1 hour
-    await redis.setex(cacheKey, 3600, '1');
   }
 
   /**
@@ -606,9 +605,11 @@ export class NtfyService {
     const {redis} = await import('../database/redis.js');
 
     const cacheKey = `ntfy:billing:warning:${projectId}:${sourceType}`;
-    const exists = await redis.exists(cacheKey);
+    const ttl = 86400; // 24 hours
 
-    if (exists) {
+    // Use SETNX to atomically check and set the flag (prevents race conditions)
+    const wasSet = await redis.set(cacheKey, '1', 'EX', ttl, 'NX');
+    if (!wasSet) {
       return;
     }
 
@@ -617,9 +618,6 @@ export class NtfyService {
       `Email usage at ${Math.round(percentage)}% (${usage}/${limit}) for ${sourceType} in project "${projectName}" (${projectId})`,
       [NtfyTag.WARNING, NtfyTag.MONEY, NtfyTag.CHART],
     );
-
-    // Throttle for 24 hours
-    await redis.setex(cacheKey, 86400, '1');
   }
 
   // ===== Billing and usage limit notifications =====
@@ -638,9 +636,11 @@ export class NtfyService {
     const {redis} = await import('../database/redis.js');
 
     const cacheKey = `ntfy:billing:exceeded:${projectId}:${sourceType}`;
-    const exists = await redis.exists(cacheKey);
+    const ttl = 86400; // 24 hours
 
-    if (exists) {
+    // Use SETNX to atomically check and set the flag (prevents race conditions)
+    const wasSet = await redis.set(cacheKey, '1', 'EX', ttl, 'NX');
+    if (!wasSet) {
       return;
     }
 
@@ -649,9 +649,6 @@ export class NtfyService {
       `Email usage limit reached (${usage}/${limit}) for ${sourceType} in project "${projectName}" (${projectId}). Further emails are blocked.`,
       [NtfyTag.ERROR, NtfyTag.MONEY, NtfyTag.SKULL],
     );
-
-    // Throttle for 24 hours
-    await redis.setex(cacheKey, 86400, '1');
   }
 
   /**
