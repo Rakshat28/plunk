@@ -10,6 +10,7 @@
     "clean": "turbo clean --concurrency 20 && rimraf node_modules .turbo",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "services:up": "docker compose -f docker/docker-compose.dev.yml up -d",
+    "services:down": "docker compose -f docker/docker-compose.dev.yml down",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:ui": "vitest --ui",
