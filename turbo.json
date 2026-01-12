@@ -34,6 +34,7 @@
       "dependsOn": ["^start"],
       "env": [
         "NODE_ENV",
+        "PORT",
         "JWT_SECRET",
         "DATABASE_URL",
         "DIRECT_DATABASE_URL",
@@ -53,6 +54,7 @@
         "AWS_SES_SECRET_ACCESS_KEY",
         "SES_CONFIGURATION_SET",
         "SES_CONFIGURATION_SET_NO_TRACKING",
+        "EMAIL_RATE_LIMIT_PER_SECOND",
         "GITHUB_OAUTH_CLIENT",
         "GITHUB_OAUTH_SECRET",
         "GOOGLE_OAUTH_CLIENT",
@@ -67,7 +69,15 @@
         "NEXT_PUBLIC_DASHBOARD_URI",
         "NEXT_PUBLIC_WIKI_URI",
         "PLUNK_API_KEY",
-        "PLUNK_FROM_ADDRESS"
+        "PLUNK_FROM_ADDRESS",
+        "NTFY_URL",
+        "SMTP_ENABLED",
+        "SMTP_DOMAIN",
+        "PORT_SECURE",
+        "PORT_SUBMISSION",
+        "AUTO_PROJECT_DISABLE",
+        "DISABLE_SIGNUPS",
+        "VERIFY_EMAIL_ON_SIGNUP"
       ],
       "inputs": ["$TURBO_DEFAULT$", ".env*"]
     },
@@ -84,6 +94,7 @@
       "persistent": true,
       "env": [
         "NODE_ENV",
+        "PORT",
         "JWT_SECRET",
         "DATABASE_URL",
         "DIRECT_DATABASE_URL",
@@ -103,6 +114,7 @@
         "AWS_SES_SECRET_ACCESS_KEY",
         "SES_CONFIGURATION_SET",
         "SES_CONFIGURATION_SET_NO_TRACKING",
+        "EMAIL_RATE_LIMIT_PER_SECOND",
         "GITHUB_OAUTH_CLIENT",
         "GITHUB_OAUTH_SECRET",
         "GOOGLE_OAUTH_CLIENT",
@@ -117,7 +129,15 @@
         "NEXT_PUBLIC_DASHBOARD_URI",
         "NEXT_PUBLIC_WIKI_URI",
         "PLUNK_API_KEY",
-        "PLUNK_FROM_ADDRESS"
+        "PLUNK_FROM_ADDRESS",
+        "NTFY_URL",
+        "SMTP_ENABLED",
+        "SMTP_DOMAIN",
+        "PORT_SECURE",
+        "PORT_SUBMISSION",
+        "AUTO_PROJECT_DISABLE",
+        "DISABLE_SIGNUPS",
+        "VERIFY_EMAIL_ON_SIGNUP"
       ]
     },
     "dev:worker": {
@@ -125,6 +145,7 @@
       "persistent": true,
       "env": [
         "NODE_ENV",
+        "PORT",
         "JWT_SECRET",
         "DATABASE_URL",
         "DIRECT_DATABASE_URL",
@@ -144,6 +165,7 @@
         "AWS_SES_SECRET_ACCESS_KEY",
         "SES_CONFIGURATION_SET",
         "SES_CONFIGURATION_SET_NO_TRACKING",
+        "EMAIL_RATE_LIMIT_PER_SECOND",
         "GITHUB_OAUTH_CLIENT",
         "GITHUB_OAUTH_SECRET",
         "GOOGLE_OAUTH_CLIENT",
@@ -158,7 +180,15 @@
         "NEXT_PUBLIC_DASHBOARD_URI",
         "NEXT_PUBLIC_WIKI_URI",
         "PLUNK_API_KEY",
-        "PLUNK_FROM_ADDRESS"
+        "PLUNK_FROM_ADDRESS",
+        "NTFY_URL",
+        "SMTP_ENABLED",
+        "SMTP_DOMAIN",
+        "PORT_SECURE",
+        "PORT_SUBMISSION",
+        "AUTO_PROJECT_DISABLE",
+        "DISABLE_SIGNUPS",
+        "VERIFY_EMAIL_ON_SIGNUP"
       ]
     },
     "clean": {
