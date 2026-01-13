@@ -27,7 +27,7 @@ const STANDARD_OPERATORS: {value: SegmentFilterOperator; label: string}[] = [
   {value: 'lessThanOrEqual', label: 'Less than or equal to'},
   {value: 'exists', label: 'Exists'},
   {value: 'notExists', label: 'Does not exist'},
-  {value: 'within', label: 'Within (time)'},
+  {value: 'within', label: 'Younger than (time)'},
   {value: 'olderThan', label: 'Older than (time)'},
 ];
 
@@ -236,7 +236,9 @@ const FilterRow = memo(function FilterRow({filter, onChange, onRemove, available
       const selectedField = availableFields.find(f => f.value === value);
       const newFieldType = selectedField?.type || 'string';
       const isEvent = newFieldType === 'event' || newFieldType === 'email';
-      const currentOperatorIsEvent = ['triggered', 'triggeredWithin', 'triggeredOlderThan', 'notTriggered'].includes(filter.operator);
+      const currentOperatorIsEvent = ['triggered', 'triggeredWithin', 'triggeredOlderThan', 'notTriggered'].includes(
+        filter.operator,
+      );
 
       // Determine default operator and value based on new field type
       let newOperator = filter.operator;
@@ -271,7 +273,9 @@ const FilterRow = memo(function FilterRow({filter, onChange, onRemove, available
         newUnit = undefined;
 
         // If the new operator doesn't support units but we had them, ensure value is appropriate
-        const newOperatorNeedsUnit = ['within', 'triggeredWithin', 'olderThan', 'triggeredOlderThan'].includes(newOperator);
+        const newOperatorNeedsUnit = ['within', 'triggeredWithin', 'olderThan', 'triggeredOlderThan'].includes(
+          newOperator,
+        );
         if (!newOperatorNeedsUnit) {
           // Convert numeric value back to appropriate type for the field
           newValue = getDefaultValueForType(newFieldType);
@@ -403,8 +407,12 @@ const FilterRow = memo(function FilterRow({filter, onChange, onRemove, available
               // Check if we're switching between operators that need different value types
               const oldNeedsValue = !['exists', 'notExists', 'triggered', 'notTriggered'].includes(oldOperator);
               const newNeedsValue = !['exists', 'notExists', 'triggered', 'notTriggered'].includes(newOperator);
-              const oldNeedsUnit = ['within', 'triggeredWithin', 'olderThan', 'triggeredOlderThan'].includes(oldOperator);
-              const newNeedsUnit = ['within', 'triggeredWithin', 'olderThan', 'triggeredOlderThan'].includes(newOperator);
+              const oldNeedsUnit = ['within', 'triggeredWithin', 'olderThan', 'triggeredOlderThan'].includes(
+                oldOperator,
+              );
+              const newNeedsUnit = ['within', 'triggeredWithin', 'olderThan', 'triggeredOlderThan'].includes(
+                newOperator,
+              );
 
               const updatedFilter: SegmentFilter = {...filter, operator: newOperator};
 
