@@ -8,7 +8,7 @@ import {
   DASHBOARD_URI,
   SES_CONFIGURATION_SET,
   SES_CONFIGURATION_SET_NO_TRACKING,
-  TRACKING_TOGGLE_ENABLED
+  TRACKING_TOGGLE_ENABLED,
 } from '../app/constants.js';
 
 /**
@@ -256,6 +256,13 @@ export const disableFeedbackForwarding = async (domain: string): Promise<void> =
     Identity: domain,
     ForwardingEnabled: false,
   });
+};
+
+/**
+ * Delete a verified domain identity from AWS SES
+ */
+export const deleteIdentity = async (domain: string): Promise<void> => {
+  await ses.deleteIdentity({Identity: domain});
 };
 
 /**

@@ -8,7 +8,7 @@ import {HttpException} from '../exceptions/index.js';
 import {Keys} from './keys.js';
 import {MembershipService} from './MembershipService.js';
 import {NtfyService} from './NtfyService.js';
-import {getDomainVerificationAttributes, verifyDomain} from './SESService.js';
+import {deleteIdentity, getDomainVerificationAttributes, verifyDomain} from './SESService.js';
 
 export class DomainService {
   /**
@@ -248,6 +248,28 @@ export class DomainService {
     }
 
     await prisma.domain.delete({where: {id: domainId}});
+
+    // Check if this domain is still attached to another project
+    const domainExistsElsewhere = await prisma.domain.findFirst({
+      where: {
+        domain: domainName,
+      },
+    });
+
+    // If domain is not used by any other project, remove it from AWS SES
+    if (!domainExistsElsewhere) {
+      try {
+        await deleteIdentity(domainName);
+        signale.info(`[DOMAIN] Removed AWS SES identity for ${domainName} (no longer used by any project)`);
+      } catch (error) {
+        // Log error but don't fail the domain removal if AWS cleanup fails
+        signale.error(`[DOMAIN] Failed to remove AWS SES identity for ${domainName}:`, error);
+      }
+    } else {
+      signale.info(
+        `[DOMAIN] Keeping AWS SES identity for ${domainName} (still used by project ${domainExistsElsewhere.projectId})`,
+      );
+    }
 
     // Send notification about domain removal
     await NtfyService.notifyDomainRemoved(domainName, domain.project.name, domain.project.id);
