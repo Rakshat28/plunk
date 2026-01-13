@@ -16,9 +16,11 @@ export type SegmentFilterOperator =
   | 'exists'
   | 'notExists'
   | 'within'
+  | 'olderThan' // More than X time ago (for date fields)
   // Event-based operators
   | 'triggered' // Event/email activity occurred (any time)
   | 'triggeredWithin' // Event/email activity occurred within timeframe
+  | 'triggeredOlderThan' // Event/email activity occurred more than X time ago
   | 'notTriggered'; // Event/email activity never occurred
 
 export type SegmentFilterLogic = 'AND' | 'OR';
