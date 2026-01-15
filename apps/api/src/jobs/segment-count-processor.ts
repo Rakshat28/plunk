@@ -34,6 +34,10 @@ async function processProjectSegments(projectId: string, projectName?: string): 
   );
 
   // Process tracked segments with full membership computation (creates events)
+  let updatedSegmentCount = 0;
+  let totalAdded = 0;
+  let totalRemoved = 0;
+
   if (trackedSegments.length > 0) {
     for (const segment of trackedSegments) {
       try {
@@ -45,21 +49,27 @@ async function processProjectSegments(projectId: string, projectName?: string): 
           `[SEGMENT-COUNT-WORKER] Segment "${segment.name}": +${result.added} entries, -${result.removed} exits, ${result.total} total members`,
         );
 
-        // Notify about segment membership update only if there were actual changes
-        if (projectName && (result.added > 0 || result.removed > 0)) {
-          await NtfyService.notifySegmentMembershipComputed(
-            segment.name,
-            projectName,
-            projectId,
-            result.total,
-            result.added,
-            result.removed,
-          );
+        // Track segments with actual changes for bundled notification
+        if (result.added > 0 || result.removed > 0) {
+          updatedSegmentCount++;
+          totalAdded += result.added;
+          totalRemoved += result.removed;
         }
       } catch (error) {
         signale.error(`[SEGMENT-COUNT-WORKER] Failed to compute membership for segment ${segment.id}:`, error);
         // Continue with other segments
       }
+    }
+
+    // Send bundled notification if there were any changes
+    if (projectName && updatedSegmentCount > 0) {
+      await NtfyService.notifySegmentMembershipBundled(
+        projectName,
+        projectId,
+        updatedSegmentCount,
+        totalAdded,
+        totalRemoved,
+      );
     }
   }
 

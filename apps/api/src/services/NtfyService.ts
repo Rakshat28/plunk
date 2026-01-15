@@ -763,6 +763,32 @@ export class NtfyService {
   }
 
   /**
+   * Notify about bundled segment membership updates - LOW priority
+   * Used when multiple segments are updated in a single processing cycle
+   */
+  public static async notifySegmentMembershipBundled(
+    projectName: string,
+    projectId: string,
+    segmentCount: number,
+    totalAdded: number,
+    totalRemoved: number,
+  ): Promise<void> {
+    const changes: string[] = [];
+    if (totalAdded > 0) changes.push(`+${totalAdded} added`);
+    if (totalRemoved > 0) changes.push(`-${totalRemoved} removed`);
+
+    const changesText = changes.length > 0 ? ` (${changes.join(', ')})` : '';
+    const message = `${segmentCount} segment${segmentCount > 1 ? 's' : ''} updated in project "${projectName}" (${projectId})${changesText}`;
+
+    await this.send({
+      title: 'Segment Memberships Updated',
+      message,
+      priority: NtfyPriority.LOW,
+      tags: [NtfyTag.CHART],
+    });
+  }
+
+  /**
    * Notify about segment deleted - MIN priority
    */
   public static async notifySegmentDeleted(segmentName: string, projectName: string, projectId: string): Promise<void> {
