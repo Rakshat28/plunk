@@ -12,6 +12,7 @@ export const SUPPORTED_LANGUAGES: Language[] = [
   {code: 'hi', name: 'Hindi', nativeName: 'हिंदी', flag: '🇮🇳'},
   {code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪'},
   {code: 'pt', name: 'Portuguese', nativeName: 'Português', flag: '🇧🇷'},
+  {code: 'bg', name: 'Bulgarian', nativeName: 'Български', flag: '🇧🇬'},
 ];
 
 export const DEFAULT_LANGUAGE = 'en';

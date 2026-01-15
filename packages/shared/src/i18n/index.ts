@@ -6,6 +6,7 @@ import frTranslations from './locales/fr.json' with {type: 'json'};
 import deTranslations from './locales/de.json' with {type: 'json'};
 import hiTranslations from './locales/hi.json' with {type: 'json'};
 import ptTranslations from './locales/pt.json' with {type: 'json'};
+import bgTranslations from './locales/bg.json' with {type: 'json'};
 export {
   SUPPORTED_LANGUAGES,
   DEFAULT_LANGUAGE,
@@ -36,6 +37,7 @@ const translationsMap: Record<string, Translations> = {
   fr: frTranslations,
   hi: hiTranslations,
   pt: ptTranslations,
+  bg: bgTranslations,
 };
 
 // In-memory cache for loaded translations
