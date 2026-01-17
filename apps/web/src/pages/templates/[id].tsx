@@ -118,7 +118,7 @@ export default function TemplateEditorPage() {
     }
   };
 
-  if (!template) {
+  if (!template || Object.keys(editedTemplate).length === 0) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-[400px]">
