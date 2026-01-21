@@ -11,6 +11,7 @@ import {
   Eye,
   MousePointerClick,
   Send,
+  ShieldAlert,
   Workflow,
   XCircle,
   Zap,
@@ -95,7 +96,14 @@ function getUpcomingTime(date: Date): string {
  * Check if an activity is an email activity
  */
 function isEmailActivity(type: string): boolean {
-  return ['email.sent', 'email.delivered', 'email.opened', 'email.clicked', 'email.bounced'].includes(type);
+  return [
+    'email.sent',
+    'email.delivered',
+    'email.opened',
+    'email.clicked',
+    'email.bounced',
+    'email.complaint',
+  ].includes(type);
 }
 
 interface ActivityItemProps {
@@ -222,6 +230,23 @@ function getActivityConfig(activity: Activity): ActivityConfig {
         description: (typeof metadata.error === 'string' ? metadata.error : undefined) || 'Email failed to deliver',
         badge: {
           label: 'Bounced',
+          variant: 'destructive',
+        },
+      };
+
+    case 'email.complaint':
+      return {
+        icon: ShieldAlert,
+        color: 'text-red-600',
+        bgColor: 'bg-red-100',
+        title: (typeof metadata.subject === 'string' ? metadata.subject : undefined) || 'Spam complaint',
+        description: metadata.campaignName
+          ? `Campaign: ${String(metadata.campaignName)}`
+          : metadata.workflowName
+            ? `Workflow: ${String(metadata.workflowName)}`
+            : 'Recipient marked as spam',
+        badge: {
+          label: 'Complaint',
           variant: 'destructive',
         },
       };

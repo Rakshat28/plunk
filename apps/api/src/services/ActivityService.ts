@@ -480,6 +480,21 @@ export class ActivityService {
           },
         });
       }
+
+      // Email complaint
+      if (email.complainedAt && (!types || types.includes(ActivityType.EMAIL_COMPLAINT))) {
+        activities.push({
+          id: `${email.id}_complaint`,
+          type: ActivityType.EMAIL_COMPLAINT,
+          timestamp: email.complainedAt,
+          contactEmail: email.contact.email,
+          contactId: email.contactId,
+          metadata: {
+            ...baseMetadata,
+            error: email.error,
+          },
+        });
+      }
     }
 
     return activities;
