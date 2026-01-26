@@ -366,15 +366,38 @@ export class ActivityService {
       ...(contactId ? {contactId} : {}),
     };
 
+    // Build OR conditions to filter by the appropriate timestamp field for each activity type
+    // This ensures we fetch emails where the specific activity (bounced, sent, etc.) occurred in the date range
+    const orConditions: Prisma.EmailWhereInput[] = [];
+
+    if (!types || types.includes(ActivityType.EMAIL_SENT)) {
+      orConditions.push({sentAt: {not: null, ...dateFilter}});
+    }
+    if (!types || types.includes(ActivityType.EMAIL_DELIVERED)) {
+      orConditions.push({deliveredAt: {not: null, ...dateFilter}});
+    }
+    if (!types || types.includes(ActivityType.EMAIL_OPENED)) {
+      orConditions.push({openedAt: {not: null, ...dateFilter}});
+    }
+    if (!types || types.includes(ActivityType.EMAIL_CLICKED)) {
+      orConditions.push({clickedAt: {not: null, ...dateFilter}});
+    }
+    if (!types || types.includes(ActivityType.EMAIL_BOUNCED)) {
+      orConditions.push({bouncedAt: {not: null, ...dateFilter}});
+    }
+    if (!types || types.includes(ActivityType.EMAIL_COMPLAINT)) {
+      orConditions.push({complainedAt: {not: null, ...dateFilter}});
+    }
+
+    // If no OR conditions, return empty (shouldn't happen but defensive)
+    if (orConditions.length === 0) {
+      return [];
+    }
+
     const emails = await prisma.email.findMany({
       where: {
         ...where,
-        createdAt: cursorTimestamp
-          ? {
-              ...dateFilter,
-              lt: cursorTimestamp,
-            }
-          : dateFilter,
+        OR: orConditions,
       },
       orderBy: {createdAt: 'desc'},
       take: limit,
@@ -401,6 +424,27 @@ export class ActivityService {
       },
     });
 
+    // Helper function to check if timestamp is within date range
+    const isInDateRange = (timestamp: Date | null) => {
+      if (!timestamp) return false;
+
+      // Check against date filter
+      const time = timestamp.getTime();
+      if (dateFilter.gte) {
+        const gteTime = dateFilter.gte instanceof Date ? dateFilter.gte.getTime() : new Date(dateFilter.gte).getTime();
+        if (time < gteTime) return false;
+      }
+      if (dateFilter.lte) {
+        const lteTime = dateFilter.lte instanceof Date ? dateFilter.lte.getTime() : new Date(dateFilter.lte).getTime();
+        if (time > lteTime) return false;
+      }
+
+      // Check against cursor for pagination
+      if (cursorTimestamp && time >= cursorTimestamp.getTime()) return false;
+
+      return true;
+    };
+
     // Convert each email into multiple activities based on its state
     for (const email of emails) {
       const baseMetadata = {
@@ -415,7 +459,7 @@ export class ActivityService {
         workflowName: email.workflowExecution?.workflow?.name,
       };
 
-      if (email.sentAt && (!types || types.includes(ActivityType.EMAIL_SENT))) {
+      if (email.sentAt && (!types || types.includes(ActivityType.EMAIL_SENT)) && isInDateRange(email.sentAt)) {
         activities.push({
           id: `${email.id}_sent`,
           type: ActivityType.EMAIL_SENT,
@@ -426,7 +470,11 @@ export class ActivityService {
         });
       }
 
-      if (email.deliveredAt && (!types || types.includes(ActivityType.EMAIL_DELIVERED))) {
+      if (
+        email.deliveredAt &&
+        (!types || types.includes(ActivityType.EMAIL_DELIVERED)) &&
+        isInDateRange(email.deliveredAt)
+      ) {
         activities.push({
           id: `${email.id}_delivered`,
           type: ActivityType.EMAIL_DELIVERED,
@@ -437,7 +485,7 @@ export class ActivityService {
         });
       }
 
-      if (email.openedAt && (!types || types.includes(ActivityType.EMAIL_OPENED))) {
+      if (email.openedAt && (!types || types.includes(ActivityType.EMAIL_OPENED)) && isInDateRange(email.openedAt)) {
         activities.push({
           id: `${email.id}_opened`,
           type: ActivityType.EMAIL_OPENED,
@@ -452,7 +500,7 @@ export class ActivityService {
       }
 
       // Email clicked
-      if (email.clickedAt && (!types || types.includes(ActivityType.EMAIL_CLICKED))) {
+      if (email.clickedAt && (!types || types.includes(ActivityType.EMAIL_CLICKED)) && isInDateRange(email.clickedAt)) {
         activities.push({
           id: `${email.id}_clicked`,
           type: ActivityType.EMAIL_CLICKED,
@@ -467,7 +515,7 @@ export class ActivityService {
       }
 
       // Email bounced
-      if (email.bouncedAt && (!types || types.includes(ActivityType.EMAIL_BOUNCED))) {
+      if (email.bouncedAt && (!types || types.includes(ActivityType.EMAIL_BOUNCED)) && isInDateRange(email.bouncedAt)) {
         activities.push({
           id: `${email.id}_bounced`,
           type: ActivityType.EMAIL_BOUNCED,
@@ -482,7 +530,11 @@ export class ActivityService {
       }
 
       // Email complaint
-      if (email.complainedAt && (!types || types.includes(ActivityType.EMAIL_COMPLAINT))) {
+      if (
+        email.complainedAt &&
+        (!types || types.includes(ActivityType.EMAIL_COMPLAINT)) &&
+        isInDateRange(email.complainedAt)
+      ) {
         activities.push({
           id: `${email.id}_complaint`,
           type: ActivityType.EMAIL_COMPLAINT,
