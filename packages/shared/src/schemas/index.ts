@@ -380,6 +380,8 @@ export const ActionSchemas = {
             filename: z.string().min(1).max(255),
             content: z.string().min(1), // Base64 encoded file content
             contentType: z.string().min(1).max(255),
+            contentId: z.string().min(1).max(255).optional(),
+            disposition: z.enum(['attachment', 'inline']).default('attachment'),
           }),
         )
         .max(10) // Maximum 10 attachments per email

@@ -40,6 +40,8 @@ interface SendRawEmailParams {
         filename: string;
         content: string; // Base64 encoded
         contentType: string;
+        contentId?: string;
+        disposition?: 'attachment' | 'inline';
       }[]
     | null;
   tracking?: boolean;
@@ -101,8 +103,13 @@ export async function sendRawEmail({
   }
 
   // Generate unique boundaries for multipart messages
-  const boundary = `----=_NextPart_${Math.random().toString(36).substring(2)}`;
-  const mixedBoundary = attachments?.length ? `----=_MixedPart_${Math.random().toString(36).substring(2)}` : null;
+  const altBoundary = `----=_AltPart_${Math.random().toString(36).substring(2)}`;
+  const mixedBoundary = attachments?.some(a => (a.disposition ?? 'attachment') === 'attachment')
+    ? `----=_MixedPart_${Math.random().toString(36).substring(2)}`
+    : null;
+  const relatedBoundary = attachments?.some(a => a.disposition === 'inline')
+    ? `----=_RelatedPart_${Math.random().toString(36).substring(2)}`
+    : null;
 
   // Format To header with names if provided
   const toHeader = to
@@ -118,17 +125,21 @@ export async function sendRawEmail({
   // Extract just email addresses for Destinations (SES requirement)
   const destinations = to.map(recipient => (typeof recipient === 'string' ? recipient : recipient.email));
 
+  // Determine root content type
+  let rootContentType = `multipart/alternative; boundary="${altBoundary}"`;
+  if (mixedBoundary) {
+    rootContentType = `multipart/mixed; boundary="${mixedBoundary}"`;
+  } else if (relatedBoundary) {
+    rootContentType = `multipart/related; boundary="${relatedBoundary}"`;
+  }
+
   // Build raw MIME message
-  const rawMessage = `From: ${from.name} <${from.email}>
+  let rawMessage = `From: ${from.name} <${from.email}>
 To: ${toHeader}
 Reply-To: ${reply || from.email}
 Subject: ${content.subject}
 MIME-Version: 1.0
-${
-  mixedBoundary
-    ? `Content-Type: multipart/mixed; boundary="${mixedBoundary}"`
-    : `Content-Type: multipart/alternative; boundary="${boundary}"`
-}
+Content-Type: ${rootContentType}
 ${
   headers
     ? Object.entries(headers)
@@ -138,29 +149,61 @@ ${
 }
 ${unsubscribeHeader}
 
-${mixedBoundary ? `--${mixedBoundary}\n` : ''}${
-    mixedBoundary ? `Content-Type: multipart/alternative; boundary="${boundary}"\n\n` : ''
-  }--${boundary}
+`;
+
+  // building the body
+  if (mixedBoundary) {
+    rawMessage += `--${mixedBoundary}\n`;
+    if (relatedBoundary) {
+      rawMessage += `Content-Type: multipart/related; boundary="${relatedBoundary}"\n\n`;
+      rawMessage += `--${relatedBoundary}\n`;
+    }
+  } else if (relatedBoundary) {
+    rawMessage += `--${relatedBoundary}\n`;
+  }
+
+  // If we are nested, we need to specify that this next part is the alternative container
+  if (mixedBoundary || relatedBoundary) {
+    rawMessage += `Content-Type: multipart/alternative; boundary="${altBoundary}"\n\n`;
+  }
+
+  // The alternative part content (always contains HTML)
+  rawMessage += `--${altBoundary}
 Content-Type: text/html; charset=utf-8
 Content-Transfer-Encoding: 7bit
 
 ${breakLongLines(content.html, 500)}
---${boundary}--
-${
-  attachments && attachments.length > 0
-    ? '\n' +
-      attachments
-        .map(
-          attachment => `--${mixedBoundary}
+--${altBoundary}--
+`;
+
+  // Add inline attachments to the related container
+  if (relatedBoundary) {
+    const inlineAttachments = attachments?.filter(a => a.disposition === 'inline') ?? [];
+    for (const attachment of inlineAttachments) {
+      rawMessage += `\n--${relatedBoundary}
+Content-Type: ${attachment.contentType}
+Content-Transfer-Encoding: base64
+Content-ID: <${attachment.contentId || attachment.filename}>
+Content-Disposition: inline; filename="${attachment.filename}"
+
+${breakLongLines(attachment.content, 76, true)}`;
+    }
+    rawMessage += `\n--${relatedBoundary}--`;
+  }
+
+  // Add regular attachments to the mixed container
+  if (mixedBoundary) {
+    const regularAttachments = attachments?.filter(a => (a.disposition ?? 'attachment') === 'attachment') ?? [];
+    for (const attachment of regularAttachments) {
+      rawMessage += `\n--${mixedBoundary}
 Content-Type: ${attachment.contentType}
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="${attachment.filename}"
 
-${breakLongLines(attachment.content, 76, true)}`,
-        )
-        .join('\n')
-    : ''
-}${mixedBoundary ? `\n--${mixedBoundary}--` : ''}`;
+${breakLongLines(attachment.content, 76, true)}`;
+    }
+    rawMessage += `\n--${mixedBoundary}--`;
+  }
 
   // Determine which configuration set to use
   // Only use NO_TRACKING if tracking toggle is enabled AND tracking is disabled

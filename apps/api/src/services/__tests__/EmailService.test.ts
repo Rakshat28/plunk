@@ -801,5 +801,68 @@ describe('EmailService', () => {
         expect(result.success).toBe(true);
       }
     });
+
+    it('should accept inline attachment with contentId', () => {
+      const result = ActionSchemas.send.safeParse({
+        to: 'test@example.com',
+        from: 'test@example.com',
+        subject: 'Inline Image',
+        body: '<img src="cid:logo" />',
+        attachments: [
+          {
+            filename: 'logo.png',
+            content: Buffer.from('image').toString('base64'),
+            contentType: 'image/png',
+            contentId: 'logo',
+            disposition: 'inline',
+          },
+        ],
+      });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const attachment = result.data.attachments![0];
+        expect(attachment.contentId).toBe('logo');
+        expect(attachment.disposition).toBe('inline');
+      }
+    });
+
+    it('should reject contentId exceeding 255 chars', () => {
+      const result = ActionSchemas.send.safeParse({
+        to: 'test@example.com',
+        subject: 'Test',
+        body: 'Test',
+        attachments: [
+          {
+            filename: 'image.png',
+            content: Buffer.from('content').toString('base64'),
+            contentType: 'image/png',
+            contentId: 'a'.repeat(256),
+            disposition: 'inline',
+          },
+        ],
+      });
+
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject invalid disposition', () => {
+      const result = ActionSchemas.send.safeParse({
+        to: 'test@example.com',
+        subject: 'Test',
+        body: 'Test',
+        attachments: [
+          {
+            filename: 'image.png',
+            content: Buffer.from('content').toString('base64'),
+            contentType: 'image/png',
+            disposition: 'invalid-disposition',
+          },
+        ],
+      });
+
+      expect(result.success).toBe(false);
+    });
+
   });
 });

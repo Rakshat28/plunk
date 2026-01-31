@@ -18,6 +18,8 @@ interface Attachment {
   filename: string;
   content: string; // Base64 encoded
   contentType: string;
+  contentId?: string;
+  disposition?: 'attachment' | 'inline';
 }
 
 interface SendEmailParams {
@@ -364,7 +366,13 @@ export class EmailService {
       // Parse attachments from JSON
       const attachments =
         email.attachments && Array.isArray(email.attachments)
-          ? (email.attachments as Array<{filename: string; content: string; contentType: string}>)
+          ? (email.attachments as Array<{
+              filename: string;
+              content: string;
+              contentType: string;
+              contentId?: string;
+              disposition?: 'attachment' | 'inline';
+            }>)
           : undefined;
 
       // Determine tracking based on project settings and email type
