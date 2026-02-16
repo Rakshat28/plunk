@@ -29,10 +29,6 @@ async function processProjectSegments(projectId: string, projectName?: string): 
   const trackedSegments = segments.filter(s => s.trackMembership);
   const nonTrackedSegments = segments.filter(s => !s.trackMembership);
 
-  signale.info(
-    `[SEGMENT-COUNT-WORKER] Project ${logPrefix}: ${trackedSegments.length} tracked, ${nonTrackedSegments.length} non-tracked segments`,
-  );
-
   // Process tracked segments with full membership computation (creates events)
   let updatedSegmentCount = 0;
   let totalAdded = 0;
@@ -41,13 +37,7 @@ async function processProjectSegments(projectId: string, projectName?: string): 
   if (trackedSegments.length > 0) {
     for (const segment of trackedSegments) {
       try {
-        signale.info(
-          `[SEGMENT-COUNT-WORKER] Computing membership for tracked segment "${segment.name}" (${segment.id})`,
-        );
         const result = await SegmentService.computeMembership(projectId, segment.id);
-        signale.success(
-          `[SEGMENT-COUNT-WORKER] Segment "${segment.name}": +${result.added} entries, -${result.removed} exits, ${result.total} total members`,
-        );
 
         // Track segments with actual changes for bundled notification
         if (result.added > 0 || result.removed > 0) {
@@ -77,7 +67,6 @@ async function processProjectSegments(projectId: string, projectName?: string): 
   if (nonTrackedSegments.length > 0) {
     try {
       await SegmentService.refreshAllMemberCounts(projectId);
-      signale.info(`[SEGMENT-COUNT-WORKER] Updated counts for ${nonTrackedSegments.length} non-tracked segments`);
     } catch (error) {
       signale.error(`[SEGMENT-COUNT-WORKER] Failed to update counts for non-tracked segments:`, error);
     }
@@ -90,14 +79,10 @@ async function processProjectSegments(projectId: string, projectName?: string): 
 async function processSegmentCountUpdate(job: Job<SegmentCountJobData>): Promise<void> {
   const {projectId} = job.data;
 
-  signale.info(`[SEGMENT-COUNT-WORKER] Starting segment count update job ${job.id}`);
-
   try {
     if (projectId) {
       // Process specific project
-      signale.info(`[SEGMENT-COUNT-WORKER] Processing segments for project ${projectId}`);
       await processProjectSegments(projectId);
-      signale.success(`[SEGMENT-COUNT-WORKER] Completed segments for project ${projectId}`);
     } else {
       // Process all active projects
       const projects = await prisma.project.findMany({
@@ -105,7 +90,7 @@ async function processSegmentCountUpdate(job: Job<SegmentCountJobData>): Promise
         select: {id: true, name: true},
       });
 
-      signale.info(`[SEGMENT-COUNT-WORKER] Found ${projects.length} active projects`);
+      signale.info(`[SEGMENT-COUNT-WORKER] Processing ${projects.length} active projects`);
 
       // Process projects in batches to avoid overwhelming the database
       const PROJECT_BATCH_SIZE = 10;
@@ -115,9 +100,7 @@ async function processSegmentCountUpdate(job: Job<SegmentCountJobData>): Promise
         await Promise.all(
           batch.map(async project => {
             try {
-              signale.info(`[SEGMENT-COUNT-WORKER] Processing project ${project.name} (${project.id})`);
               await processProjectSegments(project.id, project.name);
-              signale.success(`[SEGMENT-COUNT-WORKER] Completed project ${project.name}`);
             } catch (error) {
               signale.error(`[SEGMENT-COUNT-WORKER] Failed to process project ${project.id}:`, error);
               // Don't throw - continue with other projects
@@ -130,8 +113,6 @@ async function processSegmentCountUpdate(job: Job<SegmentCountJobData>): Promise
           await new Promise(resolve => setTimeout(resolve, 2000));
         }
       }
-
-      signale.success(`[SEGMENT-COUNT-WORKER] Completed all segment updates`);
     }
   } catch (error) {
     signale.error(`[SEGMENT-COUNT-WORKER] Error processing job ${job.id}:`, error);
@@ -157,10 +138,6 @@ export function createSegmentCountWorker(): Worker {
       },
     },
   );
-
-  worker.on('completed', job => {
-    signale.success(`[SEGMENT-COUNT-WORKER] Job ${job.id} completed`);
-  });
 
   worker.on('failed', (job, error) => {
     signale.error(`[SEGMENT-COUNT-WORKER] Job ${job?.id} failed:`, error);

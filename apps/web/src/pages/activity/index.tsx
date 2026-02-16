@@ -14,7 +14,7 @@ import {DashboardLayout} from '../../components/DashboardLayout';
 import {ActivityFeed} from '../../components/ActivityFeed';
 import {Eye, MousePointerClick, Send, Zap} from 'lucide-react';
 import {NextSeo} from 'next-seo';
-import {useState} from 'react';
+import {useQueryState, parseAsString} from 'nuqs';
 import useSWR from 'swr';
 
 interface ActivityStats {
@@ -28,8 +28,8 @@ interface ActivityStats {
 }
 
 export default function ActivityPage() {
-  const [typeFilter, setTypeFilter] = useState<string>('ALL');
-  const [dateRange, setDateRange] = useState<string>('30');
+  const [typeFilter, setTypeFilter] = useQueryState('type', parseAsString.withDefault('ALL'));
+  const [dateRange, setDateRange] = useQueryState('days', parseAsString.withDefault('30'));
 
   // Fetch activity stats
   const {data: stats} = useSWR<ActivityStats>(`/activity/stats`, {

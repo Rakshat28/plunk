@@ -5,6 +5,7 @@ import React, {useEffect} from 'react';
 import {Toaster} from 'sonner';
 import {SWRConfig} from 'swr';
 import {DefaultSeo} from 'next-seo';
+import {NuqsAdapter} from 'nuqs/adapters/next/pages';
 import {Loader} from '@plunk/ui';
 import {ActiveProjectProvider} from '../lib/contexts/ActiveProjectProvider';
 import {useProjects} from '../lib/hooks/useProject';
@@ -103,17 +104,19 @@ function ProjectGuard({children}: {children: React.ReactNode}) {
  */
 export default function WithProviders(props: AppProps) {
   return (
-    <SWRConfig
-      value={{
-        fetcher: (url: string) => network.fetch('GET', url),
-        shouldRetryOnError: false,
-      }}
-    >
-      <DefaultSeo titleTemplate="%s | Plunk" defaultTitle="Plunk | Email Platform Dashboard" />
-      <ActiveProjectProvider>
-        <Root {...props} />
-      </ActiveProjectProvider>
-    </SWRConfig>
+    <NuqsAdapter>
+      <SWRConfig
+        value={{
+          fetcher: (url: string) => network.fetch('GET', url),
+          shouldRetryOnError: false,
+        }}
+      >
+        <DefaultSeo titleTemplate="%s | Plunk" defaultTitle="Plunk | Email Platform Dashboard" />
+        <ActiveProjectProvider>
+          <Root {...props} />
+        </ActiveProjectProvider>
+      </SWRConfig>
+    </NuqsAdapter>
   );
 }
 

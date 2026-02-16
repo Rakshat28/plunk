@@ -34,7 +34,8 @@ export function ActivityFeed({typeFilter, dateRangeDays = 30, contactId}: Activi
           setIsLoadingMore(true);
         } else {
           setIsLoading(true);
-          setActivities([]);
+          // Don't clear activities immediately - we'll do a smart merge
+          // This preserves React component instances and their local state
           setNextCursor(undefined);
           setHasMore(true);
         }
@@ -58,11 +59,25 @@ export function ActivityFeed({typeFilter, dateRangeDays = 30, contactId}: Activi
         const result = await network.fetch<CursorPaginatedResponse<Activity>>('GET', `/activity?${params.toString()}`);
 
         if (cursor) {
-          // Append to existing activities
+          // Append to existing activities (pagination)
           setActivities(prev => [...prev, ...result.data]);
         } else {
-          // Replace activities
-          setActivities(result.data);
+          // Smart merge: preserve existing activity objects by ID to maintain component state
+          setActivities(prev => {
+            // If no previous activities, just use new data
+            if (prev.length === 0) {
+              return result.data;
+            }
+
+            // Create a map of existing activities by ID for fast lookup
+            const existingMap = new Map(prev.map(activity => [activity.id, activity]));
+
+            // For each new activity, reuse existing object if ID matches (preserves React component instances)
+            // Otherwise use new object. This maintains correct ordering while preserving component state.
+            return result.data.map(newActivity =>
+              existingMap.get(newActivity.id) ?? newActivity
+            );
+          });
         }
 
         setNextCursor(result.cursor);
@@ -95,7 +110,21 @@ export function ActivityFeed({typeFilter, dateRangeDays = 30, contactId}: Activi
 
       const result = await network.fetch<{activities: Activity[]}>('GET', `/activity/upcoming?${params.toString()}`);
 
-      setUpcomingActivities(result.activities);
+      // Smart merge: preserve existing activity objects by ID to maintain component state
+      setUpcomingActivities(prev => {
+        // If no previous activities, just use new data
+        if (prev.length === 0) {
+          return result.activities;
+        }
+
+        // Create a map of existing activities by ID for fast lookup
+        const existingMap = new Map(prev.map(activity => [activity.id, activity]));
+
+        // For each new activity, reuse existing object if ID matches
+        return result.activities.map(newActivity =>
+          existingMap.get(newActivity.id) ?? newActivity
+        );
+      });
     } catch (err) {
       console.error('Error fetching upcoming activities:', err);
       // Don't set error state for upcoming - just fail silently

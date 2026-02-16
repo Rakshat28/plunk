@@ -44,3 +44,31 @@ Certain keys are reserved by the system and automatically set by Plunk:
 | Key | Description |
 |-----|-------------|
 | locale | The contact's preferred locale in ISO 639 (e.g. 'en', 'fr', 'es'). Specifying the locale field on a contact will override the project-wide locale for contact-facing pages and email footers |
+
+## Subscription State
+
+Every contact has a `subscribed` field that determines which types of emails they will receive. A newly created contact is subscribed by default.
+
+### How contacts become unsubscribed
+
+A contact can become unsubscribed in several ways:
+- **Manually** through the dashboard or via the API
+- **Self-service** by clicking the unsubscribe link in an email
+- **Automatically** when an email to the contact bounces or results in a complaint
+
+### Emails by subscription state
+
+The subscription state controls whether a contact receives marketing emails. Transactional emails are always delivered regardless of subscription state.
+
+| Email type | Subscribed | Unsubscribed |
+|---|---|---|
+| **Transactional** (via [/v1/send](/api-reference/public-api/sendTransactionalEmail)) | Delivered | Delivered |
+| **Campaigns** | Delivered | Not delivered |
+| **Automations** (transactional template) | Delivered | Delivered |
+| **Automations** (marketing template) | Delivered | Not delivered |
+
+<Callout
+ title="Transactional emails and marketing templates"
+ variant="warn">
+Even when using the transactional API endpoint (`/v1/send`), you cannot send a marketing template to an unsubscribed contact. Use a transactional template instead if the email must reach unsubscribed contacts.
+</Callout>
