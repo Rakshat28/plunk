@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { sendRawEmail } from '../SESService';
 
 // Mock with both paths to catch resolution variations
@@ -22,8 +22,6 @@ vi.mock('@aws-sdk/client-ses', () => {
 });
 
 describe('SESService', () => {
-  let sesInstance: any;
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -49,7 +47,7 @@ describe('SESService', () => {
     await sendRawEmail(params);
 
     expect(ses.sendRawEmail).toHaveBeenCalled();
-    const callArgs = (ses.sendRawEmail as any).mock.calls[0][0];
+    const callArgs = (ses.sendRawEmail as Mock).mock.calls[0][0];
     const rawMessage = new TextDecoder().decode(callArgs.RawMessage.Data);
 
     // Verify boundary hierarchy: Mixed -> Alternative
@@ -87,7 +85,7 @@ describe('SESService', () => {
 
     await sendRawEmail(params);
 
-    const callArgs = (ses.sendRawEmail as any).mock.calls[0][0];
+    const callArgs = (ses.sendRawEmail as Mock).mock.calls[0][0];
     const rawMessage = new TextDecoder().decode(callArgs.RawMessage.Data);
 
     // Verify boundary hierarchy: Related -> Alternative
@@ -129,7 +127,7 @@ describe('SESService', () => {
 
     await sendRawEmail(params);
 
-    const callArgs = (ses.sendRawEmail as any).mock.calls[0][0];
+    const callArgs = (ses.sendRawEmail as Mock).mock.calls[0][0];
     const rawMessage = new TextDecoder().decode(callArgs.RawMessage.Data);
 
     // Root should be mixed
