@@ -8,6 +8,8 @@ import hiTranslations from './locales/hi.json' with {type: 'json'};
 import ptTranslations from './locales/pt.json' with {type: 'json'};
 import bgTranslations from './locales/bg.json' with {type: 'json'};
 import csTranslations from './locales/cs.json' with {type: 'json'};
+import plTranslations from './locales/pl.json' with {type: 'json'};
+
 export {
   SUPPORTED_LANGUAGES,
   DEFAULT_LANGUAGE,
@@ -40,6 +42,7 @@ const translationsMap: Record<string, Translations> = {
   pt: ptTranslations,
   bg: bgTranslations,
   cs: csTranslations,
+  pl: plTranslations,
 };
 
 // In-memory cache for loaded translations
