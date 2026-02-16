@@ -29,6 +29,13 @@ const SECURITY_THRESHOLDS = {
   COMPLAINT_7DAY_CRITICAL: 0.15,
   COMPLAINT_ALLTIME_WARNING: 0.03,
   COMPLAINT_ALLTIME_CRITICAL: 0.12,
+
+  // Minimum absolute counts (prevents small sample size false positives)
+  // Both percentage AND absolute count must be exceeded to trigger
+  MIN_BOUNCES_FOR_CRITICAL: 10,
+  MIN_BOUNCES_FOR_WARNING: 5,
+  MIN_COMPLAINTS_FOR_CRITICAL: 5,
+  MIN_COMPLAINTS_FOR_WARNING: 3,
 } as const;
 
 interface RateData {
@@ -280,51 +287,77 @@ export class SecurityService {
 
     // Check 7-day bounce rate (only if 7-day volume is sufficient)
     if (hasMinimumVolume7Day) {
-      if (sevenDay.bounceRate >= SECURITY_THRESHOLDS.BOUNCE_7DAY_CRITICAL) {
+      // Critical: requires BOTH rate AND absolute count thresholds
+      if (
+        sevenDay.bounceRate >= SECURITY_THRESHOLDS.BOUNCE_7DAY_CRITICAL &&
+        sevenDay.bounces >= SECURITY_THRESHOLDS.MIN_BOUNCES_FOR_CRITICAL
+      ) {
         violations.push(
-          `7-day bounce rate (${sevenDay.bounceRate.toFixed(2)}%) exceeds critical threshold (${SECURITY_THRESHOLDS.BOUNCE_7DAY_CRITICAL}%)`,
+          `7-day bounce rate (${sevenDay.bounceRate.toFixed(2)}%, ${sevenDay.bounces} bounces) exceeds critical threshold (${SECURITY_THRESHOLDS.BOUNCE_7DAY_CRITICAL}%, ${SECURITY_THRESHOLDS.MIN_BOUNCES_FOR_CRITICAL} minimum)`,
         );
-      } else if (sevenDay.bounceRate >= SECURITY_THRESHOLDS.BOUNCE_7DAY_WARNING) {
+      } else if (
+        sevenDay.bounceRate >= SECURITY_THRESHOLDS.BOUNCE_7DAY_WARNING &&
+        sevenDay.bounces >= SECURITY_THRESHOLDS.MIN_BOUNCES_FOR_WARNING
+      ) {
         warnings.push(
-          `7-day bounce rate (${sevenDay.bounceRate.toFixed(2)}%) exceeds warning threshold (${SECURITY_THRESHOLDS.BOUNCE_7DAY_WARNING}%)`,
+          `7-day bounce rate (${sevenDay.bounceRate.toFixed(2)}%, ${sevenDay.bounces} bounces) exceeds warning threshold (${SECURITY_THRESHOLDS.BOUNCE_7DAY_WARNING}%, ${SECURITY_THRESHOLDS.MIN_BOUNCES_FOR_WARNING} minimum)`,
         );
       }
     }
 
     // Check 7-day complaint rate (only if 7-day volume is sufficient)
     if (hasMinimumVolume7Day) {
-      if (sevenDay.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_7DAY_CRITICAL) {
+      // Critical: requires BOTH rate AND absolute count thresholds
+      if (
+        sevenDay.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_7DAY_CRITICAL &&
+        sevenDay.complaints >= SECURITY_THRESHOLDS.MIN_COMPLAINTS_FOR_CRITICAL
+      ) {
         violations.push(
-          `7-day complaint rate (${sevenDay.complaintRate.toFixed(3)}%) exceeds critical threshold (${SECURITY_THRESHOLDS.COMPLAINT_7DAY_CRITICAL}%)`,
+          `7-day complaint rate (${sevenDay.complaintRate.toFixed(3)}%, ${sevenDay.complaints} complaints) exceeds critical threshold (${SECURITY_THRESHOLDS.COMPLAINT_7DAY_CRITICAL}%, ${SECURITY_THRESHOLDS.MIN_COMPLAINTS_FOR_CRITICAL} minimum)`,
         );
-      } else if (sevenDay.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_7DAY_WARNING) {
+      } else if (
+        sevenDay.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_7DAY_WARNING &&
+        sevenDay.complaints >= SECURITY_THRESHOLDS.MIN_COMPLAINTS_FOR_WARNING
+      ) {
         warnings.push(
-          `7-day complaint rate (${sevenDay.complaintRate.toFixed(3)}%) exceeds warning threshold (${SECURITY_THRESHOLDS.COMPLAINT_7DAY_WARNING}%)`,
+          `7-day complaint rate (${sevenDay.complaintRate.toFixed(3)}%, ${sevenDay.complaints} complaints) exceeds warning threshold (${SECURITY_THRESHOLDS.COMPLAINT_7DAY_WARNING}%, ${SECURITY_THRESHOLDS.MIN_COMPLAINTS_FOR_WARNING} minimum)`,
         );
       }
     }
 
     // Check all-time rates (only if all-time volume is sufficient)
     if (hasMinimumVolumeAllTime) {
-      // Check all-time bounce rate
-      if (allTime.bounceRate >= SECURITY_THRESHOLDS.BOUNCE_ALLTIME_CRITICAL) {
+      // Check all-time bounce rate - requires BOTH rate AND absolute count
+      if (
+        allTime.bounceRate >= SECURITY_THRESHOLDS.BOUNCE_ALLTIME_CRITICAL &&
+        allTime.bounces >= SECURITY_THRESHOLDS.MIN_BOUNCES_FOR_CRITICAL
+      ) {
         violations.push(
-          `All-time bounce rate (${allTime.bounceRate.toFixed(2)}%) exceeds critical threshold (${SECURITY_THRESHOLDS.BOUNCE_ALLTIME_CRITICAL}%)`,
+          `All-time bounce rate (${allTime.bounceRate.toFixed(2)}%, ${allTime.bounces} bounces) exceeds critical threshold (${SECURITY_THRESHOLDS.BOUNCE_ALLTIME_CRITICAL}%, ${SECURITY_THRESHOLDS.MIN_BOUNCES_FOR_CRITICAL} minimum)`,
         );
-      } else if (allTime.bounceRate >= SECURITY_THRESHOLDS.BOUNCE_ALLTIME_WARNING) {
+      } else if (
+        allTime.bounceRate >= SECURITY_THRESHOLDS.BOUNCE_ALLTIME_WARNING &&
+        allTime.bounces >= SECURITY_THRESHOLDS.MIN_BOUNCES_FOR_WARNING
+      ) {
         warnings.push(
-          `All-time bounce rate (${allTime.bounceRate.toFixed(2)}%) exceeds warning threshold (${SECURITY_THRESHOLDS.BOUNCE_ALLTIME_WARNING}%)`,
+          `All-time bounce rate (${allTime.bounceRate.toFixed(2)}%, ${allTime.bounces} bounces) exceeds warning threshold (${SECURITY_THRESHOLDS.BOUNCE_ALLTIME_WARNING}%, ${SECURITY_THRESHOLDS.MIN_BOUNCES_FOR_WARNING} minimum)`,
         );
       }
 
-      // Check all-time complaint rate
-      if (allTime.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_ALLTIME_CRITICAL) {
+      // Check all-time complaint rate - requires BOTH rate AND absolute count
+      if (
+        allTime.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_ALLTIME_CRITICAL &&
+        allTime.complaints >= SECURITY_THRESHOLDS.MIN_COMPLAINTS_FOR_CRITICAL
+      ) {
         violations.push(
-          `All-time complaint rate (${allTime.complaintRate.toFixed(3)}%) exceeds critical threshold (${SECURITY_THRESHOLDS.COMPLAINT_ALLTIME_CRITICAL}%)`,
+          `All-time complaint rate (${allTime.complaintRate.toFixed(3)}%, ${allTime.complaints} complaints) exceeds critical threshold (${SECURITY_THRESHOLDS.COMPLAINT_ALLTIME_CRITICAL}%, ${SECURITY_THRESHOLDS.MIN_COMPLAINTS_FOR_CRITICAL} minimum)`,
         );
-      } else if (allTime.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_ALLTIME_WARNING) {
+      } else if (
+        allTime.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_ALLTIME_WARNING &&
+        allTime.complaints >= SECURITY_THRESHOLDS.MIN_COMPLAINTS_FOR_WARNING
+      ) {
         warnings.push(
-          `All-time complaint rate (${allTime.complaintRate.toFixed(3)}%) exceeds warning threshold (${SECURITY_THRESHOLDS.COMPLAINT_ALLTIME_WARNING}%)`,
+          `All-time complaint rate (${allTime.complaintRate.toFixed(3)}%, ${allTime.complaints} complaints) exceeds warning threshold (${SECURITY_THRESHOLDS.COMPLAINT_ALLTIME_WARNING}%, ${SECURITY_THRESHOLDS.MIN_COMPLAINTS_FOR_WARNING} minimum)`,
         );
       }
     }
