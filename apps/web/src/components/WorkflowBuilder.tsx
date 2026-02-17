@@ -128,7 +128,29 @@ function getLayoutedElements(nodes: Node[], edges: Edge[]) {
     };
   });
 
-  return {nodes: layoutedNodes, edges};
+  // Center "Add Step" nodes directly below their parent nodes
+  const adjustedNodes = layoutedNodes.map(node => {
+    if (node.type === 'addStep') {
+      // Find the parent node (the source of the edge connecting to this add node)
+      const parentEdge = edges.find(edge => edge.target === node.id);
+      if (parentEdge) {
+        const parentNode = layoutedNodes.find(n => n.id === parentEdge.source);
+        if (parentNode) {
+          // Center the add node below the parent node
+          return {
+            ...node,
+            position: {
+              x: parentNode.position.x + nodeWidth / 2 - 32, // 32 is half of the 64px (w-16) width of the add button
+              y: node.position.y,
+            },
+          };
+        }
+      }
+    }
+    return node;
+  });
+
+  return {nodes: adjustedNodes, edges};
 }
 
 // Add Step Node - appears at the end of flow paths
@@ -412,6 +434,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
             id: `${step.id}-add-yes`,
             type: 'addStep',
             position: {x: 0, y: 0},
+            draggable: false,
             data: {
               label: 'Yes',
               onClick: () => setAddStepContext({fromStepId: step.id, branch: 'yes'}),
@@ -424,6 +447,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
             id: `${step.id}-add-no`,
             type: 'addStep',
             position: {x: 0, y: 0},
+            draggable: false,
             data: {
               label: 'No',
               onClick: () => setAddStepContext({fromStepId: step.id, branch: 'no'}),
@@ -437,6 +461,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
             id: `${step.id}-add`,
             type: 'addStep',
             position: {x: 0, y: 0},
+            draggable: false,
             data: {
               label: '',
               onClick: () => setAddStepContext({fromStepId: step.id}),
@@ -510,7 +535,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
             id: `${step.id}-add-yes-edge`,
             source: step.id,
             target: `${step.id}-add-yes`,
-            type: 'smoothstep',
+            type: 'straight',
             animated: false,
             label: 'Yes',
             labelStyle: {fill: '#16a34a', fontWeight: 600, fontSize: 12},
@@ -527,7 +552,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
             id: `${step.id}-add-no-edge`,
             source: step.id,
             target: `${step.id}-add-no`,
-            type: 'smoothstep',
+            type: 'straight',
             animated: false,
             label: 'No',
             labelStyle: {fill: '#dc2626', fontWeight: 600, fontSize: 12},
@@ -544,7 +569,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
             id: `${step.id}-add-edge`,
             source: step.id,
             target: `${step.id}-add`,
-            type: 'smoothstep',
+            type: 'straight',
             animated: false,
             style: {stroke: '#94a3b8', strokeWidth: 2.5, strokeDasharray: '5,5'},
             markerEnd: {type: MarkerType.ArrowClosed, color: '#94a3b8', width: 22, height: 22},
@@ -564,6 +589,56 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
 
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
+
+  // Custom nodes change handler that updates "+" node positions when parent nodes move
+  const handleNodesChange = useCallback(
+    (changes: any[]) => {
+      onNodesChange(changes);
+
+      // Check if any position changes occurred
+      const positionChanges = changes.filter(change => change.type === 'position' && change.dragging);
+      if (positionChanges.length > 0) {
+        setNodes(currentNodes => {
+          const updatedNodes = [...currentNodes];
+          const nodeWidth = 280;
+
+          positionChanges.forEach((change: any) => {
+            const movedNode = updatedNodes.find(n => n.id === change.id);
+            if (movedNode && movedNode.type === 'custom' && change.position) {
+              // Find all "+" nodes connected to this parent node
+              const connectedAddNodes = updatedNodes.filter(node => {
+                if (node.type !== 'addStep') return false;
+                // Check if this add node is connected to the moved node
+                return (
+                  node.id === `${movedNode.id}-add` ||
+                  node.id === `${movedNode.id}-add-yes` ||
+                  node.id === `${movedNode.id}-add-no`
+                );
+              });
+
+              // Update positions of connected "+" nodes to stay centered below parent
+              connectedAddNodes.forEach(addNode => {
+                const addNodeIndex = updatedNodes.findIndex(n => n.id === addNode.id);
+                if (addNodeIndex !== -1 && updatedNodes[addNodeIndex]) {
+                  const existingNode = updatedNodes[addNodeIndex];
+                  updatedNodes[addNodeIndex] = {
+                    ...existingNode,
+                    position: {
+                      x: change.position.x + nodeWidth / 2 - 32, // Center below parent
+                      y: existingNode.position.y,
+                    },
+                  };
+                }
+              });
+            }
+          });
+
+          return updatedNodes;
+        });
+      }
+    },
+    [onNodesChange, setNodes],
+  );
 
   // Update nodes/edges when layout changes
   useEffect(() => {
@@ -727,7 +802,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
+          onNodesChange={handleNodesChange}
           onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
           fitView
