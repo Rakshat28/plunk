@@ -21,7 +21,8 @@ import {CatchAsync} from '../utils/asyncHandler.js';
 export class Webhooks {
   /**
    * Receive SNS webhook notifications from AWS SES
-   * Handles email events: delivery, open, click, bounce, complaint
+   * Handles outbound email events: delivery, open, click, bounce, complaint
+   * Handles inbound email notifications: received emails via SES receiving
    */
   @Post('sns')
   @CatchAsync
@@ -67,6 +68,32 @@ export class Webhooks {
 
       // Parse the nested SES event from the Message field
       const body = JSON.parse(req.body.Message);
+
+      // Check if this is an inbound email notification (SES Receiving)
+      if (body.notificationType === 'Received') {
+        signale.info('[WEBHOOK] Received inbound email notification from SES');
+        signale.info('[WEBHOOK] Inbound email details:', {
+          messageId: body.mail?.messageId,
+          source: body.mail?.source,
+          destination: body.mail?.destination,
+          recipients: body.receipt?.recipients,
+          timestamp: body.mail?.timestamp,
+          subject: body.mail?.commonHeaders?.subject,
+          from: body.mail?.commonHeaders?.from,
+          to: body.mail?.commonHeaders?.to,
+          hasContent: !!body.content,
+          spamVerdict: body.receipt?.spamVerdict?.status,
+          virusVerdict: body.receipt?.virusVerdict?.status,
+          spfVerdict: body.receipt?.spfVerdict?.status,
+          dkimVerdict: body.receipt?.dkimVerdict?.status,
+          dmarcVerdict: body.receipt?.dmarcVerdict?.status,
+        });
+        // For now, just log and acknowledge receipt
+        // Future: process the inbound email (parse, store, trigger workflows, etc.)
+        return res.status(200).json({success: true, message: 'Inbound email received'});
+      }
+
+      // Handle outbound email event notifications (existing logic)
       const eventType = body.eventType as 'Bounce' | 'Delivery' | 'Open' | 'Complaint' | 'Click';
       const messageId = body.mail?.messageId;
 
