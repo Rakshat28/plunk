@@ -460,9 +460,7 @@ export function DomainsSettings({projectId}: DomainsSettingsProps) {
                             {config?.aws?.sesRegion && (
                               <div>
                                 <div className="flex items-center gap-2 mb-2">
-                                  <h4 className="text-xs font-semibold text-neutral-900">
-                                    Custom MAIL FROM Domain (Optional)
-                                  </h4>
+                                  <h4 className="text-xs font-semibold text-neutral-900">Custom MAIL FROM Domain</h4>
                                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
                                     OPTIONAL
                                   </Badge>
@@ -595,7 +593,7 @@ export function DomainsSettings({projectId}: DomainsSettingsProps) {
                             {config?.aws?.sesRegion && (
                               <div>
                                 <div className="flex items-center gap-2 mb-2">
-                                  <h4 className="text-xs font-semibold text-neutral-900">Inbound Email (Optional)</h4>
+                                  <h4 className="text-xs font-semibold text-neutral-900">Inbound Email</h4>
                                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
                                     OPTIONAL
                                   </Badge>
