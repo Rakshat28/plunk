@@ -850,6 +850,17 @@ describe('Actions API Integration Tests', () => {
           expect(result.data.subscribed).toBeUndefined();
         }
       });
+
+      it('should create new contacts as unsubscribed when subscribed is undefined', async () => {
+        const newEmail = 'new-send-contact@example.com';
+
+        // Send email to new contact without specifying subscribed
+        const {ContactService} = await import('../../services/ContactService.js');
+        const contact = await ContactService.upsert(projectId, newEmail, {name: 'Test'}, false);
+
+        // Transactional emails should create contacts as unsubscribed by default
+        expect(contact.subscribed).toBe(false);
+      });
     });
 
     describe('/v1/track endpoint', () => {
@@ -905,9 +916,9 @@ describe('Actions API Integration Tests', () => {
 
         // Track event for new contact without specifying subscribed
         const {ContactService} = await import('../../services/ContactService.js');
-        const contact = await ContactService.upsert(projectId, newEmail, {event: 'test'}, undefined);
+        const contact = await ContactService.upsert(projectId, newEmail, {event: 'test'}, true);
 
-        // New contacts should default to subscribed=true
+        // Event tracking should create contacts as subscribed by default
         expect(contact.subscribed).toBe(true);
       });
 

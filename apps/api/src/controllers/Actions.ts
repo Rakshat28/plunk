@@ -72,11 +72,12 @@ export class Actions {
 
     // Create or update contact with persistent data only
     // ContactService.upsert will filter out non-persistent fields
+    // Event tracking should subscribe contacts by default
     const contact = await ContactService.upsert(
       auth.projectId,
       email,
       data as Record<string, unknown> | undefined,
-      subscribed,
+      subscribed ?? true,
     );
 
     // Track the event with ALL data (persistent + non-persistent)
@@ -266,7 +267,8 @@ export class Actions {
         : (data as Record<string, unknown> | undefined);
 
       // Create or update contact with metadata
-      const contact = await ContactService.upsert(auth.projectId, recipient.email, recipientData, subscribed);
+      // Transactional emails should not subscribe contacts by default
+      const contact = await ContactService.upsert(auth.projectId, recipient.email, recipientData, subscribed ?? false);
 
       // Get merged data including non-persistent fields for template rendering
       const mergedData = ContactService.getMergedData(contact, data as Record<string, unknown> | undefined);
