@@ -26,3 +26,6 @@ export * from './segments/index.js';
 
 // Security types
 export * from './security/index.js';
+
+// Workflow types
+export * from './workflows/index.js';

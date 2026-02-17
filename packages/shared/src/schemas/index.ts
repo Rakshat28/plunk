@@ -208,6 +208,27 @@ export const WorkflowSchemas = {
 };
 
 export const WorkflowStepConfigSchemas = {
+  sendEmail: z.object({
+    templateId: uuid,
+    recipient: z
+      .object({
+        type: z.enum(['CONTACT', 'CUSTOM']),
+        customEmail: email.optional(),
+      })
+      .refine(
+        data => {
+          // If type is CUSTOM, customEmail must be provided
+          if (data.type === 'CUSTOM') {
+            return !!data.customEmail;
+          }
+          return true;
+        },
+        {
+          message: 'Custom email is required when recipient type is CUSTOM',
+        },
+      )
+      .optional(),
+  }),
   delay: z
     .object({
       amount: z.number().positive(),

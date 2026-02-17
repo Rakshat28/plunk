@@ -35,6 +35,7 @@ interface SendEmailParams {
   campaignId?: string;
   workflowExecutionId?: string;
   workflowStepExecutionId?: string;
+  recipientEmail?: string; // Optional custom recipient email (overrides contact.email)
 }
 
 /**
@@ -193,7 +194,8 @@ export class EmailService {
 
     // Check subscription status for marketing emails
     // Transactional emails should always be sent regardless of subscription status
-    if (sourceType !== EmailSourceType.TRANSACTIONAL) {
+    // Custom recipient emails also bypass subscription checks (they're not in the contact list)
+    if (sourceType !== EmailSourceType.TRANSACTIONAL && !params.recipientEmail) {
       const contact = await prisma.contact.findUnique({
         where: {id: params.contactId},
         select: {subscribed: true},
@@ -242,6 +244,12 @@ export class EmailService {
       signale.warn(`[BILLING_LIMIT] ${limitCheck.message}`);
     }
 
+    // If custom recipient email is provided, store it in headers for later use
+    const emailHeaders = params.headers ? {...params.headers} : {};
+    if (params.recipientEmail) {
+      emailHeaders['X-Plunk-Recipient-Override'] = params.recipientEmail;
+    }
+
     const email = await prisma.email.create({
       data: {
         projectId: params.projectId,
@@ -251,7 +259,7 @@ export class EmailService {
         from: params.from,
         fromName: params.fromName,
         replyTo: params.replyTo,
-        headers: params.headers ? toPrismaJson(params.headers) : undefined,
+        headers: Object.keys(emailHeaders).length > 0 ? toPrismaJson(emailHeaders) : undefined,
         attachments: params.attachments ? toPrismaJson(params.attachments) : undefined,
         sourceType,
         templateId: params.templateId,
@@ -361,6 +369,15 @@ export class EmailService {
           ? (email.headers as Record<string, string>)
           : undefined;
 
+      // Check for custom recipient override in headers
+      const recipientEmail = customHeaders?.['X-Plunk-Recipient-Override'] || email.contact.email;
+
+      // Remove internal headers before sending
+      const publicHeaders = customHeaders ? {...customHeaders} : undefined;
+      if (publicHeaders && 'X-Plunk-Recipient-Override' in publicHeaders) {
+        delete publicHeaders['X-Plunk-Recipient-Override'];
+      }
+
       // Parse attachments from JSON
       const attachments =
         email.attachments && Array.isArray(email.attachments)
@@ -376,13 +393,13 @@ export class EmailService {
           name: fromName,
           email: fromEmail,
         },
-        to: [email.contact.email],
+        to: [recipientEmail],
         content: {
           subject: formattedEmail.subject,
           html: compiledHtml,
         },
         reply: email.replyTo || undefined,
-        headers: customHeaders,
+        headers: publicHeaders,
         attachments: attachments,
         tracking: shouldTrack,
       });

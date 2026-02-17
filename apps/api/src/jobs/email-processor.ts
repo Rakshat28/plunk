@@ -117,10 +117,25 @@ export async function createEmailWorker() {
         const fromName = email.fromName || email.project.name;
         const fromEmail = email.from;
 
+        // Parse custom headers from JSON
+        const customHeaders =
+          email.headers && typeof email.headers === 'object' && !Array.isArray(email.headers)
+            ? (email.headers as Record<string, string>)
+            : undefined;
+
+        // Check for custom recipient override in headers
+        const recipientEmail = customHeaders?.['X-Plunk-Recipient-Override'] || email.contact.email;
+
+        // Remove internal headers before sending
+        const publicHeaders = customHeaders ? {...customHeaders} : undefined;
+        if (publicHeaders && 'X-Plunk-Recipient-Override' in publicHeaders) {
+          delete publicHeaders['X-Plunk-Recipient-Override'];
+        }
+
         // Build recipient with name if available
         const recipient: {name?: string; email: string} | string = email.toName
-          ? {name: email.toName, email: email.contact.email}
-          : email.contact.email;
+          ? {name: email.toName, email: recipientEmail}
+          : recipientEmail;
 
         // Determine tracking based on project settings and email type
         const shouldTrack = EmailService.shouldTrackEmail(email.project.tracking, email.sourceType);
@@ -137,6 +152,7 @@ export async function createEmailWorker() {
             html: compiledHtml,
           },
           reply: email.replyTo || undefined,
+          headers: publicHeaders,
           tracking: shouldTrack,
           attachments: email.attachments as {filename: string; content: string; contentType: string}[] | null,
         });

@@ -826,6 +826,8 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
 
   // SEND_EMAIL fields
   const [templateId, setTemplateId] = useState('');
+  const [recipientType, setRecipientType] = useState<'CONTACT' | 'CUSTOM'>('CONTACT');
+  const [customEmail, setCustomEmail] = useState('');
 
   // DELAY fields
   const [delayAmount, setDelayAmount] = useState('24');
@@ -958,7 +960,29 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
           setIsSubmitting(false);
           return;
         }
-        config = {templateId};
+
+        // Validate custom email if recipient type is CUSTOM
+        if (recipientType === 'CUSTOM') {
+          if (!customEmail || !customEmail.trim()) {
+            toast.error('Please enter a custom email address');
+            setIsSubmitting(false);
+            return;
+          }
+          // Basic email validation
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customEmail)) {
+            toast.error('Please enter a valid email address');
+            setIsSubmitting(false);
+            return;
+          }
+        }
+
+        config = {
+          templateId,
+          recipient: {
+            type: recipientType,
+            ...(recipientType === 'CUSTOM' && {customEmail: customEmail.trim()}),
+          },
+        };
       } else if (type === 'DELAY') {
         const amount = parseInt(delayAmount);
         // Validate max 365 days
@@ -1071,6 +1095,8 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
       setName('');
       setType('SEND_EMAIL');
       setTemplateId('');
+      setRecipientType('CONTACT');
+      setCustomEmail('');
       setDelayAmount('24');
       setDelayUnit('hours');
       setConditionField('');
@@ -1100,93 +1126,178 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Workflow Step</DialogTitle>
+          <p className="text-sm text-neutral-500 mt-2">Configure a new step to add to your workflow</p>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="type">Step Type *</Label>
-            <Select value={type} onValueChange={value => setType(value as WorkflowStep['type'])}>
-              <SelectTrigger id="type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItemWithDescription
-                  value="SEND_EMAIL"
-                  title="Send Email"
-                  description="Send an email using a template"
-                />
-                <SelectItemWithDescription
-                  value="DELAY"
-                  title="Delay"
-                  description="Wait for a specified amount of time"
-                />
-                <SelectItemWithDescription
-                  value="WAIT_FOR_EVENT"
-                  title="Wait for Event"
-                  description="Pause until a specific event occurs"
-                />
-                <SelectItemWithDescription
-                  value="CONDITION"
-                  title="Condition"
-                  description="If/else branching based on contact data"
-                />
-                <SelectItemWithDescription
-                  value="WEBHOOK"
-                  title="Webhook"
-                  description="Call an external API endpoint"
-                />
-                <SelectItemWithDescription
-                  value="UPDATE_CONTACT"
-                  title="Update Contact"
-                  description="Modify contact data fields"
-                />
-                <SelectItemWithDescription value="EXIT" title="Exit" description="End the workflow for this contact" />
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-neutral-500 mt-1">
-              Note: The trigger step is automatically created with every workflow
-            </p>
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Information Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
+              <div className="w-1 h-4 bg-blue-500 rounded-full" />
+              <h3 className="text-sm font-semibold text-neutral-900">Basic Information</h3>
+            </div>
 
-          <div>
-            <Label htmlFor="name">Step Name *</Label>
-            <Input
-              id="name"
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              required
-              placeholder="e.g., Send Welcome Email"
-            />
+            <div>
+              <Label htmlFor="type" className="text-sm font-medium">
+                Step Type *
+              </Label>
+              <Select value={type} onValueChange={value => setType(value as WorkflowStep['type'])}>
+                <SelectTrigger id="type" className="mt-1.5">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItemWithDescription
+                    value="SEND_EMAIL"
+                    title="Send Email"
+                    description="Send an email using a template"
+                  />
+                  <SelectItemWithDescription
+                    value="DELAY"
+                    title="Delay"
+                    description="Wait for a specified amount of time"
+                  />
+                  <SelectItemWithDescription
+                    value="WAIT_FOR_EVENT"
+                    title="Wait for Event"
+                    description="Pause until a specific event occurs"
+                  />
+                  <SelectItemWithDescription
+                    value="CONDITION"
+                    title="Condition"
+                    description="If/else branching based on contact data"
+                  />
+                  <SelectItemWithDescription
+                    value="WEBHOOK"
+                    title="Webhook"
+                    description="Call an external API endpoint"
+                  />
+                  <SelectItemWithDescription
+                    value="UPDATE_CONTACT"
+                    title="Update Contact"
+                    description="Modify contact data fields"
+                  />
+                  <SelectItemWithDescription
+                    value="EXIT"
+                    title="Exit"
+                    description="End the workflow for this contact"
+                  />
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-neutral-500 mt-1.5">Choose the type of action this step will perform</p>
+            </div>
+
+            <div>
+              <Label htmlFor="name" className="text-sm font-medium">
+                Step Name *
+              </Label>
+              <Input
+                id="name"
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                required
+                placeholder="e.g., Send Welcome Email"
+                className="mt-1.5"
+              />
+              <p className="text-xs text-neutral-500 mt-1.5">
+                A descriptive name to identify this step in the workflow
+              </p>
+            </div>
           </div>
 
           {/* SEND_EMAIL Configuration */}
           {type === 'SEND_EMAIL' && (
-            <div>
-              <Label htmlFor="template">Email Template *</Label>
-              <Select value={templateId} onValueChange={setTemplateId} required>
-                <SelectTrigger id="template">
-                  <SelectValue placeholder="Select a template..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {templatesData?.data.map(template => (
-                    <SelectItemWithDescription
-                      key={template.id}
-                      value={template.id}
-                      title={template.name}
-                      description={`${template.type === 'TRANSACTIONAL' ? 'Transactional' : 'Marketing'} • Subject: ${template.subject}`}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
+                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                <h3 className="text-sm font-semibold text-neutral-900">Email Configuration</h3>
+              </div>
+
+              <div className="space-y-4 pl-3">
+                <div>
+                  <Label htmlFor="template" className="text-sm font-medium">
+                    Email Template *
+                  </Label>
+                  <Select value={templateId} onValueChange={setTemplateId} required>
+                    <SelectTrigger id="template" className="mt-1.5">
+                      <SelectValue placeholder="Select a template..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {templatesData?.data.map(template => (
+                        <SelectItemWithDescription
+                          key={template.id}
+                          value={template.id}
+                          title={template.name}
+                          description={`${template.type === 'TRANSACTIONAL' ? 'Transactional' : 'Marketing'} • Subject: ${template.subject}`}
+                        />
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-neutral-500 mt-1.5">The email template to use for this step</p>
+                </div>
+
+                <div>
+                  <Label htmlFor="recipientType" className="text-sm font-medium">
+                    Send To *
+                  </Label>
+                  <Select
+                    value={recipientType}
+                    onValueChange={value => setRecipientType(value as 'CONTACT' | 'CUSTOM')}
+                  >
+                    <SelectTrigger id="recipientType" className="mt-1.5">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItemWithDescription
+                        value="CONTACT"
+                        title="Contact"
+                        description="Send to the contact that triggered the workflow"
+                      />
+                      <SelectItemWithDescription
+                        value="CUSTOM"
+                        title="Custom Email"
+                        description="Send to a specific email address"
+                      />
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-neutral-500 mt-1.5">Choose who should receive this email</p>
+                </div>
+
+                {recipientType === 'CUSTOM' && (
+                  <div className="pl-3 border-l-2 border-blue-200 bg-blue-50/50 -ml-3 py-3 pr-3">
+                    <Label htmlFor="customEmail" className="text-sm font-medium">
+                      Email Address *
+                    </Label>
+                    <Input
+                      id="customEmail"
+                      type="email"
+                      value={customEmail}
+                      onChange={e => setCustomEmail(e.target.value)}
+                      required
+                      placeholder="e.g., admin@example.com"
+                      className="mt-1.5"
                     />
-                  ))}
-                </SelectContent>
-              </Select>
+                    <p className="text-xs text-neutral-500 mt-1.5">
+                      The specific email address that will receive this email
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
           {/* DELAY Configuration */}
           {type === 'DELAY' && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
+                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                <h3 className="text-sm font-semibold text-neutral-900">Delay Configuration</h3>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pl-3">
                 <div>
-                  <Label htmlFor="delayAmount">Amount *</Label>
+                  <Label htmlFor="delayAmount" className="text-sm font-medium">
+                    Amount *
+                  </Label>
                   <Input
                     id="delayAmount"
                     type="number"
@@ -1203,15 +1314,18 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                             ? 365
                             : undefined
                     }
+                    className="mt-1.5"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="delayUnit">Unit *</Label>
+                  <Label htmlFor="delayUnit" className="text-sm font-medium">
+                    Unit *
+                  </Label>
                   <Select
                     value={delayUnit}
                     onValueChange={value => setDelayUnit(value as 'hours' | 'days' | 'minutes')}
                   >
-                    <SelectTrigger id="delayUnit">
+                    <SelectTrigger id="delayUnit" className="mt-1.5">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1222,222 +1336,256 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                   </Select>
                 </div>
               </div>
+              <p className="text-xs text-neutral-500 pl-3">Maximum delay: 365 days</p>
             </div>
           )}
 
           {/* CONDITION Configuration */}
           {type === 'CONDITION' && (
-            <div className="space-y-4 p-4 bg-neutral-50 rounded-lg">
-              <p className="text-sm text-neutral-600">Configure the condition to evaluate</p>
-
-              <div>
-                <Label htmlFor="conditionField">Field to Check *</Label>
-                {loadingFields ? (
-                  <div className="flex items-center gap-2 px-3 py-2 border border-neutral-200 rounded-lg text-sm text-neutral-500">
-                    <svg
-                      className="h-4 w-4 animate-spin"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    Loading fields...
-                  </div>
-                ) : availableFields.length > 0 ? (
-                  <>
-                    <Select value={conditionField} onValueChange={handleConditionFieldChange} required>
-                      <SelectTrigger id="conditionField">
-                        <SelectValue placeholder="Select a field..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {/* Group fields by category */}
-                        {Object.entries(
-                          availableFields.reduce<Record<string, typeof availableFields>>((acc, field) => {
-                            if (!acc[field.category]) acc[field.category] = [];
-                            acc[field.category]!.push(field);
-                            return acc;
-                          }, {}),
-                        ).map(([category, fields]) => (
-                          <div key={category}>
-                            <div className="px-2 py-1.5 text-xs font-semibold text-neutral-500">{category}</div>
-                            {fields.map(field => (
-                              <SelectItem key={field.field} value={field.field}>
-                                <div className="flex items-center gap-2">
-                                  <span>{field.field.replace('contact.', '').replace('data.', '')}</span>
-                                  <span className="text-xs px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-600 font-mono">
-                                    {field.type}
-                                  </span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </div>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-neutral-500 mt-1">
-                      Select from {availableFields.length} field{availableFields.length !== 1 ? 's' : ''} in your
-                      contacts
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <Input
-                      id="conditionField"
-                      type="text"
-                      value={conditionField}
-                      onChange={e => setConditionField(e.target.value)}
-                      required
-                      placeholder="e.g., contact.subscribed or contact.data.plan"
-                    />
-                    <p className="text-xs text-neutral-500 mt-1">
-                      No fields found in contacts. Enter a field manually.
-                    </p>
-                  </>
-                )}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
+                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                <h3 className="text-sm font-semibold text-neutral-900">Condition Configuration</h3>
               </div>
+              <p className="text-sm text-neutral-600 pl-3">
+                Define the condition that determines which path contacts will follow
+              </p>
 
-              <div>
-                <Label htmlFor="conditionOperator">Operator *</Label>
-                <Select value={conditionOperator} onValueChange={setConditionOperator}>
-                  <SelectTrigger id="conditionOperator">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {validOperators.map(op => (
-                      <SelectItem key={op.value} value={op.value}>
-                        {op.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {currentFieldType && (
-                  <p className="text-xs text-neutral-500 mt-1">
-                    Showing operators for{' '}
-                    <span className="font-mono bg-neutral-200 px-1 rounded">{currentFieldType}</span> fields
-                  </p>
-                )}
-              </div>
-
-              {needsValue && (
+              <div className="space-y-4 pl-3">
                 <div>
-                  <Label htmlFor="conditionValue">Value *</Label>
-                  {currentFieldType === 'boolean' ? (
-                    <Select value={conditionValue || 'true'} onValueChange={setConditionValue}>
-                      <SelectTrigger id="conditionValue">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="true">True</SelectItem>
-                        <SelectItem value="false">False</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  ) : currentFieldType === 'number' ? (
-                    <Input
-                      id="conditionValue"
-                      type="number"
-                      value={conditionValue}
-                      onChange={e => setConditionValue(e.target.value)}
-                      required
-                      placeholder="e.g., 100"
-                    />
-                  ) : currentFieldType === 'date' ? (
-                    <Input
-                      id="conditionValue"
-                      type="datetime-local"
-                      value={conditionValue}
-                      onChange={e => setConditionValue(e.target.value)}
-                      required
-                    />
+                  <Label htmlFor="conditionField" className="text-sm font-medium">
+                    Field to Check *
+                  </Label>
+                  {loadingFields ? (
+                    <div className="flex items-center gap-2 px-3 py-2 border border-neutral-200 rounded-lg text-sm text-neutral-500 mt-1.5">
+                      <svg
+                        className="h-4 w-4 animate-spin"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Loading fields...
+                    </div>
+                  ) : availableFields.length > 0 ? (
+                    <>
+                      <Select value={conditionField} onValueChange={handleConditionFieldChange} required>
+                        <SelectTrigger id="conditionField" className="mt-1.5">
+                          <SelectValue placeholder="Select a field..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {/* Group fields by category */}
+                          {Object.entries(
+                            availableFields.reduce<Record<string, typeof availableFields>>((acc, field) => {
+                              if (!acc[field.category]) acc[field.category] = [];
+                              acc[field.category]!.push(field);
+                              return acc;
+                            }, {}),
+                          ).map(([category, fields]) => (
+                            <div key={category}>
+                              <div className="px-2 py-1.5 text-xs font-semibold text-neutral-500">{category}</div>
+                              {fields.map(field => (
+                                <SelectItem key={field.field} value={field.field}>
+                                  <div className="flex items-center gap-2">
+                                    <span>{field.field.replace('contact.', '').replace('data.', '')}</span>
+                                    <span className="text-xs px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-600 font-mono">
+                                      {field.type}
+                                    </span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </div>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-neutral-500 mt-1.5">
+                        {availableFields.length} field{availableFields.length !== 1 ? 's' : ''} available from your
+                        contacts
+                      </p>
+                    </>
                   ) : (
-                    <Input
-                      id="conditionValue"
-                      type="text"
-                      value={conditionValue}
-                      onChange={e => setConditionValue(e.target.value)}
-                      required
-                      placeholder="e.g., premium, active"
-                    />
+                    <>
+                      <Input
+                        id="conditionField"
+                        type="text"
+                        value={conditionField}
+                        onChange={e => setConditionField(e.target.value)}
+                        required
+                        placeholder="e.g., contact.subscribed or contact.data.plan"
+                        className="mt-1.5"
+                      />
+                      <p className="text-xs text-neutral-500 mt-1.5">Enter a field path (e.g., contact.data.plan)</p>
+                    </>
                   )}
                 </div>
-              )}
+
+                <div>
+                  <Label htmlFor="conditionOperator" className="text-sm font-medium">
+                    Operator *
+                  </Label>
+                  <Select value={conditionOperator} onValueChange={setConditionOperator}>
+                    <SelectTrigger id="conditionOperator" className="mt-1.5">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {validOperators.map(op => (
+                        <SelectItem key={op.value} value={op.value}>
+                          {op.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {currentFieldType && (
+                    <p className="text-xs text-neutral-500 mt-1.5">
+                      Operators for{' '}
+                      <span className="font-mono bg-neutral-100 px-1.5 py-0.5 rounded">{currentFieldType}</span> type
+                      fields
+                    </p>
+                  )}
+                </div>
+
+                {needsValue && (
+                  <div>
+                    <Label htmlFor="conditionValue" className="text-sm font-medium">
+                      Value *
+                    </Label>
+                    {currentFieldType === 'boolean' ? (
+                      <Select value={conditionValue || 'true'} onValueChange={setConditionValue}>
+                        <SelectTrigger id="conditionValue" className="mt-1.5">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">True</SelectItem>
+                          <SelectItem value="false">False</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : currentFieldType === 'number' ? (
+                      <Input
+                        id="conditionValue"
+                        type="number"
+                        value={conditionValue}
+                        onChange={e => setConditionValue(e.target.value)}
+                        required
+                        placeholder="e.g., 100"
+                        className="mt-1.5"
+                      />
+                    ) : currentFieldType === 'date' ? (
+                      <Input
+                        id="conditionValue"
+                        type="datetime-local"
+                        value={conditionValue}
+                        onChange={e => setConditionValue(e.target.value)}
+                        required
+                        className="mt-1.5"
+                      />
+                    ) : (
+                      <Input
+                        id="conditionValue"
+                        type="text"
+                        value={conditionValue}
+                        onChange={e => setConditionValue(e.target.value)}
+                        required
+                        placeholder="e.g., premium, active"
+                        className="mt-1.5"
+                      />
+                    )}
+                    <p className="text-xs text-neutral-500 mt-1.5">The value to compare against</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
           {/* WAIT_FOR_EVENT Configuration */}
           {type === 'WAIT_FOR_EVENT' && (
             <div className="space-y-4">
-              <div>
-                <Label htmlFor="eventName">Event Name *</Label>
-                {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0 ? (
-                  <Select value={eventName} onValueChange={setEventName} required>
-                    <SelectTrigger id="eventName">
-                      <SelectValue placeholder="Select an event..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {eventNamesData.eventNames.map(name => (
-                        <SelectItem key={name} value={name}>
-                          {name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Input
-                    id="eventName"
-                    type="text"
-                    value={eventName}
-                    onChange={e => setEventName(e.target.value)}
-                    required
-                    placeholder="e.g., email.clicked, user.upgraded"
-                  />
-                )}
-                <p className="text-xs text-neutral-500 mt-1">
-                  {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0
-                    ? 'Select from previously tracked events'
-                    : 'The event name to wait for'}
-                </p>
+              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
+                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                <h3 className="text-sm font-semibold text-neutral-900">Wait for Event Configuration</h3>
               </div>
 
-              <div>
-                <Label htmlFor="eventTimeoutAmount">Timeout</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="eventTimeoutAmount"
-                    type="number"
-                    value={eventTimeoutAmount}
-                    onChange={e => setEventTimeoutAmount(e.target.value)}
-                    placeholder="1"
-                    min="0"
-                    max={
-                      eventTimeoutUnit === 'minutes'
-                        ? 525600
-                        : eventTimeoutUnit === 'hours'
-                          ? 8760
-                          : eventTimeoutUnit === 'days'
-                            ? 365
-                            : undefined
-                    }
-                    className="flex-1"
-                  />
-                  <Select
-                    value={eventTimeoutUnit}
-                    onValueChange={value => setEventTimeoutUnit(value as 'minutes' | 'hours' | 'days')}
-                  >
-                    <SelectTrigger className="w-[120px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="minutes">Minutes</SelectItem>
-                      <SelectItem value="hours">Hours</SelectItem>
-                      <SelectItem value="days">Days</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="space-y-4 pl-3">
+                <div>
+                  <Label htmlFor="eventName" className="text-sm font-medium">
+                    Event Name *
+                  </Label>
+                  {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0 ? (
+                    <Select value={eventName} onValueChange={setEventName} required>
+                      <SelectTrigger id="eventName" className="mt-1.5">
+                        <SelectValue placeholder="Select an event..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {eventNamesData.eventNames.map(name => (
+                          <SelectItem key={name} value={name}>
+                            {name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      id="eventName"
+                      type="text"
+                      value={eventName}
+                      onChange={e => setEventName(e.target.value)}
+                      required
+                      placeholder="e.g., email.clicked, user.upgraded"
+                      className="mt-1.5"
+                    />
+                  )}
+                  <p className="text-xs text-neutral-500 mt-1.5">
+                    {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0
+                      ? 'The workflow will pause until this event occurs'
+                      : 'Enter the event name to wait for'}
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="eventTimeoutAmount" className="text-sm font-medium">
+                    Timeout (Optional)
+                  </Label>
+                  <div className="flex gap-2 mt-1.5">
+                    <Input
+                      id="eventTimeoutAmount"
+                      type="number"
+                      value={eventTimeoutAmount}
+                      onChange={e => setEventTimeoutAmount(e.target.value)}
+                      placeholder="1"
+                      min="0"
+                      max={
+                        eventTimeoutUnit === 'minutes'
+                          ? 525600
+                          : eventTimeoutUnit === 'hours'
+                            ? 8760
+                            : eventTimeoutUnit === 'days'
+                              ? 365
+                              : undefined
+                      }
+                      className="flex-1"
+                    />
+                    <Select
+                      value={eventTimeoutUnit}
+                      onValueChange={value => setEventTimeoutUnit(value as 'minutes' | 'hours' | 'days')}
+                    >
+                      <SelectTrigger className="w-[120px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="minutes">Minutes</SelectItem>
+                        <SelectItem value="hours">Hours</SelectItem>
+                        <SelectItem value="days">Days</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <p className="text-xs text-neutral-500 mt-1.5">
+                    Continue the workflow after this time even if the event hasn't occurred
+                  </p>
                 </div>
               </div>
             </div>
@@ -1446,85 +1594,125 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
           {/* WEBHOOK Configuration */}
           {type === 'WEBHOOK' && (
             <div className="space-y-4">
-              <div>
-                <Label htmlFor="webhookUrl">Webhook URL *</Label>
-                <Input
-                  id="webhookUrl"
-                  type="url"
-                  value={webhookUrl}
-                  onChange={e => setWebhookUrl(e.target.value)}
-                  required
-                  placeholder="https://api.example.com/webhook"
-                />
+              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
+                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                <h3 className="text-sm font-semibold text-neutral-900">Webhook Configuration</h3>
               </div>
 
-              <div>
-                <Label htmlFor="webhookMethod">HTTP Method *</Label>
-                <Select value={webhookMethod} onValueChange={setWebhookMethod}>
-                  <SelectTrigger id="webhookMethod">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="GET">GET</SelectItem>
-                    <SelectItem value="POST">POST</SelectItem>
-                    <SelectItem value="PUT">PUT</SelectItem>
-                    <SelectItem value="PATCH">PATCH</SelectItem>
-                    <SelectItem value="DELETE">DELETE</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <div className="space-y-4 pl-3">
+                <div>
+                  <Label htmlFor="webhookUrl" className="text-sm font-medium">
+                    Webhook URL *
+                  </Label>
+                  <Input
+                    id="webhookUrl"
+                    type="url"
+                    value={webhookUrl}
+                    onChange={e => setWebhookUrl(e.target.value)}
+                    required
+                    placeholder="https://api.example.com/webhook"
+                    className="mt-1.5"
+                  />
+                  <p className="text-xs text-neutral-500 mt-1.5">The endpoint that will receive the webhook request</p>
+                </div>
 
-              <div>
-                <Label htmlFor="webhookHeaders">Headers (JSON, optional)</Label>
-                <textarea
-                  id="webhookHeaders"
-                  value={webhookHeaders}
-                  onChange={e => setWebhookHeaders(e.target.value)}
-                  placeholder='{"Authorization": "Bearer token", "Content-Type": "application/json"}'
-                  className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
-                  rows={3}
-                />
-                <p className="text-xs text-neutral-500 mt-1">Optional custom headers as JSON</p>
+                <div>
+                  <Label htmlFor="webhookMethod" className="text-sm font-medium">
+                    HTTP Method *
+                  </Label>
+                  <Select value={webhookMethod} onValueChange={setWebhookMethod}>
+                    <SelectTrigger id="webhookMethod" className="mt-1.5">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="GET">GET</SelectItem>
+                      <SelectItem value="POST">POST</SelectItem>
+                      <SelectItem value="PUT">PUT</SelectItem>
+                      <SelectItem value="PATCH">PATCH</SelectItem>
+                      <SelectItem value="DELETE">DELETE</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="webhookHeaders" className="text-sm font-medium">
+                    Headers (Optional)
+                  </Label>
+                  <textarea
+                    id="webhookHeaders"
+                    value={webhookHeaders}
+                    onChange={e => setWebhookHeaders(e.target.value)}
+                    placeholder='{"Authorization": "Bearer token", "Content-Type": "application/json"}'
+                    className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono mt-1.5"
+                    rows={3}
+                  />
+                  <p className="text-xs text-neutral-500 mt-1.5">
+                    Custom headers as JSON (e.g., authentication tokens)
+                  </p>
+                </div>
               </div>
             </div>
           )}
 
           {/* UPDATE_CONTACT Configuration */}
           {type === 'UPDATE_CONTACT' && (
-            <div>
-              <Label htmlFor="contactUpdates">Contact Data Updates (JSON) *</Label>
-              <textarea
-                id="contactUpdates"
-                value={contactUpdates}
-                onChange={e => setContactUpdates(e.target.value)}
-                required
-                placeholder='{"plan": "premium", "lastEngaged": "2025-01-19"}'
-                className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
-                rows={4}
-              />
-              <p className="text-xs text-neutral-500 mt-1">JSON object with fields to update in contact.data</p>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
+                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                <h3 className="text-sm font-semibold text-neutral-900">Contact Update Configuration</h3>
+              </div>
+
+              <div className="pl-3">
+                <Label htmlFor="contactUpdates" className="text-sm font-medium">
+                  Contact Data Updates (JSON) *
+                </Label>
+                <textarea
+                  id="contactUpdates"
+                  value={contactUpdates}
+                  onChange={e => setContactUpdates(e.target.value)}
+                  required
+                  placeholder='{"plan": "premium", "lastEngaged": "2025-01-19"}'
+                  className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono mt-1.5"
+                  rows={4}
+                />
+                <p className="text-xs text-neutral-500 mt-1.5">
+                  JSON object with fields to update in the contact's data
+                </p>
+              </div>
             </div>
           )}
 
           {/* EXIT Configuration */}
           {type === 'EXIT' && (
-            <div>
-              <Label htmlFor="exitReason">Exit Reason</Label>
-              <Select value={exitReason} onValueChange={setExitReason}>
-                <SelectTrigger id="exitReason">
-                  <SelectValue placeholder="Select exit reason..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="completed">Completed - Contact completed the workflow successfully</SelectItem>
-                  <SelectItem value="unsubscribed">Unsubscribed - Contact unsubscribed</SelectItem>
-                  <SelectItem value="not_eligible">Not Eligible - Contact doesn&apos;t meet criteria</SelectItem>
-                  <SelectItem value="opted_out">Opted Out - Contact opted out of this workflow</SelectItem>
-                  <SelectItem value="goal_achieved">Goal Achieved - Workflow goal was met early</SelectItem>
-                  <SelectItem value="duplicate">Duplicate - Contact already in workflow</SelectItem>
-                  <SelectItem value="error">Error - Technical issue occurred</SelectItem>
-                  <SelectItem value="other">Other - Custom reason</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
+                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                <h3 className="text-sm font-semibold text-neutral-900">Exit Configuration</h3>
+              </div>
+
+              <div className="pl-3">
+                <Label htmlFor="exitReason" className="text-sm font-medium">
+                  Exit Reason
+                </Label>
+                <Select value={exitReason} onValueChange={setExitReason}>
+                  <SelectTrigger id="exitReason" className="mt-1.5">
+                    <SelectValue placeholder="Select exit reason..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="completed">Completed - Contact completed the workflow successfully</SelectItem>
+                    <SelectItem value="unsubscribed">Unsubscribed - Contact unsubscribed</SelectItem>
+                    <SelectItem value="not_eligible">Not Eligible - Contact doesn&apos;t meet criteria</SelectItem>
+                    <SelectItem value="opted_out">Opted Out - Contact opted out of this workflow</SelectItem>
+                    <SelectItem value="goal_achieved">Goal Achieved - Workflow goal was met early</SelectItem>
+                    <SelectItem value="duplicate">Duplicate - Contact already in workflow</SelectItem>
+                    <SelectItem value="error">Error - Technical issue occurred</SelectItem>
+                    <SelectItem value="other">Other - Custom reason</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-neutral-500 mt-1.5">
+                  Specify why the workflow is ending for tracking purposes
+                </p>
+              </div>
             </div>
           )}
 
@@ -1563,6 +1751,14 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
 
   // SEND_EMAIL fields
   const [templateId, setTemplateId] = useState(step.template?.id || '');
+  const [recipientType, setRecipientType] = useState<'CONTACT' | 'CUSTOM'>(() => {
+    const recipient = config?.recipient as {type?: string; customEmail?: string} | undefined;
+    return (recipient?.type === 'CUSTOM' ? 'CUSTOM' : 'CONTACT') as 'CONTACT' | 'CUSTOM';
+  });
+  const [customEmail, setCustomEmail] = useState(() => {
+    const recipient = config?.recipient as {type?: string; customEmail?: string} | undefined;
+    return recipient?.customEmail || '';
+  });
 
   // DELAY fields
   const [delayAmount, setDelayAmount] = useState(String(config?.amount || '24'));
@@ -1721,7 +1917,29 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
           setIsSubmitting(false);
           return;
         }
-        newConfig = {templateId};
+
+        // Validate custom email if recipient type is CUSTOM
+        if (recipientType === 'CUSTOM') {
+          if (!customEmail || !customEmail.trim()) {
+            toast.error('Please enter a custom email address');
+            setIsSubmitting(false);
+            return;
+          }
+          // Basic email validation
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customEmail)) {
+            toast.error('Please enter a valid email address');
+            setIsSubmitting(false);
+            return;
+          }
+        }
+
+        newConfig = {
+          templateId,
+          recipient: {
+            type: recipientType,
+            ...(recipientType === 'CUSTOM' && {customEmail: customEmail.trim()}),
+          },
+        };
       } else if (step.type === 'DELAY') {
         const amount = parseInt(delayAmount);
         // Validate max 365 days
@@ -1842,62 +2060,144 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Step</DialogTitle>
-          <div className="flex items-center gap-2 mt-2">
-            <div className="w-6 h-6 rounded flex items-center justify-center" style={{backgroundColor: bgColor}}>
-              <Icon className="h-3.5 w-3.5" style={{color}} />
+          <div className="flex items-center gap-2 mt-3">
+            <div className="w-8 h-8 rounded flex items-center justify-center" style={{backgroundColor: bgColor}}>
+              <Icon className="h-4 w-4" style={{color}} />
             </div>
-            <span
-              className="text-xs font-medium px-2 py-0.5 rounded"
-              style={{
-                backgroundColor: bgColor,
-                color,
-              }}
-            >
-              {step.type.replace(/_/g, ' ')}
-            </span>
+            <div>
+              <span
+                className="text-xs font-medium px-2 py-1 rounded"
+                style={{
+                  backgroundColor: bgColor,
+                  color,
+                }}
+              >
+                {step.type.replace(/_/g, ' ')}
+              </span>
+            </div>
           </div>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="editStepName">Step Name *</Label>
-            <Input
-              id="editStepName"
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              required
-              placeholder="e.g., Send Welcome Email"
-            />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Information */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
+              <div className="w-1 h-4 bg-blue-500 rounded-full" />
+              <h3 className="text-sm font-semibold text-neutral-900">Basic Information</h3>
+            </div>
+
+            <div className="pl-3">
+              <Label htmlFor="editStepName" className="text-sm font-medium">
+                Step Name *
+              </Label>
+              <Input
+                id="editStepName"
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                required
+                placeholder="e.g., Send Welcome Email"
+                className="mt-1.5"
+              />
+              <p className="text-xs text-neutral-500 mt-1.5">
+                A descriptive name to identify this step in the workflow
+              </p>
+            </div>
           </div>
 
           {/* SEND_EMAIL Configuration */}
           {step.type === 'SEND_EMAIL' && (
-            <div>
-              <Label htmlFor="editTemplate">Email Template *</Label>
-              <Select value={templateId} onValueChange={setTemplateId} required>
-                <SelectTrigger id="editTemplate">
-                  <SelectValue placeholder="Select a template..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {templatesData?.data.map(template => (
-                    <SelectItemWithDescription
-                      key={template.id}
-                      value={template.id}
-                      title={template.name}
-                      description={`${template.type === 'TRANSACTIONAL' ? 'Transactional' : 'Marketing'} • Subject: ${template.subject}`}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
+                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                <h3 className="text-sm font-semibold text-neutral-900">Email Configuration</h3>
+              </div>
+
+              <div className="space-y-4 pl-3">
+                <div>
+                  <Label htmlFor="editTemplate" className="text-sm font-medium">
+                    Email Template *
+                  </Label>
+                  <Select value={templateId} onValueChange={setTemplateId} required>
+                    <SelectTrigger id="editTemplate" className="mt-1.5">
+                      <SelectValue placeholder="Select a template..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {templatesData?.data.map(template => (
+                        <SelectItemWithDescription
+                          key={template.id}
+                          value={template.id}
+                          title={template.name}
+                          description={`${template.type === 'TRANSACTIONAL' ? 'Transactional' : 'Marketing'} • Subject: ${template.subject}`}
+                        />
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-neutral-500 mt-1.5">The email template to use for this step</p>
+                </div>
+
+                <div>
+                  <Label htmlFor="editRecipientType" className="text-sm font-medium">
+                    Send To *
+                  </Label>
+                  <Select
+                    value={recipientType}
+                    onValueChange={value => setRecipientType(value as 'CONTACT' | 'CUSTOM')}
+                  >
+                    <SelectTrigger id="editRecipientType" className="mt-1.5">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItemWithDescription
+                        value="CONTACT"
+                        title="Contact"
+                        description="Send to the contact that triggered the workflow"
+                      />
+                      <SelectItemWithDescription
+                        value="CUSTOM"
+                        title="Custom Email"
+                        description="Send to a specific email address"
+                      />
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-neutral-500 mt-1.5">Choose who should receive this email</p>
+                </div>
+
+                {recipientType === 'CUSTOM' && (
+                  <div className="pl-3 border-l-2 border-blue-200 bg-blue-50/50 -ml-3 py-3 pr-3">
+                    <Label htmlFor="editCustomEmail" className="text-sm font-medium">
+                      Email Address *
+                    </Label>
+                    <Input
+                      id="editCustomEmail"
+                      type="email"
+                      value={customEmail}
+                      onChange={e => setCustomEmail(e.target.value)}
+                      required
+                      placeholder="e.g., admin@example.com"
+                      className="mt-1.5"
                     />
-                  ))}
-                </SelectContent>
-              </Select>
+                    <p className="text-xs text-neutral-500 mt-1.5">
+                      The specific email address that will receive this email
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
           {/* DELAY Configuration */}
           {step.type === 'DELAY' && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
+                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                <h3 className="text-sm font-semibold text-neutral-900">Delay Configuration</h3>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pl-3">
                 <div>
-                  <Label htmlFor="editDelayAmount">Amount *</Label>
+                  <Label htmlFor="editDelayAmount" className="text-sm font-medium">
+                    Amount *
+                  </Label>
                   <Input
                     id="editDelayAmount"
                     type="number"
@@ -1914,15 +2214,18 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                             ? 365
                             : undefined
                     }
+                    className="mt-1.5"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="editDelayUnit">Unit *</Label>
+                  <Label htmlFor="editDelayUnit" className="text-sm font-medium">
+                    Unit *
+                  </Label>
                   <Select
                     value={delayUnit}
                     onValueChange={value => setDelayUnit(value as 'hours' | 'days' | 'minutes')}
                   >
-                    <SelectTrigger id="editDelayUnit">
+                    <SelectTrigger id="editDelayUnit" className="mt-1.5">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1933,222 +2236,263 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                   </Select>
                 </div>
               </div>
+              <p className="text-xs text-neutral-500 pl-3">Maximum delay: 365 days</p>
             </div>
           )}
 
           {/* CONDITION Configuration */}
           {step.type === 'CONDITION' && (
-            <div className="space-y-4 p-4 bg-neutral-50 rounded-lg">
-              <p className="text-sm text-neutral-600">Configure the condition to evaluate</p>
-
-              <div>
-                <Label htmlFor="editConditionField">Field to Check *</Label>
-                {loadingFields ? (
-                  <div className="flex items-center gap-2 px-3 py-2 border border-neutral-200 rounded-lg text-sm text-neutral-500">
-                    <svg
-                      className="h-4 w-4 animate-spin"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    Loading fields...
-                  </div>
-                ) : availableFields.length > 0 ? (
-                  <>
-                    <Select value={conditionField} onValueChange={handleConditionFieldChange} required>
-                      <SelectTrigger id="editConditionField">
-                        <SelectValue placeholder="Select a field..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {/* Group fields by category */}
-                        {Object.entries(
-                          availableFields.reduce<Record<string, typeof availableFields>>((acc, field) => {
-                            if (!acc[field.category]) acc[field.category] = [];
-                            acc[field.category]!.push(field);
-                            return acc;
-                          }, {}),
-                        ).map(([category, fields]) => (
-                          <div key={category}>
-                            <div className="px-2 py-1.5 text-xs font-semibold text-neutral-500">{category}</div>
-                            {fields.map(field => (
-                              <SelectItem key={field.field} value={field.field}>
-                                <div className="flex items-center gap-2">
-                                  <span>{field.field.replace('contact.', '').replace('data.', '')}</span>
-                                  <span className="text-xs px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-600 font-mono">
-                                    {field.type}
-                                  </span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </div>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-neutral-500 mt-1">
-                      Select from {availableFields.length} field{availableFields.length !== 1 ? 's' : ''} in your
-                      contacts
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <Input
-                      id="editConditionField"
-                      type="text"
-                      value={conditionField}
-                      onChange={e => setConditionField(e.target.value)}
-                      required
-                      placeholder="e.g., contact.subscribed or contact.data.plan"
-                    />
-                    <p className="text-xs text-neutral-500 mt-1">
-                      No fields found in contacts. Enter a field manually.
-                    </p>
-                  </>
-                )}
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
+                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                <h3 className="text-sm font-semibold text-neutral-900">Condition Configuration</h3>
               </div>
 
-              <div>
-                <Label htmlFor="editConditionOperator">Operator *</Label>
-                <Select value={conditionOperator} onValueChange={setConditionOperator}>
-                  <SelectTrigger id="editConditionOperator">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {validOperators.map(op => (
-                      <SelectItem key={op.value} value={op.value}>
-                        {op.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {currentFieldType && (
-                  <p className="text-xs text-neutral-500 mt-1">
-                    Showing operators for{' '}
-                    <span className="font-mono bg-neutral-200 px-1 rounded">{currentFieldType}</span> fields
-                  </p>
-                )}
-              </div>
+              <div className="space-y-4 pl-3">
+                <p className="text-xs text-neutral-600">
+                  Define the condition that will be evaluated to determine which path the workflow should follow
+                </p>
 
-              {needsValue && (
                 <div>
-                  <Label htmlFor="editConditionValue">Value *</Label>
-                  {currentFieldType === 'boolean' ? (
-                    <Select value={conditionValue || 'true'} onValueChange={setConditionValue}>
-                      <SelectTrigger id="editConditionValue">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="true">True</SelectItem>
-                        <SelectItem value="false">False</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  ) : currentFieldType === 'number' ? (
-                    <Input
-                      id="editConditionValue"
-                      type="number"
-                      value={conditionValue}
-                      onChange={e => setConditionValue(e.target.value)}
-                      required
-                      placeholder="e.g., 100"
-                    />
-                  ) : currentFieldType === 'date' ? (
-                    <Input
-                      id="editConditionValue"
-                      type="datetime-local"
-                      value={conditionValue}
-                      onChange={e => setConditionValue(e.target.value)}
-                      required
-                    />
+                  <Label htmlFor="editConditionField">Field to Check *</Label>
+                  {loadingFields ? (
+                    <div className="flex items-center gap-2 px-3 py-2 border border-neutral-200 rounded-lg text-sm text-neutral-500 mt-1.5">
+                      <svg
+                        className="h-4 w-4 animate-spin"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Loading fields...
+                    </div>
+                  ) : availableFields.length > 0 ? (
+                    <>
+                      <Select value={conditionField} onValueChange={handleConditionFieldChange} required>
+                        <SelectTrigger id="editConditionField" className="mt-1.5">
+                          <SelectValue placeholder="Select a field..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {/* Group fields by category */}
+                          {Object.entries(
+                            availableFields.reduce<Record<string, typeof availableFields>>((acc, field) => {
+                              if (!acc[field.category]) acc[field.category] = [];
+                              acc[field.category]!.push(field);
+                              return acc;
+                            }, {}),
+                          ).map(([category, fields]) => (
+                            <div key={category}>
+                              <div className="px-2 py-1.5 text-xs font-semibold text-neutral-500">{category}</div>
+                              {fields.map(field => (
+                                <SelectItem key={field.field} value={field.field}>
+                                  <div className="flex items-center gap-2">
+                                    <span>{field.field.replace('contact.', '').replace('data.', '')}</span>
+                                    <span className="text-xs px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-600 font-mono">
+                                      {field.type}
+                                    </span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </div>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-neutral-500 mt-1.5">
+                        Select from {availableFields.length} field{availableFields.length !== 1 ? 's' : ''} in your
+                        contacts
+                      </p>
+                    </>
                   ) : (
-                    <Input
-                      id="editConditionValue"
-                      type="text"
-                      value={conditionValue}
-                      onChange={e => setConditionValue(e.target.value)}
-                      required
-                      placeholder="e.g., premium, active"
-                    />
+                    <>
+                      <Input
+                        id="editConditionField"
+                        type="text"
+                        value={conditionField}
+                        onChange={e => setConditionField(e.target.value)}
+                        required
+                        placeholder="e.g., contact.subscribed or contact.data.plan"
+                        className="mt-1.5"
+                      />
+                      <p className="text-xs text-neutral-500 mt-1.5">
+                        No fields found in contacts. Enter a field manually (e.g., contact.subscribed or
+                        contact.data.plan)
+                      </p>
+                    </>
                   )}
                 </div>
-              )}
+
+                <div>
+                  <Label htmlFor="editConditionOperator">Operator *</Label>
+                  <Select value={conditionOperator} onValueChange={setConditionOperator}>
+                    <SelectTrigger id="editConditionOperator" className="mt-1.5">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {validOperators.map(op => (
+                        <SelectItem key={op.value} value={op.value}>
+                          {op.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {currentFieldType && (
+                    <p className="text-xs text-neutral-500 mt-1.5">
+                      Showing operators for{' '}
+                      <span className="font-mono bg-neutral-200 px-1 rounded">{currentFieldType}</span> fields
+                    </p>
+                  )}
+                </div>
+
+                {needsValue && (
+                  <div>
+                    <Label htmlFor="editConditionValue">Value *</Label>
+                    {currentFieldType === 'boolean' ? (
+                      <Select value={conditionValue || 'true'} onValueChange={setConditionValue}>
+                        <SelectTrigger id="editConditionValue" className="mt-1.5">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">True</SelectItem>
+                          <SelectItem value="false">False</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : currentFieldType === 'number' ? (
+                      <>
+                        <Input
+                          id="editConditionValue"
+                          type="number"
+                          value={conditionValue}
+                          onChange={e => setConditionValue(e.target.value)}
+                          required
+                          placeholder="e.g., 100"
+                          className="mt-1.5"
+                        />
+                        <p className="text-xs text-neutral-500 mt-1.5">Enter a numeric value to compare against</p>
+                      </>
+                    ) : currentFieldType === 'date' ? (
+                      <>
+                        <Input
+                          id="editConditionValue"
+                          type="datetime-local"
+                          value={conditionValue}
+                          onChange={e => setConditionValue(e.target.value)}
+                          required
+                          className="mt-1.5"
+                        />
+                        <p className="text-xs text-neutral-500 mt-1.5">Select a date and time to compare against</p>
+                      </>
+                    ) : (
+                      <>
+                        <Input
+                          id="editConditionValue"
+                          type="text"
+                          value={conditionValue}
+                          onChange={e => setConditionValue(e.target.value)}
+                          required
+                          placeholder="e.g., premium, active"
+                          className="mt-1.5"
+                        />
+                        <p className="text-xs text-neutral-500 mt-1.5">Enter the text value to compare against</p>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
           {/* WAIT_FOR_EVENT Configuration */}
           {step.type === 'WAIT_FOR_EVENT' && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="editEventName">Event Name *</Label>
-                {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0 ? (
-                  <Select value={eventName} onValueChange={setEventName} required>
-                    <SelectTrigger id="editEventName">
-                      <SelectValue placeholder="Select an event..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {eventNamesData.eventNames.map(name => (
-                        <SelectItem key={name} value={name}>
-                          {name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Input
-                    id="editEventName"
-                    type="text"
-                    value={eventName}
-                    onChange={e => setEventName(e.target.value)}
-                    required
-                    placeholder="e.g., email.clicked, user.upgraded"
-                  />
-                )}
-                <p className="text-xs text-neutral-500 mt-1">
-                  {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0
-                    ? 'Select from previously tracked events'
-                    : 'The event name to wait for'}
-                </p>
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
+                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                <h3 className="text-sm font-semibold text-neutral-900">Event Configuration</h3>
               </div>
 
-              <div>
-                <Label htmlFor="editEventTimeoutAmount">Timeout</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="editEventTimeoutAmount"
-                    type="number"
-                    value={eventTimeoutAmount}
-                    onChange={e => setEventTimeoutAmount(e.target.value)}
-                    placeholder="1"
-                    min="0"
-                    max={
-                      eventTimeoutUnit === 'minutes'
-                        ? 525600
-                        : eventTimeoutUnit === 'hours'
-                          ? 8760
-                          : eventTimeoutUnit === 'days'
-                            ? 365
-                            : undefined
-                    }
-                    className="flex-1"
-                  />
-                  <Select
-                    value={eventTimeoutUnit}
-                    onValueChange={value => setEventTimeoutUnit(value as 'minutes' | 'hours' | 'days')}
-                  >
-                    <SelectTrigger className="w-[120px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="minutes">Minutes</SelectItem>
-                      <SelectItem value="hours">Hours</SelectItem>
-                      <SelectItem value="days">Days</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="space-y-4 pl-3">
+                <div>
+                  <Label htmlFor="editEventName">Event Name *</Label>
+                  {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0 ? (
+                    <>
+                      <Select value={eventName} onValueChange={setEventName} required>
+                        <SelectTrigger id="editEventName" className="mt-1.5">
+                          <SelectValue placeholder="Select an event..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {eventNamesData.eventNames.map(name => (
+                            <SelectItem key={name} value={name}>
+                              {name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-neutral-500 mt-1.5">
+                        Select from previously tracked events in your project
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <Input
+                        id="editEventName"
+                        type="text"
+                        value={eventName}
+                        onChange={e => setEventName(e.target.value)}
+                        required
+                        placeholder="e.g., email.clicked, user.upgraded"
+                        className="mt-1.5"
+                      />
+                      <p className="text-xs text-neutral-500 mt-1.5">
+                        The workflow will pause until this event is triggered by the contact
+                      </p>
+                    </>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="editEventTimeoutAmount">Timeout (optional)</Label>
+                  <div className="flex gap-2 mt-1.5">
+                    <Input
+                      id="editEventTimeoutAmount"
+                      type="number"
+                      value={eventTimeoutAmount}
+                      onChange={e => setEventTimeoutAmount(e.target.value)}
+                      placeholder="1"
+                      min="0"
+                      max={
+                        eventTimeoutUnit === 'minutes'
+                          ? 525600
+                          : eventTimeoutUnit === 'hours'
+                            ? 8760
+                            : eventTimeoutUnit === 'days'
+                              ? 365
+                              : undefined
+                      }
+                      className="flex-1"
+                    />
+                    <Select
+                      value={eventTimeoutUnit}
+                      onValueChange={value => setEventTimeoutUnit(value as 'minutes' | 'hours' | 'days')}
+                    >
+                      <SelectTrigger className="w-[120px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="minutes">Minutes</SelectItem>
+                        <SelectItem value="hours">Hours</SelectItem>
+                        <SelectItem value="days">Days</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <p className="text-xs text-neutral-500 mt-1.5">
+                    If the event doesn&apos;t occur within this time, the workflow will continue automatically (max: 365
+                    days)
+                  </p>
                 </div>
               </div>
             </div>
@@ -2156,26 +2500,32 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
 
           {/* WEBHOOK Configuration */}
           {step.type === 'WEBHOOK' && (
-            <div className="space-y-4">
-              {/* Info Alert about webhook body */}
-              <Alert>
-                <Info className="h-4 w-4" />
-                <AlertTitle>Request Body</AlertTitle>
-                <AlertDescription>
-                  <div className="space-y-2">
-                    <p className="text-xs">
-                      Plunk will automatically send the following JSON payload with each webhook request:
-                    </p>
-                    <Collapsible open={showWebhookInfo} onOpenChange={setShowWebhookInfo}>
-                      <CollapsibleTrigger className="flex items-center gap-1 text-xs font-medium text-neutral-700 hover:text-neutral-900">
-                        <ChevronDown
-                          className={`h-3 w-3 transition-transform ${showWebhookInfo ? 'rotate-180' : ''}`}
-                        />
-                        {showWebhookInfo ? 'Hide' : 'Show'} payload structure
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="mt-2">
-                        <pre className="text-[10px] bg-neutral-50 p-2 rounded border border-neutral-200 overflow-x-auto">
-                          {`{
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
+                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                <h3 className="text-sm font-semibold text-neutral-900">Webhook Configuration</h3>
+              </div>
+
+              <div className="space-y-4 pl-3">
+                {/* Info Alert about webhook body */}
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertTitle>Request Body</AlertTitle>
+                  <AlertDescription>
+                    <div className="space-y-2">
+                      <p className="text-xs">
+                        Plunk will automatically send the following JSON payload with each webhook request:
+                      </p>
+                      <Collapsible open={showWebhookInfo} onOpenChange={setShowWebhookInfo}>
+                        <CollapsibleTrigger className="flex items-center gap-1 text-xs font-medium text-neutral-700 hover:text-neutral-900">
+                          <ChevronDown
+                            className={`h-3 w-3 transition-transform ${showWebhookInfo ? 'rotate-180' : ''}`}
+                          />
+                          {showWebhookInfo ? 'Hide' : 'Show'} payload structure
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="mt-2">
+                          <pre className="text-[10px] bg-neutral-50 p-2 rounded border border-neutral-200 overflow-x-auto">
+                            {`{
   "contact": {
     "email": "user@example.com",
     "subscribed": true,
@@ -2198,149 +2548,226 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
     // the workflow (if any)
   }
 }`}
-                        </pre>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </div>
-                </AlertDescription>
-              </Alert>
+                          </pre>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </div>
+                  </AlertDescription>
+                </Alert>
 
-              <div>
-                <Label htmlFor="editWebhookUrl">Webhook URL *</Label>
-                <Input
-                  className={'font-mono'}
-                  id="editWebhookUrl"
-                  type="url"
-                  value={webhookUrl}
-                  onChange={e => setWebhookUrl(e.target.value)}
-                  required
-                  placeholder="https://api.example.com/webhook"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="editWebhookMethod">HTTP Method *</Label>
-                <Select value={webhookMethod} onValueChange={setWebhookMethod}>
-                  <SelectTrigger id="editWebhookMethod" className={'font-mono'}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="GET">GET</SelectItem>
-                    <SelectItem value="POST">POST</SelectItem>
-                    <SelectItem value="PUT">PUT</SelectItem>
-                    <SelectItem value="PATCH">PATCH</SelectItem>
-                    <SelectItem value="DELETE">DELETE</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label>HTTP Headers (optional)</Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setWebhookHeaders([...webhookHeaders, {key: '', value: ''}])}
-                    className="h-7 text-xs"
-                  >
-                    <Plus className="h-3 w-3 mr-1" />
-                    Add Header
-                  </Button>
+                <div>
+                  <Label htmlFor="editWebhookUrl">Webhook URL *</Label>
+                  <Input
+                    className="font-mono mt-1.5"
+                    id="editWebhookUrl"
+                    type="url"
+                    value={webhookUrl}
+                    onChange={e => setWebhookUrl(e.target.value)}
+                    required
+                    placeholder="https://api.example.com/webhook"
+                  />
+                  <p className="text-xs text-neutral-500 mt-1.5">The endpoint where Plunk will send the HTTP request</p>
                 </div>
 
-                {webhookHeaders.length === 0 ? (
-                  <p className="text-xs text-neutral-500 py-2">
-                    No custom headers. Click &quot;Add Header&quot; to include headers like Authorization.
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {webhookHeaders.map((header, index) => (
-                      <div key={index} className="flex gap-2 items-start">
-                        <div className="flex-1">
-                          <Input
-                            placeholder="Header name (e.g., Authorization)"
-                            value={header.key}
-                            onChange={e => {
-                              const newHeaders = [...webhookHeaders];
-                              if (newHeaders[index]) {
-                                newHeaders[index].key = e.target.value;
-                              }
-                              setWebhookHeaders(newHeaders);
-                            }}
-                            className="text-sm font-mono"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <Input
-                            placeholder="Header value (e.g., Bearer token123)"
-                            value={header.value}
-                            onChange={e => {
-                              const newHeaders = [...webhookHeaders];
-                              if (newHeaders[index]) {
-                                newHeaders[index].value = e.target.value;
-                              }
-                              setWebhookHeaders(newHeaders);
-                            }}
-                            className="text-sm font-mono"
-                          />
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            const newHeaders = webhookHeaders.filter((_, i) => i !== index);
-                            setWebhookHeaders(newHeaders);
-                          }}
-                          className="h-9 w-9 p-0"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
+                <div>
+                  <Label htmlFor="editWebhookMethod">HTTP Method *</Label>
+                  <Select value={webhookMethod} onValueChange={setWebhookMethod}>
+                    <SelectTrigger id="editWebhookMethod" className="font-mono mt-1.5">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="GET">GET</SelectItem>
+                      <SelectItem value="POST">POST</SelectItem>
+                      <SelectItem value="PUT">PUT</SelectItem>
+                      <SelectItem value="PATCH">PATCH</SelectItem>
+                      <SelectItem value="DELETE">DELETE</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-neutral-500 mt-1.5">POST is recommended for most webhook integrations</p>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label>HTTP Headers (optional)</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setWebhookHeaders([...webhookHeaders, {key: '', value: ''}])}
+                      className="h-7 text-xs"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Add Header
+                    </Button>
                   </div>
-                )}
+
+                  {webhookHeaders.length === 0 ? (
+                    <p className="text-xs text-neutral-500 py-2">
+                      No custom headers. Click &quot;Add Header&quot; to include authentication or other headers.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {webhookHeaders.map((header, index) => (
+                        <div key={index} className="flex gap-2 items-start">
+                          <div className="flex-1">
+                            <Input
+                              placeholder="Header name (e.g., Authorization)"
+                              value={header.key}
+                              onChange={e => {
+                                const newHeaders = [...webhookHeaders];
+                                if (newHeaders[index]) {
+                                  newHeaders[index].key = e.target.value;
+                                }
+                                setWebhookHeaders(newHeaders);
+                              }}
+                              className="text-sm font-mono"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <Input
+                              placeholder="Header value (e.g., Bearer token123)"
+                              value={header.value}
+                              onChange={e => {
+                                const newHeaders = [...webhookHeaders];
+                                if (newHeaders[index]) {
+                                  newHeaders[index].value = e.target.value;
+                                }
+                                setWebhookHeaders(newHeaders);
+                              }}
+                              className="text-sm font-mono"
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const newHeaders = webhookHeaders.filter((_, i) => i !== index);
+                              setWebhookHeaders(newHeaders);
+                            }}
+                            className="h-9 w-9 p-0"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
 
           {/* UPDATE_CONTACT Configuration */}
           {step.type === 'UPDATE_CONTACT' && (
-            <div>
-              <Label htmlFor="editContactUpdates">Contact Data Updates (JSON) *</Label>
-              <textarea
-                id="editContactUpdates"
-                value={contactUpdates}
-                onChange={e => setContactUpdates(e.target.value)}
-                required
-                placeholder='{"plan": "premium", "lastEngaged": "2025-01-19"}'
-                className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
-                rows={4}
-              />
-              <p className="text-xs text-neutral-500 mt-1">JSON object with fields to update in contact.data</p>
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
+                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                <h3 className="text-sm font-semibold text-neutral-900">Contact Updates</h3>
+              </div>
+
+              <div className="space-y-4 pl-3">
+                <div>
+                  <Label htmlFor="editContactUpdates">Contact Data Updates (JSON) *</Label>
+                  <textarea
+                    id="editContactUpdates"
+                    value={contactUpdates}
+                    onChange={e => setContactUpdates(e.target.value)}
+                    required
+                    placeholder='{"plan": "premium", "lastEngaged": "2025-01-19"}'
+                    className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono mt-1.5"
+                    rows={4}
+                  />
+                  <p className="text-xs text-neutral-500 mt-1.5">
+                    Provide a JSON object with fields to update in contact.data. These updates will be merged with
+                    existing data.
+                  </p>
+                </div>
+
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription className="text-xs">
+                    <p className="font-medium mb-1">Example format:</p>
+                    <code className="block bg-neutral-50 p-2 rounded border border-neutral-200 font-mono text-[10px]">
+                      {`{"plan": "premium", "tier": "gold", "updatedAt": "2025-01-19"}`}
+                    </code>
+                  </AlertDescription>
+                </Alert>
+              </div>
             </div>
           )}
 
           {/* EXIT Configuration */}
           {step.type === 'EXIT' && (
-            <div>
-              <Label htmlFor="editExitReason">Exit Reason</Label>
-              <Select value={exitReason} onValueChange={setExitReason}>
-                <SelectTrigger id="editExitReason">
-                  <SelectValue placeholder="Select exit reason..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="completed">Completed - Contact completed the workflow successfully</SelectItem>
-                  <SelectItem value="unsubscribed">Unsubscribed - Contact unsubscribed</SelectItem>
-                  <SelectItem value="not_eligible">Not Eligible - Contact doesn&apos;t meet criteria</SelectItem>
-                  <SelectItem value="opted_out">Opted Out - Contact opted out of this workflow</SelectItem>
-                  <SelectItem value="goal_achieved">Goal Achieved - Workflow goal was met early</SelectItem>
-                  <SelectItem value="duplicate">Duplicate - Contact already in workflow</SelectItem>
-                  <SelectItem value="error">Error - Technical issue occurred</SelectItem>
-                  <SelectItem value="other">Other - Custom reason</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
+                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                <h3 className="text-sm font-semibold text-neutral-900">Exit Configuration</h3>
+              </div>
+
+              <div className="space-y-4 pl-3">
+                <div>
+                  <Label htmlFor="editExitReason">Exit Reason (optional)</Label>
+                  <Select value={exitReason} onValueChange={setExitReason}>
+                    <SelectTrigger id="editExitReason" className="mt-1.5">
+                      <SelectValue placeholder="Select exit reason..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="completed">
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Completed</span>
+                          <span className="text-xs text-neutral-500">Contact completed the workflow successfully</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="unsubscribed">
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Unsubscribed</span>
+                          <span className="text-xs text-neutral-500">Contact unsubscribed from communications</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="not_eligible">
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Not Eligible</span>
+                          <span className="text-xs text-neutral-500">Contact doesn&apos;t meet criteria</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="opted_out">
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Opted Out</span>
+                          <span className="text-xs text-neutral-500">Contact opted out of this workflow</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="goal_achieved">
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Goal Achieved</span>
+                          <span className="text-xs text-neutral-500">Workflow goal was met early</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="duplicate">
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Duplicate</span>
+                          <span className="text-xs text-neutral-500">Contact already in workflow</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="error">
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Error</span>
+                          <span className="text-xs text-neutral-500">Technical issue occurred</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="other">
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Other</span>
+                          <span className="text-xs text-neutral-500">Custom reason</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-neutral-500 mt-1.5">
+                    This reason will be recorded in workflow execution logs for tracking and analytics
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
