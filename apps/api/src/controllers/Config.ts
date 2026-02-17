@@ -3,6 +3,7 @@ import type {Request, Response} from 'express';
 
 import {
   API_URI,
+  AWS_SES_REGION,
   DASHBOARD_URI,
   GITHUB_OAUTH_ENABLED,
   GOOGLE_OAUTH_ENABLED,
@@ -58,6 +59,9 @@ export class Config {
               }
             : null,
         },
+      },
+      aws: {
+        sesRegion: AWS_SES_REGION,
       },
     });
   }

@@ -3,8 +3,6 @@ import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {DomainSchemas} from '@plunk/shared';
 import {
-  Alert,
-  AlertDescription,
   Badge,
   Button,
   Card,
@@ -22,7 +20,8 @@ import {
   Input,
 } from '@plunk/ui';
 import {AnimatePresence, motion} from 'framer-motion';
-import {Check, CheckCircle2, Copy, Loader2, RefreshCw, Trash2, XCircle} from 'lucide-react';
+import {Check, CheckCircle2, ChevronDown, Copy, Loader2, RefreshCw, Trash2, XCircle} from 'lucide-react';
+import {useConfig} from '../lib/hooks/useConfig';
 import {useAddDomain, useCheckDomainVerification, useDomains, useRemoveDomain} from '../lib/hooks/useDomains';
 
 interface DomainsSettingsProps {
@@ -34,6 +33,7 @@ export function DomainsSettings({projectId}: DomainsSettingsProps) {
   const {addDomain} = useAddDomain();
   const {checkVerification} = useCheckDomainVerification();
   const {removeDomain} = useRemoveDomain();
+  const {data: config} = useConfig();
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -47,6 +47,7 @@ export function DomainsSettings({projectId}: DomainsSettingsProps) {
   const [cooldownSeconds, setCooldownSeconds] = useState<{[key: string]: number}>({});
   const [showRemoveDialog, setShowRemoveDialog] = useState(false);
   const [domainToRemove, setDomainToRemove] = useState<{id: string; name: string} | null>(null);
+  const [expandedDomains, setExpandedDomains] = useState<{[key: string]: boolean}>({});
 
   const form = useForm<{domain: string}>({
     resolver: zodResolver(DomainSchemas.create.omit({projectId: true})),
@@ -86,6 +87,28 @@ export function DomainsSettings({projectId}: DomainsSettingsProps) {
     return () => clearInterval(interval);
   }, [lastVerificationCheck]);
 
+  // Auto-expand unverified domains on initial load
+  useEffect(() => {
+    if (domains && domains.length > 0) {
+      const unverifiedDomains = domains
+        .filter(d => !d.verified)
+        .reduce(
+          (acc, d) => {
+            acc[d.id] = true;
+            return acc;
+          },
+          {} as {[key: string]: boolean},
+        );
+
+      if (Object.keys(unverifiedDomains).length > 0) {
+        setExpandedDomains(prev => ({
+          ...prev,
+          ...unverifiedDomains,
+        }));
+      }
+    }
+  }, [domains]);
+
   const showMessage = (type: 'success' | 'error', message: string) => {
     if (type === 'success') {
       setSuccessMessage(message);
@@ -113,6 +136,11 @@ export function DomainsSettings({projectId}: DomainsSettingsProps) {
           },
         }));
         setSelectedDomain(newDomain.id);
+        // Auto-expand newly added domain
+        setExpandedDomains(prev => ({
+          ...prev,
+          [newDomain.id]: true,
+        }));
       }
 
       await mutateDomains();
@@ -322,20 +350,42 @@ export function DomainsSettings({projectId}: DomainsSettingsProps) {
                       </div>
                     </div>
 
-                    {!status.verified && Array.isArray(status.tokens) && (status.tokens as string[]).length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-neutral-200">
-                        <Alert>
-                          <AlertDescription>
-                            <div className="space-y-4">
-                              <div>
-                                <p className="font-medium text-sm mb-1">DNS Configuration Required</p>
-                                <p className="text-xs text-neutral-600">
-                                  Add the following DNS records to verify your domain. DNS changes can take up to 48
-                                  hours to propagate.
-                                </p>
-                              </div>
+                    {Array.isArray(status.tokens) && (status.tokens as string[]).length > 0 && (
+                      <div className="mt-3">
+                        <button
+                          onClick={() =>
+                            setExpandedDomains(prev => ({
+                              ...prev,
+                              [domain.id]: !prev[domain.id],
+                            }))
+                          }
+                          className="flex items-center gap-1.5 text-xs text-neutral-600 hover:text-neutral-900 transition-colors"
+                        >
+                          <ChevronDown
+                            className={`h-3.5 w-3.5 transition-transform ${
+                              expandedDomains[domain.id] ? 'rotate-180' : ''
+                            }`}
+                          />
+                          <span>{status.verified ? 'View DNS Records' : 'DNS Configuration Required'}</span>
+                        </button>
 
-                              {/* DNS Records Table */}
+                        {expandedDomains[domain.id] && (
+                          <div className="mt-3 space-y-4">
+                            {/* Required DKIM Records for Sending */}
+                            <div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <h4 className="text-xs font-semibold text-neutral-900">Required for Sending</h4>
+                                <Badge variant="default" className="text-[10px] px-1.5 py-0">
+                                  REQUIRED
+                                </Badge>
+                              </div>
+                              {!status.verified && (
+                                <p className="text-xs text-neutral-600 mb-2">
+                                  Add these DKIM records to verify your domain and send emails. DNS changes can take up
+                                  to 48 hours to propagate.
+                                </p>
+                              )}
+
                               <div className="overflow-x-auto">
                                 <table className="w-full text-xs border-collapse">
                                   <thead>
@@ -401,120 +451,248 @@ export function DomainsSettings({projectId}: DomainsSettingsProps) {
                                         </td>
                                       </tr>
                                     ))}
-
-                                    {/* MX Record */}
-                                    <tr className="hover:bg-neutral-50/50">
-                                      <td className="py-3 px-3">
-                                        <code className="text-xs font-medium text-neutral-900">MX</code>
-                                      </td>
-                                      <td className="py-3 px-3">
-                                        <div className="flex items-center gap-2">
-                                          <code className="text-xs font-mono text-neutral-700 break-all flex-1">
-                                            plunk.{domain.domain}
-                                          </code>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleCopyToken(`plunk.${domain.domain}`, 3000)}
-                                            className="shrink-0 h-6 w-6 p-0"
-                                          >
-                                            {copiedToken === `plunk.${domain.domain}-3000` ? (
-                                              <Check className="h-3 w-3 text-green-600" />
-                                            ) : (
-                                              <Copy className="h-3 w-3" />
-                                            )}
-                                          </Button>
-                                        </div>
-                                      </td>
-                                      <td className="py-3 px-3">
-                                        <div className="flex items-center gap-2">
-                                          <code className="text-xs font-mono text-neutral-700 break-all flex-1">
-                                            10 feedback-smtp.eu-north-1.amazonses.com
-                                          </code>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() =>
-                                              handleCopyToken('10 feedback-smtp.eu-north-1.amazonses.com', 1000)
-                                            }
-                                            className="shrink-0 h-6 w-6 p-0"
-                                          >
-                                            {copiedToken === '10 feedback-smtp.eu-north-1.amazonses.com-1000' ? (
-                                              <Check className="h-3 w-3 text-green-600" />
-                                            ) : (
-                                              <Copy className="h-3 w-3" />
-                                            )}
-                                          </Button>
-                                        </div>
-                                      </td>
-                                    </tr>
-
-                                    {/* TXT Record (SPF) */}
-                                    <tr className="hover:bg-neutral-50/50">
-                                      <td className="py-3 px-3">
-                                        <code className="text-xs font-medium text-neutral-900">TXT</code>
-                                      </td>
-                                      <td className="py-3 px-3">
-                                        <div className="flex items-center gap-2">
-                                          <code className="text-xs font-mono text-neutral-700 break-all flex-1">
-                                            plunk.{domain.domain}
-                                          </code>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleCopyToken(`plunk.${domain.domain}`, 3001)}
-                                            className="shrink-0 h-6 w-6 p-0"
-                                          >
-                                            {copiedToken === `plunk.${domain.domain}-3001` ? (
-                                              <Check className="h-3 w-3 text-green-600" />
-                                            ) : (
-                                              <Copy className="h-3 w-3" />
-                                            )}
-                                          </Button>
-                                        </div>
-                                      </td>
-                                      <td className="py-3 px-3">
-                                        <div className="flex items-center gap-2">
-                                          <code className="text-xs font-mono text-neutral-700 break-all flex-1">
-                                            &quot;v=spf1 include:amazonses.com ~all&quot;
-                                          </code>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleCopyToken('"v=spf1 include:amazonses.com ~all"', 1001)}
-                                            className="shrink-0 h-6 w-6 p-0"
-                                          >
-                                            {copiedToken === '"v=spf1 include:amazonses.com ~all"-1001' ? (
-                                              <Check className="h-3 w-3 text-green-600" />
-                                            ) : (
-                                              <Copy className="h-3 w-3" />
-                                            )}
-                                          </Button>
-                                        </div>
-                                      </td>
-                                    </tr>
                                   </tbody>
                                 </table>
                               </div>
-
-                              <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                <div className="text-blue-600 mt-0.5">
-                                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
-                                </div>
-                                <p className="text-xs text-blue-900">
-                                  Click the copy icon to copy record values. After adding all records to your DNS
-                                  provider, use the refresh button above to verify your domain.
-                                </p>
-                              </div>
                             </div>
-                          </AlertDescription>
-                        </Alert>
+
+                            {/* Optional: Custom MAIL FROM Domain */}
+                            {config?.aws?.sesRegion && (
+                              <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <h4 className="text-xs font-semibold text-neutral-900">
+                                    Custom MAIL FROM Domain (Optional)
+                                  </h4>
+                                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                                    OPTIONAL
+                                  </Badge>
+                                </div>
+                                <p className="text-xs text-neutral-600 mb-2">
+                                  Set up a custom MAIL FROM domain (plunk.{domain.domain}) to improve deliverability and
+                                  handle bounces/complaints.
+                                </p>
+
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-xs border-collapse">
+                                    <thead>
+                                      <tr className="border-b border-neutral-200">
+                                        <th className="text-left py-2 px-3 font-medium text-neutral-700 bg-neutral-50">
+                                          Type
+                                        </th>
+                                        <th className="text-left py-2 px-3 font-medium text-neutral-700 bg-neutral-50">
+                                          Name
+                                        </th>
+                                        <th className="text-left py-2 px-3 font-medium text-neutral-700 bg-neutral-50">
+                                          Value
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-neutral-200">
+                                      {/* MX Record (Bounce/Complaint Handling) */}
+                                      <tr className="hover:bg-neutral-50/50">
+                                        <td className="py-3 px-3">
+                                          <code className="text-xs font-medium text-neutral-900">MX</code>
+                                        </td>
+                                        <td className="py-3 px-3">
+                                          <div className="flex items-center gap-2">
+                                            <code className="text-xs font-mono text-neutral-700 break-all flex-1">
+                                              plunk.{domain.domain}
+                                            </code>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => handleCopyToken(`plunk.${domain.domain}`, 3000)}
+                                              className="shrink-0 h-6 w-6 p-0"
+                                            >
+                                              {copiedToken === `plunk.${domain.domain}-3000` ? (
+                                                <Check className="h-3 w-3 text-green-600" />
+                                              ) : (
+                                                <Copy className="h-3 w-3" />
+                                              )}
+                                            </Button>
+                                          </div>
+                                        </td>
+                                        <td className="py-3 px-3">
+                                          <div className="flex items-center gap-2">
+                                            <code className="text-xs font-mono text-neutral-700 break-all flex-1">
+                                              10 feedback-smtp.{config.aws.sesRegion}.amazonses.com
+                                            </code>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() =>
+                                                handleCopyToken(
+                                                  `10 feedback-smtp.${config.aws.sesRegion}.amazonses.com`,
+                                                  1000,
+                                                )
+                                              }
+                                              className="shrink-0 h-6 w-6 p-0"
+                                            >
+                                              {copiedToken ===
+                                              `10 feedback-smtp.${config.aws.sesRegion}.amazonses.com-1000` ? (
+                                                <Check className="h-3 w-3 text-green-600" />
+                                              ) : (
+                                                <Copy className="h-3 w-3" />
+                                              )}
+                                            </Button>
+                                          </div>
+                                        </td>
+                                      </tr>
+
+                                      {/* TXT Record (SPF) */}
+                                      <tr className="hover:bg-neutral-50/50">
+                                        <td className="py-3 px-3">
+                                          <code className="text-xs font-medium text-neutral-900">TXT</code>
+                                        </td>
+                                        <td className="py-3 px-3">
+                                          <div className="flex items-center gap-2">
+                                            <code className="text-xs font-mono text-neutral-700 break-all flex-1">
+                                              plunk.{domain.domain}
+                                            </code>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => handleCopyToken(`plunk.${domain.domain}`, 3001)}
+                                              className="shrink-0 h-6 w-6 p-0"
+                                            >
+                                              {copiedToken === `plunk.${domain.domain}-3001` ? (
+                                                <Check className="h-3 w-3 text-green-600" />
+                                              ) : (
+                                                <Copy className="h-3 w-3" />
+                                              )}
+                                            </Button>
+                                          </div>
+                                        </td>
+                                        <td className="py-3 px-3">
+                                          <div className="flex items-center gap-2">
+                                            <code className="text-xs font-mono text-neutral-700 break-all flex-1">
+                                              &quot;v=spf1 include:amazonses.com ~all&quot;
+                                            </code>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() =>
+                                                handleCopyToken('"v=spf1 include:amazonses.com ~all"', 1001)
+                                              }
+                                              className="shrink-0 h-6 w-6 p-0"
+                                            >
+                                              {copiedToken === '"v=spf1 include:amazonses.com ~all"-1001' ? (
+                                                <Check className="h-3 w-3 text-green-600" />
+                                              ) : (
+                                                <Copy className="h-3 w-3" />
+                                              )}
+                                            </Button>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Optional: Inbound Email */}
+                            {config?.aws?.sesRegion && (
+                              <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <h4 className="text-xs font-semibold text-neutral-900">Inbound Email (Optional)</h4>
+                                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                                    OPTIONAL
+                                  </Badge>
+                                </div>
+                                <p className="text-xs text-neutral-600 mb-2">
+                                  Configure this MX record to receive emails at your domain.
+                                </p>
+
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-xs border-collapse">
+                                    <thead>
+                                      <tr className="border-b border-neutral-200">
+                                        <th className="text-left py-2 px-3 font-medium text-neutral-700 bg-neutral-50">
+                                          Type
+                                        </th>
+                                        <th className="text-left py-2 px-3 font-medium text-neutral-700 bg-neutral-50">
+                                          Name
+                                        </th>
+                                        <th className="text-left py-2 px-3 font-medium text-neutral-700 bg-neutral-50">
+                                          Value
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-neutral-200">
+                                      {/* Inbound MX Record */}
+                                      <tr className="hover:bg-neutral-50/50">
+                                        <td className="py-3 px-3">
+                                          <code className="text-xs font-medium text-neutral-900">MX</code>
+                                        </td>
+                                        <td className="py-3 px-3">
+                                          <div className="flex items-center gap-2">
+                                            <code className="text-xs font-mono text-neutral-700 break-all flex-1">
+                                              {domain.domain}
+                                            </code>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => handleCopyToken(domain.domain, 3002)}
+                                              className="shrink-0 h-6 w-6 p-0"
+                                            >
+                                              {copiedToken === `${domain.domain}-3002` ? (
+                                                <Check className="h-3 w-3 text-green-600" />
+                                              ) : (
+                                                <Copy className="h-3 w-3" />
+                                              )}
+                                            </Button>
+                                          </div>
+                                        </td>
+                                        <td className="py-3 px-3">
+                                          <div className="flex items-center gap-2">
+                                            <code className="text-xs font-mono text-neutral-700 break-all flex-1">
+                                              10 inbound-smtp.{config.aws.sesRegion}.amazonaws.com
+                                            </code>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() =>
+                                                handleCopyToken(
+                                                  `10 inbound-smtp.${config.aws.sesRegion}.amazonaws.com`,
+                                                  1002,
+                                                )
+                                              }
+                                              className="shrink-0 h-6 w-6 p-0"
+                                            >
+                                              {copiedToken ===
+                                              `10 inbound-smtp.${config.aws.sesRegion}.amazonaws.com-1002` ? (
+                                                <Check className="h-3 w-3 text-green-600" />
+                                              ) : (
+                                                <Copy className="h-3 w-3" />
+                                              )}
+                                            </Button>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200 mt-3">
+                              <div className="text-blue-600 mt-0.5">
+                                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              </div>
+                              <p className="text-xs text-blue-900">
+                                Click the copy icon to copy record values. After adding all records to your DNS
+                                provider, use the refresh button above to verify your domain.
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
