@@ -1,5 +1,55 @@
 # Changelog
 
+## [0.5.0](https://github.com/useplunk/plunk/compare/v0.4.0...v0.5.0) (2026-02-17)
+
+
+### Features
+
+* Ability to disable signups and disable email verification for self-hosters ([9316564](https://github.com/useplunk/plunk/commit/93165644af1ebcd7d5eb1900b13e5e38c1af0262))
+* add "olderThan" segment filter operator ([b5fa21a](https://github.com/useplunk/plunk/commit/b5fa21a57cbf491e0438eb29fc9419063fa2aea7))
+* Add additional checks for website, NS records and personal emails ([0a67a82](https://github.com/useplunk/plunk/commit/0a67a8278f45d89b1abdf55be1cf251a470595cf))
+* Add advanced DNS configuration ([7964563](https://github.com/useplunk/plunk/commit/7964563b620868279f5fb6baab0d7499c41f51ed))
+* Add bounce and complaint filter to activity feed ([c85df75](https://github.com/useplunk/plunk/commit/c85df75d539f7e5500a9a109966b0e6d654d4022))
+* add documentation link and redirect to WIKI_URI ([4c81d9e](https://github.com/useplunk/plunk/commit/4c81d9ec04003550b140d884f37ebbf13137166d))
+* Add inbound handling ([d050b55](https://github.com/useplunk/plunk/commit/d050b55baaf46306be3fb6e5ad683205e158bd65))
+* Add initial handling in webhook for inbound ([e01dc40](https://github.com/useplunk/plunk/commit/e01dc4066c5e5eb5e0e69ef92f8a5bb7786e5a91))
+* Add initial handling in webhook for inbound ([c286f49](https://github.com/useplunk/plunk/commit/c286f490974d8dfe9c94695c63e6b48216b8052d))
+* add minimum thresholds for bounce and complaint rates ([d55dda3](https://github.com/useplunk/plunk/commit/d55dda312718890231d1a428448e607792799c84))
+* Add support for custom email recipients in workflow steps ([78d3d22](https://github.com/useplunk/plunk/commit/78d3d224af60cf5b58c6b18fdd0921320912fb09))
+* **i18n:** Add Bulgarian translations ([663bc2b](https://github.com/useplunk/plunk/commit/663bc2be8da69733d2bbc53c6b1bfcc36ff55cf8))
+* **i18n:** add Czech locale translations ([14c471e](https://github.com/useplunk/plunk/commit/14c471e4cadbe1bbf90e53522134fad3d81ff107))
+* **i18n:** add Polish locale translations ([7a6df77](https://github.com/useplunk/plunk/commit/7a6df7760bc73dfe80dcf2d37612e320f6de1d30))
+* **i18n:** add Polish locale translations ([d2d779c](https://github.com/useplunk/plunk/commit/d2d779c68f958a6ac0e77b7588e92a5c705a8fd4)), closes [#246](https://github.com/useplunk/plunk/issues/246)
+* **i18n:** Add Portuguese translations ([c2afb2d](https://github.com/useplunk/plunk/commit/c2afb2dfab977ae74f3b694601a1f2d0353660a8))
+* Integrate NuqsAdapter for improved state management and query handling ([0cf0a26](https://github.com/useplunk/plunk/commit/0cf0a26a97e608f654ed3046c1a46d414557e3ee))
+* Remove domain from AWS if no longer in use by other projects ([e6baace](https://github.com/useplunk/plunk/commit/e6baace00d5f7a109e717b8a996bc2cda52cc9fa))
+
+
+### Bug Fixes
+
+* added missing services:down script, added "win32" to supportedArchitectures for yarn package installation, added missing required WIKI_URI to .env.example of api ([ddbe523](https://github.com/useplunk/plunk/commit/ddbe5237fe7012e197e3b398aebc8e2921a4328a))
+* Center "Add Step" nodes below parent nodes and update positions on drag ([e4e334c](https://github.com/useplunk/plunk/commit/e4e334c77a7ba41e5a60b69b9c64fa3bb72f1e74))
+* Enhance email activity filtering by adding date range checks ([ad0c17d](https://github.com/useplunk/plunk/commit/ad0c17da566a26a296229c05d9b4e18cf7d401ad))
+* Ensure template type is loaded before rendering Select ([8a38766](https://github.com/useplunk/plunk/commit/8a38766c025afd5ef15fee4b7c5baea97a45ec48))
+* Implement merging for activity updates to preserve component state ([0d4b694](https://github.com/useplunk/plunk/commit/0d4b694208fd8e516e1f50f7384d1ac5bd6561e0))
+* Improve bounce handling logic to differentiate between permanent and transient bounces ([7df43d8](https://github.com/useplunk/plunk/commit/7df43d8553eca93b601915ea4deaf59233e848c7))
+* Improve email verification logic by prioritizing MX record checks and clarifying domain existence validation ([26800a8](https://github.com/useplunk/plunk/commit/26800a85538fc90aa05fc43b1cc33cef95d8fb32))
+* Refactor Redis keys to prevent multiple messages on concurrent requests ([4db1ccc](https://github.com/useplunk/plunk/commit/4db1ccc3fc59edb0187d8e2223f45bb0bce6deb5))
+* Remove 'Optional' label from MAIL FROM Domain and Inbound Email headings ([f9b1354](https://github.com/useplunk/plunk/commit/f9b135446040de099484db66139560f43bbf027e))
+* Update contact subscription logic for upsert operations ([a928666](https://github.com/useplunk/plunk/commit/a928666dfcdc65c90602051c79b3c008282674aa))
+* Update URL replacement logic to handle runtime paths and add warnings for missing files ([c07816c](https://github.com/useplunk/plunk/commit/c07816c2a1b029d83400128f4720263e975214ad))
+
+
+### Code Refactoring
+
+* remove unnecessary logging for segment processing ([42ceb6e](https://github.com/useplunk/plunk/commit/42ceb6edc03ebc6f14c6d399e859914ac09f1ab6))
+
+
+### Documentation
+
+* add webhooks documentation for real-time event handling ([5bce1d7](https://github.com/useplunk/plunk/commit/5bce1d74fffb927bcbb2c7df624fde089101efc8))
+* update contacts documentation to include subscription state and email delivery rules ([b4404f6](https://github.com/useplunk/plunk/commit/b4404f698ec28a59f32d728c15c59c8b7765d377))
+
 ## [0.4.0](https://github.com/useplunk/plunk/compare/v0.3.0...v0.4.0) (2026-01-08)
 
 
