@@ -19,6 +19,9 @@ export interface ConfigResponse {
       ports: {secure: number; submission: number} | null;
     };
   };
+  aws: {
+    sesRegion: string;
+  };
 }
 
 /**
