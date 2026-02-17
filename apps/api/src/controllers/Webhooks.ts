@@ -8,6 +8,7 @@ import type Stripe from 'stripe';
 import {STRIPE_ENABLED, STRIPE_WEBHOOK_SECRET} from '../app/constants.js';
 import {stripe} from '../app/stripe.js';
 import {prisma} from '../database/prisma.js';
+import {ContactService} from '../services/ContactService.js';
 import {EventService} from '../services/EventService.js';
 import {NtfyService} from '../services/NtfyService.js';
 import {SecurityService} from '../services/SecurityService.js';
@@ -72,25 +73,107 @@ export class Webhooks {
       // Check if this is an inbound email notification (SES Receiving)
       if (body.notificationType === 'Received') {
         signale.info('[WEBHOOK] Received inbound email notification from SES');
-        signale.info('[WEBHOOK] Inbound email details:', {
-          messageId: body.mail?.messageId,
-          source: body.mail?.source,
-          destination: body.mail?.destination,
-          recipients: body.receipt?.recipients,
-          timestamp: body.mail?.timestamp,
-          subject: body.mail?.commonHeaders?.subject,
-          from: body.mail?.commonHeaders?.from,
-          to: body.mail?.commonHeaders?.to,
-          hasContent: !!body.content,
-          spamVerdict: body.receipt?.spamVerdict?.status,
-          virusVerdict: body.receipt?.virusVerdict?.status,
-          spfVerdict: body.receipt?.spfVerdict?.status,
-          dkimVerdict: body.receipt?.dkimVerdict?.status,
-          dmarcVerdict: body.receipt?.dmarcVerdict?.status,
-        });
-        // For now, just log and acknowledge receipt
-        // Future: process the inbound email (parse, store, trigger workflows, etc.)
-        return res.status(200).json({success: true, message: 'Inbound email received'});
+
+        try {
+          // Extract recipient addresses from the inbound email
+          const recipients = body.receipt?.recipients || [];
+
+          if (recipients.length === 0) {
+            signale.warn('[WEBHOOK] No recipients found in inbound email');
+            return res.status(200).json({success: true, message: 'No recipients found'});
+          }
+
+          // For each recipient, identify the domain and create events
+          for (const recipient of recipients) {
+            const recipientEmail = recipient as string;
+            const domain = recipientEmail.split('@')[1];
+
+            if (!domain) {
+              signale.warn('[WEBHOOK] Invalid recipient email format:', recipientEmail);
+              continue;
+            }
+
+            // Find ALL projects that have this domain verified
+            // A domain can be shared across multiple projects if users are members of both
+            const domainRecords = await prisma.domain.findMany({
+              where: {
+                domain,
+                verified: true, // Only process emails for verified domains
+              },
+              include: {
+                project: true,
+              },
+            });
+
+            if (domainRecords.length === 0) {
+              signale.info(`[WEBHOOK] No verified domain found for: ${domain}`);
+              continue;
+            }
+
+            signale.info(
+              `[WEBHOOK] Found ${domainRecords.length} project(s) with verified domain ${domain}. Processing inbound email for all.`,
+            );
+
+            // Extract sender information (same for all projects)
+            const senderEmail = body.mail?.source;
+            const senderFromHeader = body.mail?.commonHeaders?.from?.[0] || senderEmail;
+
+            // Process inbound email for each project that has this domain verified
+            for (const domainRecord of domainRecords) {
+              signale.info(`[WEBHOOK] Processing inbound email for project: ${domainRecord.project.name}`);
+
+              // Find or create a contact for the sender in this project
+              let contact;
+              if (senderEmail) {
+                contact = await ContactService.upsert(
+                  domainRecord.projectId,
+                  senderEmail,
+                  undefined, // No additional data
+                  true, // Subscribe by default for inbound email senders
+                );
+              }
+
+              // Prepare event data with all inbound email details
+              const eventData = {
+                messageId: body.mail?.messageId,
+                from: senderEmail,
+                fromHeader: senderFromHeader,
+                to: recipientEmail,
+                subject: body.mail?.commonHeaders?.subject,
+                timestamp: body.mail?.timestamp,
+                recipients: body.receipt?.recipients,
+                hasContent: !!body.content,
+                // Security verdicts
+                spamVerdict: body.receipt?.spamVerdict?.status,
+                virusVerdict: body.receipt?.virusVerdict?.status,
+                spfVerdict: body.receipt?.spfVerdict?.status,
+                dkimVerdict: body.receipt?.dkimVerdict?.status,
+                dmarcVerdict: body.receipt?.dmarcVerdict?.status,
+                // Processing metadata
+                processingTimeMillis: body.receipt?.processingTimeMillis,
+              };
+
+              // Create the email.received event (this will trigger workflows)
+              await EventService.trackEvent(
+                domainRecord.projectId,
+                'email.received',
+                contact?.id,
+                undefined, // No emailId for inbound emails (they're not sent by us)
+                eventData,
+              );
+
+              signale.success(
+                `[WEBHOOK] Created email.received event for ${senderEmail} → ${recipientEmail} (project: ${domainRecord.project.name})`,
+              );
+            }
+          }
+
+          return res.status(200).json({success: true, message: 'Inbound email processed'});
+        } catch (inboundError) {
+          signale.error('[WEBHOOK] Error processing inbound email:', inboundError);
+          // Return 200 to acknowledge receipt even if processing failed
+          return res.status(200).json({success: true, message: 'Error processing inbound email'});
+        }
       }
 
       // Handle outbound email event notifications (existing logic)
