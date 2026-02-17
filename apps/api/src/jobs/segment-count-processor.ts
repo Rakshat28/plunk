@@ -18,8 +18,6 @@ import {SegmentService} from '../services/SegmentService.js';
  * - For segments without trackMembership: only update counts
  */
 async function processProjectSegments(projectId: string, projectName?: string): Promise<void> {
-  const logPrefix = projectName ? `${projectName} (${projectId})` : projectId;
-
   // Get all segments for this project, separating tracked vs non-tracked
   const segments = await prisma.segment.findMany({
     where: {projectId},

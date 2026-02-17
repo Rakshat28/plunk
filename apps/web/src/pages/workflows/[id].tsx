@@ -1584,7 +1584,7 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                     </Select>
                   </div>
                   <p className="text-xs text-neutral-500 mt-1.5">
-                    Continue the workflow after this time even if the event hasn't occurred
+                    Continue the workflow after this time even if the event hasn&apos;t occurred
                   </p>
                 </div>
               </div>
@@ -1676,7 +1676,7 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                   rows={4}
                 />
                 <p className="text-xs text-neutral-500 mt-1.5">
-                  JSON object with fields to update in the contact's data
+                  JSON object with fields to update in the contact&apos;s data
                 </p>
               </div>
             </div>
