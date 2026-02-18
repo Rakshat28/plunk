@@ -128,6 +128,11 @@ export default function Footer() {
                       Terms
                     </Link>
                   </li>
+                  <li>
+                    <Link href={'/dpa'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      DPA
+                    </Link>
+                  </li>
                 </ul>
               </div>
             </div>
