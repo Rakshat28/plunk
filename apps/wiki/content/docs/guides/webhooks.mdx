@@ -22,33 +22,33 @@ Plunk automatically tracks a set of internal events that you can use as workflow
 
 ### Email events
 
-| Event | Description |
-|-------|-------------|
-| `email.sent` | An email was successfully sent |
-| `email.delivery` | An email was delivered to the recipient |
-| `email.open` | A contact opened an email for the first time |
-| `email.click` | A contact clicked a link in an email for the first time |
-| `email.bounce` | An email bounced (hard or soft bounce) |
-| `email.complaint` | A contact marked an email as spam |
+| Event             | Description                                                                                              |
+| ----------------- | -------------------------------------------------------------------------------------------------------- |
+| `email.sent`      | An email was successfully sent                                                                           |
+| `email.delivery`  | An email was delivered to the recipient                                                                  |
+| `email.open`      | A contact opened an email for the first time                                                             |
+| `email.click`     | A contact clicked a link in an email for the first time                                                  |
+| `email.bounce`    | An email bounced (hard or soft bounce)                                                                   |
+| `email.complaint` | A contact marked an email as spam                                                                        |
+| `email.received`  | An email was received at your verified domain (requires [inbound email setup](/guides/receiving-emails)) |
 
 ### Contact events
 
-| Event | Description |
-|-------|-------------|
-| `contact.subscribed` | A contact's subscription status changed to subscribed |
+| Event                  | Description                                             |
+| ---------------------- | ------------------------------------------------------- |
+| `contact.subscribed`   | A contact's subscription status changed to subscribed   |
 | `contact.unsubscribed` | A contact's subscription status changed to unsubscribed |
 
 ### Segment events
 
-| Event | Description |
-|-------|-------------|
+| Event                  | Description                 |
+| ---------------------- | --------------------------- |
 | `segment.<name>.entry` | A contact entered a segment |
-| `segment.<name>.exit` | A contact exited a segment |
+| `segment.<name>.exit`  | A contact exited a segment  |
 
-<Callout
- title="Segment event names"
- variant="idea">
-Segment events use a slugified version of the segment name. For example, a segment called "VIP Users" would produce the events `segment.vip-users.entry` and `segment.vip-users.exit`.
+<Callout title="Segment event names" variant="idea">
+  Segment events use a slugified version of the segment name. For example, a segment called "VIP Users" would produce
+  the events `segment.vip-users.entry` and `segment.vip-users.exit`.
 </Callout>
 
 ## Setting up a webhook
@@ -115,14 +115,14 @@ The `event` field contains the data associated with the event that triggered the
 
 The `event` field varies depending on which event triggered the workflow:
 
-| Event | Fields in `event` |
-|-------|-------------------|
-| `email.sent` | `subject`, `from`, `messageId`, `templateId`, `campaignId`, `sourceType` |
-| `email.open` | `subject`, `from`, `openedAt`, `isFirstOpen` |
-| `email.click` | `subject`, `from`, `clickedAt`, `clicks`, `isFirstClick` |
-| `email.bounce` | `subject`, `from`, `bounceType`, `bouncedAt` |
-| `email.complaint` | `subject`, `from`, `complainedAt` |
-| Custom events | Whatever data you passed when tracking the event |
+| Event             | Fields in `event`                                                        |
+| ----------------- | ------------------------------------------------------------------------ |
+| `email.sent`      | `subject`, `from`, `messageId`, `templateId`, `campaignId`, `sourceType` |
+| `email.open`      | `subject`, `from`, `openedAt`, `isFirstOpen`                             |
+| `email.click`     | `subject`, `from`, `clickedAt`, `clicks`, `isFirstClick`                 |
+| `email.bounce`    | `subject`, `from`, `bounceType`, `bouncedAt`                             |
+| `email.complaint` | `subject`, `from`, `complainedAt`                                        |
+| Custom events     | Whatever data you passed when tracking the event                         |
 
 ## Common use cases
 

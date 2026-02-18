@@ -1,0 +1,142 @@
+---
+title: Receiving emails
+description: Receive incoming emails at your verified domain and trigger automated workflows
+icon: Inbox
+---
+
+Plunk can receive emails sent to your verified domain and turn them into `email.received` events. This allows you to build automated workflows that respond to inbound emails, such as support ticket systems, auto-responders, or email-based integrations.
+
+## How it works
+
+When someone sends an email to your verified domain (e.g., `support@yourdomain.com` or `hello@yourdomain.com`), Plunk will:
+
+1. Receive the email through AWS SES
+2. Automatically create or update a contact for the sender
+3. Trigger an `email.received` event that can start workflows
+4. Make the email metadata available to your workflow steps
+
+The sender is automatically added to your contacts as a subscribed contact, allowing you to respond using Plunk's email sending capabilities.
+
+## Setting up inbound email
+
+<div className='fd-steps [&_h3]:fd-step'>
+
+### Verify your domain
+
+Before you can receive emails, your domain must be verified in Plunk. Follow the [verifying domains](/guides/verifying-domains) guide to set up the required DKIM, SPF, and MX records for sending.
+
+### Add the inbound MX record
+
+In your project settings, navigate to the **Domains** tab and expand your verified domain. You'll see an optional "Inbound Email" section with an MX record configuration:
+
+- **Type**: MX
+- **Name**: `yourdomain.com` (your root domain)
+- **Value**: `10 inbound-smtp.eu-north-1.amazonaws.com`
+
+Add this MX record to your domain's DNS settings. The priority value `10` ensures that inbound emails are routed to AWS SES for processing.
+
+<Callout title="Multiple MX records" variant="warning">
+  If you're already using MX records for another email service (like Google Workspace or Microsoft 365), adding this MX
+  record may conflict. You can only have one primary email receiver per domain. Consider using a subdomain (e.g.,
+  `mail.yourdomain.com`) if you need to maintain both services.
+</Callout>
+
+### Wait for DNS propagation
+
+DNS changes can take anywhere from a few minutes to 48 hours to fully propagate. You can verify the MX record is set correctly using:
+
+```bash
+dig MX yourdomain.com
+```
+
+You should see the AWS SES inbound endpoint in the response.
+
+</div>
+
+## Creating workflows with email.received
+
+Once your MX record is configured, you can create workflows that respond to incoming emails.
+
+### Event trigger
+
+Create a new workflow and use `email.received` as the trigger event. This workflow will run every time an email is received at your domain.
+
+### Available event data
+
+The `email.received` event includes the following data that you can use in your workflow steps:
+
+| Field                  | Type     | Description                                    |
+| ---------------------- | -------- | ---------------------------------------------- |
+| `messageId`            | string   | Unique identifier for the received message     |
+| `from`                 | string   | Email address of the sender                    |
+| `fromHeader`           | string   | Full "From" header including display name      |
+| `to`                   | string   | Primary recipient email address                |
+| `subject`              | string   | Email subject line                             |
+| `timestamp`            | string   | ISO 8601 timestamp when the email was received |
+| `recipients`           | string[] | All recipient email addresses                  |
+| `hasContent`           | boolean  | Whether the email body was captured            |
+| `spamVerdict`          | string   | Spam check result (e.g., "PASS", "FAIL")       |
+| `virusVerdict`         | string   | Virus scan result (e.g., "PASS", "FAIL")       |
+| `spfVerdict`           | string   | SPF authentication result                      |
+| `dkimVerdict`          | string   | DKIM authentication result                     |
+| `dmarcVerdict`         | string   | DMARC authentication result                    |
+| `processingTimeMillis` | number   | Time taken to process the email                |
+
+You can access these fields in your workflow using variable syntax, for example: `{{event.subject}}` or `{{event.from}}`.
+
+## Multi-project domains
+
+If you have verified the same domain in multiple projects, incoming emails will be processed for **all projects** that have the domain verified. Each project will:
+
+- Create/update the sender as a contact in that project
+- Trigger the `email.received` event in that project
+- Run any workflows configured for that event
+
+This allows you to segment inbound email handling across different projects if needed.
+
+## Limitations
+
+<Callout title="Email body content" variant="warning">
+  Currently, the email body content is not stored or made available in the event data. Only metadata (sender, subject,
+  recipients, timestamps, and security verdicts) is captured. The `hasContent` field indicates whether body content was
+  present, but the content itself is not accessible in workflows.
+</Callout>
+
+- **Catch-all addresses**: Plunk receives emails sent to any address at your verified domain (e.g., `anything@yourdomain.com`). You can use workflow conditions to route emails based on the `to` field.
+- **Attachments**: Email attachments are not currently captured or stored.
+- **Email size**: AWS SES has a maximum message size limit of 40 MB for inbound emails.
+
+## Security considerations
+
+Plunk captures several security verdicts for each incoming email:
+
+- **SPF (Sender Policy Framework)**: Verifies the sender's mail server is authorized
+- **DKIM (DomainKeys Identified Mail)**: Validates the email hasn't been tampered with
+- **DMARC (Domain-based Message Authentication)**: Combines SPF and DKIM for additional validation
+- **Spam verdict**: AWS SES's spam detection result
+- **Virus verdict**: AWS SES's virus scanning result
+
+You can use these verdicts in workflow conditions to automatically filter or quarantine suspicious emails before processing them.
+
+## Troubleshooting
+
+### Emails not being received
+
+1. **Check DNS propagation**: Verify the MX record is correctly set using `dig MX yourdomain.com`
+2. **Verify domain**: Ensure your domain is fully verified in Plunk (all DKIM, SPF, and MX records for sending)
+3. **Check workflow**: Create a simple test workflow with just an `email.received` trigger and a webhook to verify events are being generated
+4. **Check sender**: Try sending from a different email provider as some may cache DNS records
+
+### Duplicate events
+
+If you have the same domain verified in multiple projects, you will receive duplicate `email.received` events (one per project). This is expected behavior. Use project-specific workflows to handle this.
+
+### Security verdicts failing
+
+If incoming emails consistently show failing security verdicts:
+
+- **SPF failures**: The sender's domain may not have SPF configured correctly
+- **DKIM failures**: The sender's domain may not have DKIM configured, or the email was forwarded/modified in transit
+- **DMARC failures**: The sender fails both SPF and DKIM checks
+
+These are issues with the sender's configuration, not your Plunk setup. You can choose to process these emails anyway or filter them using workflow conditions.
