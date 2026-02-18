@@ -318,7 +318,12 @@ export default function WorkflowEditorPage() {
     }
   };
 
-  const handleUpdateSettings = async (data: {name: string; description?: string}) => {
+  const handleUpdateSettings = async (data: {
+    name: string;
+    description?: string;
+    allowReentry?: boolean;
+    triggerConfig?: {eventName: string};
+  }) => {
     try {
       await network.fetch<Workflow, typeof WorkflowSchemas.update>('PATCH', `/workflows/${id}`, data);
       toast.success('Workflow updated successfully');
@@ -352,9 +357,15 @@ export default function WorkflowEditorPage() {
       }
     };
 
+    const handleOpenSettingsEvent = () => {
+      setShowSettingsDialog(true);
+    };
+
     window.addEventListener('workflow-edit-step', handleEditStepEvent);
+    window.addEventListener('workflow-open-settings', handleOpenSettingsEvent);
     return () => {
       window.removeEventListener('workflow-edit-step', handleEditStepEvent);
+      window.removeEventListener('workflow-open-settings', handleOpenSettingsEvent);
     };
   }, [workflow]);
 
@@ -741,21 +752,49 @@ interface SettingsDialogProps {
   workflow: Workflow;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (data: {name: string; description?: string; allowReentry?: boolean}) => Promise<void>;
+  onSave: (data: {
+    name: string;
+    description?: string;
+    allowReentry?: boolean;
+    triggerConfig?: {eventName: string};
+  }) => Promise<void>;
 }
 
 function SettingsDialog({workflow, open, onOpenChange, onSave}: SettingsDialogProps) {
+  const triggerConfig = workflow.triggerConfig as {eventName?: string} | null;
   const [name, setName] = useState(workflow.name);
   const [description, setDescription] = useState(workflow.description ?? '');
   const [allowReentry, setAllowReentry] = useState(workflow.allowReentry ?? false);
+  const [eventName, setEventName] = useState(triggerConfig?.eventName ?? '');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Sync state when workflow changes or dialog opens
+  useEffect(() => {
+    if (open) {
+      setName(workflow.name);
+      setDescription(workflow.description ?? '');
+      setAllowReentry(workflow.allowReentry ?? false);
+      const config = workflow.triggerConfig as {eventName?: string} | null;
+      setEventName(config?.eventName ?? '');
+    }
+  }, [open, workflow]);
+
+  // Fetch available event names
+  const {data: eventNamesData} = useSWR<{eventNames: string[]}>(open ? '/events/names' : null, {
+    revalidateOnFocus: false,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      await onSave({name, description: description || undefined, allowReentry});
+      await onSave({
+        name,
+        description: description || undefined,
+        allowReentry,
+        triggerConfig: eventName.trim() ? {eventName: eventName.trim()} : undefined,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -782,6 +821,36 @@ function SettingsDialog({workflow, open, onOpenChange, onSave}: SettingsDialogPr
               className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm"
               rows={3}
             />
+          </div>
+
+          <div>
+            <Label htmlFor="eventName">Trigger Event *</Label>
+            {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0 ? (
+              <Select value={eventName} onValueChange={setEventName} required>
+                <SelectTrigger id="eventName">
+                  <SelectValue placeholder="Select an event" />
+                </SelectTrigger>
+                <SelectContent>
+                  {eventNamesData.eventNames.map(name => (
+                    <SelectItem key={name} value={name}>
+                      {name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                id="eventName"
+                type="text"
+                value={eventName}
+                onChange={e => setEventName(e.target.value)}
+                placeholder="e.g., contact.created, email.opened"
+                required
+              />
+            )}
+            <p className="text-xs text-neutral-500 mt-1">
+              The event that triggers this workflow to start for a contact
+            </p>
           </div>
 
           <div className="flex items-start gap-3 p-4 bg-neutral-50 rounded-lg border border-neutral-200">

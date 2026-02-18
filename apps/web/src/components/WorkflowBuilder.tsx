@@ -226,6 +226,22 @@ function CustomNode({
         onMouseLeave={() => setShowActions(false)}
       >
         {/* Action buttons - shown on hover */}
+        {showActions && data.type === 'TRIGGER' && (
+          <div className="absolute -top-3 -right-3 flex gap-1.5 z-10">
+            <Button
+              onClick={e => {
+                e.stopPropagation();
+                data.onEdit?.();
+              }}
+              variant="outline"
+              size="icon"
+              className="h-7 w-7 shadow-md"
+              title="Edit trigger settings"
+            >
+              <Settings className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
         {showActions && data.type !== 'TRIGGER' && (
           <div className="absolute -top-3 -right-3 flex gap-1.5 z-10">
             <Button
@@ -322,6 +338,14 @@ function CustomNode({
             </div>
           </div>
         )}
+        {data.type === 'TRIGGER' && data.config?.eventName && (
+          <div className="mt-3 pt-3 border-t border-neutral-100">
+            <div className="flex items-center gap-2 text-xs text-neutral-600">
+              <Lightbulb className="h-3 w-3" />
+              <span className="truncate">{data.config.eventName}</span>
+            </div>
+          </div>
+        )}
         {data.type === 'WEBHOOK' && data.config?.url && (
           <div className="mt-3 pt-3 border-t border-neutral-100">
             <div className="flex items-center gap-2 text-xs text-neutral-600">
@@ -375,11 +399,23 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
   const [stepToDelete, setStepToDelete] = useState<string | null>(null);
 
   // Define handlers before they are used in useMemo
-  const handleEditStep = useCallback((stepId: string) => {
-    // This will be handled by the parent component
-    const event = new CustomEvent('workflow-edit-step', {detail: {stepId}});
-    window.dispatchEvent(event);
-  }, []);
+  const handleEditStep = useCallback(
+    (stepId: string) => {
+      // Check if this is a TRIGGER step
+      const step = steps.find(s => s.id === stepId);
+
+      if (step?.type === 'TRIGGER') {
+        // For TRIGGER steps, open workflow settings instead
+        const event = new CustomEvent('workflow-open-settings');
+        window.dispatchEvent(event);
+      } else {
+        // For other steps, open step editor
+        const event = new CustomEvent('workflow-edit-step', {detail: {stepId}});
+        window.dispatchEvent(event);
+      }
+    },
+    [steps],
+  );
 
   const handleDeleteStepClick = useCallback((stepId: string) => {
     setStepToDelete(stepId);

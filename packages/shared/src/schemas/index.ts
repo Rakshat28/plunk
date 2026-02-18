@@ -180,6 +180,7 @@ export const WorkflowSchemas = {
     triggerType: z.nativeEnum(WorkflowTriggerType).optional(),
     triggerConfig: jsonSchema.optional(),
     enabled: z.boolean().optional(),
+    allowReentry: z.boolean().optional(),
   }),
   addStep: z.object({
     type: z.nativeEnum(WorkflowStepType),

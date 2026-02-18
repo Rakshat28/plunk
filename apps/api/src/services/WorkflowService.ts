@@ -194,29 +194,66 @@ export class WorkflowService {
       }
     }
 
-    const updateData: Prisma.WorkflowUpdateInput = {};
+    // Use transaction to update workflow and TRIGGER step atomically
+    const updated = await prisma.$transaction(async tx => {
+      const updateData: Prisma.WorkflowUpdateInput = {};
 
-    if (data.name !== undefined) updateData.name = data.name;
-    if (data.description !== undefined) updateData.description = data.description;
-    if (data.triggerType !== undefined) updateData.triggerType = data.triggerType;
-    if (data.triggerConfig !== undefined) {
-      updateData.triggerConfig = data.triggerConfig === null ? Prisma.JsonNull : data.triggerConfig;
-    }
-    if (data.enabled !== undefined) updateData.enabled = data.enabled;
-    if (data.allowReentry !== undefined) updateData.allowReentry = data.allowReentry;
+      if (data.name !== undefined) updateData.name = data.name;
+      if (data.description !== undefined) updateData.description = data.description;
+      if (data.triggerType !== undefined) updateData.triggerType = data.triggerType;
+      if (data.triggerConfig !== undefined) {
+        updateData.triggerConfig = data.triggerConfig === null ? Prisma.JsonNull : data.triggerConfig;
+      }
+      if (data.enabled !== undefined) updateData.enabled = data.enabled;
+      if (data.allowReentry !== undefined) updateData.allowReentry = data.allowReentry;
 
-    const updated = await prisma.workflow.update({
-      where: {id: workflowId},
-      data: updateData,
-      include: {
-        project: {
-          select: {name: true},
+      const updatedWorkflow = await tx.workflow.update({
+        where: {id: workflowId},
+        data: updateData,
+        include: {
+          project: {
+            select: {name: true},
+          },
         },
-      },
+      });
+
+      // If triggerConfig changed and it's an EVENT trigger, update the TRIGGER step
+      if (data.triggerConfig !== undefined && updatedWorkflow.triggerType === 'EVENT') {
+        const newTriggerConfig = data.triggerConfig as {eventName?: string} | null;
+        const eventName = newTriggerConfig?.eventName;
+
+        if (eventName) {
+          // Find the TRIGGER step
+          const triggerStep = await tx.workflowStep.findFirst({
+            where: {
+              workflowId: workflowId,
+              type: 'TRIGGER',
+            },
+          });
+
+          if (triggerStep) {
+            // Update TRIGGER step config and name to match
+            await tx.workflowStep.update({
+              where: {id: triggerStep.id},
+              data: {
+                name: `Trigger: ${eventName}`,
+                config: {eventName},
+              },
+            });
+          }
+        }
+      }
+
+      return updatedWorkflow;
     });
 
     // Invalidate workflow cache if enabled status changed or workflow is enabled
     if (data.enabled !== undefined || updated.enabled) {
+      await EventService.invalidateWorkflowCache(projectId);
+    }
+
+    // Also invalidate cache if triggerConfig changed on an enabled workflow
+    if (data.triggerConfig !== undefined && updated.enabled) {
       await EventService.invalidateWorkflowCache(projectId);
     }
 
