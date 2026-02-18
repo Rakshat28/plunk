@@ -330,6 +330,7 @@ export class Users {
         billingLimitWorkflows: true,
         billingLimitCampaigns: true,
         billingLimitTransactional: true,
+        billingLimitInbound: true,
       },
     });
 
@@ -349,6 +350,7 @@ export class Users {
         billingLimitWorkflows: data.workflows,
         billingLimitCampaigns: data.campaigns,
         billingLimitTransactional: data.transactional,
+        billingLimitInbound: data.inbound,
       },
     });
 
@@ -360,6 +362,7 @@ export class Users {
         workflows: project.billingLimitWorkflows,
         campaigns: project.billingLimitCampaigns,
         transactional: project.billingLimitTransactional,
+        inbound: project.billingLimitInbound,
       },
       data,
     );

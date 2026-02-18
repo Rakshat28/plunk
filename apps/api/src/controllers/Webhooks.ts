@@ -1,6 +1,6 @@
 import {Controller, Post} from '@overnightjs/core';
 import type {Prisma} from '@plunk/db';
-import {EmailStatus} from '@plunk/db';
+import {EmailSourceType, EmailStatus} from '@plunk/db';
 import type {Request, Response} from 'express';
 import signale from 'signale';
 import type Stripe from 'stripe';
@@ -8,8 +8,10 @@ import type Stripe from 'stripe';
 import {STRIPE_ENABLED, STRIPE_WEBHOOK_SECRET} from '../app/constants.js';
 import {stripe} from '../app/stripe.js';
 import {prisma} from '../database/prisma.js';
+import {BillingLimitService} from '../services/BillingLimitService.js';
 import {ContactService} from '../services/ContactService.js';
 import {EventService} from '../services/EventService.js';
+import {MeterService} from '../services/MeterService.js';
 import {NtfyService} from '../services/NtfyService.js';
 import {SecurityService} from '../services/SecurityService.js';
 import {CatchAsync} from '../utils/asyncHandler.js';
@@ -122,6 +124,16 @@ export class Webhooks {
             for (const domainRecord of domainRecords) {
               signale.info(`[WEBHOOK] Processing inbound email for project: ${domainRecord.project.name}`);
 
+              // Check billing limits before processing inbound email
+              const limitCheck = await BillingLimitService.checkLimit(domainRecord.projectId, EmailSourceType.INBOUND);
+
+              if (!limitCheck.allowed) {
+                signale.warn(
+                  `[WEBHOOK] Inbound email blocked for project ${domainRecord.project.name}: ${limitCheck.message}`,
+                );
+                continue; // Skip this project but continue processing for other projects
+              }
+
               // Find or create a contact for the sender in this project
               let contact;
               if (senderEmail) {
@@ -130,6 +142,32 @@ export class Webhooks {
                   senderEmail,
                   undefined, // No additional data
                   true, // Subscribe by default for inbound email senders
+                );
+              }
+
+              // Create an Email record for tracking (no actual email content since it's inbound)
+              const inboundEmail = await prisma.email.create({
+                data: {
+                  projectId: domainRecord.projectId,
+                  contactId: contact!.id,
+                  subject: body.mail?.commonHeaders?.subject || '(No subject)',
+                  body: '', // Inbound emails don't have body content in our system
+                  from: recipientEmail, // The recipient address that received the email
+                  sourceType: EmailSourceType.INBOUND,
+                  status: EmailStatus.DELIVERED, // Inbound emails are already delivered
+                  deliveredAt: new Date(body.mail?.timestamp || new Date()),
+                },
+              });
+
+              // Increment usage counter in cache
+              await BillingLimitService.incrementUsage(domainRecord.projectId, EmailSourceType.INBOUND);
+
+              // Record Stripe metering if project has customer
+              if (domainRecord.project.customer) {
+                await MeterService.recordEmailSent(
+                  domainRecord.project.customer,
+                  1, // Inbound emails count as 1 credit
+                  `email_${inboundEmail.id}`,
                 );
               }
 
@@ -158,7 +196,7 @@ export class Webhooks {
                 domainRecord.projectId,
                 'email.received',
                 contact?.id,
-                undefined, // No emailId for inbound emails (they're not sent by us)
+                inboundEmail.id, // Link the event to the inbound email record
                 eventData,
               );
 

@@ -439,6 +439,7 @@ export const BillingLimitSchemas = {
     workflows: z.coerce.number().int().positive().nullable(),
     campaigns: z.coerce.number().int().positive().nullable(),
     transactional: z.coerce.number().int().positive().nullable(),
+    inbound: z.coerce.number().int().positive().nullable(),
   }),
 } as const;
 

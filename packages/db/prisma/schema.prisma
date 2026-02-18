@@ -53,6 +53,7 @@ model Project {
   billingLimitWorkflows     Int? // Max workflow emails per month
   billingLimitCampaigns     Int? // Max campaign emails per month
   billingLimitTransactional Int? // Max transactional emails per month
+  billingLimitInbound       Int? // Max inbound emails per month
 
   // Email Tracking
   tracking TrackingMode @default(ENABLED) // Open and click tracking mode
@@ -750,6 +751,7 @@ enum EmailSourceType {
   TRANSACTIONAL // Sent via API call
   CAMPAIGN // Sent as part of broadcast
   WORKFLOW // Sent via workflow automation
+  INBOUND // Received via SES inbound
 }
 
 enum EmailStatus {

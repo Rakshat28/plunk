@@ -20,6 +20,7 @@ export interface BillingLimitsResponse {
   workflows: CategoryUsage;
   campaigns: CategoryUsage;
   transactional: CategoryUsage;
+  inbound: CategoryUsage;
   currency: string | null;
 }
 

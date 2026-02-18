@@ -157,6 +157,7 @@ export class BillingLimitService {
           billingLimitWorkflows: true,
           billingLimitCampaigns: true,
           billingLimitTransactional: true,
+          billingLimitInbound: true,
         },
       });
 
@@ -183,6 +184,9 @@ export class BillingLimitService {
         case EmailSourceType.TRANSACTIONAL:
           limit = project.billingLimitTransactional;
           break;
+        case EmailSourceType.INBOUND:
+          limit = project.billingLimitInbound;
+          break;
         default:
           limit = null;
       }
@@ -191,7 +195,8 @@ export class BillingLimitService {
       const hasCustomLimits =
         project.billingLimitWorkflows !== null ||
         project.billingLimitCampaigns !== null ||
-        project.billingLimitTransactional !== null;
+        project.billingLimitTransactional !== null ||
+        project.billingLimitInbound !== null;
 
       // Free tier projects (no subscription and no custom limits): enforce total 1000 email/month limit
       // Only enforce free tier limits if billing is enabled
@@ -368,6 +373,7 @@ export class BillingLimitService {
           billingLimitWorkflows: true,
           billingLimitCampaigns: true,
           billingLimitTransactional: true,
+          billingLimitInbound: true,
         },
       });
 
@@ -390,10 +396,11 @@ export class BillingLimitService {
       }
 
       // Get usage for all categories in parallel
-      const [workflowUsage, campaignUsage, transactionalUsage] = await Promise.all([
+      const [workflowUsage, campaignUsage, transactionalUsage, inboundUsage] = await Promise.all([
         this.getUsage(projectId, EmailSourceType.WORKFLOW),
         this.getUsage(projectId, EmailSourceType.CAMPAIGN),
         this.getUsage(projectId, EmailSourceType.TRANSACTIONAL),
+        this.getUsage(projectId, EmailSourceType.INBOUND),
       ]);
 
       // Helper to calculate category usage
@@ -412,18 +419,19 @@ export class BillingLimitService {
       const hasCustomLimits =
         project.billingLimitWorkflows !== null ||
         project.billingLimitCampaigns !== null ||
-        project.billingLimitTransactional !== null;
+        project.billingLimitTransactional !== null ||
+        project.billingLimitInbound !== null;
 
       // Free tier projects (no subscription and no custom limits): show total usage with shared limit
       // Only show free tier limits if billing is enabled
       if (STRIPE_ENABLED && !project.subscription && !hasCustomLimits) {
-        const totalUsage = workflowUsage + campaignUsage + transactionalUsage;
+        const totalUsage = workflowUsage + campaignUsage + transactionalUsage + inboundUsage;
         const limit = this.FREE_TIER_TOTAL_LIMIT;
         const percentage = (totalUsage / limit) * 100;
         const isWarning = percentage >= this.WARNING_THRESHOLD * 100;
         const isBlocked = totalUsage >= limit;
 
-        // For free tier, show the same limit and total usage for all three categories
+        // For free tier, show the same limit and total usage for all four categories
         // This makes it clear in the UI that it's a shared limit
         const sharedUsageInfo: CategoryUsage = {
           limit,
@@ -437,6 +445,7 @@ export class BillingLimitService {
           workflows: sharedUsageInfo,
           campaigns: sharedUsageInfo,
           transactional: sharedUsageInfo,
+          inbound: sharedUsageInfo,
           currency,
         };
       }
@@ -446,6 +455,7 @@ export class BillingLimitService {
         workflows: calculateCategoryUsage(workflowUsage, project.billingLimitWorkflows),
         campaigns: calculateCategoryUsage(campaignUsage, project.billingLimitCampaigns),
         transactional: calculateCategoryUsage(transactionalUsage, project.billingLimitTransactional),
+        inbound: calculateCategoryUsage(inboundUsage, project.billingLimitInbound),
         currency,
       };
     } catch (error) {
@@ -470,6 +480,7 @@ export class BillingLimitService {
         this.getCacheKey(projectId, EmailSourceType.WORKFLOW),
         this.getCacheKey(projectId, EmailSourceType.CAMPAIGN),
         this.getCacheKey(projectId, EmailSourceType.TRANSACTIONAL),
+        this.getCacheKey(projectId, EmailSourceType.INBOUND),
       ];
 
       await Promise.all(keys.map(key => redis.del(key)));
@@ -493,11 +504,13 @@ export class BillingLimitService {
       workflows: number | null;
       campaigns: number | null;
       transactional: number | null;
+      inbound: number | null;
     },
     newLimits: {
       workflows: number | null;
       campaigns: number | null;
       transactional: number | null;
+      inbound: number | null;
     },
   ): Promise<void> {
     try {
@@ -528,6 +541,14 @@ export class BillingLimitService {
         keysToDelete.push(
           Keys.Billing.warningEmail(projectId, EmailSourceType.TRANSACTIONAL, year, month),
           Keys.Billing.limitEmail(projectId, EmailSourceType.TRANSACTIONAL, year, month),
+        );
+      }
+
+      // Check inbound limit
+      if (oldLimits.inbound !== newLimits.inbound) {
+        keysToDelete.push(
+          Keys.Billing.warningEmail(projectId, EmailSourceType.INBOUND, year, month),
+          Keys.Billing.limitEmail(projectId, EmailSourceType.INBOUND, year, month),
         );
       }
 
