@@ -229,7 +229,7 @@ export class NtfyService {
 
   /**
    * Notify about email bounce - LOW priority (high volume)
-   * Rate-limited to only send notification every 20 bounces with per-project breakdown
+   * Rate-limited to only send notification every 20 bounces with latest 20 bounce details
    */
   public static async notifyEmailBounce(
     projectName: string,
@@ -240,63 +240,51 @@ export class NtfyService {
     // Import redis at runtime to avoid circular dependencies
     const {redis} = await import('../database/redis.js');
 
-    // Use Redis counters to track bounce count globally and per-project
+    // Use Redis counters to track bounce count globally
     const globalCountKey = `ntfy:bounce:count`;
-    const projectCountKey = `ntfy:bounce:count:${projectId}`;
-    const projectListKey = `ntfy:bounce:projects`;
+    const bounceListKey = `ntfy:bounce:latest`;
 
     // Increment global counter
     const globalCount = await redis.incr(globalCountKey);
 
-    // Increment project-specific counter
-    await redis.incr(projectCountKey);
-
-    // Add project to the set of projects with bounces (for tracking)
-    await redis.sadd(projectListKey, projectId);
+    // Store this bounce event in a list (keep latest 20)
+    const bounceEvent = JSON.stringify({
+      projectName,
+      projectId,
+      recipientEmail,
+      bounceType: bounceType || 'Unknown',
+      timestamp: new Date().toISOString(),
+    });
+    await redis.lpush(bounceListKey, bounceEvent);
+    await redis.ltrim(bounceListKey, 0, 19); // Keep only latest 20
 
     // Set expiry on first increment (24 hour rolling window)
     if (globalCount === 1) {
       await redis.expire(globalCountKey, 86400);
-      await redis.expire(projectListKey, 86400);
+      await redis.expire(bounceListKey, 86400);
     }
-    // Always refresh project counter expiry to match global window
-    await redis.expire(projectCountKey, 86400);
 
     // Only send notification every 20 bounces
     if (globalCount % 20 === 0) {
-      // Get all projects with bounces
-      const projectIds = await redis.smembers(projectListKey);
+      // Get the latest 20 bounces
+      const latestBounces = await redis.lrange(bounceListKey, 0, 19);
 
-      // Get bounce counts for each project
-      const projectCounts: Array<{projectId: string; count: number; name: string}> = [];
-      for (const pid of projectIds) {
-        const count = await redis.get(`ntfy:bounce:count:${pid}`);
-        if (count) {
-          // Fetch project name from database
-          const {prisma} = await import('../database/prisma.js');
-          const project = await prisma.project.findUnique({
-            where: {id: pid},
-            select: {name: true},
-          });
+      // Parse and format the bounce events
+      const bounceDetails = latestBounces
+        .map(bounce => {
+          try {
+            const parsed = JSON.parse(bounce);
+            return `  • ${parsed.recipientEmail} (${parsed.bounceType}) - ${parsed.projectName}`;
+          } catch {
+            return null;
+          }
+        })
+        .filter(Boolean)
+        .join('\n');
 
-          projectCounts.push({
-            projectId: pid,
-            count: parseInt(count, 10),
-            name: project?.name || 'Unknown',
-          });
-        }
-      }
-
-      // Sort by count descending
-      projectCounts.sort((a, b) => b.count - a.count);
-
-      // Build breakdown message
-      const breakdown = projectCounts.map(p => `  • ${p.name} (${p.projectId}): ${p.count}`).join('\n');
-
-      const bounceInfo = bounceType ? ` (${bounceType})` : '';
       await this.send({
         title: 'Email Bounces',
-        message: `20 email bounces detected (total: ${globalCount})\n\nBreakdown by project:\n${breakdown}\n\nLatest: ${recipientEmail}${bounceInfo} in "${projectName}"`,
+        message: `20 email bounces detected (total: ${globalCount})\n\nLatest 20 bounces:\n${bounceDetails}`,
         priority: NtfyPriority.LOW,
         tags: [NtfyTag.WARNING],
       });
