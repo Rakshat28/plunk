@@ -1,4 +1,5 @@
 import {NextSeo} from 'next-seo';
+import Link from 'next/link';
 import React from 'react';
 import {Navbar} from '../components';
 
@@ -1149,9 +1150,9 @@ export default function PrivacyPolicy() {
                   </li>
                   <li>
                     Discord:{' '}
-                    <a href="/discord" className="text-blue-600 hover:underline">
+                    <Link href="/discord" className="text-blue-600 hover:underline">
                       useplunk.com/discord
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </section>
@@ -1168,9 +1169,9 @@ export default function PrivacyPolicy() {
               </p>
               <p className="text-sm text-neutral-600">
                 For service terms, please review our{' '}
-                <a href="/terms" className="text-blue-600 hover:underline">
+                <Link href="/terms" className="text-blue-600 hover:underline">
                   Terms of Service
-                </a>
+                </Link>
                 .
               </p>
             </div>

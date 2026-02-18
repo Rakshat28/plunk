@@ -1,4 +1,5 @@
 import {NextSeo} from 'next-seo';
+import Link from 'next/link';
 import React from 'react';
 import {Navbar} from '../components';
 
@@ -387,9 +388,9 @@ export default function TermsOfService() {
                 <ul className="mb-4 ml-6 list-disc space-y-2 text-neutral-700">
                   <li>
                     Full details in our{' '}
-                    <a href="/privacy" className="text-blue-600 hover:underline">
+                    <Link href="/privacy" className="text-blue-600 hover:underline">
                       Privacy Policy
-                    </a>
+                    </Link>
                   </li>
                   <li>EU/EEA data residency (Hetzner infrastructure)</li>
                   <li>GDPR-compliant data processing</li>
@@ -670,18 +671,18 @@ export default function TermsOfService() {
                   </li>
                   <li>
                     Discord:{' '}
-                    <a href="/discord" className="text-blue-600 hover:underline">
+                    <Link href="/discord" className="text-blue-600 hover:underline">
                       useplunk.com/discord
-                    </a>
+                    </Link>
                   </li>
                 </ul>
 
                 <p className="mb-2 font-semibold text-neutral-900">Privacy Requests:</p>
                 <p className="text-neutral-700">
                   See our{' '}
-                  <a href="/privacy" className="text-blue-600 hover:underline">
+                  <Link href="/privacy" className="text-blue-600 hover:underline">
                     Privacy Policy
-                  </a>{' '}
+                  </Link>{' '}
                   or email legal@useplunk.com
                 </p>
               </section>
@@ -698,9 +699,9 @@ export default function TermsOfService() {
               </p>
               <p className="text-sm text-neutral-600">
                 For privacy-related inquiries, please review our{' '}
-                <a href="/privacy" className="text-blue-600 hover:underline">
+                <Link href="/privacy" className="text-blue-600 hover:underline">
                   Privacy Policy
-                </a>
+                </Link>
                 .
               </p>
             </div>
