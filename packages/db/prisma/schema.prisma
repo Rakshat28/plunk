@@ -759,6 +759,7 @@ enum EmailStatus {
   SENDING // Currently being sent
   SENT // Successfully sent to provider
   DELIVERED // Confirmed delivered
+  RECEIVED // Received by platform (inbound)
   OPENED // Recipient opened email
   CLICKED // Recipient clicked link
   BOUNCED // Bounced (hard or soft)

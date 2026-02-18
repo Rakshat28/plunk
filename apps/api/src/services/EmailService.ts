@@ -585,10 +585,11 @@ export class EmailService {
         : {}),
     };
 
-    const [total, sent, delivered, opened, clicked, bounced, failed] = await Promise.all([
+    const [total, sent, delivered, received, opened, clicked, bounced, failed] = await Promise.all([
       prisma.email.count({where}),
       prisma.email.count({where: {...where, status: EmailStatus.SENT}}),
       prisma.email.count({where: {...where, status: EmailStatus.DELIVERED}}),
+      prisma.email.count({where: {...where, status: EmailStatus.RECEIVED}}),
       prisma.email.count({where: {...where, status: EmailStatus.OPENED}}),
       prisma.email.count({where: {...where, status: EmailStatus.CLICKED}}),
       prisma.email.count({where: {...where, status: EmailStatus.BOUNCED}}),
@@ -599,6 +600,7 @@ export class EmailService {
       total,
       sent,
       delivered,
+      received,
       opened,
       clicked,
       bounced,

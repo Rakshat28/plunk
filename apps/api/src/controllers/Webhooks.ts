@@ -154,7 +154,7 @@ export class Webhooks {
                   body: '', // Inbound emails don't have body content in our system
                   from: recipientEmail, // The recipient address that received the email
                   sourceType: EmailSourceType.INBOUND,
-                  status: EmailStatus.DELIVERED, // Inbound emails are already delivered
+                  status: EmailStatus.RECEIVED, // Inbound emails use RECEIVED status
                   deliveredAt: new Date(body.mail?.timestamp || new Date()),
                 },
               });

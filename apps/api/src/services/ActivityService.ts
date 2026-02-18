@@ -376,6 +376,9 @@ export class ActivityService {
     if (!types || types.includes(ActivityType.EMAIL_DELIVERED)) {
       orConditions.push({deliveredAt: {not: null, ...dateFilter}});
     }
+    if (!types || types.includes(ActivityType.EMAIL_RECEIVED)) {
+      orConditions.push({deliveredAt: {not: null, ...dateFilter}, sourceType: 'INBOUND'});
+    }
     if (!types || types.includes(ActivityType.EMAIL_OPENED)) {
       orConditions.push({openedAt: {not: null, ...dateFilter}});
     }
@@ -478,6 +481,22 @@ export class ActivityService {
         activities.push({
           id: `${email.id}_delivered`,
           type: ActivityType.EMAIL_DELIVERED,
+          timestamp: email.deliveredAt,
+          contactEmail: email.contact.email,
+          contactId: email.contactId,
+          metadata: baseMetadata,
+        });
+      }
+
+      if (
+        email.deliveredAt &&
+        email.sourceType === 'INBOUND' &&
+        (!types || types.includes(ActivityType.EMAIL_RECEIVED)) &&
+        isInDateRange(email.deliveredAt)
+      ) {
+        activities.push({
+          id: `${email.id}_received`,
+          type: ActivityType.EMAIL_RECEIVED,
           timestamp: email.deliveredAt,
           contactEmail: email.contact.email,
           contactId: email.contactId,

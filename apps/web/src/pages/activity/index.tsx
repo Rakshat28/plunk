@@ -119,10 +119,12 @@ export default function ActivityPage() {
                     <SelectContent>
                       <SelectItem value="ALL">All Activity Types</SelectItem>
                       <SelectItem value="event.triggered">Events</SelectItem>
-                      <SelectItem value="email.sent,email.delivered,email.opened,email.clicked,email.bounced,email.complaint">
+                      <SelectItem value="email.sent,email.delivered,email.received,email.opened,email.clicked,email.bounced,email.complaint">
                         Emails
                       </SelectItem>
                       <SelectItem value="email.sent">Emails Sent</SelectItem>
+                      <SelectItem value="email.delivered">Emails Delivered</SelectItem>
+                      <SelectItem value="email.received">Emails Received</SelectItem>
                       <SelectItem value="email.opened">Emails Opened</SelectItem>
                       <SelectItem value="email.clicked">Emails Clicked</SelectItem>
                       <SelectItem value="email.bounced">Emails Bounced</SelectItem>

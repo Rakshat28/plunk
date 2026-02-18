@@ -9,6 +9,7 @@ import {
   CheckCircle,
   ChevronRight,
   Eye,
+  Inbox,
   MousePointerClick,
   Send,
   ShieldAlert,
@@ -99,6 +100,7 @@ function isEmailActivity(type: string): boolean {
   return [
     'email.sent',
     'email.delivered',
+    'email.received',
     'email.opened',
     'email.clicked',
     'email.bounced',
@@ -177,6 +179,19 @@ function getActivityConfig(activity: Activity): ActivityConfig {
             : undefined,
         badge: {
           label: 'Delivered',
+          variant: 'default',
+        },
+      };
+
+    case 'email.received':
+      return {
+        icon: Inbox,
+        color: 'text-blue-600',
+        bgColor: 'bg-blue-100',
+        title: (typeof metadata.subject === 'string' ? metadata.subject : undefined) || 'Email received',
+        description: typeof metadata.from === 'string' ? `From: ${metadata.from}` : 'Inbound email',
+        badge: {
+          label: 'Received',
           variant: 'default',
         },
       };
