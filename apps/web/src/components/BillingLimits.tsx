@@ -78,6 +78,7 @@ export function BillingLimits({projectId, hasSubscription, billingEnabled}: Bill
       workflows: null,
       campaigns: null,
       transactional: null,
+      inbound: null,
     },
   });
 
@@ -88,6 +89,7 @@ export function BillingLimits({projectId, hasSubscription, billingEnabled}: Bill
         workflows: limitsData.workflows.limit,
         campaigns: limitsData.campaigns.limit,
         transactional: limitsData.transactional.limit,
+        inbound: limitsData.inbound.limit,
       });
     }
   }, [limitsData, form]);
@@ -121,6 +123,7 @@ export function BillingLimits({projectId, hasSubscription, billingEnabled}: Bill
         workflows: limitsData.workflows.limit,
         campaigns: limitsData.campaigns.limit,
         transactional: limitsData.transactional.limit,
+        inbound: limitsData.inbound.limit,
       });
     }
     setIsEditing(false);
@@ -217,6 +220,7 @@ export function BillingLimits({projectId, hasSubscription, billingEnabled}: Bill
                     usage={limitsData.transactional}
                     currency={limitsData.currency}
                   />
+                  <UsageDisplay category="Inbound" usage={limitsData.inbound} currency={limitsData.currency} />
                 </>
               )}
 
@@ -314,6 +318,36 @@ export function BillingLimits({projectId, hasSubscription, billingEnabled}: Bill
                         </FormControl>
                         <FormDescription>
                           Maximum transactional emails per month. Leave empty for unlimited.
+                          {estimatedCost && <span className="text-neutral-500"> ≈ {estimatedCost}/month</span>}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="inbound"
+                  render={({field}) => {
+                    const estimatedCost =
+                      limitsData?.currency && field.value
+                        ? formatEmailCost(Number(field.value), limitsData.currency)
+                        : null;
+                    return (
+                      <FormItem>
+                        <FormLabel>Inbound Emails Limit</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Unlimited"
+                            {...field}
+                            value={field.value ?? ''}
+                            onChange={e => field.onChange(e.target.value === '' ? null : e.target.value)}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Maximum inbound emails per month. Leave empty for unlimited.
                           {estimatedCost && <span className="text-neutral-500"> ≈ {estimatedCost}/month</span>}
                         </FormDescription>
                         <FormMessage />
