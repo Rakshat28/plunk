@@ -315,6 +315,7 @@ export class Contacts {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getImportStatus(req: Request, res: Response, _next: NextFunction) {
+    const auth = res.locals.auth;
     const jobId = req.params.jobId;
 
     if (!jobId) {
@@ -322,7 +323,7 @@ export class Contacts {
     }
 
     try {
-      const status = await QueueService.getImportJobStatus(jobId);
+      const status = await QueueService.getImportJobStatus(jobId, auth.projectId!);
 
       if (!status) {
         return res.status(404).json({error: 'Import job not found'});
@@ -502,6 +503,7 @@ export class Contacts {
   @Middleware([requireAuth, requireEmailVerified])
   @CatchAsync
   public async getBulkActionStatus(req: Request, res: Response, _next: NextFunction) {
+    const auth = res.locals.auth;
     const jobId = req.params.jobId;
 
     if (!jobId) {
@@ -509,7 +511,7 @@ export class Contacts {
     }
 
     try {
-      const status = await QueueService.getBulkActionJobStatus(jobId);
+      const status = await QueueService.getBulkActionJobStatus(jobId, auth.projectId!);
 
       if (!status) {
         return res.status(404).json({error: 'Bulk action job not found'});

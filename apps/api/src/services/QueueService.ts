@@ -282,11 +282,19 @@ export class QueueService {
 
   /**
    * Get import job status and progress
+   * @param jobId - The job ID
+   * @param projectId - The project ID to verify authorization
+   * @returns Job status or null if not found or unauthorized
    */
-  public static async getImportJobStatus(jobId: string) {
+  public static async getImportJobStatus(jobId: string, projectId: string) {
     const job = await importQueue.getJob(jobId);
 
     if (!job) {
+      return null;
+    }
+
+    // Security: Verify that the job belongs to the requesting project
+    if (job.data.projectId !== projectId) {
       return null;
     }
 
@@ -324,11 +332,19 @@ export class QueueService {
 
   /**
    * Get bulk action job status and progress
+   * @param jobId - The job ID
+   * @param projectId - The project ID to verify authorization
+   * @returns Job status or null if not found or unauthorized
    */
-  public static async getBulkActionJobStatus(jobId: string) {
+  public static async getBulkActionJobStatus(jobId: string, projectId: string) {
     const job = await bulkContactQueue.getJob(jobId);
 
     if (!job) {
+      return null;
+    }
+
+    // Security: Verify that the job belongs to the requesting project
+    if (job.data.projectId !== projectId) {
       return null;
     }
 
