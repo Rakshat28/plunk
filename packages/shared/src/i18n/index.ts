@@ -9,6 +9,7 @@ import ptTranslations from './locales/pt.json' with {type: 'json'};
 import bgTranslations from './locales/bg.json' with {type: 'json'};
 import csTranslations from './locales/cs.json' with {type: 'json'};
 import plTranslations from './locales/pl.json' with {type: 'json'};
+import esTranslations from './locales/es.json' with {type: 'json'};
 
 export {
   SUPPORTED_LANGUAGES,
@@ -43,6 +44,7 @@ const translationsMap: Record<string, Translations> = {
   bg: bgTranslations,
   cs: csTranslations,
   pl: plTranslations,
+  es: esTranslations,
 };
 
 // In-memory cache for loaded translations
