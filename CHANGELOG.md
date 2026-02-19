@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.6.0](https://github.com/useplunk/plunk/compare/v0.5.0...v0.6.0) (2026-02-19)
+
+
+### Features
+
+* Ability to change workflow trigger ([eec37ec](https://github.com/useplunk/plunk/commit/eec37ecb31c63888879a1933dba4fd0c6243018b))
+* Add billing for inbound ([3330d83](https://github.com/useplunk/plunk/commit/3330d83d08904bc547740bfc9fdcbc5ff214d977))
+* Add billing for inbound ([de7ed84](https://github.com/useplunk/plunk/commit/de7ed84fcfddde16a9297c947048e9876712f6fa))
+* Add dedicated received type ([f947ee6](https://github.com/useplunk/plunk/commit/f947ee6f22371055801fa9cfc62e15df7851986c))
+* **i18n:** Add Spanish language ([9c69c7a](https://github.com/useplunk/plunk/commit/9c69c7a36edd86fdc02b8d0d3e3f8d64ed8ecfa6))
+
+
+### Bug Fixes
+
+* Enhance email bounce notification with latest bounce details ([e639c72](https://github.com/useplunk/plunk/commit/e639c72e8b940ba1da472d355f930359da7c868b))
+
+
+### Documentation
+
+* Add receiving emails functionality and update DNS records documentation ([b426986](https://github.com/useplunk/plunk/commit/b42698616a3f7bb079a092375ac886f2a9d7405d))
+
 ## [0.5.0](https://github.com/useplunk/plunk/compare/v0.4.0...v0.5.0) (2026-02-17)
 
 
