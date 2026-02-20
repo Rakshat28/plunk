@@ -22,7 +22,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -73,6 +73,11 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
   const desktopUserMenuRef = useRef<HTMLDivElement>(null);
   const mobileProjectMenuRef = useRef<HTMLDivElement>(null);
   const mobileUserMenuRef = useRef<HTMLDivElement>(null);
+
+  // Sort projects alphabetically by name
+  const sortedProjects = useMemo(() => {
+    return [...availableProjects].sort((a, b) => a.name.localeCompare(b.name));
+  }, [availableProjects]);
 
   // Handle click outside for project menu
   useEffect(() => {
@@ -179,8 +184,8 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
 
           {/* Project Dropdown */}
           {showProjectMenu && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-neutral-200 rounded-lg shadow-lg z-50 py-1">
-              {availableProjects.map(project => (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-neutral-200 rounded-lg shadow-lg z-50 py-1 max-h-[400px] overflow-y-auto min-w-full w-max">
+              {sortedProjects.map(project => (
                 <button
                   key={project.id}
                   onClick={e => {
@@ -189,14 +194,14 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
                     setActiveProject(project);
                     setShowProjectMenu(false);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 transition-colors whitespace-nowrap"
                 >
-                  <div className="h-6 w-6 rounded bg-neutral-900 text-white flex items-center justify-center text-xs font-medium">
+                  <div className="h-6 w-6 rounded bg-neutral-900 text-white flex items-center justify-center text-xs font-medium flex-shrink-0">
                     {project.name.charAt(0).toUpperCase()}
                   </div>
                   <span className="text-neutral-900 text-left flex-1">{project.name}</span>
                   {activeProject?.id === project.id && (
-                    <div className="ml-auto h-1.5 w-1.5 rounded-full bg-neutral-900" />
+                    <div className="ml-auto h-1.5 w-1.5 rounded-full bg-neutral-900 flex-shrink-0" />
                   )}
                 </button>
               ))}
@@ -204,7 +209,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
               <Link
                 href="/projects/create"
                 onClick={() => setShowProjectMenu(false)}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 transition-colors text-neutral-700"
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 transition-colors text-neutral-700 whitespace-nowrap"
               >
                 <Plus className="h-4 w-4" />
                 <span>Create project</span>
