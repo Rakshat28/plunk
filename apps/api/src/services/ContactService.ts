@@ -199,6 +199,7 @@ export class ContactService {
     email: string,
     data?: Record<string, unknown>,
     subscribed?: boolean,
+    defaultSubscribed: boolean = true,
   ): Promise<Contact> {
     // Find existing contact
     const existing = await prisma.contact.findFirst({
@@ -292,7 +293,7 @@ export class ContactService {
           projectId,
           email,
           data: Object.keys(mergedData).length > 0 ? toPrismaJson(mergedData) : Prisma.JsonNull,
-          subscribed: subscribed ?? true,
+          subscribed: subscribed ?? defaultSubscribed,
         },
       });
     }
