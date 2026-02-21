@@ -8,7 +8,12 @@ import {HttpException} from '../exceptions/index.js';
 import {Keys} from './keys.js';
 import {MembershipService} from './MembershipService.js';
 import {NtfyService} from './NtfyService.js';
-import {deleteIdentity, getDomainVerificationAttributes, verifyDomain} from './SESService.js';
+import {
+  deleteIdentity,
+  disableFeedbackForwarding,
+  getDomainVerificationAttributes,
+  verifyDomain,
+} from './SESService.js';
 
 export class DomainService {
   /**
@@ -72,6 +77,43 @@ export class DomainService {
 
     const attributes = await getDomainVerificationAttributes(domain.domain);
 
+    // If domain failed verification, retry
+    if (attributes.status === 'Failed') {
+      signale.warn(`[DOMAIN-SERVICE] Restarting verification for ${domain.domain}`);
+
+      let attempt = 0;
+      const maxAttempts = 5;
+      let success = false;
+      let delay = 5000;
+
+      while (attempt < maxAttempts && !success) {
+        try {
+          await verifyDomain(domain.domain);
+          success = true;
+          signale.success(`[DOMAIN-SERVICE] Restarted verification for ${domain.domain}`);
+        } catch (e: unknown) {
+          const error = e as {Code?: string; name?: string; message?: string};
+          if (error?.Code === 'Throttling' || error?.name === 'Throttling' || error?.message?.includes('Throttling')) {
+            signale.warn(
+              `[DOMAIN-SERVICE] Throttling detected, waiting ${delay / 1000} seconds (attempt ${attempt + 1})`,
+            );
+            await new Promise(r => setTimeout(r, delay));
+            delay *= 2; // Exponential backoff
+            attempt++;
+          } else {
+            signale.error(`[DOMAIN-SERVICE] Error restarting verification: ${error?.message || 'Unknown error'}`);
+            throw e;
+          }
+        }
+      }
+
+      if (!success) {
+        signale.error(
+          `[DOMAIN-SERVICE] Failed to verify ${domain.domain} after ${maxAttempts} attempts due to throttling`,
+        );
+      }
+    }
+
     // Update domain if verification status changed
     if (attributes.status === 'Success' && !domain.verified) {
       const updatedDomain = await prisma.domain.update({
@@ -83,6 +125,14 @@ export class DomainService {
           },
         },
       });
+
+      // Disable feedback forwarding for verified domain
+      try {
+        await disableFeedbackForwarding(domain.domain);
+        signale.info(`[DOMAIN-SERVICE] Disabled feedback forwarding for ${domain.domain}`);
+      } catch (error) {
+        signale.error(`[DOMAIN-SERVICE] Error disabling feedback forwarding for ${domain.domain}:`, error);
+      }
 
       // Send notification about domain verified
       await NtfyService.notifyDomainVerified(domain.domain, updatedDomain.project.name, updatedDomain.project.id);
