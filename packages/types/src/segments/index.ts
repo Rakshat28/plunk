@@ -2,6 +2,8 @@
  * Segment and filter types
  */
 
+export type SegmentType = 'DYNAMIC' | 'STATIC';
+
 // Segment filter types
 export type SegmentFilterOperator =
   // Standard operators (for contact fields)
@@ -45,13 +47,15 @@ export interface FilterCondition {
 export interface CreateSegmentData {
   name: string;
   description?: string;
-  condition: FilterCondition;
+  type?: SegmentType;
+  condition?: FilterCondition;
   trackMembership?: boolean;
 }
 
 export interface UpdateSegmentData {
   name?: string;
   description?: string;
+  type?: SegmentType;
   condition?: FilterCondition;
   trackMembership?: boolean;
 }

@@ -199,8 +199,11 @@ model Segment {
   name        String
   description String?
 
-  // Filter condition (evaluated dynamically)
-  condition Json
+  // Segment type: DYNAMIC (filter-based) or STATIC (manually managed)
+  type SegmentType @default(DYNAMIC)
+
+  // Filter condition (evaluated dynamically, null for STATIC segments)
+  condition Json?
   // Nested filter structure with AND/OR logic:
   // {
   //   logic: "OR",
@@ -745,6 +748,11 @@ enum StepExecutionStatus {
   COMPLETED // Successfully completed
   SKIPPED // Skipped (e.g., condition not met)
   FAILED // Failed with error
+}
+
+enum SegmentType {
+  DYNAMIC // Filter-based segment evaluated against contacts at query time
+  STATIC // Manually curated list of contacts managed via memberships
 }
 
 enum EmailSourceType {

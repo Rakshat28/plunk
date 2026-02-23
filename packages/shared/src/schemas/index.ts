@@ -132,14 +132,19 @@ export const SegmentSchemas = {
   create: z.object({
     name: z.string().min(1).max(100),
     description: z.string().max(500).optional(),
-    condition: filterConditionSchema,
+    type: z.enum(['DYNAMIC', 'STATIC']).default('DYNAMIC'),
+    condition: filterConditionSchema.optional(),
     trackMembership: z.boolean().default(false),
   }),
   update: z.object({
     name: z.string().min(1).max(100).optional(),
     description: z.string().max(500).optional(),
+    type: z.enum(['DYNAMIC', 'STATIC']).optional(),
     condition: filterConditionSchema.optional(),
     trackMembership: z.boolean().optional(),
+  }),
+  members: z.object({
+    emails: z.array(z.string().email()).min(1).max(500),
   }),
 };
 

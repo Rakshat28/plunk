@@ -1,5 +1,5 @@
 import {type Contact, Prisma, type Segment} from '@plunk/db';
-import type {FilterCondition, FilterGroup, PaginatedResponse, SegmentFilter} from '@plunk/types';
+import type {FilterCondition, FilterGroup, PaginatedResponse, SegmentFilter, SegmentType} from '@plunk/types';
 import {fromPrismaJson, toPrismaJson} from '@plunk/types';
 import signale from 'signale';
 
@@ -66,10 +66,32 @@ export class SegmentService {
     pageSize = 20,
   ): Promise<PaginatedResponse<Contact>> {
     const segment = await this.get(projectId, segmentId);
-    const condition = fromPrismaJson<FilterCondition>(segment.condition);
-
-    const where = this.buildWhereClause(projectId, condition);
     const skip = (page - 1) * pageSize;
+
+    if (segment.type === 'STATIC') {
+      // For static segments, query via SegmentMembership records
+      const [memberships, total] = await Promise.all([
+        prisma.segmentMembership.findMany({
+          where: {segmentId, exitedAt: null},
+          include: {contact: true},
+          skip,
+          take: pageSize,
+          orderBy: {enteredAt: 'desc'},
+        }),
+        prisma.segmentMembership.count({where: {segmentId, exitedAt: null}}),
+      ]);
+
+      return {
+        data: memberships.map(m => m.contact),
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+      };
+    }
+
+    const condition = fromPrismaJson<FilterCondition>(segment.condition);
+    const where = this.buildWhereClause(projectId, condition);
 
     const [contacts, total] = await Promise.all([
       prisma.contact.findMany({
@@ -98,23 +120,35 @@ export class SegmentService {
     data: {
       name: string;
       description?: string;
-      condition: FilterCondition;
+      type?: SegmentType;
+      condition?: FilterCondition;
       trackMembership?: boolean;
     },
   ): Promise<Segment> {
-    // Validate condition
-    this.validateCondition(data.condition);
+    const segmentType = data.type ?? 'DYNAMIC';
+    let memberCount = 0;
+    let conditionJson: Prisma.InputJsonValue | typeof Prisma.JsonNull = Prisma.JsonNull;
 
-    // Compute initial member count
-    const where = this.buildWhereClause(projectId, data.condition);
-    const memberCount = await prisma.contact.count({where});
+    if (segmentType === 'DYNAMIC') {
+      if (!data.condition) {
+        throw new HttpException(400, 'Condition is required for DYNAMIC segments');
+      }
+      // Validate condition
+      this.validateCondition(data.condition);
+
+      // Compute initial member count
+      const where = this.buildWhereClause(projectId, data.condition);
+      memberCount = await prisma.contact.count({where});
+      conditionJson = toPrismaJson(data.condition);
+    }
 
     const segment = await prisma.segment.create({
       data: {
         projectId,
         name: data.name,
         description: data.description,
-        condition: toPrismaJson(data.condition),
+        type: segmentType,
+        condition: conditionJson,
         trackMembership: data.trackMembership ?? false,
         memberCount,
       },
@@ -145,12 +179,7 @@ export class SegmentService {
     },
   ): Promise<Segment> {
     // First verify segment exists and belongs to project
-    await this.get(projectId, segmentId);
-
-    // Validate condition if provided
-    if (data.condition) {
-      this.validateCondition(data.condition);
-    }
+    const existing = await this.get(projectId, segmentId);
 
     const updateData: Prisma.SegmentUpdateInput = {};
 
@@ -160,7 +189,9 @@ export class SegmentService {
     if (data.description !== undefined) {
       updateData.description = data.description;
     }
-    if (data.condition !== undefined) {
+    if (data.condition !== undefined && existing.type !== 'STATIC') {
+      // Validate condition if provided (only for DYNAMIC segments)
+      this.validateCondition(data.condition);
       updateData.condition = toPrismaJson(data.condition);
 
       // Recompute member count when condition changes
@@ -229,10 +260,16 @@ export class SegmentService {
    */
   public static async refreshMemberCount(projectId: string, segmentId: string): Promise<number> {
     const segment = await this.get(projectId, segmentId);
-    const condition = fromPrismaJson<FilterCondition>(segment.condition);
-    const where = this.buildWhereClause(projectId, condition);
 
-    const memberCount = await prisma.contact.count({where});
+    let memberCount: number;
+
+    if (segment.type === 'STATIC') {
+      memberCount = await prisma.segmentMembership.count({where: {segmentId, exitedAt: null}});
+    } else {
+      const condition = fromPrismaJson<FilterCondition>(segment.condition);
+      const where = this.buildWhereClause(projectId, condition);
+      memberCount = await prisma.contact.count({where});
+    }
 
     await prisma.segment.update({
       where: {id: segmentId},
@@ -249,7 +286,7 @@ export class SegmentService {
   public static async refreshAllMemberCounts(projectId: string): Promise<void> {
     const segments = await prisma.segment.findMany({
       where: {projectId},
-      select: {id: true, condition: true},
+      select: {id: true, type: true, condition: true},
     });
 
     // Process in batches to avoid overwhelming the database
@@ -260,9 +297,17 @@ export class SegmentService {
       await Promise.all(
         batch.map(async segment => {
           try {
-            const condition = fromPrismaJson<FilterCondition>(segment.condition);
-            const where = this.buildWhereClause(projectId, condition);
-            const memberCount = await prisma.contact.count({where});
+            let memberCount: number;
+
+            if (segment.type === 'STATIC') {
+              memberCount = await prisma.segmentMembership.count({
+                where: {segmentId: segment.id, exitedAt: null},
+              });
+            } else {
+              const condition = fromPrismaJson<FilterCondition>(segment.condition);
+              const where = this.buildWhereClause(projectId, condition);
+              memberCount = await prisma.contact.count({where});
+            }
 
             await prisma.segment.update({
               where: {id: segment.id},
@@ -277,6 +322,104 @@ export class SegmentService {
   }
 
   /**
+   * Add contacts to a static segment by email
+   */
+  public static async addContacts(
+    projectId: string,
+    segmentId: string,
+    emails: string[],
+  ): Promise<{added: number; notFound: string[]}> {
+    const segment = await this.get(projectId, segmentId);
+
+    if (segment.type !== 'STATIC') {
+      throw new HttpException(400, 'Can only add contacts to STATIC segments');
+    }
+
+    // Look up contacts by email (case-insensitive)
+    const contacts = await prisma.contact.findMany({
+      where: {
+        projectId,
+        email: {in: emails, mode: 'insensitive'},
+      },
+      select: {id: true, email: true},
+    });
+
+    const foundEmails = new Set(contacts.map(c => c.email.toLowerCase()));
+    const notFound = emails.filter(e => !foundEmails.has(e.toLowerCase()));
+
+    if (contacts.length > 0) {
+      // Check for existing memberships (to reactivate vs create new)
+      const existingMemberships = await prisma.segmentMembership.findMany({
+        where: {segmentId, contactId: {in: contacts.map(c => c.id)}},
+        select: {contactId: true},
+      });
+      const existingIds = new Set(existingMemberships.map(m => m.contactId));
+
+      const newContactIds = contacts.filter(c => !existingIds.has(c.id)).map(c => c.id);
+      const reEntryIds = contacts.filter(c => existingIds.has(c.id)).map(c => c.id);
+
+      if (newContactIds.length > 0) {
+        await prisma.segmentMembership.createMany({
+          data: newContactIds.map(contactId => ({segmentId, contactId, enteredAt: new Date()})),
+          skipDuplicates: true,
+        });
+      }
+
+      if (reEntryIds.length > 0) {
+        await prisma.segmentMembership.updateMany({
+          where: {segmentId, contactId: {in: reEntryIds}},
+          data: {exitedAt: null, enteredAt: new Date()},
+        });
+      }
+
+      // Update member count
+      const memberCount = await prisma.segmentMembership.count({where: {segmentId, exitedAt: null}});
+      await prisma.segment.update({where: {id: segmentId}, data: {memberCount}});
+    }
+
+    return {added: contacts.length, notFound};
+  }
+
+  /**
+   * Remove contacts from a static segment by email
+   */
+  public static async removeContacts(
+    projectId: string,
+    segmentId: string,
+    emails: string[],
+  ): Promise<{removed: number}> {
+    const segment = await this.get(projectId, segmentId);
+
+    if (segment.type !== 'STATIC') {
+      throw new HttpException(400, 'Can only remove contacts from STATIC segments');
+    }
+
+    // Look up contacts by email
+    const contacts = await prisma.contact.findMany({
+      where: {
+        projectId,
+        email: {in: emails, mode: 'insensitive'},
+      },
+      select: {id: true},
+    });
+
+    if (contacts.length > 0) {
+      const contactIds = contacts.map(c => c.id);
+
+      await prisma.segmentMembership.updateMany({
+        where: {segmentId, contactId: {in: contactIds}, exitedAt: null},
+        data: {exitedAt: new Date()},
+      });
+
+      // Update member count
+      const memberCount = await prisma.segmentMembership.count({where: {segmentId, exitedAt: null}});
+      await prisma.segment.update({where: {id: segmentId}, data: {memberCount}});
+    }
+
+    return {removed: contacts.length};
+  }
+
+  /**
    * Compute or recompute segment membership for all contacts
    * Now uses cursor-based pagination for memory efficiency with large contact lists
    */
@@ -288,6 +431,13 @@ export class SegmentService {
 
     if (!segment.trackMembership) {
       throw new HttpException(400, 'Segment does not have membership tracking enabled');
+    }
+
+    if (segment.type === 'STATIC') {
+      // For static segments, just update the count from memberships — no contact scanning
+      const total = await prisma.segmentMembership.count({where: {segmentId, exitedAt: null}});
+      await prisma.segment.update({where: {id: segmentId}, data: {memberCount: total}});
+      return {added: 0, removed: 0, total};
     }
 
     const condition = fromPrismaJson<FilterCondition>(segment.condition);

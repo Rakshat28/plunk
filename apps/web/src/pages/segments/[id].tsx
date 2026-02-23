@@ -13,7 +13,7 @@ import type {Contact, Segment} from '@plunk/db';
 import type {PaginatedResponse} from '@plunk/types';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {network} from '../../lib/network';
-import {ArrowLeft, Database, Filter, MailCheck, MailX, RefreshCw, Save, Trash2, Users} from 'lucide-react';
+import {ArrowLeft, Database, Filter, MailCheck, MailX, RefreshCw, Save, Trash2, UserMinus, Users} from 'lucide-react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
@@ -22,7 +22,11 @@ import useSWR from 'swr';
 import type {FilterCondition} from '@plunk/types';
 import {SegmentSchemas} from '@plunk/shared';
 import {SegmentFilterBuilder} from '../../components/SegmentFilterBuilder';
+import {ContactPicker} from '../../components/ContactPicker';
 import dayjs from 'dayjs';
+
+type SegmentType = 'DYNAMIC' | 'STATIC';
+type SegmentWithType = Segment & {type: SegmentType};
 
 // Count total filters in a condition (recursive)
 function countFilters(condition: FilterCondition): number {
@@ -40,11 +44,13 @@ export default function SegmentDetailPage() {
   const router = useRouter();
   const {id} = router.query;
 
-  const {data: segment, mutate, isLoading} = useSWR<Segment>(id ? `/segments/${id}` : null);
+  const {data: segment, mutate, isLoading} = useSWR<SegmentWithType>(id ? `/segments/${id}` : null);
   const [contactsPage, setContactsPage] = useState(1);
-  const {data: contactsData, isLoading: isLoadingContacts} = useSWR<PaginatedResponse<Contact>>(
-    id ? `/segments/${id}/contacts?page=${contactsPage}&pageSize=10` : null,
-  );
+  const {
+    data: contactsData,
+    isLoading: isLoadingContacts,
+    mutate: mutateContacts,
+  } = useSWR<PaginatedResponse<Contact>>(id ? `/segments/${id}/contacts?page=${contactsPage}&pageSize=10` : null);
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -57,7 +63,12 @@ export default function SegmentDetailPage() {
   const [isComputing, setIsComputing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-    useEffect(() => {
+  // Static segment member management
+  const [pickedEmails, setPickedEmails] = useState<string[]>([]);
+  const [isAddingMembers, setIsAddingMembers] = useState(false);
+  const [removingEmail, setRemovingEmail] = useState<string | null>(null);
+
+  useEffect(() => {
     if (segment) {
       setName(segment.name);
       setDescription(segment.description || '');
@@ -79,7 +90,7 @@ export default function SegmentDetailPage() {
       await network.fetch<Segment, typeof SegmentSchemas.update>('PATCH', `/segments/${id}`, {
         name,
         description: description || undefined,
-        condition,
+        ...(segment?.type !== 'STATIC' && {condition}),
         trackMembership,
       });
       toast.success('Segment updated successfully');
@@ -109,6 +120,47 @@ export default function SegmentDetailPage() {
       toast.error(error instanceof Error ? error.message : 'Failed to compute membership');
     } finally {
       setIsComputing(false);
+    }
+  };
+
+  const handleAddMembers = async () => {
+    if (pickedEmails.length === 0) {
+      toast.error('Select at least one contact');
+      return;
+    }
+
+    setIsAddingMembers(true);
+    try {
+      const result = await network.fetch<{added: number; notFound: string[]}, typeof SegmentSchemas.members>(
+        'POST',
+        `/segments/${id}/members`,
+        {emails: pickedEmails},
+      );
+
+      toast.success(`Added ${result.added} contact${result.added !== 1 ? 's' : ''} to segment`);
+      setPickedEmails([]);
+      void mutate();
+      void mutateContacts();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to add contacts');
+    } finally {
+      setIsAddingMembers(false);
+    }
+  };
+
+  const handleRemoveMember = async (email: string) => {
+    setRemovingEmail(email);
+    try {
+      await network.fetch<{removed: number}, typeof SegmentSchemas.members>('DELETE', `/segments/${id}/members`, {
+        emails: [email],
+      });
+      toast.success(`Removed ${email} from segment`);
+      void mutate();
+      void mutateContacts();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to remove contact');
+    } finally {
+      setRemovingEmail(null);
     }
   };
 
@@ -166,6 +218,8 @@ export default function SegmentDetailPage() {
     );
   }
 
+  const isStatic = segment.type === 'STATIC';
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -178,8 +232,17 @@ export default function SegmentDetailPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-neutral-900">{segment.name}</h1>
-              <p className="text-neutral-500 mt-1">{segment.description}</p>
+              <div className="flex items-center gap-2">
+                <h1 className="text-3xl font-bold text-neutral-900">{segment.name}</h1>
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    isStatic ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                  }`}
+                >
+                  {isStatic ? 'Static' : 'Dynamic'}
+                </span>
+              </div>
+              {segment.description && <p className="text-neutral-500 mt-1">{segment.description}</p>}
             </div>
           </div>
           <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
@@ -244,12 +307,14 @@ export default function SegmentDetailPage() {
                 </CardContent>
               </Card>
 
-              {/* Filter Builder */}
-              <Card>
-                <CardContent className="pt-6">
-                  <SegmentFilterBuilder condition={condition} onChange={setCondition} />
-                </CardContent>
-              </Card>
+              {/* Filter Builder (DYNAMIC only) */}
+              {!isStatic && (
+                <Card>
+                  <CardContent className="pt-6">
+                    <SegmentFilterBuilder condition={condition} onChange={setCondition} />
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Actions */}
               <div className="flex items-center justify-end">
@@ -260,15 +325,44 @@ export default function SegmentDetailPage() {
               </div>
             </form>
 
+            {/* Static member management */}
+            {isStatic && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Add Members</CardTitle>
+                  <CardDescription>Search and select contacts to add to this segment</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <ContactPicker
+                    selected={pickedEmails}
+                    onChange={setPickedEmails}
+                    existing={contactsData?.data.map(c => c.email) ?? []}
+                    placeholder="Search contacts to add..."
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleAddMembers}
+                    disabled={isAddingMembers || pickedEmails.length === 0}
+                  >
+                    {isAddingMembers
+                      ? 'Adding...'
+                      : `Add ${pickedEmails.length > 0 ? pickedEmails.length : ''} Contact${pickedEmails.length !== 1 ? 's' : ''}`}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Contacts */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle>Matching Contacts</CardTitle>
-                    <CardDescription>Contacts that match this segment&apos;s filters</CardDescription>
+                    <CardTitle>{isStatic ? 'Members' : 'Matching Contacts'}</CardTitle>
+                    <CardDescription>
+                      {isStatic ? 'Contacts in this static segment' : "Contacts that match this segment's filters"}
+                    </CardDescription>
                   </div>
-                  {trackMembership && (
+                  {!isStatic && trackMembership && (
                     <Button variant="outline" size="sm" onClick={handleComputeMembership} disabled={isComputing}>
                       <RefreshCw className={`h-4 w-4 ${isComputing ? 'animate-spin' : ''}`} />
                       {isComputing ? 'Computing...' : 'Recompute'}
@@ -284,7 +378,9 @@ export default function SegmentDetailPage() {
                 ) : contactsData?.data.length === 0 ? (
                   <div className="text-center py-8">
                     <Users className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
-                    <p className="text-neutral-500">No contacts match this segment</p>
+                    <p className="text-neutral-500">
+                      {isStatic ? 'No members in this segment yet' : 'No contacts match this segment'}
+                    </p>
                   </div>
                 ) : (
                   <>
@@ -299,11 +395,24 @@ export default function SegmentDetailPage() {
                             )}
                             <span className="text-sm font-medium">{contact.email}</span>
                           </div>
-                          <Link href={`/contacts/${contact.id}`}>
-                            <Button variant="ghost" size="sm">
-                              View
-                            </Button>
-                          </Link>
+                          <div className="flex items-center gap-2">
+                            <Link href={`/contacts/${contact.id}`}>
+                              <Button variant="ghost" size="sm">
+                                View
+                              </Button>
+                            </Link>
+                            {isStatic && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveMember(contact.email)}
+                                disabled={removingEmail === contact.email}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <UserMinus className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -355,24 +464,28 @@ export default function SegmentDetailPage() {
                   <span className="text-2xl font-bold text-neutral-900">{segment.memberCount}</span>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4 text-neutral-500" />
-                    <span className="text-sm text-neutral-600">Filters</span>
-                  </div>
-                  <span className="text-lg font-semibold text-neutral-900">
-                    {countFilters(segment.condition as unknown as FilterCondition)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4 text-neutral-500" />
-                    <span className="text-sm text-neutral-600">Groups</span>
-                  </div>
-                  <span className="text-lg font-semibold text-neutral-900">
-                    {(segment.condition as unknown as FilterCondition)?.groups?.length || 0}
-                  </span>
-                </div>
+                {!isStatic && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Filter className="h-4 w-4 text-neutral-500" />
+                        <span className="text-sm text-neutral-600">Filters</span>
+                      </div>
+                      <span className="text-lg font-semibold text-neutral-900">
+                        {countFilters(segment.condition as unknown as FilterCondition)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Filter className="h-4 w-4 text-neutral-500" />
+                        <span className="text-sm text-neutral-600">Groups</span>
+                      </div>
+                      <span className="text-lg font-semibold text-neutral-900">
+                        {(segment.condition as unknown as FilterCondition)?.groups?.length || 0}
+                      </span>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
 

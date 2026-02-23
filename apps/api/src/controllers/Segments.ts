@@ -72,20 +72,23 @@ export class Segments {
   @CatchAsync
   public async create(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth;
-    const {name, description, condition, trackMembership} = req.body;
+    const {name, description, type, condition, trackMembership} = req.body;
 
     if (!name) {
       return res.status(400).json({error: 'Name is required'});
     }
 
-    if (!condition || typeof condition !== 'object') {
-      return res.status(400).json({error: 'Condition is required and must be an object'});
+    const segmentType = type ?? 'DYNAMIC';
+
+    if (segmentType === 'DYNAMIC' && (!condition || typeof condition !== 'object')) {
+      return res.status(400).json({error: 'Condition is required and must be an object for DYNAMIC segments'});
     }
 
     const segment = await SegmentService.create(auth.projectId!, {
       name,
       description,
-      condition,
+      type: segmentType,
+      condition: segmentType === 'DYNAMIC' ? condition : undefined,
       trackMembership,
     });
 
@@ -140,6 +143,56 @@ export class Segments {
     await SegmentService.delete(auth.projectId!, segmentId);
 
     return res.status(204).send();
+  }
+
+  /**
+   * POST /segments/:id/members
+   * Add contacts to a static segment by email
+   */
+  @Post(':id/members')
+  @Middleware([requireAuth, requireEmailVerified])
+  @CatchAsync
+  public async addMembers(req: Request, res: Response, _next: NextFunction) {
+    const auth = res.locals.auth;
+    const segmentId = req.params.id;
+    const {emails} = req.body;
+
+    if (!segmentId) {
+      return res.status(400).json({error: 'Segment ID is required'});
+    }
+
+    if (!Array.isArray(emails) || emails.length === 0) {
+      return res.status(400).json({error: 'emails must be a non-empty array'});
+    }
+
+    const result = await SegmentService.addContacts(auth.projectId!, segmentId, emails);
+
+    return res.status(200).json(result);
+  }
+
+  /**
+   * DELETE /segments/:id/members
+   * Remove contacts from a static segment by email
+   */
+  @Delete(':id/members')
+  @Middleware([requireAuth, requireEmailVerified])
+  @CatchAsync
+  public async removeMembers(req: Request, res: Response, _next: NextFunction) {
+    const auth = res.locals.auth;
+    const segmentId = req.params.id;
+    const {emails} = req.body;
+
+    if (!segmentId) {
+      return res.status(400).json({error: 'Segment ID is required'});
+    }
+
+    if (!Array.isArray(emails) || emails.length === 0) {
+      return res.status(400).json({error: 'emails must be a non-empty array'});
+    }
+
+    const result = await SegmentService.removeContacts(auth.projectId!, segmentId, emails);
+
+    return res.status(200).json(result);
   }
 
   /**

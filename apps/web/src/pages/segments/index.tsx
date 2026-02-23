@@ -146,7 +146,18 @@ export default function SegmentsPage() {
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <CardTitle className="text-lg">{segment.name}</CardTitle>
+                        <div className="flex items-center gap-2">
+                          <CardTitle className="text-lg">{segment.name}</CardTitle>
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              (segment as unknown as {type: string}).type === 'STATIC'
+                                ? 'bg-purple-100 text-purple-700'
+                                : 'bg-blue-100 text-blue-700'
+                            }`}
+                          >
+                            {(segment as unknown as {type: string}).type === 'STATIC' ? 'Static' : 'Dynamic'}
+                          </span>
+                        </div>
                         {segment.description && (
                           <CardDescription className="mt-1">{segment.description}</CardDescription>
                         )}
@@ -170,7 +181,9 @@ export default function SegmentsPage() {
                           <span className="text-sm text-neutral-600">Filters</span>
                         </div>
                         <span className="text-sm font-medium text-neutral-900">
-                          {countFiltersInCondition(segment.condition)}
+                          {(segment as unknown as {type: string}).type === 'STATIC'
+                            ? '—'
+                            : countFiltersInCondition(segment.condition)}
                         </span>
                       </div>
 

@@ -2,6 +2,7 @@ import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input
 import {NextSeo} from 'next-seo';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {SegmentFilterBuilder} from '../../components/SegmentFilterBuilder';
+import {ContactPicker} from '../../components/ContactPicker';
 import {network} from '../../lib/network';
 import {ArrowLeft, Save} from 'lucide-react';
 import Link from 'next/link';
@@ -12,10 +13,13 @@ import type {FilterCondition} from '@plunk/types';
 import type {Segment} from '@plunk/db';
 import {SegmentSchemas} from '@plunk/shared';
 
+type SegmentType = 'DYNAMIC' | 'STATIC';
+
 export default function NewSegmentPage() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [segmentType, setSegmentType] = useState<SegmentType>('DYNAMIC');
   const [trackMembership, setTrackMembership] = useState(false);
   const [condition, setCondition] = useState<FilterCondition>({
     logic: 'AND',
@@ -25,6 +29,7 @@ export default function NewSegmentPage() {
       },
     ],
   });
+  const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,13 +37,33 @@ export default function NewSegmentPage() {
     setIsSubmitting(true);
 
     try {
-      await network.fetch<Segment, typeof SegmentSchemas.create>('POST', '/segments', {
+      const segment = await network.fetch<Segment, typeof SegmentSchemas.create>('POST', '/segments', {
         name,
         description: description || undefined,
-        condition,
+        type: segmentType,
+        condition: segmentType === 'DYNAMIC' ? condition : undefined,
         trackMembership,
       });
-      toast.success('Segment created successfully');
+
+      // For static segments with pre-selected contacts, add them now
+      if (segmentType === 'STATIC' && selectedContacts.length > 0) {
+        try {
+          const result = await network.fetch<{added: number; notFound: string[]}, typeof SegmentSchemas.members>(
+            'POST',
+            `/segments/${segment.id}/members`,
+            {emails: selectedContacts},
+          );
+          toast.success(
+            `Segment created with ${result.added} contact${result.added !== 1 ? 's' : ''}`,
+          );
+        } catch {
+          // Segment was created; just warn about members
+          toast.warning('Segment created, but some contacts could not be added');
+        }
+      } else {
+        toast.success('Segment created successfully');
+      }
+
       void router.push('/segments');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to create segment');
@@ -61,8 +86,38 @@ export default function NewSegmentPage() {
             </Link>
             <div>
               <h1 className="text-3xl font-bold text-neutral-900">Create Segment</h1>
-              <p className="text-neutral-500 mt-1">Build complex audience filters with AND/OR logic</p>
+              <p className="text-neutral-500 mt-1">
+                {segmentType === 'DYNAMIC'
+                  ? 'Build complex audience filters with AND/OR logic'
+                  : 'Manually curate a list of contacts'}
+              </p>
             </div>
+          </div>
+
+          {/* Type Toggle */}
+          <div className="flex gap-2 p-1 bg-neutral-100 rounded-lg w-fit">
+            <button
+              type="button"
+              onClick={() => setSegmentType('DYNAMIC')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                segmentType === 'DYNAMIC'
+                  ? 'bg-white text-neutral-900 shadow-sm'
+                  : 'text-neutral-600 hover:text-neutral-900'
+              }`}
+            >
+              Dynamic
+            </button>
+            <button
+              type="button"
+              onClick={() => setSegmentType('STATIC')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                segmentType === 'STATIC'
+                  ? 'bg-white text-neutral-900 shadow-sm'
+                  : 'text-neutral-600 hover:text-neutral-900'
+              }`}
+            >
+              Static
+            </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -118,12 +173,30 @@ export default function NewSegmentPage() {
               </CardContent>
             </Card>
 
-            {/* Filter Builder */}
-            <Card>
-              <CardContent className="pt-6">
-                <SegmentFilterBuilder condition={condition} onChange={setCondition} />
-              </CardContent>
-            </Card>
+            {/* Filter Builder or Contact Picker */}
+            {segmentType === 'DYNAMIC' ? (
+              <Card>
+                <CardContent className="pt-6">
+                  <SegmentFilterBuilder condition={condition} onChange={setCondition} />
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Initial Members</CardTitle>
+                  <CardDescription>
+                    Optionally add contacts now — you can always add or remove members later
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ContactPicker
+                    selected={selectedContacts}
+                    onChange={setSelectedContacts}
+                    placeholder="Search and select contacts..."
+                  />
+                </CardContent>
+              </Card>
+            )}
 
             {/* Actions */}
             <div className="flex items-center justify-end gap-2">
