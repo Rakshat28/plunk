@@ -760,6 +760,18 @@ export class CampaignService {
       throw new HttpException(404, 'Segment not found');
     }
 
+    if (segment.type === 'STATIC') {
+      return {
+        ...baseWhere,
+        segmentMemberships: {
+          some: {
+            segmentId,
+            exitedAt: null,
+          },
+        },
+      };
+    }
+
     const condition = fromPrismaJson<FilterCondition>(segment.condition);
     const segmentWhere = SegmentService.buildConditionClause(condition);
 
