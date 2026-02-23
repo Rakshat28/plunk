@@ -1,20 +1,56 @@
 ---
 title: Segments
-description: Group and target your contacts with dynamic segments
+description: Group and target your contacts with dynamic or static segments
 icon: Layers
 ---
 
-Segments in Plunk allow you to create dynamic groups of contacts based on [contact data](/concepts/contacts#contact-data) and events.
+Segments let you create named groups of contacts that can be targeted in campaigns and used as triggers in workflows. There are two types: **Dynamic** and **Static**.
 
-## Creating segments
-Segments can be created through the Plunk dashboard. When creating a segment, you can define multiple conditions that contacts must meet to be included in the segment. Plunk will automatically update the segment membership as contact data and events change.
+## Dynamic segments
 
-### Track Membership Changes
-Plunk will automatically add and remove contacts from segments as their data and events change. When toggling on `Track membership changes`, Plunk will send an event to your webhook each time a contact is added or removed from the segment.
+Dynamic segments evaluate a set of filter conditions against your contacts in real time. Membership is kept up to date automatically as contact data and events change — no manual work required.
 
-These events will have the following name `segment.trial-users.entry` or `segment.trial-users.exit`, where `trial-users` is the segment's name.
+You can filter on:
+- Contact fields (`email`, `subscribed`, custom data fields like `data.plan`)
+- Contact dates (`createdAt`, `updatedAt`)
+- Custom events (`event.signed_up`, `event.purchased`, …)
+- Email activity (`email.opened`, `email.clicked`, `email.bounced`, …)
+
+Conditions can be combined with `AND`/`OR` logic and nested into groups for complex rules.
+
+## Static segments
+
+Static segments are manually curated lists. Membership does not change automatically — you decide exactly who is in the segment. This is useful for things like beta testers, event attendees, or any group imported from an external source.
+
+## Creating a segment
+
+Go to **Segments** in the dashboard and click **Create Segment**. Use the toggle at the top to choose **Dynamic** or **Static**.
+
+**For dynamic segments**, use the filter builder to define your conditions. Plunk will show you a live count of matching contacts.
+
+**For static segments**, you can optionally add initial members right away using the contact search. Start typing an email address and select contacts from the list — selected contacts appear as chips you can remove before saving.
+
+## Managing static segment members
+
+Open a static segment and use the **Add Members** search to find and select contacts. The search looks up contacts already in your project, so you can't accidentally add someone who doesn't exist. Contacts already in the segment are greyed out.
+
+To remove a member, click the remove button on their row in the members list.
+
+## Track membership changes
+
+Both segment types support **Track membership changes**. When enabled, Plunk fires a webhook event each time a contact enters or leaves the segment:
+
+- `segment.trial-users.entry` — contact joined the segment
+- `segment.trial-users.exit` — contact left the segment
+
+Where `trial-users` is derived from the segment name. See [Webhooks](/guides/webhooks) for the full event payload.
 
 ## Using segments
-Segment can be used in various parts of Plunk, including:
+
+Segments can be used in:
 - Targeting contacts in [email campaigns](/concepts/campaigns)
 - Triggering workflows in [marketing automation](/concepts/workflows)
+
+## Managing members via API
+
+If you need to manage static segment membership programmatically, use the `POST /segments/:id/members` and `DELETE /segments/:id/members` endpoints. See the [API reference](/api-reference/overview#segments) for details.

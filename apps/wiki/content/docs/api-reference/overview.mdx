@@ -244,11 +244,13 @@ For a complete list of error codes and troubleshooting guidance, see the [Error 
 ### Segments
 
 **GET /segments** — List all segments
-**POST /segments** — Create new segment
+**POST /segments** — Create new segment (Dynamic or Static)
 **GET /segments/:id** — Get segment details
 **PATCH /segments/:id** — Update segment
 **DELETE /segments/:id** — Delete segment
 **GET /segments/:id/contacts** — List segment members
+**POST /segments/:id/members** — Add contacts to a static segment (by email)
+**DELETE /segments/:id/members** — Remove contacts from a static segment (by email)
 
 ### Workflows
 
