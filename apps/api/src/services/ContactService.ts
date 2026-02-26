@@ -1,5 +1,4 @@
 import {type Contact, Prisma} from '@plunk/db';
-import {isValidLanguageCode} from '@plunk/shared';
 import type {CursorPaginatedResponse, FilterCondition, FilterGroup} from '@plunk/types';
 import {toPrismaJson} from '@plunk/types';
 
@@ -236,12 +235,9 @@ export class ContactService {
         }
 
         // Validate locale field (special user-settable field)
+        // Only validate type - any locale string is accepted since we default to English if unsupported
         if (key === 'locale') {
-          if (typeof value === 'string') {
-            if (!isValidLanguageCode(value)) {
-              throw new HttpException(400, `Invalid locale code: ${value}. Must be one of: en, nl, fr, hi, de`);
-            }
-          } else if (value !== null && value !== undefined) {
+          if (value !== null && value !== undefined && typeof value !== 'string') {
             throw new HttpException(400, 'Locale must be a string');
           }
         }
