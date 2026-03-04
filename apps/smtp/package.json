@@ -13,7 +13,7 @@
   "dependencies": {
     "@plunk/db": "*",
     "dotenv": "^17.2.3",
-    "mailparser": "^3.7.1",
+    "mailparser": "^3.9.3",
     "signale": "^1.4.0",
     "smtp-server": "^3.13.4"
   },
