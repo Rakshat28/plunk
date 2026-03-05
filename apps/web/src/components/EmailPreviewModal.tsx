@@ -94,7 +94,7 @@ const wrapEmailWithStyles = (htmlBody: string): string => {
     /* Tailwind Typography (prose) base styles */
     .prose {
       color: #374151;
-      max-width: 65ch;
+      max-width: 600px;
     }
     .prose [class~="lead"] {
       color: #4b5563;
@@ -148,8 +148,8 @@ const wrapEmailWithStyles = (htmlBody: string): string => {
       margin-bottom: 0.75em;
     }
     .prose hr {
-      border-color: #e5e7eb;
-      border-top-width: 1px;
+      border: none;
+      border-top: 1px solid #e5e7eb;
       margin-top: 3em;
       margin-bottom: 3em;
     }
@@ -352,43 +352,43 @@ const wrapEmailWithStyles = (htmlBody: string): string => {
       display: inline;
     }
 
-    table {
+    .prose table {
       border-collapse: collapse;
       width: 100%;
       margin: 16px 0;
     }
 
-    th, td {
+    .prose th, .prose td {
       border: 1px solid #e5e7eb;
       padding: 8px 12px;
       text-align: left;
       min-width: 100px;
     }
 
-    th {
+    .prose th {
       background-color: #f3f4f6;
       font-weight: 600;
     }
 
-    img {
+    .prose img {
       max-width: 100%;
       height: auto;
       display: block;
       margin: 16px 0;
     }
 
-    .resizable-image-wrapper {
+    .prose .resizable-image-wrapper {
       display: block;
       margin: 16px 0;
     }
 
-    .resizable-image-container {
+    .prose .resizable-image-container {
       display: inline-block;
       position: relative;
       max-width: 100%;
     }
 
-    .resizable-image-container img {
+    .prose .resizable-image-container img {
       margin: 0;
     }
   </style>
