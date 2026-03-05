@@ -407,7 +407,18 @@ export const ActionSchemas = {
             filename: z.string().min(1).max(255),
             content: z.string().min(1), // Base64 encoded file content
             contentType: z.string().min(1).max(255),
-          }),
+            contentId: z
+              .string()
+              .min(1)
+              .max(255)
+              .regex(/^[^<>\r\n]+$/, 'Content ID cannot contain <, >, \\r, or \\n')
+              .optional(),
+            disposition: z.enum(['attachment', 'inline']).default('attachment'),
+          })
+            .refine(data => data.disposition !== 'inline' || !!data.contentId, {
+              message: 'Content ID is required when disposition is inline',
+              path: ['contentId'],
+            }),
         )
         .max(10) // Maximum 10 attachments per email
         .optional(),
