@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.7.0](https://github.com/useplunk/plunk/compare/v0.6.0...v0.7.0) (2026-03-05)
+
+
+### Features
+
+* **api:** support inline images in emails using Content-ID ([9b15b93](https://github.com/useplunk/plunk/commit/9b15b93b96344f811d869d103b3b6d344b531811))
+* Sort projects alphabetically in the dashboard and fix layout ([64bd094](https://github.com/useplunk/plunk/commit/64bd094b47abbc4feaeb93d97915df57763b3907))
+* Static segments ([4b51e38](https://github.com/useplunk/plunk/commit/4b51e386e39ae38d6ea52eb87858de36fa45ab46))
+
+
+### Bug Fixes
+
+* Add support for STATIC segment type in CampaignService ([7bd098b](https://github.com/useplunk/plunk/commit/7bd098bdd01a8af0dd41ec515880289b1795e5af))
+* correct cookie domain for .local TLD hostnames ([59aa784](https://github.com/useplunk/plunk/commit/59aa7845bad69a1768bb88f83cfcea607c447538))
+* Correctly set domain status on manual verify ([21af8fe](https://github.com/useplunk/plunk/commit/21af8fe05e0450e8d826a3a01224511a337ca072))
+* Do not unsubscribe existing contacts ([2c4d95e](https://github.com/useplunk/plunk/commit/2c4d95e604cbed9189f7ee07c24b1f236fce7990))
+* Support any locale on creation ([ec1f4c9](https://github.com/useplunk/plunk/commit/ec1f4c9374e06e3defed3c728be603c10e4e7baa))
+* Verify SNS URL before sending fetch request ([b8f1ad9](https://github.com/useplunk/plunk/commit/b8f1ad9ab53c78f8ef063fdc125f397c8bfc7652))
+
+
+### Documentation
+
+* Static segments ([e8a247f](https://github.com/useplunk/plunk/commit/e8a247fe12b79ae8a25a74485179e93081fe2002))
+
 ## [0.6.0](https://github.com/useplunk/plunk/compare/v0.5.0...v0.6.0) (2026-02-19)
 
 
