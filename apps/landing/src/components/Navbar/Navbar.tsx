@@ -4,12 +4,47 @@ import {AnimatePresence, motion} from 'framer-motion';
 import {DASHBOARD_URI, WIKI_URI} from '../../lib/constants';
 import Image from 'next/image';
 import logo from '../../../public/assets/logo.svg';
+import {ChevronDown, GitBranch, Inbox, Mail, Server, Users} from 'lucide-react';
+
+const featuresMenu = [
+  {
+    title: 'Email Editor',
+    description: 'Create beautiful emails with visual or code editing',
+    href: '/features/email-editor',
+    icon: <Mail className="h-5 w-5" />,
+  },
+  {
+    title: 'Workflows',
+    description: 'Automate email sequences with triggers and conditions',
+    href: '/features/workflows',
+    icon: <GitBranch className="h-5 w-5" />,
+  },
+  {
+    title: 'Inbound Email',
+    description: 'Receive and process incoming emails',
+    href: '/features/inbound-email',
+    icon: <Inbox className="h-5 w-5" />,
+  },
+  {
+    title: 'Segments',
+    description: 'Organize contacts with dynamic filtering',
+    href: '/features/segments',
+    icon: <Users className="h-5 w-5" />,
+  },
+  {
+    title: 'SMTP',
+    description: 'Send emails via SMTP or API',
+    href: '/features/smtp',
+    icon: <Server className="h-5 w-5" />,
+  },
+];
 
 /**
  *
  */
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [featuresOpen, setFeaturesOpen] = useState(false);
 
   return (
     <nav className={'relative top-0 z-40 mx-auto max-w-7xl px-8 xl:px-0'}>
@@ -25,6 +60,55 @@ export default function Navbar() {
               </Link>
             </div>
             <div className="hidden items-center gap-8 md:flex">
+              <div className={'relative'}>
+                <button
+                  onMouseEnter={() => setFeaturesOpen(true)}
+                  onMouseLeave={() => setFeaturesOpen(false)}
+                  className={
+                    'flex items-center gap-1.5 text-sm font-medium text-neutral-600 transition hover:text-neutral-900'
+                  }
+                >
+                  Features
+                  <ChevronDown className={`h-4 w-4 transition-transform ${featuresOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                <AnimatePresence>
+                  {featuresOpen && (
+                    <motion.div
+                      initial={{opacity: 0, y: -10}}
+                      animate={{opacity: 1, y: 0}}
+                      exit={{opacity: 0, y: -10}}
+                      transition={{duration: 0.2, ease: [0.22, 1, 0.36, 1]}}
+                      onMouseEnter={() => setFeaturesOpen(true)}
+                      onMouseLeave={() => setFeaturesOpen(false)}
+                      className={
+                        'absolute left-0 top-full z-50 mt-2 w-80 rounded-lg border border-neutral-200 bg-white p-2 shadow-lg'
+                      }
+                    >
+                      {featuresMenu.map(feature => (
+                        <Link
+                          key={feature.href}
+                          href={feature.href}
+                          className={'flex items-start gap-3 rounded-lg p-3 transition hover:bg-neutral-50'}
+                        >
+                          <div
+                            className={
+                              'mt-0.5 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-neutral-900 text-white'
+                            }
+                          >
+                            {feature.icon}
+                          </div>
+                          <div className={'flex-1'}>
+                            <div className={'text-sm font-semibold text-neutral-900'}>{feature.title}</div>
+                            <div className={'mt-0.5 text-xs text-neutral-600'}>{feature.description}</div>
+                          </div>
+                        </Link>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
               <Link
                 href={'/made-by-humans'}
                 className={'text-sm font-medium text-neutral-600 transition hover:text-neutral-900'}
@@ -140,6 +224,32 @@ export default function Navbar() {
               transition={{duration: 0.2}}
               className="space-y-1 p-4"
             >
+              <div className="mb-2">
+                <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                  Features
+                </div>
+                {featuresMenu.map(feature => (
+                  <Link
+                    key={feature.href}
+                    href={feature.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-start gap-3 rounded-lg px-4 py-3 transition hover:bg-neutral-100"
+                  >
+                    <div
+                      className={
+                        'mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-neutral-900 text-white'
+                      }
+                    >
+                      {feature.icon}
+                    </div>
+                    <div className={'flex-1'}>
+                      <div className={'text-sm font-semibold text-neutral-900'}>{feature.title}</div>
+                      <div className={'mt-0.5 text-xs text-neutral-600'}>{feature.description}</div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
               <Link
                 href={'/made-by-humans'}
                 onClick={() => setMobileOpen(false)}

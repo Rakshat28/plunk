@@ -15,8 +15,8 @@ import {
   ArrowRight,
   BarChart3,
   Clock,
-  Code2,
   Globe,
+  Inbox,
   Lock,
   Mail,
   Megaphone,
@@ -72,17 +72,18 @@ const features = [
   {
     icon: <Workflow className="h-5 w-5" />,
     title: 'Workflow Automation',
-    description: 'Visual builder for complex email sequences with triggers, delays, and conditional logic.',
+    description:
+      'Visual builder for complex email sequences with triggers, delays, and conditional logic. No code required.',
   },
   {
     icon: <Users className="h-5 w-5" />,
     title: 'Dynamic Segments',
-    description: 'Real-time audience segmentation based on contact data and behavior.',
+    description: 'Real-time audience segmentation based on contact data and behavior. Less noise, more signal.',
   },
   {
     icon: <Mail className="h-5 w-5" />,
     title: 'Campaign Management',
-    description: 'Broadcast emails with scheduling and performance tracking.',
+    description: 'Broadcast emails with scheduling and performance tracking. Send the right message at the right time.',
   },
   {
     icon: <BarChart3 className="h-5 w-5" />,
@@ -90,14 +91,14 @@ const features = [
     description: 'Detailed metrics on opens, clicks, bounces, and conversions across campaigns.',
   },
   {
-    icon: <Code2 className="h-5 w-5" />,
-    title: 'Developer API',
-    description: 'RESTful API with comprehensive documentation.',
+    icon: <Inbox className="h-5 w-5" />,
+    title: 'Inbound Email',
+    description: 'Receive and process incoming emails with webhook notifications. Your inbox, automated.',
   },
   {
     icon: <Globe className="h-5 w-5" />,
     title: 'Custom Domains',
-    description: 'Brand consistency with DKIM authentication and custom sending domains.',
+    description: 'Brand consistency with DKIM authentication and custom sending domains. Yes, even in Outlook.',
   },
 ];
 
@@ -230,7 +231,8 @@ export default function Index() {
               Email Platform
             </h1>
             <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
-              Open-source email automation. Build workflows, segment audiences, and send emails with a simple API.
+              Open-source email automation. Build workflows, segment audiences, and send emails with a simple API. No
+              vendor lock-in.
             </p>
 
             <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
@@ -355,7 +357,9 @@ export default function Index() {
                 <Clock className="h-5 w-5" />
               </div>
               <h3 className={'mt-6 text-lg font-semibold text-neutral-900'}>Complex setup</h3>
-              <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>Hours of configuration needed</p>
+              <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>
+                Hours of configuration needed. Life's too short.
+              </p>
             </motion.div>
 
             <motion.div
@@ -373,7 +377,9 @@ export default function Index() {
                 <TrendingUp className="h-5 w-5" />
               </div>
               <h3 className={'mt-6 text-lg font-semibold text-neutral-900'}>Contact limits</h3>
-              <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>Growth penalties</p>
+              <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>
+                Growth penalties. Success shouldn't cost more.
+              </p>
             </motion.div>
 
             <motion.div
@@ -446,7 +452,7 @@ export default function Index() {
               One contact, unified across everything
             </h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
-              Every interaction flows into a single contact record with complete history
+              Every interaction flows into a single contact record with complete history. No more scattered data.
             </p>
           </motion.div>
 
@@ -661,7 +667,9 @@ export default function Index() {
             className={'mx-auto max-w-4xl text-center'}
           >
             <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Simple, transparent pricing</h2>
-            <p className={'mt-6 text-lg text-neutral-600'}>Pay for what you use, nothing more</p>
+            <p className={'mt-6 text-lg text-neutral-600'}>
+              Pay for what you use, nothing more. No surprises at scale.
+            </p>
 
             <div className={'mt-20'}>
               <div className={'flex items-baseline justify-center gap-3'}>
