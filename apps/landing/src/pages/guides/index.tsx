@@ -250,7 +250,7 @@ export default function GuidesIndex() {
                   'rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white transition hover:bg-neutral-800'
                 }
               >
-                Start free trial
+                Get started free
               </motion.a>
               <Link
                 href="/pricing"

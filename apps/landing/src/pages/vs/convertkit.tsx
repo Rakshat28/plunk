@@ -408,10 +408,13 @@ export default function ConvertkitComparison() {
                 whileTap={{scale: 0.98}}
                 href={`${DASHBOARD_URI}/auth/signup`}
                 className={
-                  'rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white transition hover:bg-neutral-800'
+                  'group rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white transition hover:bg-neutral-800'
                 }
               >
-                Start free trial
+                <span className={'flex items-center gap-2'}>
+                  Get started free
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </span>
               </motion.a>
               <Link
                 href="/pricing"

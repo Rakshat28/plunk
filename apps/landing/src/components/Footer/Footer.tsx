@@ -13,12 +13,12 @@ export default function Footer() {
         <div className="mx-auto max-w-7xl px-8 py-20 xl:px-0">
           <div className="grid gap-12 lg:grid-cols-12">
             {/* Logo and description */}
-            <div className="space-y-6 lg:col-span-4">
+            <div className="space-y-6 lg:col-span-3">
               <div className={'relative h-8 w-8'}>
                 <Image src={logo} alt={'Plunk logo'} fill className={'object-contain'} />
               </div>
               <p className="text-sm leading-relaxed text-neutral-600">
-                Open-source email automation platform that scales
+                Open-source email platform for transactional, marketing, and automation. EU-hosted, GDPR compliant.
               </p>
               <div className="flex items-center gap-4">
                 <Link
@@ -57,7 +57,7 @@ export default function Footer() {
             </div>
 
             {/* Links */}
-            <div className="grid grid-cols-2 gap-8 lg:col-span-8 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-8 lg:col-span-9 lg:grid-cols-5">
               <div>
                 <h3 className="text-sm font-semibold text-neutral-900">Product</h3>
                 <ul role="list" className="mt-6 space-y-4">
@@ -67,20 +67,95 @@ export default function Footer() {
                     </Link>
                   </li>
                   <li>
-                    <Link
-                      href={'/made-by-humans'}
-                      className="text-sm text-neutral-600 transition hover:text-neutral-900"
-                    >
-                      Made by humans
+                    <Link href={WIKI_URI} target={'_blank'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      Documentation
                     </Link>
                   </li>
                   <li>
-                    <Link
-                      href={WIKI_URI}
-                      target={'_blank'}
-                      className="text-sm text-neutral-600 transition hover:text-neutral-900"
-                    >
-                      Documentation
+                    <Link href={'/guides'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      Guides
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/tools'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      Tools
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/made-by-humans'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      Made by humans
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold text-neutral-900">Features</h3>
+                <ul role="list" className="mt-6 space-y-4">
+                  <li>
+                    <Link href={'/features/email-editor'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      Email editor
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/features/workflows'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      Workflows
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/features/segments'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      Segments
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/features/smtp'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      SMTP
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/features/inbound-email'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      Inbound email
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold text-neutral-900">Compare</h3>
+                <ul role="list" className="mt-6 space-y-4">
+                  <li>
+                    <Link href={'/vs'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      All comparisons
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/vs/mailchimp'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      vs Mailchimp
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/vs/sendgrid'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      vs SendGrid
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/vs/resend'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      vs Resend
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/vs/brevo'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      vs Brevo
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/vs/mailgun'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      vs Mailgun
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/vs/convertkit'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      vs ConvertKit
                     </Link>
                   </li>
                 </ul>
@@ -95,28 +170,18 @@ export default function Footer() {
                     </Link>
                   </li>
                   <li>
-                    <Link
-                      href={'https://github.com/useplunk'}
-                      target={'_blank'}
-                      className="text-sm text-neutral-600 transition hover:text-neutral-900"
-                    >
+                    <Link href={'https://github.com/useplunk'} target={'_blank'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
                       GitHub
                     </Link>
                   </li>
                   <li>
-                    <Link
-                      href={'https://status.useplunk.com'}
-                      target={'_blank'}
-                      className="text-sm text-neutral-600 transition hover:text-neutral-900"
-                    >
+                    <Link href={'https://status.useplunk.com'} target={'_blank'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
                       Status
                     </Link>
                   </li>
                 </ul>
-              </div>
 
-              <div>
-                <h3 className="text-sm font-semibold text-neutral-900">Legal</h3>
+                <h3 className="mt-8 text-sm font-semibold text-neutral-900">Legal</h3>
                 <ul role="list" className="mt-6 space-y-4">
                   <li>
                     <Link href={'/privacy'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
@@ -131,6 +196,47 @@ export default function Footer() {
                   <li>
                     <Link href={'/dpa'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
                       DPA
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold text-neutral-900">Guides</h3>
+                <ul role="list" className="mt-6 space-y-4">
+                  <li>
+                    <Link href={'/guides/email-deliverability'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      Email deliverability
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/guides/transactional-vs-marketing-email'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      Transactional vs marketing
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/guides/what-is-dkim'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      What is DKIM?
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/guides/what-is-spf'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      What is SPF?
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/guides/what-is-dmarc'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      What is DMARC?
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/guides/email-open-rate'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      Email open rates
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={'/guides/email-bounce-rate'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
+                      Email bounce rates
                     </Link>
                   </li>
                 </ul>

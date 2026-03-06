@@ -229,7 +229,9 @@ export default function Index() {
               initial={{opacity: 0, y: 10}}
               animate={{opacity: 1, y: 0}}
               transition={{duration: 0.5, ease: [0.22, 1, 0.36, 1]}}
-              className={'mb-8 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm shadow-sm'}
+              className={
+                'mb-8 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm shadow-sm'
+              }
             >
               <svg className="h-4 w-4 text-neutral-700" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path
@@ -238,7 +240,7 @@ export default function Index() {
                   clipRule="evenodd"
                 />
               </svg>
-              <span className={'font-medium text-neutral-700'}>4,000+ Stars on GitHub</span>
+              <span className={'font-medium text-neutral-700'}>5,000+ Stars on GitHub</span>
               <span className={'text-neutral-300'}>·</span>
               <span className={'text-neutral-500'}>AGPL-3.0 Open Source</span>
             </motion.div>
@@ -472,7 +474,8 @@ export default function Index() {
               One contact, complete history
             </h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
-              Every interaction flows into a single contact record. Transactional emails, campaigns, and workflows, all tracked in one place.
+              Every interaction flows into a single contact record. Transactional emails, campaigns, and workflows, all
+              tracked in one place.
             </p>
           </motion.div>
 
@@ -628,22 +631,29 @@ export default function Index() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-4xl text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Open source, privacy first</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>
+              Open source, privacy first
+            </h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
-              AGPL-3.0 licensed, EU-hosted, and GDPR compliant. Inspect the code, self-host on your own infrastructure, or use our cloud.
+              AGPL-3.0 licensed, EU-hosted, and GDPR compliant. Inspect the code, self-host on your own infrastructure,
+              or use our cloud.
             </p>
 
             <div className={'mt-16 grid gap-px bg-neutral-200 sm:grid-cols-3'}>
               <div className={'bg-white p-12'}>
-                <div className={'mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-neutral-900 text-white'}>
+                <div
+                  className={'mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-neutral-900 text-white'}
+                >
                   <PackageOpen className={'h-7 w-7'} />
                 </div>
                 <h3 className={'mt-6 text-lg font-semibold text-neutral-900'}>Open Source</h3>
                 <p className={'mt-2 text-sm text-neutral-600'}>AGPL-3.0 licensed</p>
-                <p className={'mt-4 text-xs text-neutral-500'}>4K+ stars on GitHub</p>
+                <p className={'mt-4 text-xs text-neutral-500'}>5K+ stars on GitHub</p>
               </div>
               <div className={'bg-white p-12'}>
-                <div className={'mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-neutral-900 text-white'}>
+                <div
+                  className={'mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-neutral-900 text-white'}
+                >
                   <Shield className={'h-7 w-7'} />
                 </div>
                 <h3 className={'mt-6 text-lg font-semibold text-neutral-900'}>Privacy First</h3>
@@ -651,7 +661,9 @@ export default function Index() {
                 <p className={'mt-4 text-xs text-neutral-500'}>GDPR compliant</p>
               </div>
               <div className={'bg-white p-12'}>
-                <div className={'mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-neutral-900 text-white'}>
+                <div
+                  className={'mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-neutral-900 text-white'}
+                >
                   <Globe className={'h-7 w-7'} />
                 </div>
                 <h3 className={'mt-6 text-lg font-semibold text-neutral-900'}>Self-Hostable</h3>
@@ -686,7 +698,9 @@ export default function Index() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-4xl text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Simple, transparent pricing</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>
+              Simple, transparent pricing
+            </h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
               Pay for what you use, nothing more. No surprises at scale.
             </p>
@@ -807,7 +821,9 @@ export default function Index() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Start sending in 5 minutes</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>
+              Start sending in 5 minutes
+            </h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
               1,000 emails free every month. Then $0.001 per email. No contact limits, no surprises.
             </p>
