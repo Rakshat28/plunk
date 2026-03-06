@@ -68,7 +68,7 @@ export default function ToolsIndex() {
               <span className={'text-sm text-neutral-600'}>Free Email Tools</span>
             </div>
 
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
+            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
               Free tools for
               <br />
               email developers
@@ -114,7 +114,7 @@ export default function ToolsIndex() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Available Tools</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Available Tools</h2>
             <p className={'mt-4 text-lg text-neutral-600'}>Everything you need to work with emails</p>
           </motion.div>
 
@@ -168,7 +168,7 @@ export default function ToolsIndex() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Why use these tools?</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Why use these tools?</h2>
             <p className={'mt-4 text-lg text-neutral-600'}>Built by email experts for email developers</p>
           </motion.div>
 
@@ -235,7 +235,7 @@ export default function ToolsIndex() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Need production-grade email tools?</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Need production-grade email tools?</h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
               These free tools are great for development, but Plunk offers so much more: templates, scheduling,
               automation, analytics, and deliverability optimization. Start free, scale as you grow.

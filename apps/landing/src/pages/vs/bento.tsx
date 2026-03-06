@@ -25,17 +25,17 @@ const faqs: FAQ[] = [
   {
     question: 'When should I choose Bento over Plunk?',
     answer:
-      "Choose Bento if you need an all-in-one platform with CRM, live chat, and customer relationship features alongside email. Bento is designed for small businesses and creators who want everything in one place. Choose Plunk if you're a developer who needs focused email automation without CRM bloat—perfect for integrating email into your product.",
+      "Choose Bento if you need an all-in-one platform with CRM, live chat, and customer relationship features alongside email. Bento is designed for small businesses and creators who want everything in one place. Choose Plunk if you're a developer who needs focused email automation without CRM bloat. It's built specifically for integrating email into your product.",
   },
   {
     question: 'What is the pricing difference between Plunk and Bento?',
     answer:
-      'Bento offers a 30-day unlimited trial, then switches to subscription pricing. Plunk uses pay-as-you-go pricing with no trials needed—you only pay for emails sent. For email-focused needs, Plunk is typically more cost-effective. Bento includes CRM and live chat in the price, so if you need those features, Bento may offer better value.',
+      'Bento offers a 30-day unlimited trial, then switches to subscription pricing. Plunk uses pay-as-you-go pricing with no trials needed. You only pay for emails sent. For email-focused needs, Plunk is typically more cost-effective. Bento includes CRM and live chat in the price, so if you need those features, Bento may offer better value.',
   },
   {
     question: 'Can Plunk handle email automation like Bento?',
     answer:
-      'Yes. Plunk supports workflow automation, event-based triggers, transactional emails, and marketing campaigns—all the email features Bento offers. The difference is Plunk focuses purely on email, while Bento includes CRM, live chat, and customer relationship management. If you only need email automation, Plunk is simpler.',
+      'Yes. Plunk supports workflow automation, event-based triggers, transactional emails, and marketing campaigns. All the email features Bento offers. The difference is Plunk focuses purely on email, while Bento includes CRM, live chat, and customer relationship management. If you only need email automation, Plunk is simpler.',
   },
   {
     question: 'How does the developer experience compare?',
@@ -94,7 +94,7 @@ export default function BentoComparison() {
               <span className={'text-sm font-semibold text-neutral-900'}>Plunk vs Bento</span>
             </div>
 
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
+            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
               Open-source alternative
               <br />
               for Bento
@@ -141,7 +141,7 @@ export default function BentoComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>
               Focused Email vs All-in-One Complexity
             </h2>
             <p className={'mt-4 text-lg text-neutral-600'}>Pay for what you use, not what you don't need</p>
@@ -233,7 +233,7 @@ export default function BentoComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-20 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Developer-First Email Platform</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Developer-First Email Platform</h2>
           </motion.div>
 
           <div className={'grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3'}>
@@ -374,7 +374,7 @@ export default function BentoComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Feature Comparison</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Feature Comparison</h2>
           </motion.div>
 
           <ComparisonTable competitorName="Bento" rows={comparisonData} />
@@ -384,7 +384,12 @@ export default function BentoComparison() {
         <FAQSection faqs={faqs} schemaId="faq-schema-bento" />
 
         {/* CTA */}
-        <section className={'border-t border-neutral-200 py-32'}>
+        <section className={'relative overflow-hidden border-t border-neutral-200 py-32'}>
+          <div
+            className={
+              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
+            }
+          />
           <motion.div
             initial={{opacity: 0, y: 20}}
             whileInView={{opacity: 1, y: 0}}
@@ -392,7 +397,7 @@ export default function BentoComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Get focused email automation</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Get focused email automation</h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
               Join developers choosing focused email solutions over all-in-one complexity. Start free, no credit card
               required.

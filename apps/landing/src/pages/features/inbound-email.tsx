@@ -106,7 +106,7 @@ export default function InboundEmailFeature() {
               <span className={'font-medium text-neutral-600'}>Inbound Email</span>
             </div>
 
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
+            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
               Turn Incoming Emails
               <br />
               into Actions
@@ -152,7 +152,7 @@ export default function InboundEmailFeature() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>
+            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>
               Complete inbound email solution
             </h2>
             <p className={'mt-4 text-lg text-neutral-600'}>
@@ -193,28 +193,29 @@ export default function InboundEmailFeature() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-4xl text-center'}
           >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>Set up in minutes</h2>
+            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>Set up in minutes</h2>
             <p className={'mt-6 text-lg text-neutral-600'}>Get started with inbound email in three simple steps</p>
           </motion.div>
 
           <div className={'mx-auto mt-16 max-w-5xl'}>
-            <div className={'grid gap-8 lg:grid-cols-3'}>
+            <div className={'grid gap-12 lg:grid-cols-3'}>
               <motion.div
                 initial={{opacity: 0, y: 20}}
                 whileInView={{opacity: 1, y: 0}}
                 viewport={{once: true}}
                 transition={{duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1]}}
-                className={'rounded-xl border border-neutral-200 bg-white p-8'}
               >
-                <div
-                  className={
-                    'flex h-12 w-12 items-center justify-center rounded-lg bg-neutral-100 text-xl font-bold text-neutral-900'
-                  }
-                >
-                  1
+                <div className={'mb-5 flex items-center gap-4'}>
+                  <div
+                    className={
+                      'flex h-14 w-14 items-center justify-center rounded-full border-2 border-neutral-200 bg-white text-xl font-bold text-neutral-900'
+                    }
+                  >
+                    1
+                  </div>
                 </div>
-                <h3 className={'mt-4 text-lg font-semibold text-neutral-900'}>Verify your domain</h3>
-                <p className={'mt-2 text-sm text-neutral-600'}>
+                <h3 className={'text-lg font-semibold text-neutral-900'}>Verify your domain</h3>
+                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>
                   Add and verify your custom domain in Plunk by configuring DKIM and SPF records in your DNS settings.
                 </p>
               </motion.div>
@@ -224,17 +225,18 @@ export default function InboundEmailFeature() {
                 whileInView={{opacity: 1, y: 0}}
                 viewport={{once: true}}
                 transition={{duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1]}}
-                className={'rounded-xl border border-neutral-200 bg-white p-8'}
               >
-                <div
-                  className={
-                    'flex h-12 w-12 items-center justify-center rounded-lg bg-neutral-100 text-xl font-bold text-neutral-900'
-                  }
-                >
-                  2
+                <div className={'mb-5 flex items-center gap-4'}>
+                  <div
+                    className={
+                      'flex h-14 w-14 items-center justify-center rounded-full border-2 border-neutral-200 bg-white text-xl font-bold text-neutral-900'
+                    }
+                  >
+                    2
+                  </div>
                 </div>
-                <h3 className={'mt-4 text-lg font-semibold text-neutral-900'}>Add MX record</h3>
-                <p className={'mt-2 text-sm text-neutral-600'}>
+                <h3 className={'text-lg font-semibold text-neutral-900'}>Add MX record</h3>
+                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>
                   Add one MX record to your DNS to route incoming emails to Plunk. Copy the record from your dashboard.
                 </p>
               </motion.div>
@@ -244,17 +246,18 @@ export default function InboundEmailFeature() {
                 whileInView={{opacity: 1, y: 0}}
                 viewport={{once: true}}
                 transition={{duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1]}}
-                className={'rounded-xl border border-neutral-200 bg-white p-8'}
               >
-                <div
-                  className={
-                    'flex h-12 w-12 items-center justify-center rounded-lg bg-neutral-100 text-xl font-bold text-neutral-900'
-                  }
-                >
-                  3
+                <div className={'mb-5 flex items-center gap-4'}>
+                  <div
+                    className={
+                      'flex h-14 w-14 items-center justify-center rounded-full border-2 border-neutral-200 bg-white text-xl font-bold text-neutral-900'
+                    }
+                  >
+                    3
+                  </div>
                 </div>
-                <h3 className={'mt-4 text-lg font-semibold text-neutral-900'}>Start receiving</h3>
-                <p className={'mt-2 text-sm text-neutral-600'}>
+                <h3 className={'text-lg font-semibold text-neutral-900'}>Start receiving</h3>
+                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>
                   Emails sent to any address at your domain are automatically received and can trigger workflows or
                   webhooks.
                 </p>
@@ -272,7 +275,7 @@ export default function InboundEmailFeature() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>Powerful use cases</h2>
+            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>Powerful use cases</h2>
             <p className={'mt-4 text-lg text-neutral-600'}>
               From support to sales, inbound email unlocks new automation possibilities
             </p>
@@ -326,77 +329,60 @@ export default function InboundEmailFeature() {
             className={'mx-auto max-w-4xl'}
           >
             <div className={'rounded-2xl border border-neutral-200 bg-white p-8 sm:p-12'}>
-              <h2 className={'text-3xl font-bold tracking-tight text-neutral-900'}>
+              <h2 className={'text-3xl font-bold tracking-tight text-neutral-900 text-balance'}>
                 What happens when an email arrives?
               </h2>
-              <div className={'mt-8 space-y-4'}>
-                <div className={'flex gap-4'}>
-                  <div
-                    className={
-                      'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-neutral-100 text-sm font-semibold text-neutral-900'
-                    }
-                  >
-                    1
+              <div className={'mt-10'}>
+                {[
+                  {
+                    title: 'Email arrives at your domain',
+                    description: 'Your MX record routes the email to Plunk for processing',
+                  },
+                  {
+                    title: 'Security checks pass',
+                    description: 'Automatic validation of spam, virus, SPF, DKIM, and DMARC',
+                  },
+                  {
+                    title: 'Contact is created or updated',
+                    description: 'The sender is automatically added to your contact database',
+                  },
+                  {
+                    title: 'Workflows trigger automatically',
+                    description: 'Configured workflows start running based on the incoming email',
+                  },
+                ].map((step, i, arr) => (
+                  <div key={step.title} className={'relative flex gap-6'}>
+                    {/* Vertical connector */}
+                    {i < arr.length - 1 && (
+                      <div className={'absolute left-[1.125rem] top-10 bottom-0 w-px bg-neutral-200'} />
+                    )}
+                    <div className={'relative flex-shrink-0'}>
+                      <div
+                        className={
+                          'flex h-9 w-9 items-center justify-center rounded-full border-2 border-neutral-200 bg-white text-sm font-bold text-neutral-900'
+                        }
+                      >
+                        {i + 1}
+                      </div>
+                    </div>
+                    <div className={i < arr.length - 1 ? 'pb-8' : ''}>
+                      <p className={'font-semibold text-neutral-900'}>{step.title}</p>
+                      <p className={'mt-1 text-sm text-neutral-600'}>{step.description}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className={'font-medium text-neutral-900'}>Email arrives at your domain</p>
-                    <p className={'mt-1 text-sm text-neutral-600'}>
-                      Your MX record routes the email to Plunk for processing
-                    </p>
-                  </div>
-                </div>
-                <div className={'flex gap-4'}>
-                  <div
-                    className={
-                      'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-neutral-100 text-sm font-semibold text-neutral-900'
-                    }
-                  >
-                    2
-                  </div>
-                  <div>
-                    <p className={'font-medium text-neutral-900'}>Security checks pass</p>
-                    <p className={'mt-1 text-sm text-neutral-600'}>
-                      Automatic validation of spam, virus, SPF, DKIM, and DMARC
-                    </p>
-                  </div>
-                </div>
-                <div className={'flex gap-4'}>
-                  <div
-                    className={
-                      'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-neutral-100 text-sm font-semibold text-neutral-900'
-                    }
-                  >
-                    3
-                  </div>
-                  <div>
-                    <p className={'font-medium text-neutral-900'}>Contact is created or updated</p>
-                    <p className={'mt-1 text-sm text-neutral-600'}>
-                      The sender is automatically added to your contact database
-                    </p>
-                  </div>
-                </div>
-                <div className={'flex gap-4'}>
-                  <div
-                    className={
-                      'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-neutral-100 text-sm font-semibold text-neutral-900'
-                    }
-                  >
-                    4
-                  </div>
-                  <div>
-                    <p className={'font-medium text-neutral-900'}>Workflows trigger automatically</p>
-                    <p className={'mt-1 text-sm text-neutral-600'}>
-                      Configured workflows start running based on the incoming email
-                    </p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </motion.div>
         </section>
 
         {/* CTA Section */}
-        <section className={'border-t border-neutral-200 py-20'}>
+        <section className={'relative overflow-hidden border-t border-neutral-200 py-20'}>
+          <div
+            className={
+              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
+            }
+          />
           <motion.div
             initial={{opacity: 0, y: 20}}
             whileInView={{opacity: 1, y: 0}}
@@ -404,11 +390,12 @@ export default function InboundEmailFeature() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>
-              Ready to receive emails?
+            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>
+              Your domain can receive emails too
             </h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
-              Add inbound email to your verified domain in minutes. No credit card required.
+              Set up inbound email on any verified domain in minutes. Replies, support tickets, and webhooks, all from
+              one platform.
             </p>
             <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
               <motion.a

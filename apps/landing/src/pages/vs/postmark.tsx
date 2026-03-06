@@ -90,7 +90,7 @@ export default function PostmarkComparison() {
               <span className={'text-sm font-semibold text-neutral-900'}>Plunk vs Postmark</span>
             </div>
 
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
+            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
               Open-source alternative
               <br />
               for Postmark
@@ -137,7 +137,7 @@ export default function PostmarkComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>One Platform for All Your Emails</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>One Platform for All Your Emails</h2>
             <p className={'mt-4 text-lg text-neutral-600'}>Transactional reliability meets marketing power</p>
           </motion.div>
 
@@ -227,7 +227,7 @@ export default function PostmarkComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-20 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Why Choose Plunk Over Postmark</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Why Choose Plunk Over Postmark</h2>
             <p className={'mt-4 text-lg text-neutral-600'}>Do more with one platform instead of two</p>
           </motion.div>
 
@@ -270,7 +270,7 @@ export default function PostmarkComparison() {
               <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Workflow Automation</h3>
               <p className={'mt-3 leading-relaxed text-neutral-600'}>
                 Build automated email sequences with triggers, delays, and conditions. Onboard users, nurture leads,
-                re-engage customers—all automated.
+                re-engage customers. All automated.
               </p>
             </motion.div>
 
@@ -369,7 +369,7 @@ export default function PostmarkComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Feature-by-Feature Comparison</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Feature-by-Feature Comparison</h2>
             <p className={'mt-4 text-lg text-neutral-600'}>See exactly what you get with each platform</p>
           </motion.div>
 
@@ -380,7 +380,12 @@ export default function PostmarkComparison() {
         <FAQSection faqs={faqs} schemaId="faq-schema-postmark" />
 
         {/* CTA */}
-        <section className={'border-t border-neutral-200 py-32'}>
+        <section className={'relative overflow-hidden border-t border-neutral-200 py-32'}>
+          <div
+            className={
+              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
+            }
+          />
           <motion.div
             initial={{opacity: 0, y: 20}}
             whileInView={{opacity: 1, y: 0}}
@@ -388,7 +393,7 @@ export default function PostmarkComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Get more from your email platform</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Get more from your email platform</h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
               Stop juggling multiple tools. Get transactional reliability plus marketing power in one platform. Start
               free.

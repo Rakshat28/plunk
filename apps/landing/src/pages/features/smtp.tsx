@@ -118,14 +118,11 @@ export default function SMTPFeature() {
               <span className={'font-medium text-neutral-600'}>SMTP Email Sending</span>
             </div>
 
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
-              Send via SMTP
-              <br />
-              or API
+            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
+              Send Emails via SMTP or API
             </h1>
             <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
-              Choose your preferred sending method. Use our HTTP API for modern apps or SMTP for email clients and
-              legacy systems. Both options deliver the same great results.
+              Use our HTTP API for modern apps or drop in SMTP credentials for any legacy system. Same deliverability, same pricing, zero lock-in.
             </p>
 
             <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
@@ -164,8 +161,8 @@ export default function SMTPFeature() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>Enterprise-ready SMTP</h2>
-            <p className={'mt-4 text-lg text-neutral-600'}>All the features you expect from a modern email platform</p>
+            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>SMTP that works with everything</h2>
+            <p className={'mt-4 text-lg text-neutral-600'}>Full authentication, tracking, and deliverability out of the box</p>
           </motion.div>
 
           <div className={'grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3'}>
@@ -192,61 +189,6 @@ export default function SMTPFeature() {
           </div>
         </section>
 
-        {/* SMTP Configuration */}
-        <section className={'py-20'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-4xl'}
-          >
-            <div className={'mb-12 text-center'}>
-              <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>
-                Simple SMTP configuration
-              </h2>
-              <p className={'mt-4 text-lg text-neutral-600'}>Everything you need to configure your email client</p>
-            </div>
-
-            <div className={'rounded-2xl border border-neutral-200 bg-white p-8 sm:p-12'}>
-              <div className={'space-y-6'}>
-                <div className={'flex items-start justify-between border-b border-neutral-200 pb-6'}>
-                  <div>
-                    <p className={'text-sm font-medium text-neutral-500'}>SMTP Server</p>
-                    <p className={'mt-1 font-mono text-lg text-neutral-900'}>smtp.yourdomain.com</p>
-                  </div>
-                </div>
-                <div className={'grid gap-6 border-b border-neutral-200 pb-6 sm:grid-cols-2'}>
-                  <div>
-                    <p className={'text-sm font-medium text-neutral-500'}>Port (STARTTLS)</p>
-                    <p className={'mt-1 font-mono text-lg text-neutral-900'}>587</p>
-                  </div>
-                  <div>
-                    <p className={'text-sm font-medium text-neutral-500'}>Port (TLS/SSL)</p>
-                    <p className={'mt-1 font-mono text-lg text-neutral-900'}>465</p>
-                  </div>
-                </div>
-                <div className={'grid gap-6 sm:grid-cols-2'}>
-                  <div>
-                    <p className={'text-sm font-medium text-neutral-500'}>Username</p>
-                    <p className={'mt-1 font-mono text-lg text-neutral-900'}>plunk</p>
-                  </div>
-                  <div>
-                    <p className={'text-sm font-medium text-neutral-500'}>Password</p>
-                    <p className={'mt-1 font-mono text-lg text-neutral-900'}>sk_your_secret_key</p>
-                  </div>
-                </div>
-              </div>
-              <div className={'mt-8 rounded-lg bg-neutral-50 p-4'}>
-                <p className={'text-sm text-neutral-600'}>
-                  Find your SMTP credentials in your dashboard under Settings → SMTP. Your password is your project
-                  secret key.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        </section>
-
         {/* Comparison Table */}
         <section className={'py-20'}>
           <motion.div
@@ -256,7 +198,7 @@ export default function SMTPFeature() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-12 text-center'}
           >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>SMTP vs API</h2>
+            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>SMTP vs API</h2>
             <p className={'mt-4 text-lg text-neutral-600'}>Choose the right option for your use case</p>
           </motion.div>
 
@@ -305,7 +247,7 @@ export default function SMTPFeature() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>When to use SMTP</h2>
+            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>When to use SMTP</h2>
             <p className={'mt-4 text-lg text-neutral-600'}>Perfect for these scenarios</p>
           </motion.div>
 
@@ -342,7 +284,12 @@ export default function SMTPFeature() {
         </section>
 
         {/* CTA Section */}
-        <section className={'border-t border-neutral-200 py-20'}>
+        <section className={'relative overflow-hidden border-t border-neutral-200 py-20'}>
+          <div
+            className={
+              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
+            }
+          />
           <motion.div
             initial={{opacity: 0, y: 20}}
             whileInView={{opacity: 1, y: 0}}
@@ -350,7 +297,7 @@ export default function SMTPFeature() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>Start sending via SMTP</h2>
+            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>Start sending via SMTP</h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
               Get your SMTP credentials and start sending emails from any client or application. No credit card
               required.

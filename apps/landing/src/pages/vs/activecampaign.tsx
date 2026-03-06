@@ -25,12 +25,12 @@ const faqs: FAQ[] = [
   {
     question: 'When should I choose ActiveCampaign over Plunk?',
     answer:
-      'Choose ActiveCampaign if you need a full CRM with sales automation, lead scoring, and machine learning features. ActiveCampaign is designed for marketing and sales teams that need an all-in-one platform. Choose Plunk if you need powerful email automation without the complexity—perfect for developers who want to integrate email into their product without CRM overhead.',
+      'Choose ActiveCampaign if you need a full CRM with sales automation, lead scoring, and machine learning features. ActiveCampaign is designed for marketing and sales teams that need an all-in-one platform. Choose Plunk if you need powerful email automation without the complexity. It is built for developers who want to integrate email into their product without CRM overhead.',
   },
   {
     question: 'What is the price difference between Plunk and ActiveCampaign?',
     answer:
-      'ActiveCampaign starts at $29/month for basic features and quickly scales to $149/month or more for automation features. Plunk uses pay-as-you-go pricing—you only pay for emails sent. For email-focused needs, Plunk typically costs 50-80% less than ActiveCampaign while providing the same email automation capabilities.',
+      'ActiveCampaign starts at $29/month for basic features and quickly scales to $149/month or more for automation features. Plunk uses pay-as-you-go pricing. You only pay for emails sent. For email-focused needs, Plunk typically costs 50-80% less than ActiveCampaign while providing the same email automation capabilities.',
   },
   {
     question: "Can Plunk match ActiveCampaign's automation capabilities?",
@@ -40,7 +40,7 @@ const faqs: FAQ[] = [
   {
     question: 'Is migration from ActiveCampaign to Plunk difficult?',
     answer:
-      "It depends on your ActiveCampaign usage. If you're primarily using email automation and campaigns, migration is straightforward—export contacts, recreate workflows, and integrate Plunk's API. If you heavily rely on CRM, lead scoring, or sales automation, you'll need separate tools for those features. Most developers migrate in a day or less.",
+      "It depends on your ActiveCampaign usage. If you're primarily using email automation and campaigns, migration is straightforward: export contacts, recreate workflows, and integrate Plunk's API. If you heavily rely on CRM, lead scoring, or sales automation, you'll need separate tools for those features. Most developers migrate in a day or less.",
   },
   {
     question: 'What ActiveCampaign features does Plunk not have?',
@@ -94,7 +94,7 @@ export default function ActiveCampaignComparison() {
               <span className={'text-sm font-semibold text-neutral-900'}>Plunk vs ActiveCampaign</span>
             </div>
 
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
+            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
               Open-source alternative
               <br />
               for ActiveCampaign
@@ -141,7 +141,7 @@ export default function ActiveCampaignComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>
               Enterprise Features Without Enterprise Prices
             </h2>
             <p className={'mt-4 text-lg text-neutral-600'}>Email automation that doesn't break the bank</p>
@@ -233,7 +233,7 @@ export default function ActiveCampaignComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-20 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Automation Without Complexity</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Automation Without Complexity</h2>
           </motion.div>
 
           <div className={'grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3'}>
@@ -374,7 +374,7 @@ export default function ActiveCampaignComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Feature Comparison</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Feature Comparison</h2>
           </motion.div>
 
           <ComparisonTable competitorName="ActiveCampaign" rows={comparisonData} />
@@ -384,7 +384,12 @@ export default function ActiveCampaignComparison() {
         <FAQSection faqs={faqs} schemaId="faq-schema-activecampaign" />
 
         {/* CTA */}
-        <section className={'border-t border-neutral-200 py-32'}>
+        <section className={'relative overflow-hidden border-t border-neutral-200 py-32'}>
+          <div
+            className={
+              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
+            }
+          />
           <motion.div
             initial={{opacity: 0, y: 20}}
             whileInView={{opacity: 1, y: 0}}
@@ -392,7 +397,7 @@ export default function ActiveCampaignComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>
               Get email automation without the bloat
             </h2>
             <p className={'mt-6 text-lg text-neutral-600'}>

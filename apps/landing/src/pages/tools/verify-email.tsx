@@ -72,7 +72,7 @@ export default function VerifyEmailPage() {
               <span className={'text-sm text-neutral-600'}>Free Tool</span>
             </div>
 
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
+            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
               Email Verification
               <br />
               Tool
@@ -159,7 +159,7 @@ export default function VerifyEmailPage() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Why verify email addresses?</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Why verify email addresses?</h2>
             <p className={'mt-4 text-lg text-neutral-600'}>
               Email verification helps improve deliverability and protect your sender reputation.
             </p>
@@ -201,7 +201,7 @@ export default function VerifyEmailPage() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>
               Ready for production-grade email verification?
             </h2>
             <p className={'mt-6 text-lg text-neutral-600'}>

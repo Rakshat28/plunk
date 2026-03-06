@@ -224,7 +224,12 @@ export default function GuidesIndex() {
         </section>
 
         {/* CTA Section */}
-        <section className={'border-t border-neutral-200 py-32'}>
+        <section className={'relative overflow-hidden border-t border-neutral-200 py-32'}>
+          <div
+            className={
+              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
+            }
+          />
           <motion.div
             initial={{opacity: 0, y: 20}}
             whileInView={{opacity: 1, y: 0}}

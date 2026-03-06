@@ -25,12 +25,12 @@ const faqs: FAQ[] = [
   {
     question: 'When should I choose Klaviyo over Plunk?',
     answer:
-      'Choose Klaviyo if you need deep native e-commerce integrations (Shopify, WooCommerce), SMS marketing, and AI-powered predictive analytics. Klaviyo excels for established e-commerce brands with dedicated marketing teams and budget for enterprise features. Choose Plunk if you need powerful email automation for e-commerce (or any use case) without the premium price tag—perfect for developers and growing businesses.',
+      'Choose Klaviyo if you need deep native e-commerce integrations (Shopify, WooCommerce), SMS marketing, and AI-powered predictive analytics. Klaviyo excels for established e-commerce brands with dedicated marketing teams and budget for enterprise features. Choose Plunk if you need powerful email automation for e-commerce (or any use case) without the premium price tag. It is built for developers and growing businesses who want the capabilities without the cost.',
   },
   {
     question: 'How much cheaper is Plunk compared to Klaviyo?',
     answer:
-      'Klaviyo can be dramatically more expensive. With 10,000 contacts, Klaviyo costs $150-300+/month depending on email volume. Plunk uses pay-as-you-go pricing—you only pay for emails sent, not contacts stored. For most use cases, Plunk costs 60-90% less than Klaviyo while providing the same email automation capabilities. The savings increase as your contact list grows.',
+      'Klaviyo can be dramatically more expensive. With 10,000 contacts, Klaviyo costs $150-300+/month depending on email volume. Plunk uses pay-as-you-go pricing. You only pay for emails sent, not contacts stored. For most use cases, Plunk costs 60-90% less than Klaviyo while providing the same email automation capabilities. The savings increase as your contact list grows.',
   },
   {
     question: 'Can Plunk handle e-commerce emails?',
@@ -94,15 +94,14 @@ export default function KlaviyoComparison() {
               <span className={'text-sm font-semibold text-neutral-900'}>Plunk vs Klaviyo</span>
             </div>
 
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
+            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
               Open-source alternative
               <br />
               for Klaviyo
             </h1>
 
             <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
-              Klaviyo is powerful for e-commerce but extremely expensive. Plunk delivers email automation for any use
-              case—including e-commerce—at a fraction of the cost. No hidden fees, no contact-based pricing.
+              Klaviyo is powerful for e-commerce but extremely expensive. Plunk delivers the same email automation, including full e-commerce support, at a fraction of the cost. No hidden fees, no contact-based pricing.
             </p>
 
             <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
@@ -141,7 +140,7 @@ export default function KlaviyoComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>
               E-commerce Email Without the Premium Price
             </h2>
             <p className={'mt-4 text-lg text-neutral-600'}>Pay for emails sent, not contacts stored</p>
@@ -233,7 +232,7 @@ export default function KlaviyoComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-20 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>
               E-commerce Email, Developer-Friendly
             </h2>
           </motion.div>
@@ -376,7 +375,7 @@ export default function KlaviyoComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Feature Comparison</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Feature Comparison</h2>
           </motion.div>
 
           <ComparisonTable competitorName="Klaviyo" rows={comparisonData} />
@@ -386,7 +385,12 @@ export default function KlaviyoComparison() {
         <FAQSection faqs={faqs} schemaId="faq-schema-klaviyo" />
 
         {/* CTA */}
-        <section className={'border-t border-neutral-200 py-32'}>
+        <section className={'relative overflow-hidden border-t border-neutral-200 py-32'}>
+          <div
+            className={
+              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
+            }
+          />
           <motion.div
             initial={{opacity: 0, y: 20}}
             whileInView={{opacity: 1, y: 0}}
@@ -394,7 +398,7 @@ export default function KlaviyoComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>
               E-commerce email at a fraction of the cost
             </h2>
             <p className={'mt-6 text-lg text-neutral-600'}>

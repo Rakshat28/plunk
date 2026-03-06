@@ -131,15 +131,14 @@ export default function CompetitorsIndex() {
               <span className={'text-sm text-neutral-600'}>Email Platform Comparisons</span>
             </div>
 
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
+            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
               Plunk vs the
               <br />
               competition
             </h1>
 
             <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
-              Compare Plunk with leading email platforms. See why developers choose our open-source alternative for
-              transactional emails plus marketing features.
+              Most email platforms charge by the contact, lock you in, and split transactional from marketing. Plunk does all three in one open-source platform at $0.001 per email.
             </p>
 
             <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
@@ -178,7 +177,7 @@ export default function CompetitorsIndex() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>
               Compare Plunk with Industry Leaders
             </h2>
             <p className={'mt-4 text-lg text-neutral-600'}>See how Plunk stacks up against popular email platforms</p>
@@ -223,7 +222,7 @@ export default function CompetitorsIndex() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Why Choose Plunk</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Why Choose Plunk</h2>
             <p className={'mt-4 text-lg text-neutral-600'}>One platform for all your email needs</p>
           </motion.div>
 
@@ -237,11 +236,10 @@ export default function CompetitorsIndex() {
                 'rounded-2xl border border-neutral-200 bg-white p-8 transition hover:border-neutral-300 hover:shadow-lg'
               }
             >
-              <Mail className="h-8 w-8 text-blue-500 mb-4" />
+              <Mail className="h-8 w-8 text-neutral-900 mb-4" />
               <h3 className={'text-2xl font-bold text-neutral-900'}>Transactional + Marketing</h3>
               <p className={'mt-4 leading-relaxed text-neutral-600'}>
-                Send transactional emails with the same reliability as dedicated providers, plus marketing campaigns,
-                automation, and segmentation—all in one platform.
+                Send transactional emails with the same reliability as dedicated providers, plus marketing campaigns, automation, and segmentation. All in one platform.
               </p>
             </motion.div>
 
@@ -254,7 +252,7 @@ export default function CompetitorsIndex() {
                 'rounded-2xl border border-neutral-200 bg-white p-8 transition hover:border-neutral-300 hover:shadow-lg'
               }
             >
-              <Code className="h-8 w-8 text-green-500 mb-4" />
+              <Code className="h-8 w-8 text-neutral-900 mb-4" />
               <h3 className={'text-2xl font-bold text-neutral-900'}>Open Source & Self-Hostable</h3>
               <p className={'mt-4 leading-relaxed text-neutral-600'}>
                 AGPL-3.0 licensed code you can inspect, modify, and self-host. Full control over your data and
@@ -271,7 +269,7 @@ export default function CompetitorsIndex() {
                 'rounded-2xl border border-neutral-200 bg-white p-8 transition hover:border-neutral-300 hover:shadow-lg'
               }
             >
-              <DollarSign className="h-8 w-8 text-yellow-500 mb-4" />
+              <DollarSign className="h-8 w-8 text-neutral-900 mb-4" />
               <h3 className={'text-2xl font-bold text-neutral-900'}>Simple Pricing</h3>
               <p className={'mt-4 leading-relaxed text-neutral-600'}>
                 Pay-as-you-go pricing with all features included. No separate charges for transactional vs marketing
@@ -282,7 +280,12 @@ export default function CompetitorsIndex() {
         </section>
 
         {/* CTA */}
-        <section className={'border-t border-neutral-200 py-32'}>
+        <section className={'relative overflow-hidden border-t border-neutral-200 py-32'}>
+          <div
+            className={
+              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
+            }
+          />
           <motion.div
             initial={{opacity: 0, y: 20}}
             whileInView={{opacity: 1, y: 0}}
@@ -290,7 +293,7 @@ export default function CompetitorsIndex() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Ready to try Plunk?</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Ready to try Plunk?</h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
               Join thousands of developers using Plunk for reliable email delivery. Start free, scale as you grow.
             </p>

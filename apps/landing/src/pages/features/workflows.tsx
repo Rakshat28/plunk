@@ -105,8 +105,10 @@ export default function WorkflowsFeature() {
               <span className={'font-medium text-neutral-600'}>Workflow Automation</span>
             </div>
 
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
-              Automate Your Email Marketing
+            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
+              Email Automation
+              <br />
+              That Actually Works
             </h1>
             <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
               Turn events into personalized email journeys. Build sophisticated automation workflows with our visual
@@ -149,7 +151,7 @@ export default function WorkflowsFeature() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>
+            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>
               Everything you need for email automation
             </h2>
             <p className={'mt-4 text-lg text-neutral-600'}>Powerful features that make complex automations simple</p>
@@ -188,7 +190,7 @@ export default function WorkflowsFeature() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-4xl text-center'}
           >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>
+            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>
               Visual workflow builder
             </h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
@@ -197,23 +199,21 @@ export default function WorkflowsFeature() {
           </motion.div>
 
           <div className={'mx-auto mt-16 max-w-5xl'}>
-            <div className={'grid gap-8 lg:grid-cols-3'}>
+            <div className={'grid gap-12 lg:grid-cols-3'}>
+
               <motion.div
                 initial={{opacity: 0, y: 20}}
                 whileInView={{opacity: 1, y: 0}}
                 viewport={{once: true}}
                 transition={{duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1]}}
-                className={'rounded-xl border border-neutral-200 bg-white p-8'}
               >
-                <div
-                  className={
-                    'flex h-12 w-12 items-center justify-center rounded-lg bg-neutral-100 text-xl font-bold text-neutral-900'
-                  }
-                >
-                  1
+                <div className={'mb-5 flex items-center gap-4'}>
+                  <div className={'flex h-14 w-14 items-center justify-center rounded-full border-2 border-neutral-200 bg-white text-xl font-bold text-neutral-900'}>
+                    1
+                  </div>
                 </div>
-                <h3 className={'mt-4 text-lg font-semibold text-neutral-900'}>Choose a trigger</h3>
-                <p className={'mt-2 text-sm text-neutral-600'}>
+                <h3 className={'text-lg font-semibold text-neutral-900'}>Choose a trigger</h3>
+                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>
                   Select an event that starts your workflow, like user signup, purchase, or any custom action you track.
                 </p>
               </motion.div>
@@ -223,17 +223,14 @@ export default function WorkflowsFeature() {
                 whileInView={{opacity: 1, y: 0}}
                 viewport={{once: true}}
                 transition={{duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1]}}
-                className={'rounded-xl border border-neutral-200 bg-white p-8'}
               >
-                <div
-                  className={
-                    'flex h-12 w-12 items-center justify-center rounded-lg bg-neutral-100 text-xl font-bold text-neutral-900'
-                  }
-                >
-                  2
+                <div className={'mb-5 flex items-center gap-4'}>
+                  <div className={'flex h-14 w-14 items-center justify-center rounded-full border-2 border-neutral-200 bg-white text-xl font-bold text-neutral-900'}>
+                    2
+                  </div>
                 </div>
-                <h3 className={'mt-4 text-lg font-semibold text-neutral-900'}>Build your flow</h3>
-                <p className={'mt-2 text-sm text-neutral-600'}>
+                <h3 className={'text-lg font-semibold text-neutral-900'}>Build your flow</h3>
+                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>
                   Drag and drop steps to create your workflow. Add emails, delays, conditions, webhooks, and more.
                 </p>
               </motion.div>
@@ -243,17 +240,14 @@ export default function WorkflowsFeature() {
                 whileInView={{opacity: 1, y: 0}}
                 viewport={{once: true}}
                 transition={{duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1]}}
-                className={'rounded-xl border border-neutral-200 bg-white p-8'}
               >
-                <div
-                  className={
-                    'flex h-12 w-12 items-center justify-center rounded-lg bg-neutral-100 text-xl font-bold text-neutral-900'
-                  }
-                >
-                  3
+                <div className={'mb-5 flex items-center gap-4'}>
+                  <div className={'flex h-14 w-14 items-center justify-center rounded-full border-2 border-neutral-200 bg-white text-xl font-bold text-neutral-900'}>
+                    3
+                  </div>
                 </div>
-                <h3 className={'mt-4 text-lg font-semibold text-neutral-900'}>Activate and monitor</h3>
-                <p className={'mt-2 text-sm text-neutral-600'}>
+                <h3 className={'text-lg font-semibold text-neutral-900'}>Activate and monitor</h3>
+                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>
                   Enable your workflow and watch it run automatically. Monitor executions in real-time with full
                   visibility.
                 </p>
@@ -271,7 +265,7 @@ export default function WorkflowsFeature() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>
+            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>
               Built for every use case
             </h2>
             <p className={'mt-4 text-lg text-neutral-600'}>From onboarding to re-engagement, workflows handle it all</p>
@@ -309,7 +303,12 @@ export default function WorkflowsFeature() {
         </section>
 
         {/* CTA Section */}
-        <section className={'border-t border-neutral-200 py-20'}>
+        <section className={'relative overflow-hidden border-t border-neutral-200 py-20'}>
+          <div
+            className={
+              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
+            }
+          />
           <motion.div
             initial={{opacity: 0, y: 20}}
             whileInView={{opacity: 1, y: 0}}
@@ -317,11 +316,11 @@ export default function WorkflowsFeature() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>
-              Ready to automate your emails?
+            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>
+              Set up your first workflow in minutes
             </h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
-              Start building powerful workflows today. No credit card required.
+              1,000 emails free every month. Then $0.001 per email. No contact limits, no credit card required.
             </p>
             <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
               <motion.a

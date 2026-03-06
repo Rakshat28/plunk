@@ -36,10 +36,10 @@ export default function Index() {
         <main>
           <section className={'py-32'}>
             <div className={'mx-auto max-w-4xl text-center'}>
-              <h1 className="text-5xl font-bold tracking-tight text-neutral-900 sm:text-6xl lg:text-7xl">
+              <h1 className="text-5xl font-bold tracking-tight text-neutral-900 sm:text-6xl lg:text-7xl text-balance">
                 Simple, transparent pricing
               </h1>
-              <p className="mx-auto mt-6 max-w-2xl text-xl text-neutral-600">Start free, pay only for what you use</p>
+              <p className="mx-auto mt-6 max-w-2xl text-xl text-neutral-600">1,000 emails free every month. Then $0.001 per email. Unlimited contacts, no hidden fees.</p>
             </div>
 
             {/* Pricing Tiers */}
@@ -207,7 +207,7 @@ export default function Index() {
                         clipRule="evenodd"
                       />
                     </svg>
-                    <span>Billing limits</span>
+                    <span>Monthly spend cap</span>
                   </li>
                   <li className="flex items-start gap-3 text-neutral-600">
                     <svg
@@ -238,7 +238,7 @@ export default function Index() {
 
             {/* Features Grid */}
             <div className="mx-auto mt-24 max-w-5xl">
-              <h2 className="mb-12 text-center text-2xl font-bold text-neutral-900">Everything included</h2>
+              <h2 className="mb-12 text-center text-2xl font-bold text-neutral-900">Every feature on every plan</h2>
               <div className="grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="bg-white p-8">
                   <h3 className="text-lg font-semibold text-neutral-900">Unlimited emails</h3>
@@ -275,7 +275,7 @@ export default function Index() {
                   <div className="flex-1 text-center sm:text-left">
                     <h2 className={'text-2xl font-bold text-neutral-900'}>Self-host</h2>
                     <p className={'mt-2 text-neutral-600'}>
-                      Host Plunk on your own infrastructure. The perfect solution for when you require full control.
+                      Run Plunk on your own infrastructure. Full data ownership, no per-email costs, and GDPR compliance by default.
                     </p>
                   </div>
                   <div className={'sm:ml-auto'}>

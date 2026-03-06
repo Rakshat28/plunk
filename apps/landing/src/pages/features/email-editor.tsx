@@ -112,10 +112,10 @@ export default function EmailEditorFeature() {
               <span className={'font-medium text-neutral-600'}>Email Editor & Templates</span>
             </div>
 
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
-              The Email Editor That
+            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
+              The Email Editor
               <br />
-              Speaks Both Languages
+              That Speaks Both Languages
             </h1>
             <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
               Switch seamlessly between visual and code editing. Preview with real customer data. Create templates that
@@ -158,7 +158,7 @@ export default function EmailEditorFeature() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>
+            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>
               Two editors, one experience
             </h2>
             <p className={'mt-4 text-lg text-neutral-600'}>Visual editing for speed, code editing for control</p>
@@ -197,30 +197,28 @@ export default function EmailEditorFeature() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-4xl text-center'}
           >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>
+            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>
               From first draft to send
             </h2>
             <p className={'mt-6 text-lg text-neutral-600'}>Create, preview, and deploy templates in minutes</p>
           </motion.div>
 
           <div className={'mx-auto mt-16 max-w-5xl'}>
-            <div className={'grid gap-8 lg:grid-cols-3'}>
+            <div className={'grid gap-12 lg:grid-cols-3'}>
+
               <motion.div
                 initial={{opacity: 0, y: 20}}
                 whileInView={{opacity: 1, y: 0}}
                 viewport={{once: true}}
                 transition={{duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1]}}
-                className={'rounded-xl border border-neutral-200 bg-white p-8'}
               >
-                <div
-                  className={
-                    'flex h-12 w-12 items-center justify-center rounded-lg bg-neutral-100 text-xl font-bold text-neutral-900'
-                  }
-                >
-                  1
+                <div className={'mb-5 flex items-center gap-4'}>
+                  <div className={'flex h-14 w-14 items-center justify-center rounded-full border-2 border-neutral-200 bg-white text-xl font-bold text-neutral-900'}>
+                    1
+                  </div>
                 </div>
-                <h3 className={'mt-4 text-lg font-semibold text-neutral-900'}>Create your template</h3>
-                <p className={'mt-2 text-sm text-neutral-600'}>
+                <h3 className={'text-lg font-semibold text-neutral-900'}>Create your template</h3>
+                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>
                   Use the visual editor for quick formatting or write custom HTML. Add variables with autocomplete.
                 </p>
               </motion.div>
@@ -230,17 +228,14 @@ export default function EmailEditorFeature() {
                 whileInView={{opacity: 1, y: 0}}
                 viewport={{once: true}}
                 transition={{duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1]}}
-                className={'rounded-xl border border-neutral-200 bg-white p-8'}
               >
-                <div
-                  className={
-                    'flex h-12 w-12 items-center justify-center rounded-lg bg-neutral-100 text-xl font-bold text-neutral-900'
-                  }
-                >
-                  2
+                <div className={'mb-5 flex items-center gap-4'}>
+                  <div className={'flex h-14 w-14 items-center justify-center rounded-full border-2 border-neutral-200 bg-white text-xl font-bold text-neutral-900'}>
+                    2
+                  </div>
                 </div>
-                <h3 className={'mt-4 text-lg font-semibold text-neutral-900'}>Preview with real data</h3>
-                <p className={'mt-2 text-sm text-neutral-600'}>
+                <h3 className={'text-lg font-semibold text-neutral-900'}>Preview with real data</h3>
+                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>
                   Select any contact and see exactly what they'll receive. Test on desktop, tablet, and mobile. No
                   surprises.
                 </p>
@@ -251,17 +246,14 @@ export default function EmailEditorFeature() {
                 whileInView={{opacity: 1, y: 0}}
                 viewport={{once: true}}
                 transition={{duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1]}}
-                className={'rounded-xl border border-neutral-200 bg-white p-8'}
               >
-                <div
-                  className={
-                    'flex h-12 w-12 items-center justify-center rounded-lg bg-neutral-100 text-xl font-bold text-neutral-900'
-                  }
-                >
-                  3
+                <div className={'mb-5 flex items-center gap-4'}>
+                  <div className={'flex h-14 w-14 items-center justify-center rounded-full border-2 border-neutral-200 bg-white text-xl font-bold text-neutral-900'}>
+                    3
+                  </div>
                 </div>
-                <h3 className={'mt-4 text-lg font-semibold text-neutral-900'}>Use everywhere</h3>
-                <p className={'mt-2 text-sm text-neutral-600'}>
+                <h3 className={'text-lg font-semibold text-neutral-900'}>Use everywhere</h3>
+                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>
                   Use your template in campaigns, workflows, and API calls. One template, unlimited uses.
                 </p>
               </motion.div>
@@ -278,7 +270,7 @@ export default function EmailEditorFeature() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>Built for every team</h2>
+            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>Built for every team</h2>
             <p className={'mt-4 text-lg text-neutral-600'}>Whether you're a developer, marketer, or founder</p>
           </motion.div>
 
@@ -314,7 +306,12 @@ export default function EmailEditorFeature() {
         </section>
 
         {/* CTA Section */}
-        <section className={'border-t border-neutral-200 py-20'}>
+        <section className={'relative overflow-hidden border-t border-neutral-200 py-20'}>
+          <div
+            className={
+              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
+            }
+          />
           <motion.div
             initial={{opacity: 0, y: 20}}
             whileInView={{opacity: 1, y: 0}}
@@ -322,11 +319,11 @@ export default function EmailEditorFeature() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl'}>
-              Ready to create better emails?
+            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>
+              Build your first template today
             </h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
-              Start building beautiful, personalized emails today. No credit card required.
+              1,000 emails free every month. Then $0.001 per email. No contact limits, no credit card required.
             </p>
             <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
               <motion.a

@@ -89,15 +89,14 @@ export default function ResendComparison() {
               <span className={'text-sm font-semibold text-neutral-900'}>Plunk vs Resend</span>
             </div>
 
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
+            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
               Open-source alternative
               <br />
               for Resend
             </h1>
 
             <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
-              Resend is excellent for transactional emails. Plunk adds marketing campaigns, workflow automation, and is
-              open-source. Choose based on what you need.
+              Resend is transactional-only. Plunk gives you transactional emails, marketing campaigns, and workflow automation in a single open-source platform. No second tool, no second bill.
             </p>
 
             <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
@@ -136,7 +135,7 @@ export default function ResendComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>The Pricing Model That Makes Sense</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>The Pricing Model That Makes Sense</h2>
             <p className={'mt-4 text-lg text-neutral-600'}>Pay for what you use, not fixed subscriptions</p>
           </motion.div>
 
@@ -226,7 +225,7 @@ export default function ResendComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Feature-by-Feature</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Feature-by-Feature</h2>
           </motion.div>
 
           <ComparisonTable competitorName="Resend" rows={comparisonData} />
@@ -241,7 +240,7 @@ export default function ResendComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-20 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>What Plunk Adds</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>What Plunk Adds</h2>
             <p className={'mt-4 text-lg text-neutral-600'}>Beyond transactional emails</p>
           </motion.div>
 
@@ -376,7 +375,12 @@ export default function ResendComparison() {
         <FAQSection faqs={faqs} schemaId="faq-schema-resend" />
 
         {/* CTA */}
-        <section className={'border-t border-neutral-200 py-32'}>
+        <section className={'relative overflow-hidden border-t border-neutral-200 py-32'}>
+          <div
+            className={
+              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
+            }
+          />
           <motion.div
             initial={{opacity: 0, y: 20}}
             whileInView={{opacity: 1, y: 0}}
@@ -384,7 +388,7 @@ export default function ResendComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Try Plunk free</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Try Plunk free</h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
               1,000 emails/month free. No credit card required. Add marketing and automation when you need it.
             </p>

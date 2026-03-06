@@ -64,7 +64,7 @@ export default function MarkdownToEmail() {
               <span className={'text-sm text-neutral-600'}>Free Tool</span>
             </div>
 
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
+            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
               Markdown to Email
               <br />
               HTML Converter
@@ -134,7 +134,7 @@ export default function MarkdownToEmail() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Ready to send great emails?</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Ready to send great emails?</h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
               This tool is great for creating email HTML, but Plunk handles everything: templates, sending, tracking,
               and deliverability. Start free, no credit card required.

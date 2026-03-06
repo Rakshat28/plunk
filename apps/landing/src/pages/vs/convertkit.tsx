@@ -30,12 +30,12 @@ const faqs: FAQ[] = [
   {
     question: 'What is the pricing difference between Plunk and ConvertKit?',
     answer:
-      'ConvertKit charges based on subscriber count—your cost increases as your list grows, regardless of how many emails you send. Plunk uses pay-as-you-go pricing where you only pay for emails actually sent. This means with ConvertKit, a list of 10,000 subscribers costs $119/month even if you rarely email them. With Plunk, you only pay when you send.',
+      'ConvertKit charges based on subscriber count. Your cost increases as your list grows, regardless of how many emails you send. Plunk uses pay-as-you-go pricing where you only pay for emails actually sent. This means with ConvertKit, a list of 10,000 subscribers costs $119/month even if you rarely email them. With Plunk, you only pay when you send.',
   },
   {
     question: 'Can Plunk handle creator workflows like ConvertKit?',
     answer:
-      "Yes, Plunk supports email automation, workflows, and segmentation similar to ConvertKit. You can create automated sequences, trigger emails based on events, and segment your audience. The main difference is Plunk doesn't include landing page builders or product selling features—it's focused purely on email delivery and automation.",
+      "Yes, Plunk supports email automation, workflows, and segmentation similar to ConvertKit. You can create automated sequences, trigger emails based on events, and segment your audience. The main difference is Plunk doesn't include landing page builders or product selling features. It's focused purely on email delivery and automation.",
   },
   {
     question: 'Does Plunk have landing pages like ConvertKit?',
@@ -57,7 +57,7 @@ export default function ConvertkitComparison() {
     <>
       <NextSeo
         title="ConvertKit Alternative for Developers | Plunk"
-        description="Developer-first alternative to ConvertKit. Pay per email instead of per subscriber. Open-source, self-hostable, with powerful automation—no landing page bloat."
+        description="Developer-first alternative to ConvertKit. Pay per email instead of per subscriber. Open-source, self-hostable, with powerful automation. No landing page bloat."
         canonical="https://next.useplunk.com/vs/convertkit"
         openGraph={{
           title: 'ConvertKit Alternative for Developers | Plunk',
@@ -94,7 +94,7 @@ export default function ConvertkitComparison() {
               <span className={'text-sm font-semibold text-neutral-900'}>Plunk vs ConvertKit</span>
             </div>
 
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
+            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
               Open-source alternative
               <br />
               for ConvertKit
@@ -141,7 +141,7 @@ export default function ConvertkitComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Pay for Emails, Not Subscribers</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Pay for Emails, Not Subscribers</h2>
             <p className={'mt-4 text-lg text-neutral-600'}>Pricing that grows with usage, not list size</p>
           </motion.div>
 
@@ -231,7 +231,7 @@ export default function ConvertkitComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-20 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Built for Developers, Not Creators</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Built for Developers, Not Creators</h2>
           </motion.div>
 
           <div className={'grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3'}>
@@ -372,7 +372,7 @@ export default function ConvertkitComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mb-16 text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Feature Comparison</h2>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Feature Comparison</h2>
           </motion.div>
 
           <ComparisonTable competitorName="ConvertKit" rows={comparisonData} />
@@ -382,7 +382,12 @@ export default function ConvertkitComparison() {
         <FAQSection faqs={faqs} schemaId="faq-schema-convertkit" />
 
         {/* CTA */}
-        <section className={'border-t border-neutral-200 py-32'}>
+        <section className={'relative overflow-hidden border-t border-neutral-200 py-32'}>
+          <div
+            className={
+              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
+            }
+          />
           <motion.div
             initial={{opacity: 0, y: 20}}
             whileInView={{opacity: 1, y: 0}}
@@ -390,7 +395,7 @@ export default function ConvertkitComparison() {
             transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             className={'mx-auto max-w-3xl text-center'}
           >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>
+            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>
               Ready for a developer-first email platform?
             </h2>
             <p className={'mt-6 text-lg text-neutral-600'}>
