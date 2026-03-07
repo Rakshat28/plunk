@@ -1,7 +1,8 @@
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle} from '@plunk/ui';
-import {BookOpen, CheckCircle2, Mail, MessageCircle, Shield, Users, Zap} from 'lucide-react';
+import {AnimatePresence, motion} from 'framer-motion';
+import {BookOpen, Check, CheckCircle2, Mail, MessageCircle, Shield, Users, Zap} from 'lucide-react';
 import Link from 'next/link';
-import {useMemo} from 'react';
+import {useMemo, useState} from 'react';
 import {LANDING_URI, WIKI_URI} from '../lib/constants';
 import type {ProjectSetupState} from '../lib/hooks/useProjectSetupState';
 import {useConfig} from '../lib/hooks/useConfig';
@@ -23,6 +24,14 @@ interface QuickStartProps {
 
 // Help resources that always appear
 function HelpResources() {
+  const [copied, setCopied] = useState(false);
+
+  const copyEmail = () => {
+    void navigator.clipboard.writeText('support@useplunk.com');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="mt-4 pt-4 border-t border-neutral-200">
       <p className="text-xs font-medium text-neutral-500 mb-3">Need help?</p>
@@ -39,6 +48,39 @@ function HelpResources() {
             Join Discord
           </Button>
         </Link>
+        <motion.button
+          onClick={copyEmail}
+          whileTap={{scale: 0.97}}
+          className="flex-1 relative flex items-center justify-center gap-1.5 rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 overflow-hidden transition-colors hover:bg-neutral-50 hover:text-neutral-900 hover:border-neutral-300"
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            {copied ? (
+              <motion.span
+                key="copied"
+                className="flex items-center gap-1.5"
+                initial={{opacity: 0, y: 6}}
+                animate={{opacity: 1, y: 0}}
+                exit={{opacity: 0, y: -6}}
+                transition={{duration: 0.15}}
+              >
+                <Check className="h-3.5 w-3.5 text-green-600" />
+                <span className="text-green-600">Copied!</span>
+              </motion.span>
+            ) : (
+              <motion.span
+                key="idle"
+                className="flex items-center gap-1.5"
+                initial={{opacity: 0, y: 6}}
+                animate={{opacity: 1, y: 0}}
+                exit={{opacity: 0, y: -6}}
+                transition={{duration: 0.15}}
+              >
+                <Mail className="h-3.5 w-3.5" />
+                Email support
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
       </div>
     </div>
   );
