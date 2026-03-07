@@ -4,6 +4,8 @@ description: Send real-time event data from Plunk to your own application using 
 icon: Webhook
 ---
 
+import {Tab, Tabs} from 'fumadocs-ui/components/tabs';
+
 Plunk can send real-time HTTP requests to your application when specific events occur, such as email bounces, spam complaints, or custom events. This is done by creating a [workflow](/concepts/workflows) that uses the **Webhook** step to forward event data to your own endpoint.
 
 ## How it works
@@ -104,7 +106,13 @@ When using the default payload (no custom body configured), Plunk sends a JSON r
   "event": {
     "subject": "Welcome to Plunk",
     "from": "hello@example.com",
-    "bounceType": "Permanent"
+    "fromName": "Plunk Team",
+    "messageId": "ses-message-id",
+    "templateId": null,
+    "campaignId": "camp_abc123",
+    "sourceType": "CAMPAIGN",
+    "bounceType": "Permanent",
+    "bouncedAt": "2025-01-15T10:30:00.000Z"
   }
 }
 ```
@@ -113,16 +121,268 @@ The `event` field contains the data associated with the event that triggered the
 
 ### Event data by type
 
-The `event` field varies depending on which event triggered the workflow:
+#### Email events
 
-| Event             | Fields in `event`                                                        |
-| ----------------- | ------------------------------------------------------------------------ |
-| `email.sent`      | `subject`, `from`, `messageId`, `templateId`, `campaignId`, `sourceType` |
-| `email.open`      | `subject`, `from`, `openedAt`, `isFirstOpen`                             |
-| `email.click`     | `subject`, `from`, `clickedAt`, `clicks`, `isFirstClick`                 |
-| `email.bounce`    | `subject`, `from`, `bounceType`, `bouncedAt`                             |
-| `email.complaint` | `subject`, `from`, `complainedAt`                                        |
-| Custom events     | Whatever data you passed when tracking the event                         |
+Most email events share a common set of base fields:
+
+| Field        | Description                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------------- |
+| `subject`    | The email subject line                                                                      |
+| `from`       | The sender email address                                                                    |
+| `fromName`   | The sender display name                                                                     |
+| `messageId`  | The AWS SES message ID                                                                      |
+| `templateId` | The template ID, if the email was sent using a template (otherwise `null`)                  |
+| `campaignId` | The campaign ID, if the email was part of a campaign (otherwise `null`)                     |
+| `sourceType` | How the email was triggered: `TRANSACTIONAL`, `CAMPAIGN`, `WORKFLOW`, or `INBOUND`          |
+
+In addition to these base fields, each event includes the following event-specific fields:
+
+<Tabs items={['email.sent', 'email.delivery', 'email.open', 'email.click', 'email.bounce', 'email.complaint', 'email.received']}>
+
+<Tab value="email.sent">
+
+```json
+{
+  "subject": "Welcome to Plunk",
+  "from": "hello@example.com",
+  "fromName": "Plunk Team",
+  "messageId": "ses-message-id",
+  "templateId": null,
+  "campaignId": null,
+  "sourceType": "TRANSACTIONAL",
+  "sentAt": "2025-01-15T10:30:00.000Z"
+}
+```
+
+| Field    | Description              |
+| -------- | ------------------------ |
+| `sentAt` | When the email was sent  |
+
+</Tab>
+
+<Tab value="email.delivery">
+
+```json
+{
+  "subject": "Welcome to Plunk",
+  "from": "hello@example.com",
+  "fromName": "Plunk Team",
+  "messageId": "ses-message-id",
+  "templateId": null,
+  "campaignId": "camp_abc123",
+  "sourceType": "CAMPAIGN",
+  "deliveredAt": "2025-01-15T10:30:05.000Z"
+}
+```
+
+| Field         | Description                     |
+| ------------- | ------------------------------- |
+| `deliveredAt` | When the email was delivered    |
+
+</Tab>
+
+<Tab value="email.open">
+
+```json
+{
+  "subject": "Welcome to Plunk",
+  "from": "hello@example.com",
+  "fromName": "Plunk Team",
+  "messageId": "ses-message-id",
+  "templateId": null,
+  "campaignId": null,
+  "sourceType": "TRANSACTIONAL",
+  "openedAt": "2025-01-15T11:00:00.000Z",
+  "opens": 1,
+  "isFirstOpen": true
+}
+```
+
+| Field         | Description                                                  |
+| ------------- | ------------------------------------------------------------ |
+| `openedAt`    | When the email was first opened                              |
+| `opens`       | Total number of times this email has been opened             |
+| `isFirstOpen` | `true` if this is the first time the contact opened the email |
+
+</Tab>
+
+<Tab value="email.click">
+
+```json
+{
+  "subject": "Welcome to Plunk",
+  "from": "hello@example.com",
+  "fromName": "Plunk Team",
+  "messageId": "ses-message-id",
+  "templateId": null,
+  "campaignId": null,
+  "sourceType": "TRANSACTIONAL",
+  "link": "https://example.com/pricing",
+  "clickedAt": "2025-01-15T11:05:00.000Z",
+  "clicks": 1,
+  "isFirstClick": true
+}
+```
+
+| Field          | Description                                                    |
+| -------------- | -------------------------------------------------------------- |
+| `link`         | The URL that was clicked                                       |
+| `clickedAt`    | When the first click occurred                                  |
+| `clicks`       | Total number of times links in this email have been clicked    |
+| `isFirstClick` | `true` if this is the first click from this contact on this email |
+
+</Tab>
+
+<Tab value="email.bounce">
+
+Permanent bounce:
+
+```json
+{
+  "subject": "Welcome to Plunk",
+  "from": "hello@example.com",
+  "fromName": "Plunk Team",
+  "messageId": "ses-message-id",
+  "templateId": null,
+  "campaignId": null,
+  "sourceType": "TRANSACTIONAL",
+  "bounceType": "Permanent",
+  "bouncedAt": "2025-01-15T10:31:00.000Z"
+}
+```
+
+Transient (soft) bounce:
+
+```json
+{
+  "subject": "Welcome to Plunk",
+  "from": "hello@example.com",
+  "fromName": "Plunk Team",
+  "messageId": "ses-message-id",
+  "templateId": null,
+  "campaignId": null,
+  "sourceType": "TRANSACTIONAL",
+  "bounceType": "Transient",
+  "transientBounce": true
+}
+```
+
+| Field            | Description                                                                                     |
+| ---------------- | ----------------------------------------------------------------------------------------------- |
+| `bounceType`     | `Permanent` (hard bounce) or `Transient` (soft bounce, e.g. mailbox full or out-of-office)     |
+| `bouncedAt`      | When the bounce occurred (permanent bounces only)                                               |
+| `transientBounce`| `true` for soft bounces — these do not count toward bounce rate and the contact stays subscribed |
+
+<Callout title="Bounce rate impact" variant="warn">
+  Only `Permanent` bounces count toward your project's bounce rate and trigger automatic contact unsubscription. `Transient` bounces are tracked for visibility only.
+</Callout>
+
+</Tab>
+
+<Tab value="email.complaint">
+
+```json
+{
+  "subject": "Welcome to Plunk",
+  "from": "hello@example.com",
+  "fromName": "Plunk Team",
+  "messageId": "ses-message-id",
+  "templateId": null,
+  "campaignId": null,
+  "sourceType": "TRANSACTIONAL",
+  "complainedAt": "2025-01-15T10:35:00.000Z"
+}
+```
+
+| Field          | Description                                      |
+| -------------- | ------------------------------------------------ |
+| `complainedAt` | When the spam complaint was received             |
+
+</Tab>
+
+<Tab value="email.received">
+
+This event fires when an email is received at your verified domain. See [Receiving Emails](/guides/receiving-emails) for setup instructions.
+
+```json
+{
+  "messageId": "ses-message-id",
+  "from": "sender@example.com",
+  "fromHeader": "Jane Smith <sender@example.com>",
+  "to": "support@yourdomain.com",
+  "subject": "Re: Your question",
+  "timestamp": "2025-01-15T10:30:00.000Z",
+  "recipients": ["support@yourdomain.com"],
+  "hasContent": true,
+  "spamVerdict": "PASS",
+  "virusVerdict": "PASS",
+  "spfVerdict": "PASS",
+  "dkimVerdict": "PASS",
+  "dmarcVerdict": "PASS",
+  "processingTimeMillis": 142
+}
+```
+
+| Field                  | Description                                                         |
+| ---------------------- | ------------------------------------------------------------------- |
+| `messageId`            | The AWS SES message ID                                              |
+| `from`                 | The sender's email address                                          |
+| `fromHeader`           | The full `From` header, including display name if present           |
+| `to`                   | The recipient address at your verified domain                       |
+| `subject`              | The email subject line                                              |
+| `timestamp`            | When SES received the email                                         |
+| `recipients`           | All recipient addresses in the envelope                             |
+| `hasContent`           | Whether the email body content is available                         |
+| `spamVerdict`          | SES spam check result: `PASS`, `FAIL`, `GRAY`, or `PROCESSING_FAILED` |
+| `virusVerdict`         | SES virus check result                                              |
+| `spfVerdict`           | SPF authentication result                                           |
+| `dkimVerdict`          | DKIM authentication result                                          |
+| `dmarcVerdict`         | DMARC authentication result                                         |
+| `processingTimeMillis` | Time SES took to process the inbound email                          |
+
+</Tab>
+
+</Tabs>
+
+#### Contact events
+
+`contact.subscribed` and `contact.unsubscribed` carry no event data by default. The `event` field will be an empty object `{}`.
+
+The exception is when an unsubscription is triggered automatically by an email bounce or complaint — in that case `event` includes a `reason` field:
+
+```json
+{
+  "reason": "bounce"
+}
+```
+
+| Field    | Value                                              |
+| -------- | -------------------------------------------------- |
+| `reason` | `"bounce"` or `"complaint"` (when system-triggered) |
+
+#### Segment events
+
+Both `segment.<name>.entry` and `segment.<name>.exit` include:
+
+```json
+{
+  "segmentId": "seg_abc123",
+  "segmentName": "VIP Users"
+}
+```
+
+| Field         | Description                   |
+| ------------- | ----------------------------- |
+| `segmentId`   | The ID of the segment         |
+| `segmentName` | The display name of the segment |
+
+#### Custom events
+
+Custom events tracked via the API include whatever data you passed in the `data` field when calling `track`.
+
+#### No event data
+
+For events that carry no data, the `event` field will be an empty object `{}`.
 
 ## Common use cases
 
