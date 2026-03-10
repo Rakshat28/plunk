@@ -1,6 +1,7 @@
 import './global.css';
 import {DocsLayout} from 'fumadocs-ui/layouts/docs';
 import {RootProvider} from 'fumadocs-ui/provider/next';
+import Script from 'next/script';
 import type {ReactNode} from 'react';
 import React from 'react';
 
@@ -64,6 +65,12 @@ export default function Layout({children}: {children: ReactNode}) {
         <meta name="theme-color" content="#ffffff" />
         <link rel="manifest" href="/favicon/site.webmanifest" />
       </head>
+      <Script
+        defer
+        src="https://analytics.driaug.com/script.js"
+        data-website-id="ba0b7094-e693-492e-902a-c62aab868715"
+        data-domains="docs.useplunk.com"
+      />
       <body className="flex flex-col min-h-screen antialiased text-neutral-800" suppressHydrationWarning>
         <RootProvider
           theme={{

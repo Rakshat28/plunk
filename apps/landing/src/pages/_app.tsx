@@ -6,6 +6,7 @@ import {toast, Toaster} from 'sonner';
 import {SWRConfig} from 'swr';
 import {network} from '../lib/network';
 import {DefaultSeo} from 'next-seo';
+import Script from 'next/script';
 
 /**
  * Main app component
@@ -15,10 +16,6 @@ import {DefaultSeo} from 'next-seo';
  */
 function App({Component, pageProps}: AppProps) {
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
     const searchParams = new URLSearchParams(window.location.search);
     const message = searchParams.get('message');
 
@@ -66,6 +63,13 @@ export default function WithProviders(props: AppProps) {
           images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk'}],
         }}
         additionalMetaTags={[{property: 'title', content: 'Plunk | The Open-Source Email Platform'}]}
+      />
+
+      <Script
+        defer
+        src="https://analytics.driaug.com/script.js"
+        data-website-id="6ed9fa6c-3a75-4926-ad4d-f607557f79f1"
+        data-domains="www.useplunk.com"
       />
 
       <App {...props} />
