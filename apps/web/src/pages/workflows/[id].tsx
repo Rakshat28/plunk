@@ -205,23 +205,33 @@ export default function WorkflowEditorPage() {
           break;
 
         case 'CONDITION':
-          // Extract field name from both legacy format (object) and new format (string)
-          let fieldValue = '';
-          if (config.field) {
-            if (typeof config.field === 'object' && config.field !== null && 'field' in config.field) {
-              fieldValue = String(config.field.field || '');
-            } else {
-              fieldValue = String(config.field);
+          if (config.mode === 'multi') {
+            // Multi-branch validation
+            if (!config.field) {
+              errors.push(`"${step.name}" step is missing condition field`);
             }
-          }
+            if (!Array.isArray(config.branches) || config.branches.length === 0) {
+              errors.push(`"${step.name}" step needs at least one branch`);
+            }
+          } else {
+            // Extract field name from both legacy format (object) and new format (string)
+            let fieldValue = '';
+            if (config.field) {
+              if (typeof config.field === 'object' && config.field !== null && 'field' in config.field) {
+                fieldValue = String(config.field.field || '');
+              } else {
+                fieldValue = String(config.field);
+              }
+            }
 
-          if (!fieldValue || !config.operator) {
-            errors.push(`"${step.name}" step is missing condition configuration (field or operator)`);
-          }
-          // Check if value is required for this operator
-          const operatorNeedsValue = !['exists', 'notExists'].includes(String(config.operator || ''));
-          if (operatorNeedsValue && (config.value === undefined || config.value === null || config.value === '')) {
-            errors.push(`"${step.name}" step is missing a value for the condition`);
+            if (!fieldValue || !config.operator) {
+              errors.push(`"${step.name}" step is missing condition configuration (field or operator)`);
+            }
+            // Check if value is required for this operator
+            const operatorNeedsValue = !['exists', 'notExists'].includes(String(config.operator || ''));
+            if (operatorNeedsValue && (config.value === undefined || config.value === null || config.value === '')) {
+              errors.push(`"${step.name}" step is missing a value for the condition`);
+            }
           }
           break;
 
@@ -264,20 +274,39 @@ export default function WorkflowEditorPage() {
       errors.push('Workflow must have a trigger step');
     }
 
-    // Check for CONDITION steps that don't have both yes and no branches
+    // Check for CONDITION steps that don't have all required branches connected
     workflow.steps.forEach(step => {
       if (step.type === 'CONDITION' && step.outgoingTransitions) {
-        const hasYesBranch = step.outgoingTransitions.some(t => {
-          const condition = t.condition;
-          return condition && typeof condition === 'object' && 'branch' in condition && condition.branch === 'yes';
-        });
-        const hasNoBranch = step.outgoingTransitions.some(t => {
-          const condition = t.condition;
-          return condition && typeof condition === 'object' && 'branch' in condition && condition.branch === 'no';
+        const config = step.config && typeof step.config === 'object' && !Array.isArray(step.config) ? step.config : {};
+
+        // Determine expected branches based on mode
+        let expectedBranches: string[];
+        if ((config as any).mode === 'multi' && Array.isArray((config as any).branches)) {
+          expectedBranches = [...(config as any).branches.map((b: any) => b.id), 'default'];
+        } else {
+          expectedBranches = ['yes', 'no'];
+        }
+
+        const missingBranches = expectedBranches.filter(branchId => {
+          return !step.outgoingTransitions.some(t => {
+            const condition = t.condition;
+            return condition && typeof condition === 'object' && 'branch' in condition && condition.branch === branchId;
+          });
         });
 
-        if (!hasYesBranch || !hasNoBranch) {
-          errors.push(`"${step.name}" condition step must have both YES and NO branches connected`);
+        if (missingBranches.length > 0) {
+          if ((config as any).mode === 'multi') {
+            const branchNames = missingBranches.map(id => {
+              if (id === 'default') return 'Default';
+              const branch = (config as any).branches?.find((b: any) => b.id === id);
+              return branch?.name || id;
+            });
+            errors.push(
+              `"${step.name}" condition step is missing connections for: ${branchNames.join(', ')}`,
+            );
+          } else {
+            errors.push(`"${step.name}" condition step must have both YES and NO branches connected`);
+          }
         }
       }
     });
@@ -1839,6 +1868,9 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
   );
 
   // CONDITION fields - handle both old format (object) and new format (string)
+  const [conditionMode, setConditionMode] = useState<'binary' | 'multi'>(() => {
+    return config?.mode === 'multi' ? 'multi' : 'binary';
+  });
   const [conditionField, setConditionField] = useState(() => {
     if (!config?.field) return '';
     // Handle case where field is an object like {field: 'email', type: 'string'} (legacy format)
@@ -1850,6 +1882,19 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
   });
   const [conditionOperator, setConditionOperator] = useState(String(config?.operator || 'equals'));
   const [conditionValue, setConditionValue] = useState(String(config?.value ?? ''));
+  const [conditionBranches, setConditionBranches] = useState<
+    Array<{id: string; name: string; operator: string; value: string}>
+  >(() => {
+    if (config?.mode === 'multi' && Array.isArray(config.branches)) {
+      return config.branches.map((b: any) => ({
+        id: String(b.id || crypto.randomUUID().slice(0, 8)),
+        name: String(b.name || ''),
+        operator: String(b.operator || 'equals'),
+        value: String(b.value ?? ''),
+      }));
+    }
+    return [{id: crypto.randomUUID().slice(0, 8), name: '', operator: 'equals', value: ''}];
+  });
   const [availableFields, setAvailableFields] = useState<Array<{field: string; type: string; category: string}>>([]);
   const [loadingFields, setLoadingFields] = useState(false);
 
@@ -2020,17 +2065,50 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
         }
         newConfig = {amount, unit: delayUnit};
       } else if (step.type === 'CONDITION') {
-        // Parse the value based on type
-        let parsedValue: string | number | boolean = conditionValue;
-        if (conditionValue === 'true') parsedValue = true;
-        else if (conditionValue === 'false') parsedValue = false;
-        else if (!isNaN(Number(conditionValue))) parsedValue = Number(conditionValue);
+        if (conditionMode === 'multi') {
+          // Validate branches
+          const validBranches = conditionBranches.filter(b => b.name.trim());
+          if (validBranches.length === 0) {
+            toast.error('At least one branch with a name is required');
+            setIsSubmitting(false);
+            return;
+          }
+          if (!conditionField) {
+            toast.error('Please select a field');
+            setIsSubmitting(false);
+            return;
+          }
 
-        newConfig = {
-          field: conditionField,
-          operator: conditionOperator,
-          value: parsedValue,
-        };
+          newConfig = {
+            mode: 'multi' as const,
+            field: conditionField,
+            branches: validBranches.map(b => {
+              let parsedValue: string | number | boolean = b.value;
+              if (b.value === 'true') parsedValue = true;
+              else if (b.value === 'false') parsedValue = false;
+              else if (b.value !== '' && !isNaN(Number(b.value))) parsedValue = Number(b.value);
+
+              return {
+                id: b.id,
+                name: b.name.trim(),
+                operator: b.operator,
+                value: parsedValue,
+              };
+            }),
+          };
+        } else {
+          // Parse the value based on type
+          let parsedValue: string | number | boolean = conditionValue;
+          if (conditionValue === 'true') parsedValue = true;
+          else if (conditionValue === 'false') parsedValue = false;
+          else if (!isNaN(Number(conditionValue))) parsedValue = Number(conditionValue);
+
+          newConfig = {
+            field: conditionField,
+            operator: conditionOperator,
+            value: parsedValue,
+          };
+        }
       } else if (step.type === 'EXIT') {
         newConfig = {reason: exitReason};
       } else if (step.type === 'WEBHOOK') {
@@ -2318,10 +2396,49 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
               </div>
 
               <div className="space-y-4 pl-3">
-                <p className="text-xs text-neutral-600">
-                  Define the condition that will be evaluated to determine which path the workflow should follow
-                </p>
+                {/* Mode toggle */}
+                <div>
+                  <Label className="text-sm font-medium mb-2 block">Condition Mode</Label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setConditionMode('binary')}
+                      className={`flex-1 px-3 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
+                        conditionMode === 'binary'
+                          ? 'border-purple-500 bg-purple-50 text-purple-700'
+                          : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
+                      }`}
+                    >
+                      Simple (If/Else)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConditionMode('multi')}
+                      className={`flex-1 px-3 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
+                        conditionMode === 'multi'
+                          ? 'border-purple-500 bg-purple-50 text-purple-700'
+                          : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
+                      }`}
+                    >
+                      Multi-branch (Switch)
+                    </button>
+                  </div>
+                  <p className="text-xs text-neutral-500 mt-1.5">
+                    {conditionMode === 'binary'
+                      ? 'Evaluates a single condition with Yes/No paths'
+                      : 'Match a field against multiple values, each routing to its own branch'}
+                  </p>
+                  {conditionMode !== (config?.mode === 'multi' ? 'multi' : 'binary') &&
+                    (step as any).outgoingTransitions &&
+                    (step as any).outgoingTransitions.length > 0 && (
+                      <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+                        <AlertTriangle className="h-3 w-3 inline mr-1" />
+                        Changing mode will disconnect existing branches. You will need to rewire them.
+                      </div>
+                    )}
+                </div>
 
+                {/* Field selector (shared between modes) */}
                 <div>
                   <Label htmlFor="editConditionField">Field to Check *</Label>
                   {loadingFields ? (
@@ -2396,80 +2513,205 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                   )}
                 </div>
 
-                <div>
-                  <Label htmlFor="editConditionOperator">Operator *</Label>
-                  <Select value={conditionOperator} onValueChange={setConditionOperator}>
-                    <SelectTrigger id="editConditionOperator" className="mt-1.5">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {validOperators.map(op => (
-                        <SelectItem key={op.value} value={op.value}>
-                          {op.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {currentFieldType && (
-                    <p className="text-xs text-neutral-500 mt-1.5">
-                      Showing operators for{' '}
-                      <span className="font-mono bg-neutral-200 px-1 rounded">{currentFieldType}</span> fields
-                    </p>
-                  )}
-                </div>
-
-                {needsValue && (
-                  <div>
-                    <Label htmlFor="editConditionValue">Value *</Label>
-                    {currentFieldType === 'boolean' ? (
-                      <Select value={conditionValue || 'true'} onValueChange={setConditionValue}>
-                        <SelectTrigger id="editConditionValue" className="mt-1.5">
+                {/* Binary mode: single operator + value */}
+                {conditionMode === 'binary' && (
+                  <>
+                    <div>
+                      <Label htmlFor="editConditionOperator">Operator *</Label>
+                      <Select value={conditionOperator} onValueChange={setConditionOperator}>
+                        <SelectTrigger id="editConditionOperator" className="mt-1.5">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="true">True</SelectItem>
-                          <SelectItem value="false">False</SelectItem>
+                          {validOperators.map(op => (
+                            <SelectItem key={op.value} value={op.value}>
+                              {op.label}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
-                    ) : currentFieldType === 'number' ? (
-                      <>
-                        <Input
-                          id="editConditionValue"
-                          type="number"
-                          value={conditionValue}
-                          onChange={e => setConditionValue(e.target.value)}
-                          required
-                          placeholder="e.g., 100"
-                          className="mt-1.5"
-                        />
-                        <p className="text-xs text-neutral-500 mt-1.5">Enter a numeric value to compare against</p>
-                      </>
-                    ) : currentFieldType === 'date' ? (
-                      <>
-                        <Input
-                          id="editConditionValue"
-                          type="datetime-local"
-                          value={conditionValue}
-                          onChange={e => setConditionValue(e.target.value)}
-                          required
-                          className="mt-1.5"
-                        />
-                        <p className="text-xs text-neutral-500 mt-1.5">Select a date and time to compare against</p>
-                      </>
-                    ) : (
-                      <>
-                        <Input
-                          id="editConditionValue"
-                          type="text"
-                          value={conditionValue}
-                          onChange={e => setConditionValue(e.target.value)}
-                          required
-                          placeholder="e.g., premium, active"
-                          className="mt-1.5"
-                        />
-                        <p className="text-xs text-neutral-500 mt-1.5">Enter the text value to compare against</p>
-                      </>
+                      {currentFieldType && (
+                        <p className="text-xs text-neutral-500 mt-1.5">
+                          Showing operators for{' '}
+                          <span className="font-mono bg-neutral-200 px-1 rounded">{currentFieldType}</span> fields
+                        </p>
+                      )}
+                    </div>
+
+                    {needsValue && (
+                      <div>
+                        <Label htmlFor="editConditionValue">Value *</Label>
+                        {currentFieldType === 'boolean' ? (
+                          <Select value={conditionValue || 'true'} onValueChange={setConditionValue}>
+                            <SelectTrigger id="editConditionValue" className="mt-1.5">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="true">True</SelectItem>
+                              <SelectItem value="false">False</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : currentFieldType === 'number' ? (
+                          <>
+                            <Input
+                              id="editConditionValue"
+                              type="number"
+                              value={conditionValue}
+                              onChange={e => setConditionValue(e.target.value)}
+                              required
+                              placeholder="e.g., 100"
+                              className="mt-1.5"
+                            />
+                            <p className="text-xs text-neutral-500 mt-1.5">Enter a numeric value to compare against</p>
+                          </>
+                        ) : currentFieldType === 'date' ? (
+                          <>
+                            <Input
+                              id="editConditionValue"
+                              type="datetime-local"
+                              value={conditionValue}
+                              onChange={e => setConditionValue(e.target.value)}
+                              required
+                              className="mt-1.5"
+                            />
+                            <p className="text-xs text-neutral-500 mt-1.5">
+                              Select a date and time to compare against
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <Input
+                              id="editConditionValue"
+                              type="text"
+                              value={conditionValue}
+                              onChange={e => setConditionValue(e.target.value)}
+                              required
+                              placeholder="e.g., premium, active"
+                              className="mt-1.5"
+                            />
+                            <p className="text-xs text-neutral-500 mt-1.5">
+                              Enter the text value to compare against
+                            </p>
+                          </>
+                        )}
+                      </div>
                     )}
+                  </>
+                )}
+
+                {/* Multi-branch mode: dynamic list of branches */}
+                {conditionMode === 'multi' && (
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Branches</Label>
+                    <p className="text-xs text-neutral-500">
+                      Each branch defines a condition. The first matching branch is taken. Contacts not matching any
+                      branch follow the Default path.
+                    </p>
+
+                    {conditionBranches.map((branch, idx) => (
+                      <div
+                        key={branch.id}
+                        className="p-3 border border-neutral-200 rounded-lg space-y-3 bg-neutral-50/50"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-neutral-500">Branch {idx + 1}</span>
+                          {conditionBranches.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setConditionBranches(prev => prev.filter(b => b.id !== branch.id))
+                              }
+                              className="text-xs text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+
+                        <div>
+                          <Label className="text-xs">Name *</Label>
+                          <Input
+                            type="text"
+                            value={branch.name}
+                            onChange={e => {
+                              const newName = e.target.value;
+                              setConditionBranches(prev =>
+                                prev.map(b => (b.id === branch.id ? {...b, name: newName} : b)),
+                              );
+                            }}
+                            placeholder="e.g., Premium, Free, Enterprise"
+                            className="mt-1 h-8 text-sm"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <Label className="text-xs">Operator</Label>
+                            <Select
+                              value={branch.operator}
+                              onValueChange={val =>
+                                setConditionBranches(prev =>
+                                  prev.map(b => (b.id === branch.id ? {...b, operator: val} : b)),
+                                )
+                              }
+                            >
+                              <SelectTrigger className="mt-1 h-8 text-sm">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {validOperators.map(op => (
+                                  <SelectItem key={op.value} value={op.value}>
+                                    {op.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {!['exists', 'notExists'].includes(branch.operator) && (
+                            <div>
+                              <Label className="text-xs">Value</Label>
+                              <Input
+                                type="text"
+                                value={branch.value}
+                                onChange={e => {
+                                  const newValue = e.target.value;
+                                  setConditionBranches(prev =>
+                                    prev.map(b => (b.id === branch.id ? {...b, value: newValue} : b)),
+                                  );
+                                }}
+                                placeholder="Value..."
+                                className="mt-1 h-8 text-sm"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+
+                    {conditionBranches.length < 20 && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setConditionBranches(prev => [
+                            ...prev,
+                            {id: crypto.randomUUID().slice(0, 8), name: '', operator: 'equals', value: ''},
+                          ])
+                        }
+                        className="flex items-center gap-1.5 text-sm text-purple-600 hover:text-purple-800 font-medium"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        Add Branch
+                      </button>
+                    )}
+
+                    <div className="p-2 bg-neutral-100 rounded-lg text-xs text-neutral-600 flex items-start gap-2">
+                      <Info className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+                      <span>
+                        Branches are evaluated in order. The first match wins. Contacts not matching any branch will
+                        follow the <strong>Default</strong> path.
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>

@@ -260,22 +260,52 @@ export const WorkflowStepConfigSchemas = {
     eventName: z.string().min(1),
     timeout: z.number().positive().max(31536000, 'Timeout cannot exceed 365 days (31,536,000 seconds)').optional(),
   }),
-  condition: z.object({
-    field: z.string().min(1),
-    operator: z.enum([
-      'equals',
-      'notEquals',
-      'contains',
-      'notContains',
-      'greaterThan',
-      'lessThan',
-      'greaterThanOrEqual',
-      'lessThanOrEqual',
-      'exists',
-      'notExists',
-    ]),
-    value: z.any().optional(),
-  }),
+  condition: z.union([
+    // Legacy binary condition (if/else)
+    z.object({
+      field: z.string().min(1),
+      operator: z.enum([
+        'equals',
+        'notEquals',
+        'contains',
+        'notContains',
+        'greaterThan',
+        'lessThan',
+        'greaterThanOrEqual',
+        'lessThanOrEqual',
+        'exists',
+        'notExists',
+      ]),
+      value: z.any().optional(),
+    }),
+    // Multi-branch condition (switch/case)
+    z.object({
+      mode: z.literal('multi'),
+      field: z.string().min(1),
+      branches: z
+        .array(
+          z.object({
+            id: z.string().min(1),
+            name: z.string().min(1),
+            operator: z.enum([
+              'equals',
+              'notEquals',
+              'contains',
+              'notContains',
+              'greaterThan',
+              'lessThan',
+              'greaterThanOrEqual',
+              'lessThanOrEqual',
+              'exists',
+              'notExists',
+            ]),
+            value: z.any().optional(),
+          }),
+        )
+        .min(1)
+        .max(20),
+    }),
+  ]),
   webhook: z.object({
     url: z.string().url(),
     method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']).default('POST'),

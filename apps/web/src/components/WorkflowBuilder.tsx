@@ -91,6 +91,34 @@ const STEP_TYPE_BG = {
   UPDATE_CONTACT: '#e0e7ff',
 };
 
+// Multi-branch condition helpers
+function getExpectedBranches(config: any): string[] {
+  if (config?.mode === 'multi') {
+    return [...(config.branches || []).map((b: any) => b.id), 'default'];
+  }
+  return ['yes', 'no'];
+}
+
+function getBranchLabel(config: any, branchId: string): string {
+  if (config?.mode === 'multi') {
+    if (branchId === 'default') return 'Default';
+    const branch = config.branches?.find((b: any) => b.id === branchId);
+    return branch?.name || branchId;
+  }
+  return branchId === 'yes' ? 'Yes' : 'No';
+}
+
+const BRANCH_COLORS = ['#16a34a', '#dc2626', '#2563eb', '#d97706', '#7c3aed', '#0891b2', '#be185d', '#059669'];
+
+function getBranchColor(config: any, branchId: string): string {
+  if (config?.mode === 'multi') {
+    if (branchId === 'default') return '#64748b';
+    const idx = config.branches?.findIndex((b: any) => b.id === branchId) ?? 0;
+    return BRANCH_COLORS[idx % BRANCH_COLORS.length]!;
+  }
+  return branchId === 'yes' ? '#16a34a' : '#dc2626';
+}
+
 // Dagre layout function
 function getLayoutedElements(nodes: Node[], edges: Edge[]) {
   const dagreGraph = new dagre.graphlib.Graph();
@@ -129,6 +157,7 @@ function getLayoutedElements(nodes: Node[], edges: Edge[]) {
   });
 
   // Center "Add Step" nodes directly below their parent nodes
+  // For condition nodes with multiple branches, let dagre handle horizontal spread
   const adjustedNodes = layoutedNodes.map(node => {
     if (node.type === 'addStep') {
       // Find the parent node (the source of the edge connecting to this add node)
@@ -136,7 +165,17 @@ function getLayoutedElements(nodes: Node[], edges: Edge[]) {
       if (parentEdge) {
         const parentNode = layoutedNodes.find(n => n.id === parentEdge.source);
         if (parentNode) {
-          // Center the add node below the parent node
+          // Check how many add-step siblings share this parent
+          const siblingAddNodes = edges.filter(
+            e => e.source === parentEdge.source && layoutedNodes.find(n => n.id === e.target && n.type === 'addStep'),
+          );
+
+          if (siblingAddNodes.length > 1) {
+            // Multiple branches — let dagre's spread positioning stand, only keep y
+            return node;
+          }
+
+          // Single add node — center below parent
           return {
             ...node,
             position: {
@@ -324,9 +363,15 @@ function CustomNode({
                     : String(data.config.field)}
                 </span>
               </div>
-              <div className="text-[10px] text-neutral-500 ml-4">
-                {data.config.operator} &quot;{String(data.config.value)}&quot;
-              </div>
+              {data.config.mode === 'multi' ? (
+                <div className="text-[10px] text-neutral-500 ml-4">
+                  {data.config.branches?.length || 0} branch{(data.config.branches?.length || 0) !== 1 ? 'es' : ''} + default
+                </div>
+              ) : (
+                <div className="text-[10px] text-neutral-500 ml-4">
+                  {data.config.operator} &quot;{String(data.config.value)}&quot;
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -393,7 +438,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
   const reactFlowInstance = useReactFlow();
   const [addStepContext, setAddStepContext] = useState<{
     fromStepId: string | null;
-    branch?: 'yes' | 'no';
+    branch?: string;
   } | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [stepToDelete, setStepToDelete] = useState<string | null>(null);
@@ -455,41 +500,27 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
       if (step.type === 'EXIT') return; // Exit steps can't have next steps
 
       if (step.type === 'CONDITION') {
-        // Check for yes and no branches
-        const hasYesBranch = step.outgoingTransitions?.some(t => {
-          const condition = t.condition;
-          return condition && typeof condition === 'object' && 'branch' in condition && condition.branch === 'yes';
-        });
-        const hasNoBranch = step.outgoingTransitions?.some(t => {
-          const condition = t.condition;
-          return condition && typeof condition === 'object' && 'branch' in condition && condition.branch === 'no';
-        });
+        const expectedBranches = getExpectedBranches(step.config);
 
-        if (!hasYesBranch) {
-          nodes.push({
-            id: `${step.id}-add-yes`,
-            type: 'addStep',
-            position: {x: 0, y: 0},
-            draggable: false,
-            data: {
-              label: 'Yes',
-              onClick: () => setAddStepContext({fromStepId: step.id, branch: 'yes'}),
-            },
+        expectedBranches.forEach(branchId => {
+          const hasBranch = step.outgoingTransitions?.some(t => {
+            const condition = t.condition;
+            return condition && typeof condition === 'object' && 'branch' in condition && condition.branch === branchId;
           });
-        }
 
-        if (!hasNoBranch) {
-          nodes.push({
-            id: `${step.id}-add-no`,
-            type: 'addStep',
-            position: {x: 0, y: 0},
-            draggable: false,
-            data: {
-              label: 'No',
-              onClick: () => setAddStepContext({fromStepId: step.id, branch: 'no'}),
-            },
-          });
-        }
+          if (!hasBranch) {
+            nodes.push({
+              id: `${step.id}-add-${branchId}`,
+              type: 'addStep',
+              position: {x: 0, y: 0},
+              draggable: false,
+              data: {
+                label: getBranchLabel(step.config, branchId),
+                onClick: () => setAddStepContext({fromStepId: step.id, branch: branchId}),
+              },
+            });
+          }
+        });
       } else {
         // For non-condition steps, add + node if no outgoing transitions
         if (!step.outgoingTransitions || step.outgoingTransitions.length === 0) {
@@ -520,7 +551,10 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
           const condition = transition.condition;
           const isConditional = condition && typeof condition === 'object' && 'branch' in condition;
           const branch =
-            condition && typeof condition === 'object' && 'branch' in condition ? condition.branch : undefined;
+            condition && typeof condition === 'object' && 'branch' in condition ? (condition.branch as string) : undefined;
+
+          const branchColor = branch ? getBranchColor(step.config, branch) : '#94a3b8';
+          const branchLabel = branch ? getBranchLabel(step.config, branch) : undefined;
 
           edges.push({
             id: transition.id,
@@ -528,9 +562,9 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
             target: transition.toStepId,
             type: 'smoothstep',
             animated: step.type === 'DELAY' || step.type === 'WAIT_FOR_EVENT',
-            label: isConditional ? (branch === 'yes' ? 'Yes' : 'No') : undefined,
+            label: isConditional ? branchLabel : undefined,
             labelStyle: {
-              fill: branch === 'yes' ? '#16a34a' : branch === 'no' ? '#dc2626' : '#64748b',
+              fill: isConditional ? branchColor : '#64748b',
               fontWeight: 600,
               fontSize: 12,
             },
@@ -541,12 +575,12 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
             labelBgPadding: [8, 4] as [number, number],
             labelBgBorderRadius: 4,
             style: {
-              stroke: isConditional ? (branch === 'yes' ? '#16a34a' : '#dc2626') : '#94a3b8',
+              stroke: isConditional ? branchColor : '#94a3b8',
               strokeWidth: 2.5,
             },
             markerEnd: {
               type: MarkerType.ArrowClosed,
-              color: isConditional ? (branch === 'yes' ? '#16a34a' : '#dc2626') : '#94a3b8',
+              color: isConditional ? branchColor : '#94a3b8',
               width: 22,
               height: 22,
             },
@@ -558,47 +592,34 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
       if (step.type === 'EXIT') return;
 
       if (step.type === 'CONDITION') {
-        const hasYesBranch = step.outgoingTransitions?.some(
-          t =>
-            t.condition && typeof t.condition === 'object' && 'branch' in t.condition && t.condition.branch === 'yes',
-        );
-        const hasNoBranch = step.outgoingTransitions?.some(
-          t => t.condition && typeof t.condition === 'object' && 'branch' in t.condition && t.condition.branch === 'no',
-        );
+        const expectedBranches = getExpectedBranches(step.config);
 
-        if (!hasYesBranch) {
-          edges.push({
-            id: `${step.id}-add-yes-edge`,
-            source: step.id,
-            target: `${step.id}-add-yes`,
-            type: 'straight',
-            animated: false,
-            label: 'Yes',
-            labelStyle: {fill: '#16a34a', fontWeight: 600, fontSize: 12},
-            labelBgStyle: {fill: '#fff', fillOpacity: 0.95},
-            labelBgPadding: [8, 4] as [number, number],
-            labelBgBorderRadius: 4,
-            style: {stroke: '#16a34a', strokeWidth: 2.5, strokeDasharray: '5,5'},
-            markerEnd: {type: MarkerType.ArrowClosed, color: '#16a34a', width: 22, height: 22},
-          });
-        }
+        expectedBranches.forEach(branchId => {
+          const hasBranch = step.outgoingTransitions?.some(
+            t =>
+              t.condition && typeof t.condition === 'object' && 'branch' in t.condition && t.condition.branch === branchId,
+          );
 
-        if (!hasNoBranch) {
-          edges.push({
-            id: `${step.id}-add-no-edge`,
-            source: step.id,
-            target: `${step.id}-add-no`,
-            type: 'straight',
-            animated: false,
-            label: 'No',
-            labelStyle: {fill: '#dc2626', fontWeight: 600, fontSize: 12},
-            labelBgStyle: {fill: '#fff', fillOpacity: 0.95},
-            labelBgPadding: [8, 4] as [number, number],
-            labelBgBorderRadius: 4,
-            style: {stroke: '#dc2626', strokeWidth: 2.5, strokeDasharray: '5,5'},
-            markerEnd: {type: MarkerType.ArrowClosed, color: '#dc2626', width: 22, height: 22},
-          });
-        }
+          if (!hasBranch) {
+            const color = getBranchColor(step.config, branchId);
+            const label = getBranchLabel(step.config, branchId);
+
+            edges.push({
+              id: `${step.id}-add-${branchId}-edge`,
+              source: step.id,
+              target: `${step.id}-add-${branchId}`,
+              type: 'straight',
+              animated: false,
+              label,
+              labelStyle: {fill: color, fontWeight: 600, fontSize: 12},
+              labelBgStyle: {fill: '#fff', fillOpacity: 0.95},
+              labelBgPadding: [8, 4] as [number, number],
+              labelBgBorderRadius: 4,
+              style: {stroke: color, strokeWidth: 2.5, strokeDasharray: '5,5'},
+              markerEnd: {type: MarkerType.ArrowClosed, color, width: 22, height: 22},
+            });
+          }
+        });
       } else {
         if (!step.outgoingTransitions || step.outgoingTransitions.length === 0) {
           edges.push({
@@ -647,13 +668,14 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
                 // Check if this add node is connected to the moved node
                 return (
                   node.id === `${movedNode.id}-add` ||
-                  node.id === `${movedNode.id}-add-yes` ||
-                  node.id === `${movedNode.id}-add-no`
+                  node.id.startsWith(`${movedNode.id}-add-`)
                 );
               });
 
-              // Update positions of connected "+" nodes to stay centered below parent
-              connectedAddNodes.forEach(addNode => {
+              // Update positions of connected "+" nodes to stay below parent
+              if (connectedAddNodes.length === 1) {
+                // Single add node — center below parent
+                const addNode = connectedAddNodes[0]!;
                 const addNodeIndex = updatedNodes.findIndex(n => n.id === addNode.id);
                 if (addNodeIndex !== -1 && updatedNodes[addNodeIndex]) {
                   const existingNode = updatedNodes[addNodeIndex];
@@ -665,7 +687,24 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
                     },
                   };
                 }
-              });
+              } else if (connectedAddNodes.length > 1) {
+                // Multiple branches — move all add nodes by the same delta as the parent
+                const oldX = movedNode.position.x;
+                const deltaX = change.position.x - oldX;
+                connectedAddNodes.forEach(addNode => {
+                  const addNodeIndex = updatedNodes.findIndex(n => n.id === addNode.id);
+                  if (addNodeIndex !== -1 && updatedNodes[addNodeIndex]) {
+                    const existingNode = updatedNodes[addNodeIndex];
+                    updatedNodes[addNodeIndex] = {
+                      ...existingNode,
+                      position: {
+                        x: existingNode.position.x + deltaX,
+                        y: existingNode.position.y,
+                      },
+                    };
+                  }
+                });
+              }
             }
           });
 
@@ -733,7 +772,9 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
 
         // Create the transition with proper condition
         const condition = addStepContext.branch ? {branch: addStepContext.branch} : null;
-        const priority = addStepContext.branch === 'yes' ? 0 : addStepContext.branch === 'no' ? 1 : 0;
+        const expectedBranches = fromStep.type === 'CONDITION' ? getExpectedBranches(fromStep.config) : [];
+        const branchIndex = addStepContext.branch ? expectedBranches.indexOf(addStepContext.branch) : -1;
+        const priority = branchIndex >= 0 ? branchIndex : 0;
 
         await network.fetch<unknown, typeof WorkflowSchemas.createTransition>(
           'POST',

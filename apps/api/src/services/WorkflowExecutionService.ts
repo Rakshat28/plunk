@@ -727,7 +727,7 @@ export class WorkflowExecutionService {
     _stepExecution: WorkflowStepExecution,
     config: StepConfig,
   ): Promise<StepResult> {
-    const {field, operator, value} = WorkflowStepConfigSchemas.condition.parse(config);
+    const parsed = WorkflowStepConfigSchemas.condition.parse(config);
 
     // Get the value to evaluate
     const contact = execution.contact;
@@ -743,7 +743,7 @@ export class WorkflowExecutionService {
     // - data.firstName, data.lastName, etc.
     // - workflow.* (execution context - alias for event data)
     // - event.* (event data that triggered the workflow)
-    const actualValue = this.resolveField(field, {
+    const fieldData = {
       contact: {
         email: contact.email,
         subscribed: contact.subscribed,
@@ -751,9 +751,39 @@ export class WorkflowExecutionService {
       data: contactData,
       workflow: context,
       event: context, // Alias for easier access to event data
-    });
+    };
 
-    // Evaluate the condition
+    // Multi-branch mode (switch/case)
+    if ('mode' in parsed && parsed.mode === 'multi') {
+      const actualValue = this.resolveField(parsed.field, fieldData);
+
+      for (const branch of parsed.branches) {
+        if (this.evaluateCondition(actualValue, branch.operator, branch.value)) {
+          return {
+            field: parsed.field,
+            mode: 'multi',
+            matchedBranch: branch.name,
+            actualValue,
+            branch: branch.id,
+          };
+        }
+      }
+
+      // No branch matched — use default
+      return {
+        field: parsed.field,
+        mode: 'multi',
+        matchedBranch: 'default',
+        actualValue,
+        branch: 'default',
+      };
+    }
+
+    // Legacy binary mode (if/else)
+    const field = parsed.field;
+    const operator = 'operator' in parsed ? parsed.operator : 'equals';
+    const value = 'value' in parsed ? parsed.value : undefined;
+    const actualValue = this.resolveField(field, fieldData);
     const result = this.evaluateCondition(actualValue, operator, value);
 
     return {
