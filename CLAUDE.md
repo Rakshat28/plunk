@@ -69,7 +69,7 @@ to run them separately (e.g., for debugging), use `dev:server` and `dev:worker` 
   - **Worker process** (separate): BullMQ worker for processing email, campaign, and workflow queues
 - **web**: Next.js app (Pages Router) - Main platform (next-app.useplunk.com)
 - **landing**: Next.js app (Pages Router) - Marketing site (next.useplunk.com)
-- **wiki**: Next.js app - Documentation site (next-wiki.useplunk.com)
+- **wiki**: Next.js app - Documentation site (docs.useplunk.com)
 
 ### Background Job Architecture
 

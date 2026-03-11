@@ -98,7 +98,7 @@ ARG TARGETPLATFORM
 ARG API_URI=https://next-api.useplunk.com
 ARG DASHBOARD_URI=https://next-app.useplunk.com
 ARG LANDING_URI=https://next.useplunk.com
-ARG WIKI_URI=https://next-wiki.useplunk.com
+ARG WIKI_URI=https://docs.useplunk.com
 
 WORKDIR /app
 
