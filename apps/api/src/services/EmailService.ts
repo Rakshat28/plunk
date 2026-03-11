@@ -652,7 +652,7 @@ export class EmailService {
 
   /**
    * Detects if HTML contains custom patterns that indicate it was written in the HTML editor
-   * rather than the visual editor. Mirrors the same logic in EmailPreviewModal.tsx.
+   * rather than the visual editor. Mirrors the same logic in apps/web/src/lib/emailStyles.ts.
    */
   private static detectCustomHtmlPatterns(html: string): boolean {
     if (!html || html.trim() === '') return false;
@@ -692,7 +692,7 @@ export class EmailService {
 
   /**
    * Wraps visual editor content with a full HTML document and prose styles.
-   * Mirrors wrapEmailWithStyles() in EmailPreviewModal.tsx so sent emails
+   * Mirrors wrapEmailWithStyles() in apps/web/src/lib/emailStyles.ts so sent emails
    * match the preview modal exactly.
    */
   private static wrapWithEmailStyles(htmlBody: string): string {
