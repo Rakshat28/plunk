@@ -58,13 +58,13 @@ export default function MailerliteComparison() {
       <NextSeo
         title="MailerLite Alternative: Open-Source & Self-Hostable | Plunk"
         description="The truly developer-first MailerLite alternative. Open-source, self-hostable, pay per email not per subscriber. Modern API, full transparency."
-        canonical="https://next.useplunk.com/vs/mailerlite"
+        canonical="https://www.useplunk.com/vs/mailerlite"
         openGraph={{
           title: 'MailerLite Alternative: Open-Source & Self-Hostable | Plunk',
           description:
             'The truly developer-first MailerLite alternative. Open-source, self-hostable, pay per email not per subscriber.',
-          url: 'https://next.useplunk.com/vs/mailerlite',
-          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk vs MailerLite'}],
+          url: 'https://www.useplunk.com/vs/mailerlite',
+          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs MailerLite'}],
         }}
       />
 

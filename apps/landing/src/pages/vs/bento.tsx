@@ -58,13 +58,13 @@ export default function BentoComparison() {
       <NextSeo
         title="Bento Alternative: Developer-First Email Platform | Plunk"
         description="Open-source alternative to Bento. API-first email platform without CRM bloat. Self-hostable, pay-as-you-go pricing, built for developers."
-        canonical="https://next.useplunk.com/vs/bento"
+        canonical="https://www.useplunk.com/vs/bento"
         openGraph={{
           title: 'Bento Alternative: Developer-First Email Platform | Plunk',
           description:
             'Open-source alternative to Bento. API-first email platform without CRM bloat. Self-hostable, pay-as-you-go pricing.',
-          url: 'https://next.useplunk.com/vs/bento',
-          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk vs Bento'}],
+          url: 'https://www.useplunk.com/vs/bento',
+          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs Bento'}],
         }}
       />
 

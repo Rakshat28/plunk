@@ -32,13 +32,13 @@ export default function ToolsIndex() {
       <NextSeo
         title="Free Email Tools | Markdown to Email & Email Verification | Plunk"
         description="Free tools for email developers: Convert markdown to email-safe HTML and verify email addresses instantly. No sign-up required."
-        canonical="https://next.useplunk.com/tools"
+        canonical="https://www.useplunk.com/tools"
         openGraph={{
           title: 'Free Email Tools | Markdown to Email & Email Verification | Plunk',
           description:
             'Free tools for email developers: Convert markdown to email-safe HTML and verify email addresses instantly.',
-          url: 'https://next.useplunk.com/tools',
-          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk Email Tools'}],
+          url: 'https://www.useplunk.com/tools',
+          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk Email Tools'}],
         }}
       />
 

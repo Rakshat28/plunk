@@ -58,13 +58,13 @@ export default function ActiveCampaignComparison() {
       <NextSeo
         title="ActiveCampaign Alternative: Open-Source & Affordable | Plunk"
         description="Powerful email automation without ActiveCampaign's complexity and cost. Open-source, developer-friendly, pay-as-you-go pricing. No CRM bloat."
-        canonical="https://next.useplunk.com/vs/activecampaign"
+        canonical="https://www.useplunk.com/vs/activecampaign"
         openGraph={{
           title: 'ActiveCampaign Alternative: Open-Source & Affordable | Plunk',
           description:
             "Powerful email automation without ActiveCampaign's complexity and cost. Open-source, developer-friendly, pay-as-you-go pricing.",
-          url: 'https://next.useplunk.com/vs/activecampaign',
-          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk vs ActiveCampaign'}],
+          url: 'https://www.useplunk.com/vs/activecampaign',
+          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs ActiveCampaign'}],
         }}
       />
 

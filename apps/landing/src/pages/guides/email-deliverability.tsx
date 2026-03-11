@@ -9,7 +9,7 @@ export default function EmailDeliverability() {
       description="Learn proven strategies to improve email deliverability, avoid spam filters, and maximize inbox placement rates. Complete guide with best practices."
       lastUpdated="2025-12-20"
       readTime="12 min"
-      canonical="https://next.useplunk.com/guides/email-deliverability"
+      canonical="https://www.useplunk.com/guides/email-deliverability"
     >
       {/* Introduction */}
       <section id="introduction" className="mb-12">

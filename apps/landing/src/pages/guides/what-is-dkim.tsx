@@ -10,7 +10,7 @@ export default function WhatIsDKIM() {
       description="Learn how DKIM (DomainKeys Identified Mail) protects your emails from spoofing and improves deliverability. Complete guide with setup examples."
       lastUpdated="2025-12-20"
       readTime="8 min"
-      canonical="https://next.useplunk.com/guides/what-is-dkim"
+      canonical="https://www.useplunk.com/guides/what-is-dkim"
     >
       {/* Introduction */}
       <section id="introduction" className="mb-12">

@@ -9,7 +9,7 @@ export default function TransactionalVsMarketingEmail() {
       description="Understand the critical differences between transactional and marketing emails, including legal requirements, deliverability, and best practices."
       lastUpdated="2025-12-20"
       readTime="10 min"
-      canonical="https://next.useplunk.com/guides/transactional-vs-marketing-email"
+      canonical="https://www.useplunk.com/guides/transactional-vs-marketing-email"
     >
       {/* Introduction */}
       <section id="introduction" className="mb-12">
