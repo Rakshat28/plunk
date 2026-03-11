@@ -53,13 +53,13 @@ export default function ResendComparison() {
       <NextSeo
         title="Plunk vs Resend: Open-Source Alternative with Marketing | Plunk"
         description="Compare Plunk and Resend. Resend focuses on transactional emails, while Plunk adds marketing campaigns, workflows, and is open-source. Choose based on your needs."
-        canonical="https://next.useplunk.com/vs/resend"
+        canonical="https://www.useplunk.com/vs/resend"
         openGraph={{
           title: 'Plunk vs Resend: Open-Source Alternative with Marketing',
           description:
             'Compare Plunk and Resend. Resend focuses on transactional emails, while Plunk adds marketing, workflows, and is open-source.',
-          url: 'https://next.useplunk.com/vs/resend',
-          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk vs Resend'}],
+          url: 'https://www.useplunk.com/vs/resend',
+          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs Resend'}],
         }}
       />
 

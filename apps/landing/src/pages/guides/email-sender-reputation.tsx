@@ -10,7 +10,7 @@ export default function EmailSenderReputation() {
       description="Learn how sender reputation works, what affects it, and proven strategies to build and maintain a positive reputation for maximum deliverability."
       lastUpdated="2025-12-20"
       readTime="11 min"
-      canonical="https://next.useplunk.com/guides/email-sender-reputation"
+      canonical="https://www.useplunk.com/guides/email-sender-reputation"
     >
       {/* Introduction */}
       <section id="introduction" className="mb-12">

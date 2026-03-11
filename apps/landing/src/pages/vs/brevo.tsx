@@ -57,13 +57,13 @@ export default function BrevoComparison() {
       <NextSeo
         title="Brevo (Sendinblue) Alternative: Developer-First & Open Source | Plunk"
         description="Plunk offers a simpler, developer-focused alternative to Brevo with pay-as-you-go pricing, open-source code, and self-hosting. No contact limits."
-        canonical="https://next.useplunk.com/vs/brevo"
+        canonical="https://www.useplunk.com/vs/brevo"
         openGraph={{
           title: 'Brevo (Sendinblue) Alternative: Developer-First & Open Source | Plunk',
           description:
             'Plunk offers a simpler, developer-focused alternative to Brevo with pay-as-you-go pricing, open-source code, and self-hosting.',
-          url: 'https://next.useplunk.com/vs/brevo',
-          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk vs Brevo'}],
+          url: 'https://www.useplunk.com/vs/brevo',
+          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs Brevo'}],
         }}
       />
 
