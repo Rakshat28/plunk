@@ -31,6 +31,7 @@ import {
 } from '@plunk/ui';
 import {Code2, Eye, Monitor, Smartphone, Tablet, Upload, X} from 'lucide-react';
 import {network} from '../../lib/network';
+import {detectCustomHtmlPatterns, wrapEmailWithStyles} from '../../lib/emailStyles';
 import 'tippy.js/dist/tippy.css';
 
 interface EmailEditorProps {
@@ -50,54 +51,6 @@ const commonVariables = [
   {name: 'subscribeUrl', description: 'Subscribe link'},
   {name: 'manageUrl', description: 'Manage link'},
 ];
-
-const detectCustomHtmlPatterns = (html: string): boolean => {
-  if (!html || html.trim() === '') return false;
-
-  // Check for common patterns that indicate custom HTML
-  const hasInlineStyles = /<[^>]+style\s*=\s*["'][^"']*["']/i.test(html);
-
-  // Check for custom classes (exclude TipTap's generated classes)
-  const classMatches = html.matchAll(/class\s*=\s*["']([^"']*)["']/gi);
-  let hasCustomClasses = false;
-  for (const match of classMatches) {
-    const classValue = match[1];
-    if (!classValue) continue;
-    // Split by whitespace to get individual classes
-    const classes = classValue.split(/\s+/).filter(c => c.length > 0);
-    // Check if any class is NOT in the allowed list
-    const allowedPrefixes = [
-      'prose',
-      'variable-',
-      'email-image',
-      'ProseMirror',
-      'resizable-image',
-      'selected',
-      'resize-handle',
-    ];
-    const hasDisallowedClass = classes.some(cls => !allowedPrefixes.some(prefix => cls.startsWith(prefix)));
-    if (hasDisallowedClass) {
-      hasCustomClasses = true;
-      break;
-    }
-  }
-
-  const hasCustomAttributes = /<[^>]+(?:data-|aria-|role=|id=)/i.test(html);
-  const hasComplexTables = /<table[^>]*>[\s\S]*?<table/i.test(html); // Nested tables
-  const hasCustomElements = /<(?:div|span|section|article|header|footer|nav|aside)[^>]*>/i.test(html);
-  const hasMediaQueries = /@media/i.test(html);
-  const hasStyleTags = /<style[^>]*>/i.test(html);
-
-  return (
-    hasInlineStyles ||
-    hasCustomClasses ||
-    hasCustomAttributes ||
-    hasComplexTables ||
-    hasCustomElements ||
-    hasMediaQueries ||
-    hasStyleTags
-  );
-};
 
 export function EmailEditor({value, onChange, placeholder, subject, from, replyTo}: EmailEditorProps) {
   // Detect if initial value has custom HTML and start in appropriate mode
@@ -348,31 +301,7 @@ export function EmailEditor({value, onChange, placeholder, subject, from, replyT
 
       if (iframeDoc) {
         const previewContent = getPreviewHtml();
-        const fullHtml = `
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <style>
-                body {
-                  margin: 0;
-                  padding: 16px;
-                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-                  font-size: 16px;
-                  line-height: 1.6;
-                  color: #374151;
-                }
-                * {
-                  box-sizing: border-box;
-                }
-              </style>
-            </head>
-            <body>
-              ${previewContent}
-            </body>
-          </html>
-        `;
+        const fullHtml = wrapEmailWithStyles(previewContent);
 
         iframeDoc.open();
         iframeDoc.write(fullHtml);
