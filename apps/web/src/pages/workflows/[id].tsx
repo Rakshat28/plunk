@@ -301,9 +301,7 @@ export default function WorkflowEditorPage() {
               const branch = (config as any).branches?.find((b: any) => b.id === id);
               return branch?.name || id;
             });
-            errors.push(
-              `"${step.name}" condition step is missing connections for: ${branchNames.join(', ')}`,
-            );
+            errors.push(`"${step.name}" condition step is missing connections for: ${branchNames.join(', ')}`);
           } else {
             errors.push(`"${step.name}" condition step must have both YES and NO branches connected`);
           }
@@ -1871,6 +1869,56 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
   const [conditionMode, setConditionMode] = useState<'binary' | 'multi'>(() => {
     return config?.mode === 'multi' ? 'multi' : 'binary';
   });
+
+  // Helper to check if switching from multi to binary is safe
+  const hasMultiBranchConnections = () => {
+    if (step.type !== 'CONDITION') return false;
+    if (config?.mode !== 'multi') return false;
+
+    const transitions = (step as any).outgoingTransitions || [];
+    // Check if any transition has a branch that's not 'yes' or 'no' (multi-branch specific)
+    return transitions.some((t: any) => {
+      const condition = t.condition;
+      if (condition && typeof condition === 'object' && 'branch' in condition) {
+        const branch = condition.branch as string;
+        // Multi-branch specific branches (not the simple if/else branches)
+        return branch !== 'yes' && branch !== 'no';
+      }
+      return false;
+    });
+  };
+
+  // Helper to check if switching from binary to multi is safe
+  const hasBinaryConnections = () => {
+    if (step.type !== 'CONDITION') return false;
+    if (config?.mode === 'multi') return false;
+
+    const transitions = (step as any).outgoingTransitions || [];
+    // Check if any transition has 'yes' or 'no' branches (binary-specific)
+    return transitions.some((t: any) => {
+      const condition = t.condition;
+      if (condition && typeof condition === 'object' && 'branch' in condition) {
+        const branch = condition.branch as string;
+        return branch === 'yes' || branch === 'no';
+      }
+      return false;
+    });
+  };
+
+  // Safe mode change handler
+  const handleModeChange = (newMode: 'binary' | 'multi') => {
+    // If switching from multi to binary, check for multi-branch connections
+    if (conditionMode === 'multi' && newMode === 'binary' && hasMultiBranchConnections()) {
+      // Don't allow the switch - user needs to disconnect branches first
+      return;
+    }
+    // If switching from binary to multi, check for binary connections
+    if (conditionMode === 'binary' && newMode === 'multi' && hasBinaryConnections()) {
+      // Don't allow the switch - user needs to disconnect branches first
+      return;
+    }
+    setConditionMode(newMode);
+  };
   const [conditionField, setConditionField] = useState(() => {
     if (!config?.field) return '';
     // Handle case where field is an object like {field: 'email', type: 'string'} (legacy format)
@@ -2402,22 +2450,28 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={() => setConditionMode('binary')}
+                      onClick={() => handleModeChange('binary')}
+                      disabled={conditionMode === 'multi' && hasMultiBranchConnections()}
                       className={`flex-1 px-3 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
                         conditionMode === 'binary'
                           ? 'border-purple-500 bg-purple-50 text-purple-700'
-                          : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
+                          : conditionMode === 'multi' && hasMultiBranchConnections()
+                            ? 'border-neutral-200 text-neutral-400 bg-neutral-50 cursor-not-allowed opacity-50'
+                            : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
                       }`}
                     >
                       Simple (If/Else)
                     </button>
                     <button
                       type="button"
-                      onClick={() => setConditionMode('multi')}
+                      onClick={() => handleModeChange('multi')}
+                      disabled={conditionMode === 'binary' && hasBinaryConnections()}
                       className={`flex-1 px-3 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
                         conditionMode === 'multi'
                           ? 'border-purple-500 bg-purple-50 text-purple-700'
-                          : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
+                          : conditionMode === 'binary' && hasBinaryConnections()
+                            ? 'border-neutral-200 text-neutral-400 bg-neutral-50 cursor-not-allowed opacity-50'
+                            : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
                       }`}
                     >
                       Multi-branch (Switch)
@@ -2428,7 +2482,23 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                       ? 'Evaluates a single condition with Yes/No paths'
                       : 'Match a field against multiple values, each routing to its own branch'}
                   </p>
+                  {hasMultiBranchConnections() && (
+                    <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-800">
+                      <AlertTriangle className="h-3 w-3 inline mr-1" />
+                      Cannot switch to simple mode: branches have connected nodes. Disconnect all branch connections
+                      first.
+                    </div>
+                  )}
+                  {hasBinaryConnections() && (
+                    <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-800">
+                      <AlertTriangle className="h-3 w-3 inline mr-1" />
+                      Cannot switch to multi-branch mode: Yes/No branches have connected nodes. Disconnect all branch
+                      connections first.
+                    </div>
+                  )}
                   {conditionMode !== (config?.mode === 'multi' ? 'multi' : 'binary') &&
+                    !hasMultiBranchConnections() &&
+                    !hasBinaryConnections() &&
                     (step as any).outgoingTransitions &&
                     (step as any).outgoingTransitions.length > 0 && (
                       <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
@@ -2574,9 +2644,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                               required
                               className="mt-1.5"
                             />
-                            <p className="text-xs text-neutral-500 mt-1.5">
-                              Select a date and time to compare against
-                            </p>
+                            <p className="text-xs text-neutral-500 mt-1.5">Select a date and time to compare against</p>
                           </>
                         ) : (
                           <>
@@ -2589,9 +2657,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                               placeholder="e.g., premium, active"
                               className="mt-1.5"
                             />
-                            <p className="text-xs text-neutral-500 mt-1.5">
-                              Enter the text value to compare against
-                            </p>
+                            <p className="text-xs text-neutral-500 mt-1.5">Enter the text value to compare against</p>
                           </>
                         )}
                       </div>
@@ -2618,9 +2684,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                           {conditionBranches.length > 1 && (
                             <button
                               type="button"
-                              onClick={() =>
-                                setConditionBranches(prev => prev.filter(b => b.id !== branch.id))
-                              }
+                              onClick={() => setConditionBranches(prev => prev.filter(b => b.id !== branch.id))}
                               className="text-xs text-red-500 hover:text-red-700"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
