@@ -365,7 +365,8 @@ function CustomNode({
               </div>
               {data.config.mode === 'multi' ? (
                 <div className="text-[10px] text-neutral-500 ml-4">
-                  {data.config.branches?.length || 0} branch{(data.config.branches?.length || 0) !== 1 ? 'es' : ''} + default
+                  {data.config.branches?.length || 0} branch{(data.config.branches?.length || 0) !== 1 ? 'es' : ''} +
+                  default
                 </div>
               ) : (
                 <div className="text-[10px] text-neutral-500 ml-4">
@@ -551,7 +552,9 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
           const condition = transition.condition;
           const isConditional = condition && typeof condition === 'object' && 'branch' in condition;
           const branch =
-            condition && typeof condition === 'object' && 'branch' in condition ? (condition.branch as string) : undefined;
+            condition && typeof condition === 'object' && 'branch' in condition
+              ? (condition.branch as string)
+              : undefined;
 
           const branchColor = branch ? getBranchColor(step.config, branch) : '#94a3b8';
           const branchLabel = branch ? getBranchLabel(step.config, branch) : undefined;
@@ -597,7 +600,10 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
         expectedBranches.forEach(branchId => {
           const hasBranch = step.outgoingTransitions?.some(
             t =>
-              t.condition && typeof t.condition === 'object' && 'branch' in t.condition && t.condition.branch === branchId,
+              t.condition &&
+              typeof t.condition === 'object' &&
+              'branch' in t.condition &&
+              t.condition.branch === branchId,
           );
 
           if (!hasBranch) {
@@ -608,7 +614,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
               id: `${step.id}-add-${branchId}-edge`,
               source: step.id,
               target: `${step.id}-add-${branchId}`,
-              type: 'straight',
+              type: 'smoothstep',
               animated: false,
               label,
               labelStyle: {fill: color, fontWeight: 600, fontSize: 12},
@@ -666,10 +672,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
               const connectedAddNodes = updatedNodes.filter(node => {
                 if (node.type !== 'addStep') return false;
                 // Check if this add node is connected to the moved node
-                return (
-                  node.id === `${movedNode.id}-add` ||
-                  node.id.startsWith(`${movedNode.id}-add-`)
-                );
+                return node.id === `${movedNode.id}-add` || node.id.startsWith(`${movedNode.id}-add-`);
               });
 
               // Update positions of connected "+" nodes to stay below parent
