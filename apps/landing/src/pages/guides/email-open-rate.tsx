@@ -10,7 +10,7 @@ export default function EmailOpenRate() {
       description="Learn what affects email open rates, industry benchmarks, and proven tactics to improve opens. Complete guide with actionable tips."
       lastUpdated="2025-12-20"
       readTime="10 min"
-      canonical="https://next.useplunk.com/guides/email-open-rate"
+      canonical="https://www.useplunk.com/guides/email-open-rate"
     >
       {/* Introduction */}
       <section id="introduction" className="mb-12">

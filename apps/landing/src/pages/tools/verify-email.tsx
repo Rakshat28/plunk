@@ -37,12 +37,12 @@ export default function VerifyEmailPage() {
       <NextSeo
         title="Free Email Verification Tool | Check Email Validity | Plunk"
         description="Verify email addresses instantly. Check for typos, disposable domains, MX records, and more. Free email validation tool with detailed results."
-        canonical="https://next.useplunk.com/tools/verify-email"
+        canonical="https://www.useplunk.com/tools/verify-email"
         openGraph={{
           title: 'Free Email Verification Tool | Check Email Validity | Plunk',
           description: 'Verify email addresses instantly. Check for typos, disposable domains, MX records, and more.',
-          url: 'https://next.useplunk.com/tools/verify-email',
-          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk Email Verification Tool'}],
+          url: 'https://www.useplunk.com/tools/verify-email',
+          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk Email Verification Tool'}],
         }}
       />
 

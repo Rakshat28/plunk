@@ -10,7 +10,7 @@ export default function EmailAPIGuide() {
       description="Complete guide to email APIs: how they work, implementation examples, best practices, and choosing the right solution for your application."
       lastUpdated="2025-12-20"
       readTime="12 min"
-      canonical="https://next.useplunk.com/guides/email-api-guide"
+      canonical="https://www.useplunk.com/guides/email-api-guide"
     >
       {/* Introduction */}
       <section id="introduction" className="mb-12">

@@ -17,7 +17,7 @@ export function ProjectDisabledEmail({
   projectId = 'proj_example123',
   violations = ['Bounce rate exceeded 10% threshold', 'Complaint rate exceeded 0.5% threshold'],
   dashboardUrl = 'https://next-app.useplunk.com',
-  landingUrl = 'https://next.useplunk.com',
+  landingUrl = 'https://www.useplunk.com',
 }: ProjectDisabledEmailProps) {
   return (
     <EmailLayout>

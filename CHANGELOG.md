@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.7.1](https://github.com/useplunk/plunk/compare/v0.7.0...v0.7.1) (2026-03-10)
+
+
+### Bug Fixes
+
+* Align preview and actual email for templates and campaigns ([cc7fcdb](https://github.com/useplunk/plunk/commit/cc7fcdb4ef31e9dfb4f7403aa93479b6df56719d))
+
+
+### Documentation
+
+* Add inbound to docs ([6c4cc29](https://github.com/useplunk/plunk/commit/6c4cc295b88db6da8d9edcf23064a3fc8e9f5c36))
+* Improve webhook documentation ([f6a32ce](https://github.com/useplunk/plunk/commit/f6a32ce610559050c1ca9978607bd57ac51e906f))
+
 ## [0.7.0](https://github.com/useplunk/plunk/compare/v0.6.0...v0.7.0) (2026-03-05)
 
 

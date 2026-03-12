@@ -28,13 +28,13 @@ export default function MarkdownToEmail() {
       <NextSeo
         title="Free Markdown to Email HTML Converter | Plunk"
         description="Convert markdown and rich text to email-safe HTML instantly. Free online tool with live preview. Perfect for email developers and marketers."
-        canonical="https://next.useplunk.com/tools/markdown-to-email"
+        canonical="https://www.useplunk.com/tools/markdown-to-email"
         openGraph={{
           title: 'Free Markdown to Email HTML Converter | Plunk',
           description:
             'Convert markdown and rich text to email-safe HTML instantly. Free online tool with live preview.',
-          url: 'https://next.useplunk.com/tools/markdown-to-email',
-          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk Email HTML Converter'}],
+          url: 'https://www.useplunk.com/tools/markdown-to-email',
+          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk Email HTML Converter'}],
         }}
       />
 

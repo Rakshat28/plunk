@@ -13,7 +13,7 @@ interface EmailVerificationEmailProps {
 export function EmailVerificationEmail({
   email = 'user@example.com',
   verificationUrl = 'https://api.useplunk.com/auth/verify-email?token=abc123',
-  landingUrl = 'https://next.useplunk.com',
+  landingUrl = 'https://www.useplunk.com',
 }: EmailVerificationEmailProps) {
   return (
     <EmailLayout>

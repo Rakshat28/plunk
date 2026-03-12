@@ -58,13 +58,13 @@ export default function ConvertkitComparison() {
       <NextSeo
         title="ConvertKit Alternative for Developers | Plunk"
         description="Developer-first alternative to ConvertKit. Pay per email instead of per subscriber. Open-source, self-hostable, with powerful automation. No landing page bloat."
-        canonical="https://next.useplunk.com/vs/convertkit"
+        canonical="https://www.useplunk.com/vs/convertkit"
         openGraph={{
           title: 'ConvertKit Alternative for Developers | Plunk',
           description:
             'Developer-first alternative to ConvertKit. Pay per email instead of per subscriber. Open-source, self-hostable, with powerful automation.',
-          url: 'https://next.useplunk.com/vs/convertkit',
-          images: [{url: 'https://next.useplunk.com/assets/card.png', alt: 'Plunk vs ConvertKit'}],
+          url: 'https://www.useplunk.com/vs/convertkit',
+          images: [{url: 'https://www.useplunk.com/assets/card.png', alt: 'Plunk vs ConvertKit'}],
         }}
       />
 

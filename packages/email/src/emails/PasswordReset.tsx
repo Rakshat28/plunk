@@ -13,7 +13,7 @@ interface PasswordResetEmailProps {
 export function PasswordResetEmail({
   email = 'user@example.com',
   resetUrl = 'https://next-app.useplunk.com/auth/reset-password?token=abc123',
-  landingUrl = 'https://next.useplunk.com',
+  landingUrl = 'https://www.useplunk.com',
 }: PasswordResetEmailProps) {
   return (
     <EmailLayout>
