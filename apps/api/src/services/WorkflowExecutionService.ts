@@ -760,7 +760,8 @@ export class WorkflowExecutionService {
       field,
       operator,
       expectedValue: value,
-      actualValue,
+      // Convert undefined to null so it's preserved in JSON (JSON.stringify removes undefined)
+      actualValue: actualValue === undefined ? null : actualValue,
       result,
       branch: result ? 'yes' : 'no',
     };
@@ -996,7 +997,15 @@ export class WorkflowExecutionService {
    * Helper: Resolve field value from object using dot notation
    */
   private static resolveField(field: string, data: Record<string, unknown>): unknown {
-    const parts = field.split('.');
+    // Handle legacy "contact.data.X" format by converting to "data.X"
+    // The UI historically showed examples like "contact.data.plan" but the field structure
+    // has "data" as a top-level key, not nested under "contact"
+    let normalizedField = field;
+    if (field.startsWith('contact.data.')) {
+      normalizedField = field.substring(8); // Remove "contact." prefix, leaving "data.X"
+    }
+
+    const parts = normalizedField.split('.');
     let value: unknown = data;
 
     for (const part of parts) {
