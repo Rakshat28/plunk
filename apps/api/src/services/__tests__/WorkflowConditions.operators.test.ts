@@ -722,4 +722,260 @@ describe('Workflow CONDITION Step - Comprehensive Operator Tests', () => {
       expect(branch).toBe('yes');
     });
   });
+
+  // ========================================
+  // MULTI-BRANCH CONDITIONS (switch/case)
+  // ========================================
+  describe('Multi-Branch Conditions', () => {
+    /**
+     * Helper to create a workflow with a multi-branch condition step
+     * Creates one exit step per branch + one for default
+     */
+    async function createMultiBranchWorkflow(
+      contactData: Record<string, unknown>,
+      conditionConfig: Record<string, unknown>,
+    ) {
+      const contact = await factories.createContact({
+        projectId,
+        data: contactData,
+      });
+
+      const workflow = await factories.createWorkflow({projectId});
+      const triggerStep = await prisma.workflowStep.findFirstOrThrow({
+        where: {workflowId: workflow.id, type: WorkflowStepType.TRIGGER},
+      });
+
+      const conditionStep = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.CONDITION,
+          name: 'Multi Condition',
+          position: {x: 100, y: 0},
+          config: conditionConfig,
+        },
+      });
+
+      // Create exit steps for each branch + default
+      const branches = conditionConfig.branches as Array<{id: string; name: string; operator: string; value?: unknown}>;
+      const branchExits: Record<string, string> = {};
+      for (let i = 0; i < branches.length; i++) {
+        const branch = branches[i]!;
+        const exitStep = await prisma.workflowStep.create({
+          data: {
+            workflowId: workflow.id,
+            type: WorkflowStepType.EXIT,
+            name: `${branch.name} Path`,
+            position: {x: 200, y: i * 100},
+            config: {reason: branch.name},
+          },
+        });
+        branchExits[branch.id] = exitStep.id;
+
+        await prisma.workflowTransition.create({
+          data: {
+            fromStepId: conditionStep.id,
+            toStepId: exitStep.id,
+            condition: {branch: branch.id},
+            priority: i,
+          },
+        });
+      }
+
+      // Create default exit
+      const defaultExit = await prisma.workflowStep.create({
+        data: {
+          workflowId: workflow.id,
+          type: WorkflowStepType.EXIT,
+          name: 'Default Path',
+          position: {x: 200, y: branches.length * 100},
+          config: {reason: 'default'},
+        },
+      });
+
+      await prisma.workflowTransition.create({
+        data: {
+          fromStepId: conditionStep.id,
+          toStepId: defaultExit.id,
+          condition: {branch: 'default'},
+          priority: branches.length,
+        },
+      });
+
+      // Connect trigger to condition
+      await prisma.workflowTransition.create({
+        data: {fromStepId: triggerStep.id, toStepId: conditionStep.id},
+      });
+
+      const execution = await prisma.workflowExecution.create({
+        data: {
+          workflowId: workflow.id,
+          contactId: contact.id,
+          status: WorkflowExecutionStatus.RUNNING,
+          currentStepId: triggerStep.id,
+          context: {},
+        },
+      });
+
+      return {execution, triggerStep, conditionStep, contact, branchExits, defaultExitId: defaultExit.id};
+    }
+
+    const planBranches = {
+      mode: 'multi' as const,
+      field: 'data.plan',
+      branches: [
+        {id: 'br-premium', name: 'Premium', operator: 'equals', value: 'premium'},
+        {id: 'br-free', name: 'Free', operator: 'equals', value: 'free'},
+        {id: 'br-enterprise', name: 'Enterprise', operator: 'equals', value: 'enterprise'},
+      ],
+    };
+
+    it('should match the first matching branch', async () => {
+      const {execution, triggerStep, conditionStep} = await createMultiBranchWorkflow(
+        {plan: 'premium'},
+        planBranches,
+      );
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+      await WorkflowExecutionService.processStepExecution(execution.id, conditionStep.id);
+
+      const branch = await getConditionBranch(execution.id, conditionStep.id);
+      expect(branch).toBe('br-premium');
+    });
+
+    it('should match a non-first branch correctly', async () => {
+      const {execution, triggerStep, conditionStep} = await createMultiBranchWorkflow(
+        {plan: 'enterprise'},
+        planBranches,
+      );
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+      await WorkflowExecutionService.processStepExecution(execution.id, conditionStep.id);
+
+      const branch = await getConditionBranch(execution.id, conditionStep.id);
+      expect(branch).toBe('br-enterprise');
+    });
+
+    it('should fall through to default when no branch matches', async () => {
+      const {execution, triggerStep, conditionStep} = await createMultiBranchWorkflow(
+        {plan: 'starter'},
+        planBranches,
+      );
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+      await WorkflowExecutionService.processStepExecution(execution.id, conditionStep.id);
+
+      const branch = await getConditionBranch(execution.id, conditionStep.id);
+      expect(branch).toBe('default');
+    });
+
+    it('should fall through to default when field is missing', async () => {
+      const {execution, triggerStep, conditionStep} = await createMultiBranchWorkflow(
+        {other: 'value'},
+        planBranches,
+      );
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+      await WorkflowExecutionService.processStepExecution(execution.id, conditionStep.id);
+
+      const branch = await getConditionBranch(execution.id, conditionStep.id);
+      expect(branch).toBe('default');
+    });
+
+    it('should support mixed operators across branches', async () => {
+      const {execution, triggerStep, conditionStep} = await createMultiBranchWorkflow(
+        {score: 85},
+        {
+          mode: 'multi',
+          field: 'data.score',
+          branches: [
+            {id: 'br-high', name: 'High', operator: 'greaterThanOrEqual', value: 90},
+            {id: 'br-medium', name: 'Medium', operator: 'greaterThanOrEqual', value: 70},
+            {id: 'br-low', name: 'Low', operator: 'lessThan', value: 70},
+          ],
+        },
+      );
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+      await WorkflowExecutionService.processStepExecution(execution.id, conditionStep.id);
+
+      // 85 >= 90 is false, 85 >= 70 is true → should match "Medium"
+      const branch = await getConditionBranch(execution.id, conditionStep.id);
+      expect(branch).toBe('br-medium');
+    });
+
+    it('should respect branch evaluation order (first match wins)', async () => {
+      const {execution, triggerStep, conditionStep} = await createMultiBranchWorkflow(
+        {plan: 'premium'},
+        {
+          mode: 'multi',
+          field: 'data.plan',
+          branches: [
+            {id: 'br-first', name: 'First', operator: 'contains', value: 'prem'},
+            {id: 'br-second', name: 'Second', operator: 'equals', value: 'premium'},
+          ],
+        },
+      );
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+      await WorkflowExecutionService.processStepExecution(execution.id, conditionStep.id);
+
+      // Both match, but first one should win
+      const branch = await getConditionBranch(execution.id, conditionStep.id);
+      expect(branch).toBe('br-first');
+    });
+
+    it('should support exists/notExists operators in branches', async () => {
+      const {execution, triggerStep, conditionStep} = await createMultiBranchWorkflow(
+        {plan: 'premium'},
+        {
+          mode: 'multi',
+          field: 'data.plan',
+          branches: [
+            {id: 'br-has-plan', name: 'Has Plan', operator: 'exists'},
+          ],
+        },
+      );
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+      await WorkflowExecutionService.processStepExecution(execution.id, conditionStep.id);
+
+      const branch = await getConditionBranch(execution.id, conditionStep.id);
+      expect(branch).toBe('br-has-plan');
+    });
+
+    it('should route to correct exit step via transitions', async () => {
+      const {execution, triggerStep, branchExits, defaultExitId} = await createMultiBranchWorkflow(
+        {plan: 'free'},
+        planBranches,
+      );
+
+      await WorkflowExecutionService.processStepExecution(execution.id, triggerStep.id);
+
+      // Check the execution completed and ended at the correct exit step
+      const completedExecution = await prisma.workflowExecution.findUnique({
+        where: {id: execution.id},
+      });
+
+      // Workflow completed after reaching exit step
+      expect(['EXITED', 'COMPLETED']).toContain(completedExecution?.status);
+
+      // Verify it went through the "free" branch exit, not default
+      const exitStepExecution = await prisma.workflowStepExecution.findFirst({
+        where: {
+          executionId: execution.id,
+          stepId: branchExits['br-free'],
+        },
+      });
+      expect(exitStepExecution).not.toBeNull();
+
+      // Verify it did NOT go through the default exit
+      const defaultStepExecution = await prisma.workflowStepExecution.findFirst({
+        where: {
+          executionId: execution.id,
+          stepId: defaultExitId,
+        },
+      });
+      expect(defaultStepExecution).toBeNull();
+    });
+  });
 });
