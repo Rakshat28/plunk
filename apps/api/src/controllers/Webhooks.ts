@@ -53,8 +53,8 @@ export class Webhooks {
         }
 
         // Only allow HTTPS requests to official AWS SNS endpoints.
-        // The hostname must be exactly sns.<region>.amazonaws.com.
-        const SNS_HOST_RE = /^sns\.[a-z0-9-]+\.amazonaws\.com$/;
+        // The hostname must be exactly sns.<region>.amazonaws.com or sns.<region>.amazonaws.eu
+        const SNS_HOST_RE = /^sns\.[a-z0-9-]+\.amazonaws\.(com|eu)$/;
         if (parsedURL.protocol !== 'https:' || !SNS_HOST_RE.test(parsedURL.hostname)) {
           signale.warn(`SNS SubscriptionConfirmation rejected — disallowed SubscribeURL host: ${parsedURL.hostname}`);
           return res.status(400).json({success: false, message: 'Invalid SubscribeURL'});
