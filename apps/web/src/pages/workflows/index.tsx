@@ -6,6 +6,10 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Command,
+  CommandGroup,
+  CommandItem,
+  CommandList,
   ConfirmDialog,
   Dialog,
   DialogContent,
@@ -14,11 +18,6 @@ import {
   DialogTitle,
   Input,
   Label,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
 } from '@plunk/ui';
 import type {Workflow} from '@plunk/db';
 import type {PaginatedResponse} from '@plunk/types';
@@ -321,6 +320,7 @@ function CreateWorkflowDialog({open, onOpenChange, onSuccess}: CreateWorkflowDia
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [eventName, setEventName] = useState('');
+  const [eventPopoverOpen, setEventPopoverOpen] = useState(false);
   const [allowReentry, setAllowReentry] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -391,34 +391,65 @@ function CreateWorkflowDialog({open, onOpenChange, onSuccess}: CreateWorkflowDia
           </div>
 
           <div>
-            <Label htmlFor="eventName">Trigger Event *</Label>
-            {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0 ? (
-              <Select value={eventName} onValueChange={setEventName} required>
-                <SelectTrigger id="eventName">
-                  <SelectValue placeholder="Select an event..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {eventNamesData.eventNames.map(name => (
-                    <SelectItem key={name} value={name}>
-                      {name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
+            <Label htmlFor="createEventName">Trigger Event *</Label>
+            {/* Combobox: 可自由輸入 event name，同時提供已追蹤 event 的下拉建議 */}
+            <div className="relative">
               <Input
-                id="eventName"
+                id="createEventName"
                 type="text"
                 value={eventName}
-                onChange={e => setEventName(e.target.value)}
-                required
+                onChange={e => {
+                  setEventName(e.target.value);
+                  setEventPopoverOpen(true);
+                }}
+                onFocus={() => setEventPopoverOpen(true)}
+                onBlur={() => {
+                  // 延遲關閉，讓 CommandItem 的 onSelect 有時間觸發
+                  setTimeout(() => setEventPopoverOpen(false), 150);
+                }}
                 placeholder="e.g., contact.created, email.opened"
+                required
+                autoComplete="off"
               />
-            )}
+              {eventPopoverOpen && ((eventNamesData?.eventNames?.length ?? 0) > 0 || eventName?.trim()) && (
+                <div className="absolute z-50 w-full mt-1 rounded-md border border-neutral-200 bg-white shadow-md">
+                  <Command>
+                    <CommandList>
+                      <CommandGroup>
+                        {eventNamesData?.eventNames
+                          ?.filter(n => !eventName || n.toLowerCase().includes(eventName.toLowerCase()))
+                          .map(n => (
+                            <CommandItem
+                              key={n}
+                              value={n}
+                              onSelect={() => {
+                                setEventName(n);
+                                setEventPopoverOpen(false);
+                              }}
+                            >
+                              {n}
+                            </CommandItem>
+                          ))}
+                        {eventName?.trim() && !eventNamesData?.eventNames?.some(n => n === eventName.trim()) && (
+                          <CommandItem
+                            key="__custom__"
+                            value={eventName.trim()}
+                            onSelect={() => {
+                              setEventName(eventName.trim());
+                              setEventPopoverOpen(false);
+                            }}
+                          >
+                            Use &ldquo;{eventName.trim()}&rdquo;
+                          </CommandItem>
+                        )}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </div>
+              )}
+            </div>
             <p className="text-xs text-neutral-500 mt-1">
-              {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0
-                ? 'Select from previously tracked events'
-                : 'No events tracked yet. Enter the event name that will trigger this workflow.'}
+              The event that triggers this workflow to start for a contact
             </p>
           </div>
 

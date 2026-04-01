@@ -26,6 +26,10 @@ import {
   SelectItemWithDescription,
   SelectTrigger,
   SelectValue,
+  Command,
+  CommandGroup,
+  CommandItem,
+  CommandList,
   Switch,
 } from '@plunk/ui';
 import type {Template, Workflow, WorkflowExecution, WorkflowStep, WorkflowTransition} from '@plunk/db';
@@ -793,6 +797,7 @@ function SettingsDialog({workflow, open, onOpenChange, onSave}: SettingsDialogPr
   const [description, setDescription] = useState(workflow.description ?? '');
   const [allowReentry, setAllowReentry] = useState(workflow.allowReentry ?? false);
   const [eventName, setEventName] = useState(triggerConfig?.eventName ?? '');
+  const [eventPopoverOpen, setEventPopoverOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Sync state when workflow changes or dialog opens
@@ -852,29 +857,50 @@ function SettingsDialog({workflow, open, onOpenChange, onSave}: SettingsDialogPr
 
           <div>
             <Label htmlFor="eventName">Trigger Event *</Label>
-            {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0 ? (
-              <Select value={eventName} onValueChange={setEventName} required>
-                <SelectTrigger id="eventName">
-                  <SelectValue placeholder="Select an event" />
-                </SelectTrigger>
-                <SelectContent>
-                  {eventNamesData.eventNames.map(name => (
-                    <SelectItem key={name} value={name}>
-                      {name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
+            <div className="relative">
               <Input
                 id="eventName"
                 type="text"
                 value={eventName}
-                onChange={e => setEventName(e.target.value)}
+                onChange={e => {
+                  setEventName(e.target.value);
+                  setEventPopoverOpen(true);
+                }}
+                onFocus={() => setEventPopoverOpen(true)}
+                onBlur={() => {
+                  setTimeout(() => setEventPopoverOpen(false), 150);
+                }}
                 placeholder="e.g., contact.created, email.opened"
                 required
+                autoComplete="off"
               />
-            )}
+              {eventPopoverOpen && ((eventNamesData?.eventNames?.length ?? 0) > 0 || eventName?.trim()) && (
+                <div className="absolute z-50 w-full mt-1 rounded-md border border-neutral-200 bg-white shadow-md">
+                  <Command>
+                    <CommandList>
+                      <CommandGroup>
+                        {eventNamesData?.eventNames
+                          ?.filter(n => !eventName || n.toLowerCase().includes(eventName.toLowerCase()))
+                          .map(n => (
+                            <CommandItem key={n} value={n} onSelect={() => { setEventName(n); setEventPopoverOpen(false); }}>
+                              {n}
+                            </CommandItem>
+                          ))}
+                        {eventName?.trim() && !eventNamesData?.eventNames?.some(n => n === eventName.trim()) && (
+                          <CommandItem
+                            key="__custom__"
+                            value={eventName.trim()}
+                            onSelect={() => { setEventName(eventName.trim()); setEventPopoverOpen(false); }}
+                          >
+                            Use &ldquo;{eventName.trim()}&rdquo;
+                          </CommandItem>
+                        )}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </div>
+              )}
+            </div>
             <p className="text-xs text-neutral-500 mt-1">
               The event that triggers this workflow to start for a contact
             </p>
@@ -961,6 +987,7 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
 
   // WAIT_FOR_EVENT fields
   const [eventName, setEventName] = useState('');
+  const [eventPopoverOpen, setEventPopoverOpen] = useState(false);
   const [eventTimeoutAmount, setEventTimeoutAmount] = useState('1');
   const [eventTimeoutUnit, setEventTimeoutUnit] = useState<'minutes' | 'hours' | 'days'>('days');
 
@@ -1611,34 +1638,53 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                   <Label htmlFor="eventName" className="text-sm font-medium">
                     Event Name *
                   </Label>
-                  {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0 ? (
-                    <Select value={eventName} onValueChange={setEventName} required>
-                      <SelectTrigger id="eventName" className="mt-1.5">
-                        <SelectValue placeholder="Select an event..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {eventNamesData.eventNames.map(name => (
-                          <SelectItem key={name} value={name}>
-                            {name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
+                  <div className="relative">
                     <Input
                       id="eventName"
                       type="text"
                       value={eventName}
-                      onChange={e => setEventName(e.target.value)}
+                      onChange={e => {
+                        setEventName(e.target.value);
+                        setEventPopoverOpen(true);
+                      }}
+                      onFocus={() => setEventPopoverOpen(true)}
+                      onBlur={() => {
+                        setTimeout(() => setEventPopoverOpen(false), 150);
+                      }}
                       required
                       placeholder="e.g., email.clicked, user.upgraded"
                       className="mt-1.5"
+                      autoComplete="off"
                     />
-                  )}
+                    {eventPopoverOpen && ((eventNamesData?.eventNames?.length ?? 0) > 0 || eventName?.trim()) && (
+                      <div className="absolute z-50 w-full mt-1 rounded-md border border-neutral-200 bg-white shadow-md">
+                        <Command>
+                          <CommandList>
+                            <CommandGroup>
+                              {eventNamesData?.eventNames
+                                ?.filter(n => !eventName || n.toLowerCase().includes(eventName.toLowerCase()))
+                                .map(n => (
+                                  <CommandItem key={n} value={n} onSelect={() => { setEventName(n); setEventPopoverOpen(false); }}>
+                                    {n}
+                                  </CommandItem>
+                                ))}
+                              {eventName?.trim() && !eventNamesData?.eventNames?.some(n => n === eventName.trim()) && (
+                                <CommandItem
+                                  key="__custom__"
+                                  value={eventName.trim()}
+                                  onSelect={() => { setEventName(eventName.trim()); setEventPopoverOpen(false); }}
+                                >
+                                  Use &ldquo;{eventName.trim()}&rdquo;
+                                </CommandItem>
+                              )}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </div>
+                    )}
+                  </div>
                   <p className="text-xs text-neutral-500 mt-1.5">
-                    {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0
-                      ? 'The workflow will pause until this event occurs'
-                      : 'Enter the event name to wait for'}
+                    Enter the event name to wait for, or select from previously tracked events
                   </p>
                 </div>
 
@@ -1991,6 +2037,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
 
   // WAIT_FOR_EVENT fields
   const [eventName, setEventName] = useState(String(config?.eventName || ''));
+  const [eventPopoverOpen, setEventPopoverOpen] = useState(false);
   const [eventTimeoutAmount, setEventTimeoutAmount] = useState<string>(() => {
     const timeoutSeconds = Number(config?.timeout) || 86400;
     // Convert seconds to most appropriate unit
@@ -2793,40 +2840,54 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
               <div className="space-y-4 pl-3">
                 <div>
                   <Label htmlFor="editEventName">Event Name *</Label>
-                  {eventNamesData?.eventNames && eventNamesData.eventNames.length > 0 ? (
-                    <>
-                      <Select value={eventName} onValueChange={setEventName} required>
-                        <SelectTrigger id="editEventName" className="mt-1.5">
-                          <SelectValue placeholder="Select an event..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {eventNamesData.eventNames.map(name => (
-                            <SelectItem key={name} value={name}>
-                              {name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-neutral-500 mt-1.5">
-                        Select from previously tracked events in your project
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <Input
-                        id="editEventName"
-                        type="text"
-                        value={eventName}
-                        onChange={e => setEventName(e.target.value)}
-                        required
-                        placeholder="e.g., email.clicked, user.upgraded"
-                        className="mt-1.5"
-                      />
-                      <p className="text-xs text-neutral-500 mt-1.5">
-                        The workflow will pause until this event is triggered by the contact
-                      </p>
-                    </>
-                  )}
+                  <div className="relative">
+                    <Input
+                      id="editEventName"
+                      type="text"
+                      value={eventName}
+                      onChange={e => {
+                        setEventName(e.target.value);
+                        setEventPopoverOpen(true);
+                      }}
+                      onFocus={() => setEventPopoverOpen(true)}
+                      onBlur={() => {
+                        setTimeout(() => setEventPopoverOpen(false), 150);
+                      }}
+                      required
+                      placeholder="e.g., email.clicked, user.upgraded"
+                      className="mt-1.5"
+                      autoComplete="off"
+                    />
+                    {eventPopoverOpen && ((eventNamesData?.eventNames?.length ?? 0) > 0 || eventName?.trim()) && (
+                      <div className="absolute z-50 w-full mt-1 rounded-md border border-neutral-200 bg-white shadow-md">
+                        <Command>
+                          <CommandList>
+                            <CommandGroup>
+                              {eventNamesData?.eventNames
+                                ?.filter(n => !eventName || n.toLowerCase().includes(eventName.toLowerCase()))
+                                .map(n => (
+                                  <CommandItem key={n} value={n} onSelect={() => { setEventName(n); setEventPopoverOpen(false); }}>
+                                    {n}
+                                  </CommandItem>
+                                ))}
+                              {eventName?.trim() && !eventNamesData?.eventNames?.some(n => n === eventName.trim()) && (
+                                <CommandItem
+                                  key="__custom__"
+                                  value={eventName.trim()}
+                                  onSelect={() => { setEventName(eventName.trim()); setEventPopoverOpen(false); }}
+                                >
+                                  Use &ldquo;{eventName.trim()}&rdquo;
+                                </CommandItem>
+                              )}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-neutral-500 mt-1.5">
+                    Enter the event name to wait for, or select from previously tracked events
+                  </p>
                 </div>
 
                 <div>
