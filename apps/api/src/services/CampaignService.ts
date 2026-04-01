@@ -1,5 +1,5 @@
 import type {Campaign, Contact, Prisma} from '@plunk/db';
-import {CampaignAudienceType, CampaignStatus, EmailSourceType} from '@plunk/db';
+import {CampaignAudienceType, CampaignStatus, EmailSourceType, TemplateType} from '@plunk/db';
 import type {CreateCampaignData, FilterCondition, PaginatedResponse, UpdateCampaignData} from '@plunk/types';
 import {fromPrismaJson, toPrismaJson} from '@plunk/types';
 import signale from 'signale';
@@ -59,6 +59,7 @@ export class CampaignService {
         from: data.from,
         fromName: data.fromName,
         replyTo: data.replyTo,
+        type: data.type ?? TemplateType.MARKETING,
         audienceType: data.audienceType,
         audienceCondition: toPrismaJson(data.audienceCondition || null),
         segmentId: data.segmentId,
@@ -100,6 +101,10 @@ export class CampaignService {
     const updateData: Prisma.CampaignUpdateInput = buildEmailFieldsUpdate(data) as Prisma.CampaignUpdateInput;
 
     // Handle campaign-specific fields
+    if (data.type !== undefined) {
+      updateData.type = data.type;
+    }
+
     if (data.audienceType !== undefined) {
       updateData.audienceType = data.audienceType;
     }
@@ -262,6 +267,7 @@ export class CampaignService {
         from: campaign.from,
         fromName: campaign.fromName,
         replyTo: campaign.replyTo,
+        type: campaign.type,
         audienceType: campaign.audienceType,
         audienceCondition: campaign.audienceCondition as Prisma.InputJsonValue,
         segmentId: campaign.segmentId,
@@ -482,6 +488,7 @@ export class CampaignService {
           from: campaign.from,
           fromName: campaign.fromName || undefined,
           replyTo: campaign.replyTo || undefined,
+          isTransactional: campaign.type === TemplateType.TRANSACTIONAL,
         });
       } catch (error) {
         signale.error(`[CAMPAIGN] Failed to queue email for contact ${contact.id}:`, error);
@@ -708,7 +715,8 @@ export class CampaignService {
   ): Promise<Prisma.ContactWhereInput> {
     const baseWhere: Prisma.ContactWhereInput = {
       projectId,
-      subscribed: true, // Only send to subscribed contacts
+      // Transactional campaigns send to all contacts regardless of subscription status
+      ...(campaign.type !== TemplateType.TRANSACTIONAL && {subscribed: true}),
     };
 
     switch (campaign.audienceType) {

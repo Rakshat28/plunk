@@ -291,6 +291,9 @@ model Campaign {
   fromName String?
   replyTo  String?
 
+  // Campaign type
+  type TemplateType @default(MARKETING)
+
   // Audience selection
   audienceType      CampaignAudienceType @default(ALL)
   audienceCondition Json? // For FILTERED: manual filter condition with AND/OR logic (same structure as Segment.condition)

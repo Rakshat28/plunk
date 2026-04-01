@@ -29,7 +29,7 @@ import {
   StickySaveBar,
 } from '@plunk/ui';
 import type {Campaign, Segment} from '@plunk/db';
-import {CampaignAudienceType, CampaignStatus} from '@plunk/db';
+import {CampaignAudienceType, CampaignStatus, TemplateType} from '@plunk/db';
 import {CampaignSchemas} from '@plunk/shared';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {EmailSettings} from '../../components/EmailSettings';
@@ -216,6 +216,7 @@ export default function CampaignDetailsPage() {
         from: editedCampaign.from,
         fromName: editedCampaign.fromName || null,
         replyTo: editedCampaign.replyTo || null,
+        type: editedCampaign.type,
         audienceType: editedCampaign.audienceType,
         segmentId: editedCampaign.segmentId || undefined,
       });
@@ -232,6 +233,7 @@ export default function CampaignDetailsPage() {
           from: updated.data.from,
           fromName: updated.data.fromName || '',
           replyTo: updated.data.replyTo || '',
+          type: updated.data.type,
           audienceType: updated.data.audienceType,
           segmentId: updated.data.segmentId || undefined,
         });
@@ -254,6 +256,7 @@ export default function CampaignDetailsPage() {
         from: campaign.data.from,
         fromName: campaign.data.fromName || '',
         replyTo: campaign.data.replyTo || '',
+        type: campaign.data.type,
         audienceType: campaign.data.audienceType,
         segmentId: campaign.data.segmentId || undefined,
       });
@@ -274,6 +277,7 @@ export default function CampaignDetailsPage() {
       editedCampaign.from !== campaign.data.from ||
       (editedCampaign.fromName || '') !== (campaign.data.fromName || '') ||
       (editedCampaign.replyTo || '') !== (campaign.data.replyTo || '') ||
+      editedCampaign.type !== campaign.data.type ||
       editedCampaign.audienceType !== campaign.data.audienceType ||
       (editedCampaign.segmentId || null) !== (campaign.data.segmentId || null);
 
@@ -462,6 +466,40 @@ export default function CampaignDetailsPage() {
                 </div>
 
                 <div>
+                  <Label>Campaign Type</Label>
+                  <div className="grid grid-cols-2 gap-3 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditedCampaign({...editedCampaign, type: TemplateType.MARKETING})}
+                      className={`text-left p-3 rounded-lg border-2 transition-colors ${
+                        (editedCampaign.type ?? c.type) === TemplateType.MARKETING
+                          ? 'border-neutral-900 bg-neutral-50'
+                          : 'border-neutral-200 hover:border-neutral-300'
+                      }`}
+                    >
+                      <p className="font-medium text-sm text-neutral-900">Marketing</p>
+                      <p className="text-xs text-neutral-500 mt-1">
+                        Subscribed contacts only, includes unsubscribe link.
+                      </p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditedCampaign({...editedCampaign, type: TemplateType.TRANSACTIONAL})}
+                      className={`text-left p-3 rounded-lg border-2 transition-colors ${
+                        (editedCampaign.type ?? c.type) === TemplateType.TRANSACTIONAL
+                          ? 'border-neutral-900 bg-neutral-50'
+                          : 'border-neutral-200 hover:border-neutral-300'
+                      }`}
+                    >
+                      <p className="font-medium text-sm text-neutral-900">Transactional</p>
+                      <p className="text-xs text-neutral-500 mt-1">
+                        All contacts regardless of subscription. No unsubscribe footer.
+                      </p>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
                   <Label htmlFor="subject">Subject Line *</Label>
                   <Input
                     id="subject"
@@ -513,8 +551,8 @@ export default function CampaignDetailsPage() {
                     <SelectContent>
                       <SelectItemWithDescription
                         value={CampaignAudienceType.ALL}
-                        title="All Subscribed Contacts"
-                        description="Send to everyone who hasn't unsubscribed"
+                        title={(editedCampaign.type ?? c.type) === TemplateType.TRANSACTIONAL ? 'All Contacts' : 'All Subscribed Contacts'}
+                        description={(editedCampaign.type ?? c.type) === TemplateType.TRANSACTIONAL ? 'Send to all contacts regardless of subscription status' : "Send to everyone who hasn't unsubscribed"}
                       />
                       <SelectItemWithDescription
                         value={CampaignAudienceType.SEGMENT}
@@ -581,7 +619,10 @@ export default function CampaignDetailsPage() {
                       <Info className="h-3.5 w-3.5 text-blue-600 mt-0.5 flex-shrink-0" />
                       <p className="text-xs text-blue-800">
                         This count will be recalculated right before sending to ensure accuracy. The final number may
-                        differ if contacts subscribe, unsubscribe, or segment membership changes.
+                        differ if contacts{' '}
+                        {(editedCampaign.type ?? c.type) === TemplateType.TRANSACTIONAL
+                          ? 'are added or removed, or segment membership changes.'
+                          : 'subscribe, unsubscribe, or segment membership changes.'}
                       </p>
                     </div>
                   </div>

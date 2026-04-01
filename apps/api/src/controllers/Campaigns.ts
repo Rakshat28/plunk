@@ -1,5 +1,5 @@
 import {Controller, Delete, Get, Middleware, Post, Put} from '@overnightjs/core';
-import {CampaignAudienceType, CampaignStatus} from '@plunk/db';
+import {CampaignAudienceType, CampaignStatus, TemplateType} from '@plunk/db';
 import {CampaignSchemas, UtilitySchemas} from '@plunk/shared';
 import type {NextFunction, Request, Response} from 'express';
 
@@ -20,7 +20,7 @@ export class Campaigns {
   @CatchAsync
   private async create(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth;
-    const {name, description, subject, body, from, fromName, replyTo, audienceType, audienceCondition, segmentId} =
+    const {name, description, subject, body, from, fromName, replyTo, type, audienceType, audienceCondition, segmentId} =
       CampaignSchemas.create.parse(req.body);
 
     if (audienceType === CampaignAudienceType.SEGMENT && !segmentId) {
@@ -42,6 +42,7 @@ export class Campaigns {
       from,
       fromName,
       replyTo,
+      type,
       audienceType,
       audienceCondition,
       segmentId,
@@ -109,7 +110,7 @@ export class Campaigns {
   private async update(req: Request, res: Response, _next: NextFunction) {
     const auth = res.locals.auth;
     const {id} = UtilitySchemas.id.parse(req.params);
-    const {name, description, subject, body, from, fromName, replyTo, audienceType, audienceCondition, segmentId} =
+    const {name, description, subject, body, from, fromName, replyTo, type, audienceType, audienceCondition, segmentId} =
       req.body;
 
     // Validate audience-specific fields if audienceType is being updated
@@ -134,6 +135,7 @@ export class Campaigns {
       from,
       fromName,
       replyTo,
+      type: type as TemplateType | undefined,
       audienceType,
       audienceCondition,
       segmentId,
