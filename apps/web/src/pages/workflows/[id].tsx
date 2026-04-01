@@ -27,7 +27,6 @@ import {
   SelectTrigger,
   SelectValue,
   Command,
-  CommandEmpty,
   CommandGroup,
   CommandItem,
   CommandList,
@@ -875,21 +874,27 @@ function SettingsDialog({workflow, open, onOpenChange, onSave}: SettingsDialogPr
                 required
                 autoComplete="off"
               />
-              {eventPopoverOpen && eventNamesData?.eventNames && eventNamesData.eventNames.length > 0 && (
+              {eventPopoverOpen && ((eventNamesData?.eventNames?.length ?? 0) > 0 || eventName?.trim()) && (
                 <div className="absolute z-50 w-full mt-1 rounded-md border border-neutral-200 bg-white shadow-md">
                   <Command>
                     <CommandList>
-                      <CommandEmpty className="py-3 text-center text-sm text-neutral-500">
-                        No matching events
-                      </CommandEmpty>
                       <CommandGroup>
-                        {eventNamesData.eventNames
-                          .filter(n => !eventName || n.toLowerCase().includes(eventName.toLowerCase()))
+                        {eventNamesData?.eventNames
+                          ?.filter(n => !eventName || n.toLowerCase().includes(eventName.toLowerCase()))
                           .map(n => (
                             <CommandItem key={n} value={n} onSelect={() => { setEventName(n); setEventPopoverOpen(false); }}>
                               {n}
                             </CommandItem>
                           ))}
+                        {eventName?.trim() && !eventNamesData?.eventNames?.some(n => n === eventName.trim()) && (
+                          <CommandItem
+                            key="__custom__"
+                            value={eventName.trim()}
+                            onSelect={() => { setEventName(eventName.trim()); setEventPopoverOpen(false); }}
+                          >
+                            Use &ldquo;{eventName.trim()}&rdquo;
+                          </CommandItem>
+                        )}
                       </CommandGroup>
                     </CommandList>
                   </Command>
@@ -1651,21 +1656,27 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                       className="mt-1.5"
                       autoComplete="off"
                     />
-                    {eventPopoverOpen && eventNamesData?.eventNames && eventNamesData.eventNames.length > 0 && (
+                    {eventPopoverOpen && ((eventNamesData?.eventNames?.length ?? 0) > 0 || eventName?.trim()) && (
                       <div className="absolute z-50 w-full mt-1 rounded-md border border-neutral-200 bg-white shadow-md">
                         <Command>
                           <CommandList>
-                            <CommandEmpty className="py-3 text-center text-sm text-neutral-500">
-                              No matching events
-                            </CommandEmpty>
                             <CommandGroup>
-                              {eventNamesData.eventNames
-                                .filter(n => !eventName || n.toLowerCase().includes(eventName.toLowerCase()))
+                              {eventNamesData?.eventNames
+                                ?.filter(n => !eventName || n.toLowerCase().includes(eventName.toLowerCase()))
                                 .map(n => (
                                   <CommandItem key={n} value={n} onSelect={() => { setEventName(n); setEventPopoverOpen(false); }}>
                                     {n}
                                   </CommandItem>
                                 ))}
+                              {eventName?.trim() && !eventNamesData?.eventNames?.some(n => n === eventName.trim()) && (
+                                <CommandItem
+                                  key="__custom__"
+                                  value={eventName.trim()}
+                                  onSelect={() => { setEventName(eventName.trim()); setEventPopoverOpen(false); }}
+                                >
+                                  Use &ldquo;{eventName.trim()}&rdquo;
+                                </CommandItem>
+                              )}
                             </CommandGroup>
                           </CommandList>
                         </Command>
@@ -2847,21 +2858,27 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                       className="mt-1.5"
                       autoComplete="off"
                     />
-                    {eventPopoverOpen && eventNamesData?.eventNames && eventNamesData.eventNames.length > 0 && (
+                    {eventPopoverOpen && ((eventNamesData?.eventNames?.length ?? 0) > 0 || eventName?.trim()) && (
                       <div className="absolute z-50 w-full mt-1 rounded-md border border-neutral-200 bg-white shadow-md">
                         <Command>
                           <CommandList>
-                            <CommandEmpty className="py-3 text-center text-sm text-neutral-500">
-                              No matching events
-                            </CommandEmpty>
                             <CommandGroup>
-                              {eventNamesData.eventNames
-                                .filter(n => !eventName || n.toLowerCase().includes(eventName.toLowerCase()))
+                              {eventNamesData?.eventNames
+                                ?.filter(n => !eventName || n.toLowerCase().includes(eventName.toLowerCase()))
                                 .map(n => (
                                   <CommandItem key={n} value={n} onSelect={() => { setEventName(n); setEventPopoverOpen(false); }}>
                                     {n}
                                   </CommandItem>
                                 ))}
+                              {eventName?.trim() && !eventNamesData?.eventNames?.some(n => n === eventName.trim()) && (
+                                <CommandItem
+                                  key="__custom__"
+                                  value={eventName.trim()}
+                                  onSelect={() => { setEventName(eventName.trim()); setEventPopoverOpen(false); }}
+                                >
+                                  Use &ldquo;{eventName.trim()}&rdquo;
+                                </CommandItem>
+                              )}
                             </CommandGroup>
                           </CommandList>
                         </Command>
