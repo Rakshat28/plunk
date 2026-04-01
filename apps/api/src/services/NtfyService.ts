@@ -171,6 +171,17 @@ export class NtfyService {
   }
 
   /**
+   * Notify about project disabled due to payment failure
+   */
+  public static async notifyProjectDisabledForPayment(projectName: string, projectId: string): Promise<void> {
+    await this.sendUrgent(
+      'Project Disabled - Payment Failed',
+      `Project "${projectName}" (${projectId}) was automatically disabled due to a failed recurring payment`,
+      [NtfyTag.WARNING, NtfyTag.MONEY, NtfyTag.ERROR],
+    );
+  }
+
+  /**
    * Notify about successful invoice payment - MIN priority (routine)
    */
   public static async notifyInvoicePaid(projectName: string, projectId: string): Promise<void> {

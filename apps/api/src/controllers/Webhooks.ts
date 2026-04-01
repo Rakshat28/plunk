@@ -5,12 +5,16 @@ import type {Request, Response} from 'express';
 import signale from 'signale';
 import type Stripe from 'stripe';
 
-import {STRIPE_ENABLED, STRIPE_WEBHOOK_SECRET} from '../app/constants.js';
+import {ProjectDisabledPaymentEmail, sendPlatformEmail} from '@plunk/email';
+import React from 'react';
+
+import {DASHBOARD_URI, LANDING_URI, STRIPE_ENABLED, STRIPE_WEBHOOK_SECRET} from '../app/constants.js';
 import {stripe} from '../app/stripe.js';
 import {prisma} from '../database/prisma.js';
 import {BillingLimitService} from '../services/BillingLimitService.js';
 import {ContactService} from '../services/ContactService.js';
 import {EventService} from '../services/EventService.js';
+import {MembershipService} from '../services/MembershipService.js';
 import {MeterService} from '../services/MeterService.js';
 import {NtfyService} from '../services/NtfyService.js';
 import {SecurityService} from '../services/SecurityService.js';
@@ -519,6 +523,16 @@ export class Webhooks {
           const invoice = event.data.object;
           const customerId = invoice.customer as string;
 
+          // Only disable projects that are already consuming (recurring billing).
+          // If billing_reason is 'subscription_create', this is a first-time payment
+          // attempt and the project has never had an active subscription — don't disable.
+          if (invoice.billing_reason === 'subscription_create') {
+            signale.info(
+              `[WEBHOOK] Payment failed on initial subscription attempt for customer ${customerId}, skipping disable`,
+            );
+            break;
+          }
+
           // Find project by customer ID
           const project = await prisma.project.findUnique({
             where: {customer: customerId},
@@ -529,10 +543,33 @@ export class Webhooks {
             break;
           }
 
-          signale.warn(`[WEBHOOK] Payment failed for project ${project.name} (${project.id})`);
+          signale.warn(`[WEBHOOK] Payment failed for project ${project.name} (${project.id}), disabling project`);
 
-          // Send notification about payment failure
-          await NtfyService.notifyPaymentFailed(project.name, project.id);
+          await prisma.project.update({
+            where: {id: project.id},
+            data: {disabled: true},
+          });
+
+          await NtfyService.notifyProjectDisabledForPayment(project.name, project.id);
+
+          // Send email notification to project members
+          try {
+            const members = await MembershipService.getMembers(project.id);
+            const emails = members.map(m => m.email);
+            if (emails.length > 0) {
+              const template = React.createElement(ProjectDisabledPaymentEmail, {
+                projectName: project.name,
+                projectId: project.id,
+                dashboardUrl: DASHBOARD_URI,
+                landingUrl: LANDING_URI,
+              });
+              await Promise.all(
+                emails.map(email => sendPlatformEmail(email, 'Project Disabled - Payment Failed', template)),
+              );
+            }
+          } catch (emailError) {
+            signale.error(`[WEBHOOK] Failed to send project disabled email:`, emailError);
+          }
           break;
         }
 
