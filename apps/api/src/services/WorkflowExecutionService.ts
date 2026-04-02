@@ -10,6 +10,8 @@ import type {
 import {StepExecutionStatus, WorkflowExecutionStatus} from '@plunk/db';
 import {toPrismaJson} from '@plunk/types';
 import {renderTemplate, WorkflowStepConfigSchemas} from '@plunk/shared';
+import dns from 'node:dns/promises';
+import net from 'node:net';
 import signale from 'signale';
 
 import {prisma} from '../database/prisma.js';
@@ -823,6 +825,89 @@ export class WorkflowExecutionService {
   }
 
   /**
+   * Validates that an IP address is not in a private/reserved range to prevent SSRF.
+   * Blocks loopback, private, link-local, and cloud metadata ranges.
+   */
+  private static isPrivateIp(ip: string): boolean {
+    // Normalize IPv6-mapped IPv4 (e.g. ::ffff:192.168.1.1)
+    const addr = ip.startsWith('::ffff:') ? ip.slice(7) : ip;
+
+    if (net.isIPv4(addr)) {
+      const parts = addr.split('.').map(Number);
+      const a = parts[0] ?? -1;
+      const b = parts[1] ?? -1;
+
+      return (
+        a === 127 || // 127.0.0.0/8 loopback
+        a === 10 || // 10.0.0.0/8 private
+        (a === 172 && b >= 16 && b <= 31) || // 172.16.0.0/12 private
+        (a === 192 && b === 168) || // 192.168.0.0/16 private
+        (a === 169 && b === 254) || // 169.254.0.0/16 link-local / cloud metadata
+        (a === 100 && b >= 64 && b <= 127) || // 100.64.0.0/10 shared address space
+        a === 0 || // 0.0.0.0/8
+        a >= 224 // 224.0.0.0+ multicast and reserved
+      );
+    }
+
+    if (net.isIPv6(addr)) {
+      const normalized = addr.toLowerCase();
+      return (
+        normalized === '::1' || // loopback
+        normalized.startsWith('fe80:') || // link-local
+        normalized.startsWith('fc') || // unique local
+        normalized.startsWith('fd') || // unique local
+        normalized.startsWith('ff') // multicast
+      );
+    }
+
+    // Unknown format — reject to be safe
+    return true;
+  }
+
+  /**
+   * SSRF-safe fetch. Resolves the hostname, validates the IP is not internal,
+   * and manually follows redirects re-validating each hop.
+   */
+  private static async safeFetch(url: string, options: RequestInit): Promise<Response> {
+    const MAX_REDIRECTS = 5;
+    let currentUrl = url;
+
+    for (let redirects = 0; redirects <= MAX_REDIRECTS; redirects++) {
+      const parsed = new URL(currentUrl);
+
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+        throw new Error(`Webhook URL scheme not allowed: ${parsed.protocol}`);
+      }
+
+      const {address} = await dns.lookup(parsed.hostname);
+
+      if (WorkflowExecutionService.isPrivateIp(address)) {
+        throw new Error(`Webhook URL resolves to a private/internal IP address: ${address}`);
+      }
+
+      const response = await fetch(currentUrl, {
+        ...options,
+        redirect: 'manual',
+        signal: AbortSignal.timeout(10_000),
+      });
+
+      if (response.status >= 300 && response.status < 400) {
+        const location = response.headers.get('location');
+        if (!location) {
+          throw new Error('Redirect with no Location header');
+        }
+        // Resolve relative redirects against the current URL
+        currentUrl = new URL(location, currentUrl).toString();
+        continue;
+      }
+
+      return response;
+    }
+
+    throw new Error('Too many redirects');
+  }
+
+  /**
    * WEBHOOK step - Call an external webhook
    */
   private static async executeWebhook(
@@ -859,7 +944,7 @@ export class WorkflowExecutionService {
     };
 
     // Make HTTP request
-    const response = await fetch(url, {
+    const response = await WorkflowExecutionService.safeFetch(url, {
       method,
       headers: {
         'Content-Type': 'application/json',
