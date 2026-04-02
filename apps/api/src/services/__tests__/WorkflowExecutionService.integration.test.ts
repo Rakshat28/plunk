@@ -4,6 +4,12 @@ import {toPrismaJson} from '@plunk/types';
 import {WorkflowExecutionService} from '../WorkflowExecutionService';
 import {factories, getPrismaClient} from '../../../../../test/helpers';
 
+vi.mock('node:dns/promises', () => ({
+  default: {
+    lookup: vi.fn(async () => ({address: '1.2.3.4', family: 4})),
+  },
+}));
+
 /**
  * Integration Tests: Workflow Execution Engine
  *
