@@ -39,7 +39,7 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [page, setPage] = useState(1);
-  const [typeFilter, setTypeFilter] = useState<'ALL' | 'TRANSACTIONAL' | 'MARKETING'>('ALL');
+  const [typeFilter, setTypeFilter] = useState<'ALL' | 'TRANSACTIONAL' | 'MARKETING' | 'HEADLESS'>('ALL');
   const [step, setStep] = useState<'select' | 'configure'>('select');
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [selectedFields, setSelectedFields] = useState<SelectedFields>({
@@ -186,6 +186,17 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
                 >
                   Transactional
                 </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setTypeFilter('HEADLESS');
+                    setPage(1);
+                  }}
+                  variant={typeFilter === 'HEADLESS' ? 'default' : 'secondary'}
+                  size="sm"
+                >
+                  Headless
+                </Button>
               </div>
             </div>
 
@@ -233,7 +244,7 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <CardTitle className="text-base truncate">{template.name}</CardTitle>
-                          <Badge className="capitalize" variant={template.type === 'MARKETING' ? 'info' : 'success'}>
+                          <Badge className="capitalize" variant={template.type === 'MARKETING' ? 'info' : template.type === 'HEADLESS' ? 'warning' : 'success'}>
                             {template.type.toLowerCase()}
                           </Badge>
                         </div>

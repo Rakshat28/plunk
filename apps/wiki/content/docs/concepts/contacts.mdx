@@ -63,9 +63,12 @@ The subscription state controls whether a contact receives marketing emails. Tra
 | Email type | Subscribed | Unsubscribed |
 |---|---|---|
 | **Transactional** (via [/v1/send](/api-reference/public-api/sendTransactionalEmail)) | Delivered | Delivered |
-| **Campaigns** | Delivered | Not delivered |
-| **Automations** (transactional template) | Delivered | Delivered |
+| **Campaigns** (marketing) | Delivered | Not delivered |
+| **Campaigns** (headless) | Delivered | Not delivered |
+| **Campaigns** (transactional) | Delivered | Delivered |
 | **Automations** (marketing template) | Delivered | Not delivered |
+| **Automations** (headless template) | Delivered | Not delivered |
+| **Automations** (transactional template) | Delivered | Delivered |
 
 <Callout
  title="Transactional emails and marketing templates"

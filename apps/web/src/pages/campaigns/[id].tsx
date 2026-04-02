@@ -30,7 +30,7 @@ import {
 } from '@plunk/ui';
 import type {Campaign, Segment} from '@plunk/db';
 import {CampaignAudienceType, CampaignStatus, TemplateType} from '@plunk/db';
-import {CampaignSchemas} from '@plunk/shared';
+import {CampaignSchemas, detectUnsubscribeSignal} from '@plunk/shared';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {EmailSettings} from '../../components/EmailSettings';
 import {EmailEditor} from '../../components/EmailEditor';
@@ -49,6 +49,7 @@ import {
   TestTube,
   Trash2,
   TrendingUp,
+  TriangleAlert,
   Users,
   XCircle,
 } from 'lucide-react';
@@ -467,36 +468,49 @@ export default function CampaignDetailsPage() {
 
                 <div>
                   <Label>Campaign Type</Label>
-                  <div className="grid grid-cols-2 gap-3 mt-2">
-                    <button
-                      type="button"
-                      onClick={() => setEditedCampaign({...editedCampaign, type: TemplateType.MARKETING})}
-                      className={`text-left p-3 rounded-lg border-2 transition-colors ${
-                        (editedCampaign.type ?? c.type) === TemplateType.MARKETING
-                          ? 'border-neutral-900 bg-neutral-50'
-                          : 'border-neutral-200 hover:border-neutral-300'
-                      }`}
-                    >
-                      <p className="font-medium text-sm text-neutral-900">Marketing</p>
-                      <p className="text-xs text-neutral-500 mt-1">
-                        Subscribed contacts only, includes unsubscribe link.
-                      </p>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditedCampaign({...editedCampaign, type: TemplateType.TRANSACTIONAL})}
-                      className={`text-left p-3 rounded-lg border-2 transition-colors ${
-                        (editedCampaign.type ?? c.type) === TemplateType.TRANSACTIONAL
-                          ? 'border-neutral-900 bg-neutral-50'
-                          : 'border-neutral-200 hover:border-neutral-300'
-                      }`}
-                    >
-                      <p className="font-medium text-sm text-neutral-900">Transactional</p>
-                      <p className="text-xs text-neutral-500 mt-1">
-                        All contacts regardless of subscription. No unsubscribe footer.
-                      </p>
-                    </button>
+                  <div className="flex flex-col gap-2 mt-2">
+                    {([
+                      {value: TemplateType.MARKETING, label: 'Marketing', description: 'Subscribed contacts, includes unsubscribe link'},
+                      {value: TemplateType.TRANSACTIONAL, label: 'Transactional', description: 'All contacts, no subscription check or footer'},
+                      {value: TemplateType.HEADLESS, label: 'Headless', description: 'Subscribed contacts, no Plunk footer'},
+                    ] as const).map(({value, label, description}) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setEditedCampaign({...editedCampaign, type: value})}
+                        className={`flex items-center justify-between w-full min-h-[44px] px-4 py-3 rounded-lg border-2 text-left transition-colors ${
+                          (editedCampaign.type ?? c.type) === value
+                            ? 'border-neutral-900 bg-neutral-50'
+                            : 'border-neutral-200 hover:border-neutral-300'
+                        }`}
+                      >
+                        <span className="font-medium text-sm text-neutral-900 shrink-0">{label}</span>
+                        <span className="text-xs text-neutral-500 ml-4 text-right">{description}</span>
+                      </button>
+                    ))}
                   </div>
+                  {(editedCampaign.type ?? c.type) === TemplateType.HEADLESS &&
+                    !detectUnsubscribeSignal(editedCampaign.body ?? c.body) && (
+                    <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 overflow-hidden">
+                      <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-100/60 px-3 py-2">
+                        <TriangleAlert className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                        <p className="text-xs font-semibold text-amber-900">No unsubscribe link detected</p>
+                      </div>
+                      <div className="px-3 py-2.5 space-y-2">
+                        <p className="text-xs text-amber-800 leading-relaxed">
+                          You are responsible for providing recipients a way to opt out. Use the Plunk variables below to build your own footer.
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          <code className="inline-flex items-center rounded bg-amber-100 border border-amber-200 px-1.5 py-0.5 font-mono text-[11px] text-amber-900">
+                            {'{{unsubscribeUrl}}'}
+                          </code>
+                          <code className="inline-flex items-center rounded bg-amber-100 border border-amber-200 px-1.5 py-0.5 font-mono text-[11px] text-amber-900">
+                            {'{{manageUrl}}'}
+                          </code>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -622,7 +636,8 @@ export default function CampaignDetailsPage() {
                         differ if contacts{' '}
                         {(editedCampaign.type ?? c.type) === TemplateType.TRANSACTIONAL
                           ? 'are added or removed, or segment membership changes.'
-                          : 'subscribe, unsubscribe, or segment membership changes.'}
+                          : 'subscribe, unsubscribe, or segment membership changes.'
+                        }
                       </p>
                     </div>
                   </div>

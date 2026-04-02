@@ -8,11 +8,6 @@ import {
   ConfirmDialog,
   Input,
   Label,
-  Select,
-  SelectContent,
-  SelectItemWithDescription,
-  SelectTrigger,
-  SelectValue,
   StickySaveBar,
 } from '@plunk/ui';
 import type {Template} from '@plunk/db';
@@ -21,13 +16,13 @@ import {EmailSettings} from '../../components/EmailSettings';
 import {EmailEditor} from '../../components/EmailEditor';
 import {network} from '../../lib/network';
 import {useChangeTracking} from '../../lib/hooks/useChangeTracking';
-import {ArrowLeft, Save, Trash2} from 'lucide-react';
+import {ArrowLeft, Save, Trash2, TriangleAlert} from 'lucide-react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
-import {TemplateSchemas} from '@plunk/shared';
+import {TemplateSchemas, detectUnsubscribeSignal} from '@plunk/shared';
 import {useActiveProject} from '../../lib/contexts/ActiveProjectProvider';
 
 export default function TemplateEditorPage() {
@@ -221,32 +216,49 @@ export default function TemplateEditorPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="type">Type *</Label>
-                  <Select
-                    value={editedTemplate.type}
-                    onValueChange={value =>
-                      setEditedTemplate({...editedTemplate, type: value as 'MARKETING' | 'TRANSACTIONAL'})
-                    }
-                  >
-                    <SelectTrigger id="type">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItemWithDescription
-                        value="MARKETING"
-                        title="Marketing"
-                        description="Includes unsubscribe link, respects opt-out"
-                      />
-                      <SelectItemWithDescription
-                        value="TRANSACTIONAL"
-                        title="Transactional"
-                        description="For receipts, alerts - sent regardless of opt-out"
-                      />
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-neutral-500 mt-1">
-                    Marketing templates will automatically include a Plunk-hosted unsubscribe link.
-                  </p>
+                  <Label>Type *</Label>
+                  <div className="flex flex-col gap-2 mt-2">
+                    {([
+                      {value: 'MARKETING', label: 'Marketing', description: 'Subscribed contacts, includes unsubscribe link'} ,
+                      {value: 'TRANSACTIONAL', label: 'Transactional', description: 'All contacts, no subscription check or footer'},
+                      {value: 'HEADLESS', label: 'Headless', description: 'Subscribed contacts, no Plunk footer'},
+                    ] as const).map(({value, label, description}) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setEditedTemplate({...editedTemplate, type: value})}
+                        className={`flex items-center justify-between w-full min-h-[44px] px-4 py-3 rounded-lg border-2 text-left transition-colors ${
+                          editedTemplate.type === value
+                            ? 'border-neutral-900 bg-neutral-50'
+                            : 'border-neutral-200 hover:border-neutral-300'
+                        }`}
+                      >
+                        <span className="font-medium text-sm text-neutral-900 shrink-0">{label}</span>
+                        <span className="text-xs text-neutral-500 ml-4 text-right">{description}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {editedTemplate.type === 'HEADLESS' && !detectUnsubscribeSignal(editedTemplate.body ?? '') && (
+                    <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 overflow-hidden">
+                      <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-100/60 px-3 py-2">
+                        <TriangleAlert className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                        <p className="text-xs font-semibold text-amber-900">No unsubscribe link detected</p>
+                      </div>
+                      <div className="px-3 py-2.5 space-y-2">
+                        <p className="text-xs text-amber-800 leading-relaxed">
+                          You are responsible for providing recipients a way to opt out. Use the Plunk variables below to build your own footer.
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          <code className="inline-flex items-center rounded bg-amber-100 border border-amber-200 px-1.5 py-0.5 font-mono text-[11px] text-amber-900">
+                            {'{{unsubscribeUrl}}'}
+                          </code>
+                          <code className="inline-flex items-center rounded bg-amber-100 border border-amber-200 px-1.5 py-0.5 font-mono text-[11px] text-amber-900">
+                            {'{{manageUrl}}'}
+                          </code>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>

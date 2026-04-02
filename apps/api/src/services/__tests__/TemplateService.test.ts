@@ -193,6 +193,7 @@ describe('TemplateService', () => {
       await factories.createTemplate({projectId, type: TemplateType.MARKETING});
       await factories.createTemplate({projectId, type: TemplateType.MARKETING});
       await factories.createTemplate({projectId, type: TemplateType.TRANSACTIONAL});
+      await factories.createTemplate({projectId, type: TemplateType.HEADLESS});
 
       const marketingResult = await TemplateService.list(projectId, 1, 20, undefined, TemplateType.MARKETING);
       expect(marketingResult.total).toBe(2);
@@ -201,6 +202,10 @@ describe('TemplateService', () => {
       const transactionalResult = await TemplateService.list(projectId, 1, 20, undefined, TemplateType.TRANSACTIONAL);
       expect(transactionalResult.total).toBe(1);
       expect(transactionalResult.data[0].type).toBe(TemplateType.TRANSACTIONAL);
+
+      const headlessResult = await TemplateService.list(projectId, 1, 20, undefined, TemplateType.HEADLESS);
+      expect(headlessResult.total).toBe(1);
+      expect(headlessResult.data[0].type).toBe(TemplateType.HEADLESS);
     });
 
     it('should combine search and type filters', async () => {
@@ -291,6 +296,19 @@ describe('TemplateService', () => {
       });
 
       expect(updated.type).toBe(TemplateType.TRANSACTIONAL);
+    });
+
+    it('should update template type to HEADLESS', async () => {
+      const template = await factories.createTemplate({
+        projectId,
+        type: TemplateType.MARKETING,
+      });
+
+      const updated = await TemplateService.update(projectId, template.id, {
+        type: TemplateType.HEADLESS,
+      });
+
+      expect(updated.type).toBe(TemplateType.HEADLESS);
     });
 
     it('should update email fields (from, fromName, replyTo)', async () => {

@@ -51,9 +51,10 @@ You can preview your templates by selecting a contact in the preview window. Thi
 
 ## Templates types
 
-There are two types of templates in Plunk. Each type is treated at the same priority when sending emails, you should not pick one type over the other based on deliverability or performance.
+There are three types of templates in Plunk. Each type is treated at the same priority when sending emails, you should not pick one type over the other based on deliverability or performance.
 
-| Type          | Description                                                                                                          |
-| ------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Marketing     | Automatically includes a Plunk-hosted unsubscribe page and footer. Will not be sent to contacts who are unsubscribed |
-| Transactional | Does not include any way to unsubscribe. Will be sent to any contact, regardless of subscription state               |
+| Type          | Respects opt-out | Plunk unsubscribe footer | Description                                                                                                          |
+| ------------- | :--------------: | :----------------------: | -------------------------------------------------------------------------------------------------------------------- |
+| Marketing     | Yes              | Yes                      | Automatically includes a Plunk-hosted unsubscribe footer. Will not be sent to contacts who are unsubscribed          |
+| Transactional | No               | No                       | Does not include any way to unsubscribe. Will be sent to any contact, regardless of subscription state               |
+| Headless      | Yes              | No                       | Respects opt-out like marketing, but no Plunk footer is appended. You are responsible for providing an unsubscribe mechanism in the email body. Use `{{unsubscribeUrl}}` or `{{manageUrl}}` to link to Plunk's managed unsubscribe page |

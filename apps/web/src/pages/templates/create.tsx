@@ -7,11 +7,6 @@ import {
   CardTitle,
   Input,
   Label,
-  Select,
-  SelectContent,
-  SelectItemWithDescription,
-  SelectTrigger,
-  SelectValue,
 } from '@plunk/ui';
 import {NextSeo} from 'next-seo';
 import {DashboardLayout} from '../../components/DashboardLayout';
@@ -19,12 +14,12 @@ import {EmailSettings} from '../../components/EmailSettings';
 import {EmailEditor} from '../../components/EmailEditor';
 import {network} from '../../lib/network';
 import {EmailFormValidator} from '../../lib/validation';
-import {ArrowLeft, Save} from 'lucide-react';
+import {ArrowLeft, Save, TriangleAlert} from 'lucide-react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import {useState} from 'react';
 import {toast} from 'sonner';
-import {TemplateSchemas} from '@plunk/shared';
+import {TemplateSchemas, detectUnsubscribeSignal} from '@plunk/shared';
 import {useActiveProject} from '../../lib/contexts/ActiveProjectProvider';
 
 export default function CreateTemplatePage() {
@@ -37,7 +32,7 @@ export default function CreateTemplatePage() {
   const [from, setFrom] = useState('');
   const [fromName, setFromName] = useState('');
   const [replyTo, setReplyTo] = useState('');
-  const [type, setType] = useState<'MARKETING' | 'TRANSACTIONAL'>('MARKETING');
+  const [type, setType] = useState<'MARKETING' | 'TRANSACTIONAL' | 'HEADLESS'>('MARKETING');
   const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,6 +43,7 @@ export default function CreateTemplatePage() {
       toast.error(validationError);
       return;
     }
+
 
     setSaving(true);
 
@@ -108,40 +104,63 @@ export default function CreateTemplatePage() {
                 <CardDescription>Configure your template details and email settings</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name">Template Name *</Label>
-                    <Input
-                      id="name"
-                      type="text"
-                      value={name}
-                      onChange={e => setName(e.target.value)}
-                      required
-                      placeholder="Welcome Email"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="type">Template Type *</Label>
-                    <Select value={type} onValueChange={value => setType(value as 'MARKETING' | 'TRANSACTIONAL')}>
-                      <SelectTrigger id="type">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItemWithDescription
-                          value="MARKETING"
-                          title="Marketing"
-                          description="Includes unsubscribe link, respects opt-out"
-                        />
-                        <SelectItemWithDescription
-                          value="TRANSACTIONAL"
-                          title="Transactional"
-                          description="For receipts, alerts - sent regardless of opt-out"
-                        />
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div>
+                  <Label htmlFor="name">Template Name *</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    required
+                    placeholder="Welcome Email"
+                  />
                 </div>
+
+                <div>
+                  <Label>Template Type *</Label>
+                    <div className="flex flex-col gap-2 mt-2">
+                      {([
+                        {value: 'MARKETING', label: 'Marketing', description: 'Subscribed contacts, includes unsubscribe link'} ,
+                        {value: 'TRANSACTIONAL', label: 'Transactional', description: 'All contacts, no subscription check or footer'},
+                        {value: 'HEADLESS', label: 'Headless', description: 'Subscribed contacts, no Plunk footer'},
+                      ] as const).map(({value, label, description}) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setType(value)}
+                          className={`flex items-center justify-between w-full min-h-[44px] px-4 py-3 rounded-lg border-2 text-left transition-colors ${
+                            type === value
+                              ? 'border-neutral-900 bg-neutral-50'
+                              : 'border-neutral-200 hover:border-neutral-300'
+                          }`}
+                        >
+                          <span className="font-medium text-sm text-neutral-900 shrink-0">{label}</span>
+                          <span className="text-xs text-neutral-500 ml-4 text-right">{description}</span>
+                        </button>
+                      ))}
+                    </div>
+                    {type === 'HEADLESS' && !detectUnsubscribeSignal(body) && (
+                      <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 overflow-hidden">
+                        <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-100/60 px-3 py-2">
+                          <TriangleAlert className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                          <p className="text-xs font-semibold text-amber-900">No unsubscribe link detected</p>
+                        </div>
+                        <div className="px-3 py-2.5 space-y-2">
+                          <p className="text-xs text-amber-800 leading-relaxed">
+                            You are responsible for providing recipients a way to opt out. Use the Plunk variables below to build your own footer.
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            <code className="inline-flex items-center rounded bg-amber-100 border border-amber-200 px-1.5 py-0.5 font-mono text-[11px] text-amber-900">
+                              {'{{unsubscribeUrl}}'}
+                            </code>
+                            <code className="inline-flex items-center rounded bg-amber-100 border border-amber-200 px-1.5 py-0.5 font-mono text-[11px] text-amber-900">
+                              {'{{manageUrl}}'}
+                            </code>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
                 <div>
                   <Label htmlFor="description">Description</Label>

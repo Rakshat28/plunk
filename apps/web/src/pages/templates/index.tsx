@@ -26,7 +26,7 @@ export default function TemplatesPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
-  const [typeFilter, setTypeFilter] = useState<'ALL' | 'TRANSACTIONAL' | 'MARKETING'>('ALL');
+  const [typeFilter, setTypeFilter] = useState<'ALL' | 'TRANSACTIONAL' | 'MARKETING' | 'HEADLESS'>('ALL');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
 
@@ -145,6 +145,14 @@ export default function TemplatesPage() {
                   >
                     Transactional
                   </Button>
+                  <Button
+                    type="button"
+                    onClick={() => setTypeFilter('HEADLESS')}
+                    variant={typeFilter === 'HEADLESS' ? 'default' : 'secondary'}
+                    size="sm"
+                  >
+                    Headless
+                  </Button>
                 </div>
               </form>
             </CardContent>
@@ -206,7 +214,7 @@ export default function TemplatesPage() {
                             <CardTitle>{template.name}</CardTitle>
                             <Badge
                               className={'capitalize'}
-                              variant={template.type === 'MARKETING' ? 'info' : 'success'}
+                              variant={template.type === 'MARKETING' ? 'info' : template.type === 'HEADLESS' ? 'warning' : 'success'}
                             >
                               {template.type.toLowerCase()}
                             </Badge>

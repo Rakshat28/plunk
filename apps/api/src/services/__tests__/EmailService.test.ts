@@ -187,6 +187,61 @@ describe('EmailService', () => {
       });
     });
 
+    describe('Headless Email Behaviour', () => {
+      it('should NOT send headless workflow emails to unsubscribed contacts', async () => {
+        const unsubscribedContact = await factories.createContact({
+          projectId,
+          subscribed: false,
+        });
+
+        const headlessTemplate = await factories.createTemplate({
+          projectId,
+          type: 'HEADLESS',
+        });
+
+        const workflow = await factories.createWorkflow({projectId});
+        const execution = await factories.createWorkflowExecution(workflow.id, unsubscribedContact.id);
+
+        const email = await EmailService.sendWorkflowEmail({
+          projectId,
+          contactId: unsubscribedContact.id,
+          templateId: headlessTemplate.id,
+          subject: 'Newsletter',
+          body: 'Content',
+          from: 'test@example.com',
+          workflowExecutionId: execution.id,
+        });
+
+        expect(email.status).toBe(EmailStatus.FAILED);
+        expect(email.error).toMatch(/unsubscribed/i);
+      });
+
+      it('should keep CAMPAIGN sourceType when campaign uses headless template', async () => {
+        const contact = await factories.createContact({projectId, subscribed: true});
+
+        const headlessTemplate = await factories.createTemplate({
+          projectId,
+          type: 'HEADLESS',
+        });
+
+        const campaign = await factories.createCampaign({projectId});
+
+        const email = await EmailService.sendCampaignEmail({
+          projectId,
+          contactId: contact.id,
+          campaignId: campaign.id,
+          templateId: headlessTemplate.id,
+          subject: 'Newsletter',
+          body: 'Content with <a href="https://example.com/unsubscribe">unsubscribe</a>',
+          from: 'news@example.com',
+        });
+
+        // HEADLESS is not transactional — sourceType stays CAMPAIGN
+        expect(email.sourceType).toBe(EmailSourceType.CAMPAIGN);
+        expect(email.status).toBe(EmailStatus.PENDING);
+      });
+    });
+
     describe('Template Type Determines Email Type', () => {
       it('should use TRANSACTIONAL sourceType when campaign uses transactional template', async () => {
         const contact = await factories.createContact({

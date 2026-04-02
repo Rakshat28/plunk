@@ -647,6 +647,7 @@ enum Role {
 enum TemplateType {
   TRANSACTIONAL
   MARKETING
+  HEADLESS
 }
 
 enum TrackingMode {

@@ -23,12 +23,13 @@ import {EmailEditor} from '../../components/EmailEditor';
 import {StepHeader} from '../../components/StepHeader';
 import {network} from '../../lib/network';
 import {EmailFormValidator} from '../../lib/validation';
-import {ArrowLeft, Save, Users} from 'lucide-react';
+import {ArrowLeft, Save, TriangleAlert, Users} from 'lucide-react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
+import {detectUnsubscribeSignal} from '@plunk/shared';
 import {useActiveProject} from '../../lib/contexts/ActiveProjectProvider';
 
 export default function CreateCampaignPage() {
@@ -268,7 +269,7 @@ export default function CreateCampaignPage() {
                     />
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-3 gap-3">
                       <button
                         type="button"
                         onClick={() => setCampaignType(TemplateType.MARKETING)}
@@ -297,7 +298,42 @@ export default function CreateCampaignPage() {
                           Sent to all contacts regardless of subscription status. No unsubscribe footer.
                         </p>
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => setCampaignType(TemplateType.HEADLESS)}
+                        className={`text-left p-4 rounded-lg border-2 transition-colors ${
+                          campaignType === TemplateType.HEADLESS
+                            ? 'border-neutral-900 bg-neutral-50'
+                            : 'border-neutral-200 hover:border-neutral-300'
+                        }`}
+                      >
+                        <p className="font-medium text-sm text-neutral-900">Headless</p>
+                        <p className="text-xs text-neutral-500 mt-1">
+                          Sent to subscribed contacts only. No Plunk footer — you provide the unsubscribe link.
+                        </p>
+                      </button>
                     </div>
+                    {campaignType === TemplateType.HEADLESS && !detectUnsubscribeSignal(body) && (
+                      <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 overflow-hidden">
+                        <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-100/60 px-3 py-2">
+                          <TriangleAlert className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                          <p className="text-xs font-semibold text-amber-900">No unsubscribe link detected</p>
+                        </div>
+                        <div className="px-3 py-2.5 space-y-2">
+                          <p className="text-xs text-amber-800 leading-relaxed">
+                            You are responsible for providing recipients a way to opt out. Use the Plunk variables below to build your own footer.
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            <code className="inline-flex items-center rounded bg-amber-100 border border-amber-200 px-1.5 py-0.5 font-mono text-[11px] text-amber-900">
+                              {'{{unsubscribeUrl}}'}
+                            </code>
+                            <code className="inline-flex items-center rounded bg-amber-100 border border-amber-200 px-1.5 py-0.5 font-mono text-[11px] text-amber-900">
+                              {'{{manageUrl}}'}
+                            </code>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -490,7 +526,7 @@ export default function CreateCampaignPage() {
                       <div className="flex justify-between py-2 border-b border-neutral-100">
                         <span className="text-neutral-500">Type</span>
                         <span className="font-medium">
-                          {campaignType === TemplateType.MARKETING ? 'Marketing' : 'Transactional'}
+                          {campaignType === TemplateType.MARKETING ? 'Marketing' : campaignType === TemplateType.HEADLESS ? 'Headless' : 'Transactional'}
                         </span>
                       </div>
 

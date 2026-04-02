@@ -357,11 +357,13 @@ export class EmailService {
       });
 
       // Compile HTML with unsubscribe footer and badge
+      // TRANSACTIONAL and HEADLESS emails don't get the Plunk unsubscribe footer
       const compiledHtml = this.compile({
         content: formattedEmail.body,
         contact: email.contact,
         project: email.project,
-        includeUnsubscribe: email.sourceType !== EmailSourceType.TRANSACTIONAL, // Don't add unsubscribe to transactional emails
+        includeUnsubscribe:
+          email.sourceType !== EmailSourceType.TRANSACTIONAL && email.template?.type !== 'HEADLESS',
       });
 
       // Use explicit fromName if provided, otherwise fall back to project name
