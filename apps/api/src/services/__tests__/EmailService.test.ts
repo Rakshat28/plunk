@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it, vi, type Mock} from 'vitest';
-import {EmailSourceType, EmailStatus} from '@plunk/db';
+import {EmailSourceType, EmailStatus, TemplateType} from '@plunk/db';
 import {ActionSchemas} from '@plunk/shared';
 import {EmailService} from '../EmailService';
 import {sendRawEmail} from '../SESService';
@@ -214,6 +214,29 @@ describe('EmailService', () => {
 
         expect(email.status).toBe(EmailStatus.FAILED);
         expect(email.error).toMatch(/unsubscribed/i);
+      });
+
+      it('should keep CAMPAIGN sourceType when campaign type is HEADLESS (no template)', async () => {
+        const contact = await factories.createContact({projectId, subscribed: true});
+
+        // Campaign typed HEADLESS directly — no template involved (inline body)
+        const campaign = await factories.createCampaign({
+          projectId,
+          type: TemplateType.HEADLESS,
+          body: 'Content with <a href="https://example.com/unsubscribe">unsubscribe</a>',
+        });
+
+        const email = await EmailService.sendCampaignEmail({
+          projectId,
+          contactId: contact.id,
+          campaignId: campaign.id,
+          subject: 'Newsletter',
+          body: campaign.body,
+          from: 'news@example.com',
+        });
+
+        expect(email.sourceType).toBe(EmailSourceType.CAMPAIGN);
+        expect(email.status).toBe(EmailStatus.PENDING);
       });
 
       it('should keep CAMPAIGN sourceType when campaign uses headless template', async () => {

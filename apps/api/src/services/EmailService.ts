@@ -293,9 +293,8 @@ export class EmailService {
       include: {
         contact: true,
         project: true,
-        template: {
-          select: {type: true},
-        },
+        template: {select: {type: true}},
+        campaign: {select: {type: true}},
       },
     });
 
@@ -363,7 +362,9 @@ export class EmailService {
         contact: email.contact,
         project: email.project,
         includeUnsubscribe:
-          email.sourceType !== EmailSourceType.TRANSACTIONAL && email.template?.type !== 'HEADLESS',
+          email.sourceType !== EmailSourceType.TRANSACTIONAL &&
+          email.template?.type !== 'HEADLESS' &&
+          email.campaign?.type !== 'HEADLESS',
       });
 
       // Use explicit fromName if provided, otherwise fall back to project name

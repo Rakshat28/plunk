@@ -67,6 +67,7 @@ export interface CampaignFactoryOptions {
   status?: CampaignStatus;
   scheduledFor?: Date | null;
   segmentId?: string | null;
+  type?: TemplateType;
 }
 
 export interface WorkflowFactoryOptions {
@@ -224,6 +225,7 @@ export class TestFactories {
         status: options.status || CampaignStatus.DRAFT,
         scheduledFor: options.scheduledFor,
         segmentId: options.segmentId,
+        type: options.type || TemplateType.MARKETING,
       },
     });
   }

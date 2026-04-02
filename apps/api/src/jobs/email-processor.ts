@@ -59,6 +59,7 @@ export async function createEmailWorker() {
           contact: true,
           project: true,
           template: {select: {type: true}},
+          campaign: {select: {type: true}},
         },
       });
 
@@ -112,7 +113,9 @@ export async function createEmailWorker() {
           contact: email.contact,
           project: email.project,
           includeUnsubscribe:
-            email.sourceType !== EmailSourceType.TRANSACTIONAL && email.template?.type !== 'HEADLESS',
+            email.sourceType !== EmailSourceType.TRANSACTIONAL &&
+            email.template?.type !== 'HEADLESS' &&
+            email.campaign?.type !== 'HEADLESS',
         });
 
         // Use fromName from database if available, otherwise fall back to project name
