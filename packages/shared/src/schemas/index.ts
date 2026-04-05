@@ -70,8 +70,7 @@ export const ProjectSchemas = {
     tracking: z.nativeEnum(TrackingMode).optional(),
     language: z
       .string()
-      .length(2)
-      .regex(/^[a-z]{2}$/)
+      .regex(/^[a-z]{2}(-[A-Z]{2})?$/)
       .optional(),
   }),
 } as const;
