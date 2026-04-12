@@ -56,10 +56,11 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
 import {WorkflowBuilder} from '../../components/WorkflowBuilder';
+import {TemplateSearchPicker} from '../../components/TemplateSearchPicker';
 import {ReactFlowProvider} from '@xyflow/react';
 import {WorkflowSchemas} from '@plunk/shared';
 import dayjs from 'dayjs';
@@ -1855,93 +1856,6 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
         </form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-// TemplateSearchPicker — server-side debounced search, replaces the static <Select> for templates
-interface TemplateSearchPickerProps {
-  value: string;               // selected template ID
-  initialName?: string;        // display name for the currently-selected template (pre-fill input)
-  onChange: (id: string) => void;
-}
-
-function TemplateSearchPicker({value, initialName, onChange}: TemplateSearchPickerProps) {
-  const [query, setQuery] = useState(initialName ?? '');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [open, setOpen] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Sync display name when dialog re-opens with an existing selection
-  useEffect(() => {
-    setQuery(initialName ?? '');
-  }, [initialName]);
-
-  const handleInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setQuery(val);
-    setOpen(true);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => setDebouncedQuery(val), 300);
-  }, []);
-
-  const {data, isLoading} = useSWR<PaginatedResponse<Template>>(
-    open || debouncedQuery
-      ? `/templates?pageSize=20${debouncedQuery ? `&search=${encodeURIComponent(debouncedQuery)}` : ''}`
-      : null,
-    {revalidateOnFocus: false},
-  );
-
-  const selectedName = value
-    ? (data?.data.find(t => t.id === value)?.name ?? initialName ?? value)
-    : '';
-
-  return (
-    <div className="relative">
-      <Input
-        type="text"
-        value={open ? query : selectedName}
-        onChange={handleInput}
-        onFocus={() => { setOpen(true); setDebouncedQuery(query); }}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
-        placeholder="Search templates…"
-        autoComplete="off"
-      />
-      {open && (
-        <div className="absolute z-50 w-full mt-1 rounded-md border border-neutral-200 bg-white shadow-md max-h-60 overflow-y-auto">
-          {isLoading ? (
-            <div className="px-3 py-2 text-sm text-neutral-500">Searching…</div>
-          ) : !data?.data.length ? (
-            <div className="px-3 py-2 text-sm text-neutral-500">No templates found</div>
-          ) : (
-            <Command>
-              <CommandList>
-                <CommandGroup>
-                  {data.data.map(t => (
-                    <CommandItem
-                      key={t.id}
-                      value={t.id}
-                      onSelect={() => {
-                        onChange(t.id);
-                        setQuery(t.name);
-                        setOpen(false);
-                      }}
-                    >
-                      <span className="flex-1 truncate">{t.name}</span>
-                      <span className="ml-2 text-xs text-neutral-400 shrink-0">{t.type}</span>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          )}
-          {(data?.total ?? 0) > 20 && (
-            <div className="px-3 py-1.5 text-xs text-neutral-400 border-t border-neutral-100">
-              Showing 20 of {data!.total} — type to narrow results
-            </div>
-          )}
-        </div>
-      )}
-    </div>
   );
 }
 
