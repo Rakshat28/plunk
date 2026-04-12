@@ -56,7 +56,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
 import {WorkflowBuilder} from '../../components/WorkflowBuilder';
@@ -1004,7 +1004,7 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const {data: templatesData} = useSWR<PaginatedResponse<Template>>('/templates?pageSize=100');
+  // templates fetched on-demand by TemplateSearchPicker
   const {data: workflow} = useSWR<WorkflowWithDetails>(workflowId ? `/workflows/${workflowId}` : null);
 
   // Fetch available event names when dialog opens
@@ -1340,21 +1340,7 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                   <Label htmlFor="template" className="text-sm font-medium">
                     Email Template *
                   </Label>
-                  <Select value={templateId} onValueChange={setTemplateId} required>
-                    <SelectTrigger id="template" className="mt-1.5">
-                      <SelectValue placeholder="Select a template..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {templatesData?.data.map(template => (
-                        <SelectItemWithDescription
-                          key={template.id}
-                          value={template.id}
-                          title={template.name}
-                          description={`${template.type === 'TRANSACTIONAL' ? 'Transactional' : 'Marketing'} • Subject: ${template.subject}`}
-                        />
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <TemplateSearchPicker value={templateId} onChange={setTemplateId} />
                   <p className="text-xs text-neutral-500 mt-1.5">The email template to use for this step</p>
                 </div>
 
@@ -1872,6 +1858,93 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
   );
 }
 
+// TemplateSearchPicker — server-side debounced search, replaces the static <Select> for templates
+interface TemplateSearchPickerProps {
+  value: string;               // selected template ID
+  initialName?: string;        // display name for the currently-selected template (pre-fill input)
+  onChange: (id: string) => void;
+}
+
+function TemplateSearchPicker({value, initialName, onChange}: TemplateSearchPickerProps) {
+  const [query, setQuery] = useState(initialName ?? '');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync display name when dialog re-opens with an existing selection
+  useEffect(() => {
+    setQuery(initialName ?? '');
+  }, [initialName]);
+
+  const handleInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setQuery(val);
+    setOpen(true);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setDebouncedQuery(val), 300);
+  }, []);
+
+  const {data, isLoading} = useSWR<PaginatedResponse<Template>>(
+    open || debouncedQuery
+      ? `/templates?pageSize=20${debouncedQuery ? `&search=${encodeURIComponent(debouncedQuery)}` : ''}`
+      : null,
+    {revalidateOnFocus: false},
+  );
+
+  const selectedName = value
+    ? (data?.data.find(t => t.id === value)?.name ?? initialName ?? value)
+    : '';
+
+  return (
+    <div className="relative">
+      <Input
+        type="text"
+        value={open ? query : selectedName}
+        onChange={handleInput}
+        onFocus={() => { setOpen(true); setDebouncedQuery(query); }}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder="Search templates…"
+        autoComplete="off"
+      />
+      {open && (
+        <div className="absolute z-50 w-full mt-1 rounded-md border border-neutral-200 bg-white shadow-md max-h-60 overflow-y-auto">
+          {isLoading ? (
+            <div className="px-3 py-2 text-sm text-neutral-500">Searching…</div>
+          ) : !data?.data.length ? (
+            <div className="px-3 py-2 text-sm text-neutral-500">No templates found</div>
+          ) : (
+            <Command>
+              <CommandList>
+                <CommandGroup>
+                  {data.data.map(t => (
+                    <CommandItem
+                      key={t.id}
+                      value={t.id}
+                      onSelect={() => {
+                        onChange(t.id);
+                        setQuery(t.name);
+                        setOpen(false);
+                      }}
+                    >
+                      <span className="flex-1 truncate">{t.name}</span>
+                      <span className="ml-2 text-xs text-neutral-400 shrink-0">{t.type}</span>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          )}
+          {(data?.total ?? 0) > 20 && (
+            <div className="px-3 py-1.5 text-xs text-neutral-400 border-t border-neutral-100">
+              Showing 20 of {data!.total} — type to narrow results
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Edit Step Dialog Component
 interface EditStepDialogProps {
   step: WorkflowStep & {template?: {id: string; name: string} | null};
@@ -2073,7 +2146,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
   // EXIT fields
   const [exitReason, setExitReason] = useState(String(config?.reason || 'completed'));
 
-  const {data: templatesData} = useSWR<PaginatedResponse<Template>>('/templates?pageSize=100');
+  // templates fetched on-demand by TemplateSearchPicker
   const {data: workflow} = useSWR<WorkflowWithDetails>(workflowId ? `/workflows/${workflowId}` : null);
 
   // Fetch available event names when dialog opens
@@ -2359,21 +2432,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                   <Label htmlFor="editTemplate" className="text-sm font-medium">
                     Email Template *
                   </Label>
-                  <Select value={templateId} onValueChange={setTemplateId} required>
-                    <SelectTrigger id="editTemplate" className="mt-1.5">
-                      <SelectValue placeholder="Select a template..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {templatesData?.data.map(template => (
-                        <SelectItemWithDescription
-                          key={template.id}
-                          value={template.id}
-                          title={template.name}
-                          description={`${template.type === 'TRANSACTIONAL' ? 'Transactional' : 'Marketing'} • Subject: ${template.subject}`}
-                        />
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <TemplateSearchPicker value={templateId} initialName={step.template?.name} onChange={setTemplateId} />
                   <p className="text-xs text-neutral-500 mt-1.5">The email template to use for this step</p>
                 </div>
 
