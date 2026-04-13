@@ -273,6 +273,7 @@ export class Webhooks {
         from: email.from,
         fromName: email.fromName,
         messageId: email.messageId,
+        emailId: email.id,
         templateId: email.templateId,
         campaignId: email.campaignId,
         sourceType: email.sourceType,

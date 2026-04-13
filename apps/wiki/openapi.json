@@ -471,7 +471,7 @@
                               },
                               "email": {
                                 "type": "string",
-                                "description": "Email record ID"
+                                "description": "Plunk email record ID. Use this to correlate webhook events (which include this ID as 'emailId' in the event data) with your send requests."
                               }
                             }
                           }
@@ -482,6 +482,21 @@
                         }
                       }
                     }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "emails": [
+                      {
+                        "contact": {
+                          "id": "cnt_abc123",
+                          "email": "user@example.com"
+                        },
+                        "email": "ac32f08e-c6b9-45d3-9824-a73dff1e3bbf"
+                      }
+                    ],
+                    "timestamp": "2025-01-15T10:30:00.000Z"
                   }
                 }
               }

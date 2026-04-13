@@ -108,6 +108,7 @@ When using the default payload (no custom body configured), Plunk sends a JSON r
     "from": "hello@example.com",
     "fromName": "Plunk Team",
     "messageId": "ses-message-id",
+    "emailId": "ac32f08e-c6b9-45d3-9824-a73dff1e3bbf",
     "templateId": null,
     "campaignId": "camp_abc123",
     "sourceType": "CAMPAIGN",
@@ -125,15 +126,16 @@ The `event` field contains the data associated with the event that triggered the
 
 Most email events share a common set of base fields:
 
-| Field        | Description                                                                                 |
-| ------------ | ------------------------------------------------------------------------------------------- |
-| `subject`    | The email subject line                                                                      |
-| `from`       | The sender email address                                                                    |
-| `fromName`   | The sender display name                                                                     |
-| `messageId`  | The AWS SES message ID                                                                      |
-| `templateId` | The template ID, if the email was sent using a template (otherwise `null`)                  |
-| `campaignId` | The campaign ID, if the email was part of a campaign (otherwise `null`)                     |
-| `sourceType` | How the email was triggered: `TRANSACTIONAL`, `CAMPAIGN`, `WORKFLOW`, or `INBOUND`          |
+| Field        | Description                                                                                            |
+| ------------ | ------------------------------------------------------------------------------------------------------ |
+| `subject`    | The email subject line                                                                                 |
+| `from`       | The sender email address                                                                               |
+| `fromName`   | The sender display name                                                                                |
+| `messageId`  | The AWS SES message ID (for correlating with SES events)                                               |
+| `emailId`    | The Plunk email record ID (returned from `POST /v1/send`, for correlating webhooks with API responses) |
+| `templateId` | The template ID, if the email was sent using a template (otherwise `null`)                             |
+| `campaignId` | The campaign ID, if the email was part of a campaign (otherwise `null`)                                |
+| `sourceType` | How the email was triggered: `TRANSACTIONAL`, `CAMPAIGN`, `WORKFLOW`, or `INBOUND`                     |
 
 In addition to these base fields, each event includes the following event-specific fields:
 
@@ -147,6 +149,7 @@ In addition to these base fields, each event includes the following event-specif
   "from": "hello@example.com",
   "fromName": "Plunk Team",
   "messageId": "ses-message-id",
+  "emailId": "ac32f08e-c6b9-45d3-9824-a73dff1e3bbf",
   "templateId": null,
   "campaignId": null,
   "sourceType": "TRANSACTIONAL",
@@ -154,9 +157,9 @@ In addition to these base fields, each event includes the following event-specif
 }
 ```
 
-| Field    | Description              |
-| -------- | ------------------------ |
-| `sentAt` | When the email was sent  |
+| Field    | Description             |
+| -------- | ----------------------- |
+| `sentAt` | When the email was sent |
 
 </Tab>
 
@@ -168,6 +171,7 @@ In addition to these base fields, each event includes the following event-specif
   "from": "hello@example.com",
   "fromName": "Plunk Team",
   "messageId": "ses-message-id",
+  "emailId": "ac32f08e-c6b9-45d3-9824-a73dff1e3bbf",
   "templateId": null,
   "campaignId": "camp_abc123",
   "sourceType": "CAMPAIGN",
@@ -175,9 +179,9 @@ In addition to these base fields, each event includes the following event-specif
 }
 ```
 
-| Field         | Description                     |
-| ------------- | ------------------------------- |
-| `deliveredAt` | When the email was delivered    |
+| Field         | Description                  |
+| ------------- | ---------------------------- |
+| `deliveredAt` | When the email was delivered |
 
 </Tab>
 
@@ -189,6 +193,7 @@ In addition to these base fields, each event includes the following event-specif
   "from": "hello@example.com",
   "fromName": "Plunk Team",
   "messageId": "ses-message-id",
+  "emailId": "ac32f08e-c6b9-45d3-9824-a73dff1e3bbf",
   "templateId": null,
   "campaignId": null,
   "sourceType": "TRANSACTIONAL",
@@ -198,10 +203,10 @@ In addition to these base fields, each event includes the following event-specif
 }
 ```
 
-| Field         | Description                                                  |
-| ------------- | ------------------------------------------------------------ |
-| `openedAt`    | When the email was first opened                              |
-| `opens`       | Total number of times this email has been opened             |
+| Field         | Description                                                   |
+| ------------- | ------------------------------------------------------------- |
+| `openedAt`    | When the email was first opened                               |
+| `opens`       | Total number of times this email has been opened              |
 | `isFirstOpen` | `true` if this is the first time the contact opened the email |
 
 </Tab>
@@ -214,6 +219,7 @@ In addition to these base fields, each event includes the following event-specif
   "from": "hello@example.com",
   "fromName": "Plunk Team",
   "messageId": "ses-message-id",
+  "emailId": "ac32f08e-c6b9-45d3-9824-a73dff1e3bbf",
   "templateId": null,
   "campaignId": null,
   "sourceType": "TRANSACTIONAL",
@@ -224,11 +230,11 @@ In addition to these base fields, each event includes the following event-specif
 }
 ```
 
-| Field          | Description                                                    |
-| -------------- | -------------------------------------------------------------- |
-| `link`         | The URL that was clicked                                       |
-| `clickedAt`    | When the first click occurred                                  |
-| `clicks`       | Total number of times links in this email have been clicked    |
+| Field          | Description                                                       |
+| -------------- | ----------------------------------------------------------------- |
+| `link`         | The URL that was clicked                                          |
+| `clickedAt`    | When the first click occurred                                     |
+| `clicks`       | Total number of times links in this email have been clicked       |
 | `isFirstClick` | `true` if this is the first click from this contact on this email |
 
 </Tab>
@@ -243,6 +249,7 @@ Permanent bounce:
   "from": "hello@example.com",
   "fromName": "Plunk Team",
   "messageId": "ses-message-id",
+  "emailId": "ac32f08e-c6b9-45d3-9824-a73dff1e3bbf",
   "templateId": null,
   "campaignId": null,
   "sourceType": "TRANSACTIONAL",
@@ -259,6 +266,7 @@ Transient (soft) bounce:
   "from": "hello@example.com",
   "fromName": "Plunk Team",
   "messageId": "ses-message-id",
+  "emailId": "ac32f08e-c6b9-45d3-9824-a73dff1e3bbf",
   "templateId": null,
   "campaignId": null,
   "sourceType": "TRANSACTIONAL",
@@ -267,14 +275,15 @@ Transient (soft) bounce:
 }
 ```
 
-| Field            | Description                                                                                     |
-| ---------------- | ----------------------------------------------------------------------------------------------- |
-| `bounceType`     | `Permanent` (hard bounce) or `Transient` (soft bounce, e.g. mailbox full or out-of-office)     |
-| `bouncedAt`      | When the bounce occurred (permanent bounces only)                                               |
-| `transientBounce`| `true` for soft bounces — these do not count toward bounce rate and the contact stays subscribed |
+| Field             | Description                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------ |
+| `bounceType`      | `Permanent` (hard bounce) or `Transient` (soft bounce, e.g. mailbox full or out-of-office)       |
+| `bouncedAt`       | When the bounce occurred (permanent bounces only)                                                |
+| `transientBounce` | `true` for soft bounces — these do not count toward bounce rate and the contact stays subscribed |
 
 <Callout title="Bounce rate impact" variant="warn">
-  Only `Permanent` bounces count toward your project's bounce rate and trigger automatic contact unsubscription. `Transient` bounces are tracked for visibility only.
+  Only `Permanent` bounces count toward your project's bounce rate and trigger automatic contact unsubscription.
+  `Transient` bounces are tracked for visibility only.
 </Callout>
 
 </Tab>
@@ -287,6 +296,7 @@ Transient (soft) bounce:
   "from": "hello@example.com",
   "fromName": "Plunk Team",
   "messageId": "ses-message-id",
+  "emailId": "ac32f08e-c6b9-45d3-9824-a73dff1e3bbf",
   "templateId": null,
   "campaignId": null,
   "sourceType": "TRANSACTIONAL",
@@ -294,9 +304,9 @@ Transient (soft) bounce:
 }
 ```
 
-| Field          | Description                                      |
-| -------------- | ------------------------------------------------ |
-| `complainedAt` | When the spam complaint was received             |
+| Field          | Description                          |
+| -------------- | ------------------------------------ |
+| `complainedAt` | When the spam complaint was received |
 
 </Tab>
 
@@ -323,22 +333,22 @@ This event fires when an email is received at your verified domain. See [Receivi
 }
 ```
 
-| Field                  | Description                                                         |
-| ---------------------- | ------------------------------------------------------------------- |
-| `messageId`            | The AWS SES message ID                                              |
-| `from`                 | The sender's email address                                          |
-| `fromHeader`           | The full `From` header, including display name if present           |
-| `to`                   | The recipient address at your verified domain                       |
-| `subject`              | The email subject line                                              |
-| `timestamp`            | When SES received the email                                         |
-| `recipients`           | All recipient addresses in the envelope                             |
-| `hasContent`           | Whether the email body content is available                         |
+| Field                  | Description                                                           |
+| ---------------------- | --------------------------------------------------------------------- |
+| `messageId`            | The AWS SES message ID                                                |
+| `from`                 | The sender's email address                                            |
+| `fromHeader`           | The full `From` header, including display name if present             |
+| `to`                   | The recipient address at your verified domain                         |
+| `subject`              | The email subject line                                                |
+| `timestamp`            | When SES received the email                                           |
+| `recipients`           | All recipient addresses in the envelope                               |
+| `hasContent`           | Whether the email body content is available                           |
 | `spamVerdict`          | SES spam check result: `PASS`, `FAIL`, `GRAY`, or `PROCESSING_FAILED` |
-| `virusVerdict`         | SES virus check result                                              |
-| `spfVerdict`           | SPF authentication result                                           |
-| `dkimVerdict`          | DKIM authentication result                                          |
-| `dmarcVerdict`         | DMARC authentication result                                         |
-| `processingTimeMillis` | Time SES took to process the inbound email                          |
+| `virusVerdict`         | SES virus check result                                                |
+| `spfVerdict`           | SPF authentication result                                             |
+| `dkimVerdict`          | DKIM authentication result                                            |
+| `dmarcVerdict`         | DMARC authentication result                                           |
+| `processingTimeMillis` | Time SES took to process the inbound email                            |
 
 </Tab>
 
@@ -356,8 +366,8 @@ The exception is when an unsubscription is triggered automatically by an email b
 }
 ```
 
-| Field    | Value                                              |
-| -------- | -------------------------------------------------- |
+| Field    | Value                                               |
+| -------- | --------------------------------------------------- |
 | `reason` | `"bounce"` or `"complaint"` (when system-triggered) |
 
 #### Segment events
@@ -371,9 +381,9 @@ Both `segment.<name>.entry` and `segment.<name>.exit` include:
 }
 ```
 
-| Field         | Description                   |
-| ------------- | ----------------------------- |
-| `segmentId`   | The ID of the segment         |
+| Field         | Description                     |
+| ------------- | ------------------------------- |
+| `segmentId`   | The ID of the segment           |
 | `segmentName` | The display name of the segment |
 
 #### Custom events
@@ -383,6 +393,52 @@ Custom events tracked via the API include whatever data you passed in the `data`
 #### No event data
 
 For events that carry no data, the `event` field will be an empty object `{}`.
+
+## Correlating webhooks with send requests
+
+All email events include an `emailId` field that matches the Plunk email record ID returned when you send an email via `POST /v1/send`. This allows you to directly correlate webhook events with your API requests.
+
+**Example workflow:**
+
+1. Send email via API:
+
+```json
+POST /v1/send
+{
+  "to": "user@example.com",
+  "subject": "Welcome",
+  "body": "Hello!"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "emails": [
+      {
+        "contact": {"id": "cnt_abc", "email": "user@example.com"},
+        "email": "ac32f08e-c6b9-45d3-9824-a73dff1e3bbf"
+      }
+    ]
+  }
+}
+```
+
+2. Store the `email` ID (`ac32f08e-c6b9-45d3-9824-a73dff1e3bbf`) in your database
+
+3. When webhook events fire (e.g., `email.open`, `email.bounce`), match them using `event.emailId`:
+
+```json
+{
+  "event": {
+    "emailId": "ac32f08e-c6b9-45d3-9824-a73dff1e3bbf",
+    "messageId": "ses-message-id",
+    "openedAt": "2025-01-15T11:00:00.000Z"
+  }
+}
+```
+
+This eliminates the need to match by contact email + timestamp or to listen for `email.sent` webhooks just to get the SES `messageId`.
 
 ## Common use cases
 

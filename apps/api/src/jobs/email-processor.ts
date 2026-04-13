@@ -188,6 +188,7 @@ export async function createEmailWorker() {
           from: email.from,
           fromName: email.fromName,
           messageId: result.messageId,
+          emailId: email.id,
           templateId: email.templateId,
           campaignId: email.campaignId,
           sourceType: email.sourceType,
