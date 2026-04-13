@@ -27,7 +27,7 @@ export function ActivityFeed({typeFilter, dateRangeDays = 30, contactId}: Activi
     return date.toISOString();
   }, [dateRangeDays]);
 
-    const fetchActivities = useCallback(
+  const fetchActivities = useCallback(
     async (cursor?: string) => {
       try {
         if (cursor) {
@@ -43,8 +43,13 @@ export function ActivityFeed({typeFilter, dateRangeDays = 30, contactId}: Activi
 
         const params = new URLSearchParams({
           limit: '20', // Conservative limit to avoid overloading
-          startDate: startDate,
         });
+
+        // Only apply startDate filter on initial load, not during pagination
+        // When cursor is present, we're paginating backwards and should not limit by startDate
+        if (!cursor) {
+          params.set('startDate', startDate);
+        }
 
         if (cursor) {
           params.set('cursor', cursor);
@@ -74,9 +79,7 @@ export function ActivityFeed({typeFilter, dateRangeDays = 30, contactId}: Activi
 
             // For each new activity, reuse existing object if ID matches (preserves React component instances)
             // Otherwise use new object. This maintains correct ordering while preserving component state.
-            return result.data.map(newActivity =>
-              existingMap.get(newActivity.id) ?? newActivity
-            );
+            return result.data.map(newActivity => existingMap.get(newActivity.id) ?? newActivity);
           });
         }
 
@@ -121,9 +124,7 @@ export function ActivityFeed({typeFilter, dateRangeDays = 30, contactId}: Activi
         const existingMap = new Map(prev.map(activity => [activity.id, activity]));
 
         // For each new activity, reuse existing object if ID matches
-        return result.activities.map(newActivity =>
-          existingMap.get(newActivity.id) ?? newActivity
-        );
+        return result.activities.map(newActivity => existingMap.get(newActivity.id) ?? newActivity);
       });
     } catch (err) {
       console.error('Error fetching upcoming activities:', err);

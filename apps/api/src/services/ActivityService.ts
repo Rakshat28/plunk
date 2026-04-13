@@ -67,10 +67,14 @@ export class ActivityService {
     const fetchLimit = effectiveLimit;
 
     // Default date range to last 30 days if not specified
+    // IMPORTANT: When cursor is provided (pagination), we should NOT apply the gte constraint
+    // to allow users to paginate back beyond the initial date range
     const now = new Date();
     const defaultStartDate = new Date(now.getTime() - this.DEFAULT_DAYS_BACK * 24 * 60 * 60 * 1000);
     const dateFilter: Prisma.DateTimeFilter = {
-      gte: startDate || defaultStartDate,
+      // Only apply start date filter on initial load (no cursor)
+      // This allows pagination to go back indefinitely
+      ...(cursor ? {} : {gte: startDate || defaultStartDate}),
       ...(endDate ? {lte: endDate} : {}),
     };
 
@@ -364,6 +368,14 @@ export class ActivityService {
     const where: Prisma.EmailWhereInput = {
       projectId,
       ...(contactId ? {contactId} : {}),
+      // Apply cursor-based pagination filter on createdAt
+      // This is critical for pagination to work correctly
+      createdAt: cursorTimestamp
+        ? {
+            ...dateFilter,
+            lt: cursorTimestamp,
+          }
+        : dateFilter,
     };
 
     // Build OR conditions to filter by the appropriate timestamp field for each activity type
