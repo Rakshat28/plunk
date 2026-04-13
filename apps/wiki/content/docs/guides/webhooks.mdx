@@ -324,6 +324,7 @@ This event fires when an email is received at your verified domain. See [Receivi
   "timestamp": "2025-01-15T10:30:00.000Z",
   "recipients": ["support@yourdomain.com"],
   "hasContent": true,
+  "body": "<html><body>This is the email body content...</body></html>",
   "spamVerdict": "PASS",
   "virusVerdict": "PASS",
   "spfVerdict": "PASS",
@@ -343,6 +344,7 @@ This event fires when an email is received at your verified domain. See [Receivi
 | `timestamp`            | When SES received the email                                           |
 | `recipients`           | All recipient addresses in the envelope                               |
 | `hasContent`           | Whether the email body content is available                           |
+| `body`                 | HTML body of the email (or plain text if no HTML available)           |
 | `spamVerdict`          | SES spam check result: `PASS`, `FAIL`, `GRAY`, or `PROCESSING_FAILED` |
 | `virusVerdict`         | SES virus check result                                                |
 | `spfVerdict`           | SPF authentication result                                             |

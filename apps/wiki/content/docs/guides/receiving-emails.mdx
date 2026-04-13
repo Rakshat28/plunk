@@ -65,24 +65,58 @@ Create a new workflow and use `email.received` as the trigger event. This workfl
 
 The `email.received` event includes the following data that you can use in your workflow steps:
 
-| Field                  | Type     | Description                                    |
-| ---------------------- | -------- | ---------------------------------------------- |
-| `messageId`            | string   | Unique identifier for the received message     |
-| `from`                 | string   | Email address of the sender                    |
-| `fromHeader`           | string   | Full "From" header including display name      |
-| `to`                   | string   | Primary recipient email address                |
-| `subject`              | string   | Email subject line                             |
-| `timestamp`            | string   | ISO 8601 timestamp when the email was received |
-| `recipients`           | string[] | All recipient email addresses                  |
-| `hasContent`           | boolean  | Whether the email body was captured            |
-| `spamVerdict`          | string   | Spam check result (e.g., "PASS", "FAIL")       |
-| `virusVerdict`         | string   | Virus scan result (e.g., "PASS", "FAIL")       |
-| `spfVerdict`           | string   | SPF authentication result                      |
-| `dkimVerdict`          | string   | DKIM authentication result                     |
-| `dmarcVerdict`         | string   | DMARC authentication result                    |
-| `processingTimeMillis` | number   | Time taken to process the email                |
+| Field                  | Type     | Description                                       |
+| ---------------------- | -------- | ------------------------------------------------- |
+| `messageId`            | string   | Unique identifier for the received message        |
+| `from`                 | string   | Email address of the sender                       |
+| `fromHeader`           | string   | Full "From" header including display name         |
+| `to`                   | string   | Primary recipient email address                   |
+| `subject`              | string   | Email subject line                                |
+| `timestamp`            | string   | ISO 8601 timestamp when the email was received    |
+| `recipients`           | string[] | All recipient email addresses                     |
+| `hasContent`           | boolean  | Whether the email body was captured               |
+| `body`                 | string   | HTML body of the email (or plain text if no HTML) |
+| `spamVerdict`          | string   | Spam check result (e.g., "PASS", "FAIL")          |
+| `virusVerdict`         | string   | Virus scan result (e.g., "PASS", "FAIL")          |
+| `spfVerdict`           | string   | SPF authentication result                         |
+| `dkimVerdict`          | string   | DKIM authentication result                        |
+| `dmarcVerdict`         | string   | DMARC authentication result                       |
+| `processingTimeMillis` | number   | Time taken to process the email                   |
 
-You can access these fields in your workflow using variable syntax, for example: `{{event.subject}}` or `{{event.from}}`.
+You can access these fields in your workflow using variable syntax, for example: `{{event.subject}}`, `{{event.from}}`, or `{{event.body}}`.
+
+### Example: Auto-reply workflow
+
+Here's a simple workflow that sends an automatic reply when an email is received at `support@yourdomain.com`:
+
+1. **Trigger**: `email.received`
+2. **Condition**: Check if `{{event.to}}` equals `support@yourdomain.com`
+3. **Send Email**:
+   - **To**: `{{event.from}}`
+   - **Subject**: `Re: {{event.subject}}`
+   - **Body**: `Thank you for your message. We received: "{{event.body}}". We'll get back to you soon!`
+
+This workflow reads the incoming email body and includes it in the auto-reply response.
+
+### Example: Forward to webhook
+
+For more advanced processing (like ticket creation or AI analysis), you can forward the email content to your own API:
+
+1. **Trigger**: `email.received`
+2. **Webhook**:
+   - **URL**: `https://api.example.com/support/tickets`
+   - **Method**: `POST`
+   - **Body**:
+     ```json
+     {
+       "from": "{{event.from}}",
+       "subject": "{{event.subject}}",
+       "body": "{{event.body}}",
+       "timestamp": "{{event.timestamp}}"
+     }
+     ```
+
+Your backend receives the full email content and can process it (create a ticket, run AI analysis, etc.).
 
 ## Multi-project domains
 
@@ -95,12 +129,6 @@ If you have verified the same domain in multiple projects, incoming emails will 
 This allows you to segment inbound email handling across different projects if needed.
 
 ## Limitations
-
-<Callout title="Email body content" variant="warning">
-  Currently, the email body content is not stored or made available in the event data. Only metadata (sender, subject,
-  recipients, timestamps, and security verdicts) is captured. The `hasContent` field indicates whether body content was
-  present, but the content itself is not accessible in workflows.
-</Callout>
 
 - **Catch-all addresses**: Plunk receives emails sent to any address at your verified domain (e.g., `anything@yourdomain.com`). You can use workflow conditions to route emails based on the `to` field.
 - **Attachments**: Email attachments are not currently captured or stored.

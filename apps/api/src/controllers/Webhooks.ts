@@ -2,6 +2,7 @@ import {Controller, Post} from '@overnightjs/core';
 import type {Prisma} from '@plunk/db';
 import {EmailSourceType, EmailStatus} from '@plunk/db';
 import type {Request, Response} from 'express';
+import {simpleParser} from 'mailparser';
 import signale from 'signale';
 import type Stripe from 'stripe';
 
@@ -146,6 +147,21 @@ export class Webhooks {
             const senderEmail = body.mail?.source;
             const senderFromHeader = body.mail?.commonHeaders?.from?.[0] || senderEmail;
 
+            // Parse email content if available
+            let htmlBody: string | undefined;
+
+            if (body.content) {
+              try {
+                const parsed = await simpleParser(body.content);
+                // Prefer HTML body, fallback to text if no HTML available
+                htmlBody = parsed.html ? String(parsed.html) : parsed.text || undefined;
+                signale.info('[WEBHOOK] Email content parsed successfully');
+              } catch (parseError) {
+                signale.error('[WEBHOOK] Failed to parse email content:', parseError);
+                // Continue processing without content
+              }
+            }
+
             // Process inbound email for each project that has this domain verified
             for (const domainRecord of domainRecords) {
               signale.info(`[WEBHOOK] Processing inbound email for project: ${domainRecord.project.name}`);
@@ -171,13 +187,13 @@ export class Webhooks {
                 );
               }
 
-              // Create an Email record for tracking (no actual email content since it's inbound)
+              // Create an Email record for tracking with parsed content
               const inboundEmail = await prisma.email.create({
                 data: {
                   projectId: domainRecord.projectId,
                   contactId: contact!.id,
                   subject: body.mail?.commonHeaders?.subject || '(No subject)',
-                  body: '', // Inbound emails don't have body content in our system
+                  body: htmlBody || '', // Store HTML body in the body field
                   from: recipientEmail, // The recipient address that received the email
                   sourceType: EmailSourceType.INBOUND,
                   status: EmailStatus.RECEIVED, // Inbound emails use RECEIVED status
@@ -197,7 +213,7 @@ export class Webhooks {
                 );
               }
 
-              // Prepare event data with all inbound email details
+              // Prepare event data with all inbound email details including body content
               const eventData = {
                 messageId: body.mail?.messageId,
                 from: senderEmail,
@@ -207,6 +223,8 @@ export class Webhooks {
                 timestamp: body.mail?.timestamp,
                 recipients: body.receipt?.recipients,
                 hasContent: !!body.content,
+                // Email body content
+                body: htmlBody,
                 // Security verdicts
                 spamVerdict: body.receipt?.spamVerdict?.status,
                 virusVerdict: body.receipt?.virusVerdict?.status,
