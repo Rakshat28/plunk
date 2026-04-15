@@ -115,7 +115,16 @@ describe('SecurityService', () => {
     });
   });
 
-  describe('Absolute count ceilings', () => {
+  describe('Absolute count ceilings (established projects)', () => {
+    // Age the project past the new-project window so standard ceilings apply
+    beforeEach(async () => {
+      const oldDate = new Date(Date.now() - 31 * 24 * 60 * 60 * 1000);
+      await prisma.project.update({
+        where: {id: projectId},
+        data: {createdAt: oldDate},
+      });
+    });
+
     it('should trigger critical when 24-hour bounce count exceeds ceiling', async () => {
       // 20,000 emails, 101 bounces = 0.5% rate (well below rate threshold)
       // But 101 bounces > 100 (24h critical ceiling for established projects)
@@ -128,7 +137,7 @@ describe('SecurityService', () => {
 
     it('should trigger warning when 24-hour bounce count exceeds warning ceiling', async () => {
       // 10,000 emails, 51 bounces = 0.51% (below rate threshold)
-      // But 51 > 50 (24h warning ceiling)
+      // But 51 > 50 (24h warning ceiling), below 100 critical
       await createEmails(10000, {bouncedCount: 51});
 
       const status = await SecurityService.getSecurityStatus(projectId);
@@ -147,7 +156,7 @@ describe('SecurityService', () => {
     });
 
     it('should NOT trigger ceiling when bounce count is below ceiling', async () => {
-      // 20,000 emails, 40 bounces = well below 100 critical and below 50 warning ceiling
+      // 20,000 emails, 40 bounces = below 50 warning ceiling for established projects
       await createEmails(20000, {bouncedCount: 40});
 
       const status = await SecurityService.getSecurityStatus(projectId);
