@@ -15,7 +15,7 @@ import {AUTO_PROJECT_DISABLE, DASHBOARD_URI, LANDING_URI} from '../app/constants
  * These limits protect AWS SES reputation and prevent account suspension
  */
 const SECURITY_THRESHOLDS = {
-  // Minimum emails required before enforcing limits (prevents false positives)
+  // Minimum emails required before enforcing rate-based limits (prevents false positives)
   MIN_EMAILS_FOR_ENFORCEMENT: 100,
 
   // Bounce rate thresholds (hard bounces only)
@@ -31,11 +31,37 @@ const SECURITY_THRESHOLDS = {
   COMPLAINT_ALLTIME_CRITICAL: 0.12,
 
   // Minimum absolute counts (prevents small sample size false positives)
-  // Both percentage AND absolute count must be exceeded to trigger
+  // Both percentage AND absolute count must be exceeded to trigger rate-based checks
   MIN_BOUNCES_FOR_CRITICAL: 10,
   MIN_BOUNCES_FOR_WARNING: 5,
   MIN_COMPLAINTS_FOR_CRITICAL: 5,
   MIN_COMPLAINTS_FOR_WARNING: 3,
+
+  // === Absolute count ceilings ===
+  // These trigger regardless of rate — catches high-volume spammers who dilute their bounce rate
+  // 24-hour absolute ceilings
+  BOUNCE_24H_CEILING_WARNING: 50,
+  BOUNCE_24H_CEILING_CRITICAL: 100,
+  COMPLAINT_24H_CEILING_WARNING: 10,
+  COMPLAINT_24H_CEILING_CRITICAL: 25,
+
+  // 7-day absolute ceilings
+  BOUNCE_7DAY_CEILING_WARNING: 200,
+  BOUNCE_7DAY_CEILING_CRITICAL: 500,
+  COMPLAINT_7DAY_CEILING_WARNING: 30,
+  COMPLAINT_7DAY_CEILING_CRITICAL: 75,
+
+  // === New project thresholds (projects < 30 days old) ===
+  // Legitimate senders ramp up gradually; spammers blast immediately
+  NEW_PROJECT_AGE_DAYS: 30,
+  NEW_PROJECT_BOUNCE_24H_CEILING_WARNING: 20,
+  NEW_PROJECT_BOUNCE_24H_CEILING_CRITICAL: 50,
+  NEW_PROJECT_BOUNCE_7DAY_CEILING_WARNING: 75,
+  NEW_PROJECT_BOUNCE_7DAY_CEILING_CRITICAL: 150,
+  NEW_PROJECT_COMPLAINT_24H_CEILING_WARNING: 5,
+  NEW_PROJECT_COMPLAINT_24H_CEILING_CRITICAL: 10,
+  NEW_PROJECT_COMPLAINT_7DAY_CEILING_WARNING: 15,
+  NEW_PROJECT_COMPLAINT_7DAY_CEILING_CRITICAL: 30,
 } as const;
 
 interface RateData {
@@ -50,8 +76,10 @@ interface SecurityStatus {
   projectId: string;
   isHealthy: boolean;
   shouldDisable: boolean;
+  twentyFourHour: RateData;
   sevenDay: RateData;
   allTime: RateData;
+  isNewProject: boolean;
   violations: string[];
   warnings: string[];
 }
@@ -86,6 +114,13 @@ export class SecurityService {
         projectId,
         isHealthy: true,
         shouldDisable: false,
+        twentyFourHour: {
+          total: 0,
+          bounces: 0,
+          complaints: 0,
+          bounceRate: 0,
+          complaintRate: 0,
+        },
         sevenDay: {
           total: 0,
           bounces: 0,
@@ -100,6 +135,7 @@ export class SecurityService {
           bounceRate: 0,
           complaintRate: 0,
         },
+        isNewProject: false,
         violations: [],
         warnings: [],
       };
@@ -134,11 +170,17 @@ export class SecurityService {
             status.violations,
           );
           signale.info(
+            `[SECURITY] 24-hour stats: ${status.twentyFourHour.bounces} bounces, ${status.twentyFourHour.complaints} complaints out of ${status.twentyFourHour.total} emails`,
+          );
+          signale.info(
             `[SECURITY] 7-day stats: ${status.sevenDay.bounces} bounces, ${status.sevenDay.complaints} complaints out of ${status.sevenDay.total} emails`,
           );
           signale.info(
             `[SECURITY] All-time stats: ${status.allTime.bounces} bounces, ${status.allTime.complaints} complaints out of ${status.allTime.total} emails`,
           );
+          if (status.isNewProject) {
+            signale.info(`[SECURITY] Project is under ${SECURITY_THRESHOLDS.NEW_PROJECT_AGE_DAYS} days old — stricter ceilings apply`);
+          }
 
           // Send notification about critical security violations
           await NtfyService.notifySecurityWarning(project.name, projectId, status.violations);
@@ -201,11 +243,17 @@ export class SecurityService {
   }
 
   /**
-   * Get a project's security metrics (for admin/dashboard display)
+   * Get a project's security metrics (for dashboard display)
+   * Does NOT expose internal thresholds — only computed health levels
    */
   public static async getProjectSecurityMetrics(projectId: string): Promise<{
     status: SecurityStatus;
-    thresholds: typeof SECURITY_THRESHOLDS;
+    levels: {
+      bounce7Day: 'healthy' | 'warning' | 'critical';
+      bounceAllTime: 'healthy' | 'warning' | 'critical';
+      complaint7Day: 'healthy' | 'warning' | 'critical';
+      complaintAllTime: 'healthy' | 'warning' | 'critical';
+    };
     isDisabled: boolean;
   }> {
     const [status, project] = await Promise.all([
@@ -216,11 +264,53 @@ export class SecurityService {
       }),
     ]);
 
+    // Strip internal details from the client-facing response:
+    // - Replace detailed violation/warning messages (they contain exact thresholds)
+    // - Remove 24-hour data and new project flag (reveals enforcement windows)
+    const sanitizedStatus: SecurityStatus = {
+      ...status,
+      twentyFourHour: {total: 0, bounces: 0, complaints: 0, bounceRate: 0, complaintRate: 0},
+      isNewProject: false,
+      violations: status.violations.map(() => 'Security threshold exceeded'),
+      warnings: status.warnings.map(() => 'Approaching security threshold'),
+    };
+
     return {
-      status,
-      thresholds: SECURITY_THRESHOLDS,
+      status: sanitizedStatus,
+      levels: {
+        bounce7Day: this.computeLevel(
+          status.sevenDay.bounceRate,
+          SECURITY_THRESHOLDS.BOUNCE_7DAY_WARNING,
+          SECURITY_THRESHOLDS.BOUNCE_7DAY_CRITICAL,
+        ),
+        bounceAllTime: this.computeLevel(
+          status.allTime.bounceRate,
+          SECURITY_THRESHOLDS.BOUNCE_ALLTIME_WARNING,
+          SECURITY_THRESHOLDS.BOUNCE_ALLTIME_CRITICAL,
+        ),
+        complaint7Day: this.computeLevel(
+          status.sevenDay.complaintRate,
+          SECURITY_THRESHOLDS.COMPLAINT_7DAY_WARNING,
+          SECURITY_THRESHOLDS.COMPLAINT_7DAY_CRITICAL,
+        ),
+        complaintAllTime: this.computeLevel(
+          status.allTime.complaintRate,
+          SECURITY_THRESHOLDS.COMPLAINT_ALLTIME_WARNING,
+          SECURITY_THRESHOLDS.COMPLAINT_ALLTIME_CRITICAL,
+        ),
+      },
       isDisabled: project?.disabled ?? false,
     };
+  }
+
+  private static computeLevel(
+    value: number,
+    warningThreshold: number,
+    criticalThreshold: number,
+  ): 'healthy' | 'warning' | 'critical' {
+    if (value >= criticalThreshold) return 'critical';
+    if (value >= warningThreshold) return 'warning';
+    return 'healthy';
   }
 
   /**
@@ -270,10 +360,23 @@ export class SecurityService {
    */
   private static async calculateSecurityStatus(projectId: string): Promise<SecurityStatus> {
     const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    // Get 7-day and all-time rates in parallel
-    const [sevenDay, allTime] = await Promise.all([
+    // Get project age to determine if stricter new-project thresholds apply
+    const project = await prisma.project.findUnique({
+      where: {id: projectId},
+      select: {createdAt: true},
+    });
+
+    const projectAgeDays = project
+      ? (now.getTime() - project.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+      : Infinity;
+    const isNewProject = projectAgeDays < SECURITY_THRESHOLDS.NEW_PROJECT_AGE_DAYS;
+
+    // Get 24-hour, 7-day and all-time rates in parallel
+    const [twentyFourHour, sevenDay, allTime] = await Promise.all([
+      this.calculateRates(projectId, oneDayAgo),
       this.calculateRates(projectId, sevenDaysAgo),
       this.calculateRates(projectId),
     ]);
@@ -281,13 +384,91 @@ export class SecurityService {
     const violations: string[] = [];
     const warnings: string[] = [];
 
+    // Pick absolute count ceilings based on project age
+    const bounceCeilings = isNewProject
+      ? {
+          ceiling24hWarning: SECURITY_THRESHOLDS.NEW_PROJECT_BOUNCE_24H_CEILING_WARNING,
+          ceiling24hCritical: SECURITY_THRESHOLDS.NEW_PROJECT_BOUNCE_24H_CEILING_CRITICAL,
+          ceiling7dWarning: SECURITY_THRESHOLDS.NEW_PROJECT_BOUNCE_7DAY_CEILING_WARNING,
+          ceiling7dCritical: SECURITY_THRESHOLDS.NEW_PROJECT_BOUNCE_7DAY_CEILING_CRITICAL,
+        }
+      : {
+          ceiling24hWarning: SECURITY_THRESHOLDS.BOUNCE_24H_CEILING_WARNING,
+          ceiling24hCritical: SECURITY_THRESHOLDS.BOUNCE_24H_CEILING_CRITICAL,
+          ceiling7dWarning: SECURITY_THRESHOLDS.BOUNCE_7DAY_CEILING_WARNING,
+          ceiling7dCritical: SECURITY_THRESHOLDS.BOUNCE_7DAY_CEILING_CRITICAL,
+        };
+
+    const complaintCeilings = isNewProject
+      ? {
+          ceiling24hWarning: SECURITY_THRESHOLDS.NEW_PROJECT_COMPLAINT_24H_CEILING_WARNING,
+          ceiling24hCritical: SECURITY_THRESHOLDS.NEW_PROJECT_COMPLAINT_24H_CEILING_CRITICAL,
+          ceiling7dWarning: SECURITY_THRESHOLDS.NEW_PROJECT_COMPLAINT_7DAY_CEILING_WARNING,
+          ceiling7dCritical: SECURITY_THRESHOLDS.NEW_PROJECT_COMPLAINT_7DAY_CEILING_CRITICAL,
+        }
+      : {
+          ceiling24hWarning: SECURITY_THRESHOLDS.COMPLAINT_24H_CEILING_WARNING,
+          ceiling24hCritical: SECURITY_THRESHOLDS.COMPLAINT_24H_CEILING_CRITICAL,
+          ceiling7dWarning: SECURITY_THRESHOLDS.COMPLAINT_7DAY_CEILING_WARNING,
+          ceiling7dCritical: SECURITY_THRESHOLDS.COMPLAINT_7DAY_CEILING_CRITICAL,
+        };
+
+    const projectLabel = isNewProject ? ' (new project)' : '';
+
+    // === Absolute count ceiling checks (rate-independent) ===
+    // These catch high-volume spammers who dilute their bounce rate by blasting emails
+
+    // 24-hour bounce ceilings
+    if (twentyFourHour.bounces >= bounceCeilings.ceiling24hCritical) {
+      violations.push(
+        `24-hour bounce count${projectLabel} (${twentyFourHour.bounces} bounces) exceeds critical ceiling (${bounceCeilings.ceiling24hCritical})`,
+      );
+    } else if (twentyFourHour.bounces >= bounceCeilings.ceiling24hWarning) {
+      warnings.push(
+        `24-hour bounce count${projectLabel} (${twentyFourHour.bounces} bounces) exceeds warning ceiling (${bounceCeilings.ceiling24hWarning})`,
+      );
+    }
+
+    // 7-day bounce ceilings
+    if (sevenDay.bounces >= bounceCeilings.ceiling7dCritical) {
+      violations.push(
+        `7-day bounce count${projectLabel} (${sevenDay.bounces} bounces) exceeds critical ceiling (${bounceCeilings.ceiling7dCritical})`,
+      );
+    } else if (sevenDay.bounces >= bounceCeilings.ceiling7dWarning) {
+      warnings.push(
+        `7-day bounce count${projectLabel} (${sevenDay.bounces} bounces) exceeds warning ceiling (${bounceCeilings.ceiling7dWarning})`,
+      );
+    }
+
+    // 24-hour complaint ceilings
+    if (twentyFourHour.complaints >= complaintCeilings.ceiling24hCritical) {
+      violations.push(
+        `24-hour complaint count${projectLabel} (${twentyFourHour.complaints} complaints) exceeds critical ceiling (${complaintCeilings.ceiling24hCritical})`,
+      );
+    } else if (twentyFourHour.complaints >= complaintCeilings.ceiling24hWarning) {
+      warnings.push(
+        `24-hour complaint count${projectLabel} (${twentyFourHour.complaints} complaints) exceeds warning ceiling (${complaintCeilings.ceiling24hWarning})`,
+      );
+    }
+
+    // 7-day complaint ceilings
+    if (sevenDay.complaints >= complaintCeilings.ceiling7dCritical) {
+      violations.push(
+        `7-day complaint count${projectLabel} (${sevenDay.complaints} complaints) exceeds critical ceiling (${complaintCeilings.ceiling7dCritical})`,
+      );
+    } else if (sevenDay.complaints >= complaintCeilings.ceiling7dWarning) {
+      warnings.push(
+        `7-day complaint count${projectLabel} (${sevenDay.complaints} complaints) exceeds warning ceiling (${complaintCeilings.ceiling7dWarning})`,
+      );
+    }
+
+    // === Rate-based checks (existing logic) ===
     // Only enforce if minimum emails threshold is met
     const hasMinimumVolumeAllTime = allTime.total >= SECURITY_THRESHOLDS.MIN_EMAILS_FOR_ENFORCEMENT;
     const hasMinimumVolume7Day = sevenDay.total >= SECURITY_THRESHOLDS.MIN_EMAILS_FOR_ENFORCEMENT;
 
     // Check 7-day bounce rate (only if 7-day volume is sufficient)
     if (hasMinimumVolume7Day) {
-      // Critical: requires BOTH rate AND absolute count thresholds
       if (
         sevenDay.bounceRate >= SECURITY_THRESHOLDS.BOUNCE_7DAY_CRITICAL &&
         sevenDay.bounces >= SECURITY_THRESHOLDS.MIN_BOUNCES_FOR_CRITICAL
@@ -307,7 +488,6 @@ export class SecurityService {
 
     // Check 7-day complaint rate (only if 7-day volume is sufficient)
     if (hasMinimumVolume7Day) {
-      // Critical: requires BOTH rate AND absolute count thresholds
       if (
         sevenDay.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_7DAY_CRITICAL &&
         sevenDay.complaints >= SECURITY_THRESHOLDS.MIN_COMPLAINTS_FOR_CRITICAL
@@ -327,7 +507,6 @@ export class SecurityService {
 
     // Check all-time rates (only if all-time volume is sufficient)
     if (hasMinimumVolumeAllTime) {
-      // Check all-time bounce rate - requires BOTH rate AND absolute count
       if (
         allTime.bounceRate >= SECURITY_THRESHOLDS.BOUNCE_ALLTIME_CRITICAL &&
         allTime.bounces >= SECURITY_THRESHOLDS.MIN_BOUNCES_FOR_CRITICAL
@@ -344,7 +523,6 @@ export class SecurityService {
         );
       }
 
-      // Check all-time complaint rate - requires BOTH rate AND absolute count
       if (
         allTime.complaintRate >= SECURITY_THRESHOLDS.COMPLAINT_ALLTIME_CRITICAL &&
         allTime.complaints >= SECURITY_THRESHOLDS.MIN_COMPLAINTS_FOR_CRITICAL
@@ -366,8 +544,10 @@ export class SecurityService {
       projectId,
       isHealthy: violations.length === 0,
       shouldDisable: violations.length > 0,
+      twentyFourHour,
       sevenDay,
       allTime,
+      isNewProject,
       violations,
       warnings,
     };

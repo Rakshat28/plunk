@@ -1,20 +1,22 @@
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Progress,
-} from '@plunk/ui';
+import {Alert, AlertDescription, AlertTitle, Card, CardContent, CardDescription, CardHeader, CardTitle} from '@plunk/ui';
 import {AlertCircle, AlertTriangle, CheckCircle, Shield} from 'lucide-react';
-import type {ProjectSecurityMetrics} from '@plunk/types';
+import type {ProjectSecurityMetrics, SecurityLevel} from '@plunk/types';
 
 interface SecuritySettingsProps {
   metrics: ProjectSecurityMetrics;
   isLoading: boolean;
+}
+
+const STATUS_CONFIG: Record<SecurityLevel, {color: string; icon: typeof CheckCircle; bg: string; label: string}> = {
+  healthy: {color: 'text-green-600', icon: CheckCircle, bg: 'bg-green-100', label: 'Healthy'},
+  warning: {color: 'text-orange-600', icon: AlertTriangle, bg: 'bg-orange-100', label: 'Warning'},
+  critical: {color: 'text-red-600', icon: AlertCircle, bg: 'bg-red-100', label: 'Critical'},
+};
+
+function getOverallLevel(status: ProjectSecurityMetrics['status']): SecurityLevel {
+  if (status.violations.length > 0) return 'critical';
+  if (status.warnings.length > 0) return 'warning';
+  return 'healthy';
 }
 
 export function SecuritySettings({metrics, isLoading}: SecuritySettingsProps) {
@@ -32,42 +34,9 @@ export function SecuritySettings({metrics, isLoading}: SecuritySettingsProps) {
     );
   }
 
-  const {status, thresholds, isDisabled} = metrics;
-
-  // Helper to get status color and icon
-  const getStatusIndicator = (rate: number, warningThreshold: number, criticalThreshold: number) => {
-    if (rate >= criticalThreshold) {
-      return {color: 'text-red-600', icon: AlertCircle, bg: 'bg-red-600', label: 'Critical'};
-    }
-    if (rate >= warningThreshold) {
-      return {color: 'text-orange-600', icon: AlertTriangle, bg: 'bg-orange-500', label: 'Warning'};
-    }
-    return {color: 'text-green-600', icon: CheckCircle, bg: 'bg-green-600', label: 'Healthy'};
-  };
-
-  const sevenDayBounceStatus = getStatusIndicator(
-    status.sevenDay.bounceRate,
-    thresholds.BOUNCE_7DAY_WARNING,
-    thresholds.BOUNCE_7DAY_CRITICAL,
-  );
-
-  const allTimeBounceStatus = getStatusIndicator(
-    status.allTime.bounceRate,
-    thresholds.BOUNCE_ALLTIME_WARNING,
-    thresholds.BOUNCE_ALLTIME_CRITICAL,
-  );
-
-  const sevenDayComplaintStatus = getStatusIndicator(
-    status.sevenDay.complaintRate,
-    thresholds.COMPLAINT_7DAY_WARNING,
-    thresholds.COMPLAINT_7DAY_CRITICAL,
-  );
-
-  const allTimeComplaintStatus = getStatusIndicator(
-    status.allTime.complaintRate,
-    thresholds.COMPLAINT_ALLTIME_WARNING,
-    thresholds.COMPLAINT_ALLTIME_CRITICAL,
-  );
+  const {status, levels, isDisabled} = metrics;
+  const overallLevel = getOverallLevel(status);
+  const overallConfig = STATUS_CONFIG[overallLevel];
 
   return (
     <div className="space-y-6">
@@ -75,131 +44,99 @@ export function SecuritySettings({metrics, isLoading}: SecuritySettingsProps) {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${status.isHealthy ? 'bg-green-100' : 'bg-red-100'}`}>
-              <Shield className={`h-5 w-5 ${status.isHealthy ? 'text-green-600' : 'text-red-600'}`} />
+            <div className={`p-2 rounded-lg ${overallConfig.bg}`}>
+              <Shield className={`h-5 w-5 ${overallConfig.color}`} />
             </div>
             <div>
               <CardTitle>Security Overview</CardTitle>
               <CardDescription>
-                {status.isHealthy ? 'Your project is in good standing' : 'Action required to maintain project health'}
+                {overallLevel === 'healthy' && 'Your project is in good standing'}
+                {overallLevel === 'warning' && 'Your email health needs attention'}
+                {overallLevel === 'critical' && 'Action required to maintain project health'}
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          {/* Project Disabled Alert */}
           {isDisabled && (
             <Alert variant="destructive" className="mb-4">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Project Disabled</AlertTitle>
               <AlertDescription>
-                This project has been disabled due to critical security violations. Contact support to resolve.
+                This project has been disabled due to security violations. Contact support to resolve.
               </AlertDescription>
             </Alert>
           )}
 
-          {/* Violations */}
-          {status.violations.length > 0 && !isDisabled && (
+          {overallLevel === 'critical' && !isDisabled && (
             <Alert variant="destructive" className="mb-4">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Critical Violations ({status.violations.length})</AlertTitle>
+              <AlertTitle>Critical</AlertTitle>
               <AlertDescription>
-                <ul className="list-disc list-inside space-y-1 text-sm mt-2">
-                  {status.violations.map((violation, idx) => (
-                    <li key={idx}>{violation}</li>
-                  ))}
-                </ul>
+                Your bounce or complaint rates have exceeded acceptable levels. Review your contact lists and sending
+                practices to avoid project suspension.
               </AlertDescription>
             </Alert>
           )}
 
-          {/* Warnings */}
-          {status.warnings.length > 0 && (
+          {overallLevel === 'warning' && (
             <Alert variant="warning" className="mb-4">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Security Warnings ({status.warnings.length})</AlertTitle>
+              <AlertTitle>Warning</AlertTitle>
               <AlertDescription>
-                <ul className="list-disc list-inside space-y-1 text-sm mt-2">
-                  {status.warnings.map((warning, idx) => (
-                    <li key={idx}>{warning}</li>
-                  ))}
-                </ul>
+                Your bounce or complaint rates are approaching limits. Review your contact lists and remove invalid
+                addresses to maintain good standing.
               </AlertDescription>
             </Alert>
           )}
 
-          {/* Healthy Status */}
-          {status.isHealthy && !isDisabled && (
+          {overallLevel === 'healthy' && !isDisabled && (
             <Alert>
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription>
-                All security metrics are within acceptable thresholds. Keep up the good work!
+                All security metrics are within acceptable levels. Keep up the good work!
               </AlertDescription>
             </Alert>
           )}
         </CardContent>
       </Card>
 
-      {/* Bounce Rate Metrics */}
+      {/* Bounce Metrics */}
       <Card>
         <CardHeader>
-          <CardTitle>Bounce Rate Metrics</CardTitle>
+          <CardTitle>Bounce Rate</CardTitle>
           <CardDescription>Hard bounces indicate invalid or non-existent email addresses</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* 7-Day Bounce Rate */}
-          <MetricDisplay
-            label="7-Day Bounce Rate"
-            rate={status.sevenDay.bounceRate}
-            count={status.sevenDay.bounces}
-            total={status.sevenDay.total}
-            warningThreshold={thresholds.BOUNCE_7DAY_WARNING}
-            criticalThreshold={thresholds.BOUNCE_7DAY_CRITICAL}
-            status={sevenDayBounceStatus}
+          <HealthMetric
+            label="Last 7 Days"
+            level={levels.bounce7Day}
+            detail={`${status.sevenDay.bounceRate.toFixed(2)}% bounce rate (${status.sevenDay.bounces.toLocaleString()} of ${status.sevenDay.total.toLocaleString()} emails)`}
           />
-
-          {/* All-Time Bounce Rate */}
-          <MetricDisplay
-            label="All-Time Bounce Rate"
-            rate={status.allTime.bounceRate}
-            count={status.allTime.bounces}
-            total={status.allTime.total}
-            warningThreshold={thresholds.BOUNCE_ALLTIME_WARNING}
-            criticalThreshold={thresholds.BOUNCE_ALLTIME_CRITICAL}
-            status={allTimeBounceStatus}
+          <HealthMetric
+            label="All Time"
+            level={levels.bounceAllTime}
+            detail={`${status.allTime.bounceRate.toFixed(2)}% bounce rate (${status.allTime.bounces.toLocaleString()} of ${status.allTime.total.toLocaleString()} emails)`}
           />
         </CardContent>
       </Card>
 
-      {/* Complaint Rate Metrics */}
+      {/* Complaint Metrics */}
       <Card>
         <CardHeader>
-          <CardTitle>Complaint Rate Metrics</CardTitle>
+          <CardTitle>Complaint Rate</CardTitle>
           <CardDescription>Complaints occur when recipients mark emails as spam</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* 7-Day Complaint Rate */}
-          <MetricDisplay
-            label="7-Day Complaint Rate"
-            rate={status.sevenDay.complaintRate}
-            count={status.sevenDay.complaints}
-            total={status.sevenDay.total}
-            warningThreshold={thresholds.COMPLAINT_7DAY_WARNING}
-            criticalThreshold={thresholds.COMPLAINT_7DAY_CRITICAL}
-            status={sevenDayComplaintStatus}
-            isComplaintRate
+          <HealthMetric
+            label="Last 7 Days"
+            level={levels.complaint7Day}
+            detail={`${status.sevenDay.complaintRate.toFixed(3)}% complaint rate (${status.sevenDay.complaints.toLocaleString()} of ${status.sevenDay.total.toLocaleString()} emails)`}
           />
-
-          {/* All-Time Complaint Rate */}
-          <MetricDisplay
-            label="All-Time Complaint Rate"
-            rate={status.allTime.complaintRate}
-            count={status.allTime.complaints}
-            total={status.allTime.total}
-            warningThreshold={thresholds.COMPLAINT_ALLTIME_WARNING}
-            criticalThreshold={thresholds.COMPLAINT_ALLTIME_CRITICAL}
-            status={allTimeComplaintStatus}
-            isComplaintRate
+          <HealthMetric
+            label="All Time"
+            level={levels.complaintAllTime}
+            detail={`${status.allTime.complaintRate.toFixed(3)}% complaint rate (${status.allTime.complaints.toLocaleString()} of ${status.allTime.total.toLocaleString()} emails)`}
           />
         </CardContent>
       </Card>
@@ -207,60 +144,25 @@ export function SecuritySettings({metrics, isLoading}: SecuritySettingsProps) {
   );
 }
 
-interface MetricDisplayProps {
+interface HealthMetricProps {
   label: string;
-  rate: number;
-  count: number;
-  total: number;
-  warningThreshold: number;
-  criticalThreshold: number;
-  status: {
-    color: string;
-    icon: React.ComponentType<{className?: string}>;
-    bg: string;
-    label: string;
-  };
-  isComplaintRate?: boolean;
+  level: SecurityLevel;
+  detail: string;
 }
 
-function MetricDisplay({
-  label,
-  rate,
-  count,
-  total,
-  warningThreshold,
-  criticalThreshold,
-  status,
-  isComplaintRate = false,
-}: MetricDisplayProps) {
-  const Icon = status.icon;
-  const progressValue = Math.min((rate / criticalThreshold) * 100, 100);
-  const decimals = isComplaintRate ? 3 : 2;
+function HealthMetric({label, level, detail}: HealthMetricProps) {
+  const config = STATUS_CONFIG[level];
+  const Icon = config.icon;
 
   return (
-    <div className="border border-neutral-200 rounded-lg p-4">
-      <div className="flex items-center justify-between mb-3">
-        <div>
-          <h3 className="font-medium text-neutral-900">{label}</h3>
-          <p className="text-sm text-neutral-600 mt-1">
-            {count.toLocaleString()} / {total.toLocaleString()} emails
-            <span className="text-neutral-400 mx-2">•</span>
-            <strong>{rate.toFixed(decimals)}%</strong>
-          </p>
-        </div>
-        <div className={`flex items-center gap-2 ${status.color}`}>
-          <Icon className="h-4 w-4" />
-          <span className="text-sm font-medium">{status.label}</span>
-        </div>
+    <div className="flex items-center justify-between border border-neutral-200 rounded-lg p-4">
+      <div>
+        <h3 className="font-medium text-neutral-900">{label}</h3>
+        <p className="text-sm text-neutral-600 mt-1">{detail}</p>
       </div>
-
-      <div className="space-y-2">
-        <Progress value={progressValue} className="h-2" indicatorClassName={status.bg} />
-        <div className="flex justify-between text-xs text-neutral-500">
-          <span>0%</span>
-          <span>Warning: {warningThreshold}%</span>
-          <span>Critical: {criticalThreshold}%</span>
-        </div>
+      <div className={`flex items-center gap-2 ${config.color}`}>
+        <Icon className="h-4 w-4" />
+        <span className="text-sm font-medium">{config.label}</span>
       </div>
     </div>
   );
