@@ -54,14 +54,14 @@ const SECURITY_THRESHOLDS = {
   // === New project thresholds (projects < 30 days old) ===
   // Legitimate senders ramp up gradually; spammers blast immediately
   NEW_PROJECT_AGE_DAYS: 30,
-  NEW_PROJECT_BOUNCE_24H_CEILING_WARNING: 20,
-  NEW_PROJECT_BOUNCE_24H_CEILING_CRITICAL: 50,
-  NEW_PROJECT_BOUNCE_7DAY_CEILING_WARNING: 75,
-  NEW_PROJECT_BOUNCE_7DAY_CEILING_CRITICAL: 150,
-  NEW_PROJECT_COMPLAINT_24H_CEILING_WARNING: 5,
-  NEW_PROJECT_COMPLAINT_24H_CEILING_CRITICAL: 10,
-  NEW_PROJECT_COMPLAINT_7DAY_CEILING_WARNING: 15,
-  NEW_PROJECT_COMPLAINT_7DAY_CEILING_CRITICAL: 30,
+  NEW_PROJECT_BOUNCE_24H_CEILING_WARNING: 10,
+  NEW_PROJECT_BOUNCE_24H_CEILING_CRITICAL: 25,
+  NEW_PROJECT_BOUNCE_7DAY_CEILING_WARNING: 25,
+  NEW_PROJECT_BOUNCE_7DAY_CEILING_CRITICAL: 50,
+  NEW_PROJECT_COMPLAINT_24H_CEILING_WARNING: 3,
+  NEW_PROJECT_COMPLAINT_24H_CEILING_CRITICAL: 7,
+  NEW_PROJECT_COMPLAINT_7DAY_CEILING_WARNING: 10,
+  NEW_PROJECT_COMPLAINT_7DAY_CEILING_CRITICAL: 20,
 } as const;
 
 interface RateData {
@@ -179,7 +179,9 @@ export class SecurityService {
             `[SECURITY] All-time stats: ${status.allTime.bounces} bounces, ${status.allTime.complaints} complaints out of ${status.allTime.total} emails`,
           );
           if (status.isNewProject) {
-            signale.info(`[SECURITY] Project is under ${SECURITY_THRESHOLDS.NEW_PROJECT_AGE_DAYS} days old — stricter ceilings apply`);
+            signale.info(
+              `[SECURITY] Project is under ${SECURITY_THRESHOLDS.NEW_PROJECT_AGE_DAYS} days old — stricter ceilings apply`,
+            );
           }
 
           // Send notification about critical security violations
@@ -369,9 +371,7 @@ export class SecurityService {
       select: {createdAt: true},
     });
 
-    const projectAgeDays = project
-      ? (now.getTime() - project.createdAt.getTime()) / (1000 * 60 * 60 * 24)
-      : Infinity;
+    const projectAgeDays = project ? (now.getTime() - project.createdAt.getTime()) / (1000 * 60 * 60 * 24) : Infinity;
     const isNewProject = projectAgeDays < SECURITY_THRESHOLDS.NEW_PROJECT_AGE_DAYS;
 
     // Get 24-hour, 7-day and all-time rates in parallel

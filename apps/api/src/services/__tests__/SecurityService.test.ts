@@ -169,8 +169,8 @@ describe('SecurityService', () => {
   describe('New project stricter thresholds', () => {
     it('should apply stricter ceilings for projects under 30 days old', async () => {
       // Default project is created "now", so it's a new project
-      // 10,000 emails, 51 bounces (above 50 new project 24h critical ceiling)
-      await createEmails(10000, {bouncedCount: 51});
+      // 10,000 emails, 26 bounces (above 25 new project 24h critical ceiling)
+      await createEmails(10000, {bouncedCount: 26});
 
       const status = await SecurityService.getSecurityStatus(projectId);
       expect(status.isNewProject).toBe(true);
@@ -186,26 +186,26 @@ describe('SecurityService', () => {
         data: {createdAt: oldDate},
       });
 
-      // 10,000 emails, 51 bounces (above 50 new project ceiling, below 100 standard ceiling)
-      await createEmails(10000, {bouncedCount: 51});
+      // 10,000 emails, 26 bounces (above 25 new project ceiling, below 50 standard warning ceiling)
+      await createEmails(10000, {bouncedCount: 26});
 
       const status = await SecurityService.getSecurityStatus(projectId);
       expect(status.isNewProject).toBe(false);
-      // 51 is above the 50-bounce 24h warning ceiling for established projects
-      expect(status.warnings.some(w => w.includes('24-hour bounce count'))).toBe(true);
-      // But below the 100-bounce 24h critical ceiling
+      // 26 is below the 50-bounce 24h warning ceiling for established projects
+      expect(status.warnings.some(w => w.includes('24-hour bounce count'))).toBe(false);
+      // And below the 100-bounce 24h critical ceiling
       expect(status.violations.some(v => v.includes('24-hour bounce count'))).toBe(false);
     });
 
     it('should catch new project blasting emails with delayed bounces', async () => {
       // Simulate the spammer scenario: new project sends 20K emails,
-      // only 55 bounces have come back so far (rate is tiny: 0.275%)
-      await createEmails(20000, {bouncedCount: 55});
+      // only 30 bounces have come back so far (rate is tiny: 0.15%)
+      await createEmails(20000, {bouncedCount: 30});
 
       const status = await SecurityService.getSecurityStatus(projectId);
       expect(status.isNewProject).toBe(true);
       expect(status.shouldDisable).toBe(true);
-      // 55 > 50 new project 24h critical ceiling
+      // 30 > 25 new project 24h critical ceiling
       expect(status.violations.some(v => v.includes('24-hour bounce count'))).toBe(true);
     });
   });
