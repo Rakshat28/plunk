@@ -1,6 +1,7 @@
+import {AnimatePresence, motion} from 'framer-motion';
+import {Check, Copy, Eye, EyeOff, RefreshCw} from 'lucide-react';
 import {useState} from 'react';
 import {Button} from '@plunk/ui';
-import {Check, Copy, Eye, EyeOff, RefreshCw} from 'lucide-react';
 
 interface ApiKeyDisplayProps {
   label: string;
@@ -28,8 +29,8 @@ export function ApiKeyDisplay({
       await navigator.clipboard.writeText(value);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy:', error);
+    } catch {
+      // clipboard API unavailable — silent
     }
   };
 
@@ -39,8 +40,8 @@ export function ApiKeyDisplay({
     try {
       setIsRegenerating(true);
       await onRegenerate();
-    } catch (error) {
-      console.error('Failed to regenerate:', error);
+    } catch {
+      // error surfaced via isRegenerating state reset
     } finally {
       setIsRegenerating(false);
     }
@@ -74,9 +75,31 @@ export function ApiKeyDisplay({
             size="icon"
             onClick={handleCopy}
             title="Copy to clipboard"
-            className="h-9 w-9"
+            className="h-9 w-9 overflow-hidden"
           >
-            {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+            <AnimatePresence mode="wait" initial={false}>
+              {copied ? (
+                <motion.span
+                  key="copied"
+                  initial={{opacity: 0, y: 6}}
+                  animate={{opacity: 1, y: 0}}
+                  exit={{opacity: 0, y: -6}}
+                  transition={{duration: 0.15}}
+                >
+                  <Check className="h-4 w-4 text-green-600" />
+                </motion.span>
+              ) : (
+                <motion.span
+                  key="idle"
+                  initial={{opacity: 0, y: 6}}
+                  animate={{opacity: 1, y: 0}}
+                  exit={{opacity: 0, y: -6}}
+                  transition={{duration: 0.15}}
+                >
+                  <Copy className="h-4 w-4" />
+                </motion.span>
+              )}
+            </AnimatePresence>
           </Button>
           {showRegenerate && onRegenerate && (
             <Button

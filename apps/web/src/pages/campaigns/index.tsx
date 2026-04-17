@@ -21,6 +21,7 @@ import type {Campaign, Template} from '@plunk/db';
 import {CampaignStatus} from '@plunk/db';
 import type {PaginatedResponse} from '@plunk/types';
 import {DashboardLayout} from '../../components/DashboardLayout';
+import {EmptyState} from '../../components/EmptyState';
 import {TemplateSelectionDialog} from '../../components/TemplateSelectionDialog';
 import {CampaignSelectionDialog} from '../../components/CampaignSelectionDialog';
 import {network} from '../../lib/network';
@@ -301,74 +302,71 @@ export default function CampaignsPage() {
 
             {!isLoading && data?.data.length === 0 && (
               <Card>
-                <CardContent className="py-16 text-center">
-                  <div className="max-w-md mx-auto">
-                    <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Mail className="h-8 w-8 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-                      {statusFilter !== 'ALL' ? `No ${statusFilter.toLowerCase()} campaigns` : 'No campaigns yet'}
-                    </h3>
-                    <p className="text-neutral-500 mb-6">
-                      {statusFilter !== 'ALL'
-                        ? 'Try adjusting your filters or create a new campaign.'
-                        : 'Create your first campaign to send emails to your contacts.'}
-                    </p>
-                    {statusFilter === 'ALL' && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button size="lg">
+                <CardContent>
+                  <EmptyState
+                    icon={Mail}
+                    title={statusFilter !== 'ALL' ? `No ${statusFilter.toLowerCase()} campaigns` : 'No campaigns yet'}
+                    description={
+                      statusFilter !== 'ALL'
+                        ? 'Adjust your filters or create a new campaign.'
+                        : 'Send one-off emails to groups of contacts.'
+                    }
+                    action={
+                      statusFilter === 'ALL' ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button>
+                              <Plus className="h-4 w-4" />
+                              Create Campaign
+                              <ChevronDown className="h-4 w-4 ml-1" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="center" className="w-80">
+                            <DropdownMenuItem asChild className="py-3 cursor-pointer">
+                              <Link href="/campaigns/create" className="flex items-start gap-3">
+                                <Mail className="h-4 w-4 mt-0.5 text-neutral-700" />
+                                <div className="flex flex-col gap-0.5 flex-1">
+                                  <span className="font-medium text-sm">Empty Campaign</span>
+                                  <span className="text-xs text-neutral-500 leading-snug">
+                                    Start from scratch with a blank canvas
+                                  </span>
+                                </div>
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setShowTemplateDialog(true)} className="py-3 cursor-pointer">
+                              <div className="flex items-start gap-3">
+                                <FileText className="h-4 w-4 mt-0.5 text-neutral-700" />
+                                <div className="flex flex-col gap-0.5 flex-1">
+                                  <span className="font-medium text-sm">From Template</span>
+                                  <span className="text-xs text-neutral-500 leading-snug">
+                                    Use an existing template as a starting point
+                                  </span>
+                                </div>
+                              </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setShowCampaignDialog(true)} className="py-3 cursor-pointer">
+                              <div className="flex items-start gap-3">
+                                <RefreshCw className="h-4 w-4 mt-0.5 text-neutral-700" />
+                                <div className="flex flex-col gap-0.5 flex-1">
+                                  <span className="font-medium text-sm">From Previous Campaign</span>
+                                  <span className="text-xs text-neutral-500 leading-snug">
+                                    Copy content and settings from an existing campaign
+                                  </span>
+                                </div>
+                              </div>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : (
+                        <Link href="/campaigns/create">
+                          <Button>
                             <Plus className="h-4 w-4" />
-                            Create Your First Campaign
-                            <ChevronDown className="h-4 w-4 ml-1" />
+                            Create Campaign
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="center" className="w-80">
-                          <DropdownMenuItem asChild className="py-3 cursor-pointer">
-                            <Link href="/campaigns/create" className="flex items-start gap-3">
-                              <Mail className="h-4 w-4 mt-0.5 text-neutral-700" />
-                              <div className="flex flex-col gap-0.5 flex-1">
-                                <span className="font-medium text-sm">Empty Campaign</span>
-                                <span className="text-xs text-neutral-500 leading-snug">
-                                  Start from scratch with a blank canvas
-                                </span>
-                              </div>
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setShowTemplateDialog(true)} className="py-3 cursor-pointer">
-                            <div className="flex items-start gap-3">
-                              <FileText className="h-4 w-4 mt-0.5 text-neutral-700" />
-                              <div className="flex flex-col gap-0.5 flex-1">
-                                <span className="font-medium text-sm">From Template</span>
-                                <span className="text-xs text-neutral-500 leading-snug">
-                                  Use an existing template as a starting point
-                                </span>
-                              </div>
-                            </div>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setShowCampaignDialog(true)} className="py-3 cursor-pointer">
-                            <div className="flex items-start gap-3">
-                              <RefreshCw className="h-4 w-4 mt-0.5 text-neutral-700" />
-                              <div className="flex flex-col gap-0.5 flex-1">
-                                <span className="font-medium text-sm">From Previous Campaign</span>
-                                <span className="text-xs text-neutral-500 leading-snug">
-                                  Copy content and settings from an existing campaign
-                                </span>
-                              </div>
-                            </div>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                    {statusFilter !== 'ALL' && (
-                      <Link href="/campaigns/create">
-                        <Button size="lg">
-                          <Plus className="h-4 w-4" />
-                          Create Campaign
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
+                        </Link>
+                      )
+                    }
+                  />
                 </CardContent>
               </Card>
             )}
@@ -380,7 +378,7 @@ export default function CampaignsPage() {
                 campaign.totalRecipients > 0 ? (campaign.sentCount / campaign.totalRecipients) * 100 : 0;
 
               return (
-                <Card key={campaign.id} className="hover:shadow-lg transition-all hover:border-primary/20">
+                <Card key={campaign.id} className="transition-colors hover:border-neutral-300">
                   <CardHeader className="pb-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">

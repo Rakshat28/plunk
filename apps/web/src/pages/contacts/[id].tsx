@@ -2,22 +2,24 @@ import {
   Button,
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
   ConfirmDialog,
   Input,
   Label,
+  Switch,
 } from '@plunk/ui';
 import type {Contact} from '@plunk/db';
+import {AnimatePresence, motion} from 'framer-motion';
+import {ArrowLeft, Check, Copy, Database, ExternalLink, Loader2, Save, Settings, Trash2} from 'lucide-react';
+import Link from 'next/link';
+import {NextSeo} from 'next-seo';
+import {useRouter} from 'next/router';
+import {useEffect, useState} from 'react';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {KeyValueEditor} from '../../components/KeyValueEditor';
 import {ActivityFeed} from '../../components/ActivityFeed';
 import {network} from '../../lib/network';
-import {ArrowLeft, Copy, Database, ExternalLink, Mail, Save, Settings, Trash2} from 'lucide-react';
-import Link from 'next/link';
-import {useRouter} from 'next/router';
-import {useEffect, useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
 import {ContactSchemas} from '@plunk/shared';
@@ -33,8 +35,8 @@ export default function ContactDetailPage() {
   const [customData, setCustomData] = useState<Record<string, string | number | boolean> | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  // Initialize form when contact loads
   useEffect(() => {
     if (contact) {
       setEmail(contact.email);
@@ -73,12 +75,14 @@ export default function ContactDetailPage() {
     }
   };
 
-  const copyToClipboard = async (url: string, label: string) => {
+  const copyToClipboard = async (text: string, label: string, copyId: string) => {
     try {
-      await navigator.clipboard.writeText(url);
-      toast.success(`${label} link copied to clipboard`);
+      await navigator.clipboard.writeText(text);
+      setCopiedId(copyId);
+      setTimeout(() => setCopiedId(null), 2000);
+      toast.success(`${label} copied to clipboard`);
     } catch {
-      toast.error('Failed to copy link');
+      toast.error('Failed to copy');
     }
   };
 
@@ -86,22 +90,7 @@ export default function ContactDetailPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <svg
-              className="h-8 w-8 animate-spin mx-auto text-neutral-900"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-            <p className="mt-2 text-sm text-neutral-500">Loading contact...</p>
-          </div>
+          <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
         </div>
       </DashboardLayout>
     );
@@ -127,277 +116,342 @@ export default function ContactDetailPage() {
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <Link href="/contacts">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 truncate">{contact.email}</h1>
-              <p className="text-neutral-500 mt-1">
-                <span
-                  className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    contact.subscribed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}
-                >
-                  {contact.subscribed ? 'Subscribed' : 'Unsubscribed'}
-                </span>
-              </p>
+    <>
+      <NextSeo title={contact.email} />
+      <DashboardLayout>
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <Link href="/contacts">
+                <Button variant="outline" size="sm">
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </Link>
+              <div className="min-w-0">
+                <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 truncate">{contact.email}</h1>
+                <p className="mt-1">
+                  <span
+                    className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      contact.subscribed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}
+                  >
+                    {contact.subscribed ? 'Subscribed' : 'Unsubscribed'}
+                  </span>
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="flex justify-end">
-            <Button variant="destructive" onClick={() => setShowDeleteDialog(true)} className="w-full sm:w-auto">
+            <Button variant="destructive" onClick={() => setShowDeleteDialog(true)} className="flex-shrink-0">
               <Trash2 className="h-4 w-4" />
               <span className="hidden sm:inline">Delete Contact</span>
-              <span className="sm:hidden">Delete</span>
             </Button>
           </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Edit Form */}
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Contact Information</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <Label htmlFor="email">Email Address</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        required
+                        placeholder="contact@example.com"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <Label htmlFor="subscribed" className="font-medium cursor-pointer">
+                          Subscribed to emails
+                        </Label>
+                        <p className="text-xs text-neutral-500 mt-0.5">
+                          {subscribed ? 'Receives emails from campaigns and workflows' : 'Will not receive emails'}
+                        </p>
+                      </div>
+                      <Switch id="subscribed" checked={subscribed} onCheckedChange={setSubscribed} />
+                    </div>
+
+                    <div>
+                      {contact && (
+                        <KeyValueEditor
+                          key={`${contact.id}-${JSON.stringify(contact.data)}`}
+                          initialData={contact.data as Record<string, string | number | boolean> | null}
+                          onChange={setCustomData}
+                        />
+                      )}
+                    </div>
+
+                    <Button type="submit" disabled={isSubmitting}>
+                      <Save className="h-4 w-4" />
+                      {isSubmitting ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              {/* Activity Feed */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ActivityFeed contactId={id as string} />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Metadata Sidebar */}
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <Database className="h-5 w-5 text-neutral-500 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-neutral-900">Contact ID</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <p className="text-xs text-neutral-500 font-mono break-all flex-1">{contact.id}</p>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(contact.id, 'Contact ID', 'contact-id')}
+                          className="flex-shrink-0 text-neutral-400 hover:text-neutral-700 transition-colors"
+                          aria-label="Copy contact ID"
+                        >
+                          <AnimatePresence mode="wait" initial={false}>
+                            {copiedId === 'contact-id' ? (
+                              <motion.span
+                                key="copied"
+                                initial={{opacity: 0, y: 4}}
+                                animate={{opacity: 1, y: 0}}
+                                exit={{opacity: 0, y: -4}}
+                                transition={{duration: 0.15}}
+                              >
+                                <Check className="h-3 w-3 text-green-600" />
+                              </motion.span>
+                            ) : (
+                              <motion.span
+                                key="idle"
+                                initial={{opacity: 0, y: 4}}
+                                animate={{opacity: 1, y: 0}}
+                                exit={{opacity: 0, y: -4}}
+                                transition={{duration: 0.15}}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </motion.span>
+                            )}
+                          </AnimatePresence>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium text-neutral-900">Created</p>
+                    <div className="group relative inline-block cursor-help">
+                      <p className="text-sm text-neutral-500">{dayjs(contact.createdAt).fromNow()}</p>
+                      <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                        {dayjs(contact.createdAt).format('DD MMMM YYYY, hh:mm')}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium text-neutral-900">Last Updated</p>
+                    <div className="group relative inline-block cursor-help">
+                      <p className="text-sm text-neutral-500">{dayjs(contact.updatedAt).fromNow()}</p>
+                      <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                        {dayjs(contact.updatedAt).format('DD MMMM YYYY, hh:mm')}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Public Links Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Public Links</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-neutral-700">Subscribe Page</p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 justify-start text-xs"
+                        onClick={() => window.open(`${window.location.origin}/subscribe/${contact.id}`, '_blank')}
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Open
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="overflow-hidden"
+                        onClick={() =>
+                          copyToClipboard(
+                            `${window.location.origin}/subscribe/${contact.id}`,
+                            'Subscribe link',
+                            'subscribe',
+                          )
+                        }
+                      >
+                        <AnimatePresence mode="wait" initial={false}>
+                          {copiedId === 'subscribe' ? (
+                            <motion.span
+                              key="copied"
+                              initial={{opacity: 0, y: 4}}
+                              animate={{opacity: 1, y: 0}}
+                              exit={{opacity: 0, y: -4}}
+                              transition={{duration: 0.15}}
+                            >
+                              <Check className="h-3 w-3 text-green-600" />
+                            </motion.span>
+                          ) : (
+                            <motion.span
+                              key="idle"
+                              initial={{opacity: 0, y: 4}}
+                              animate={{opacity: 1, y: 0}}
+                              exit={{opacity: 0, y: -4}}
+                              transition={{duration: 0.15}}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-neutral-700">Unsubscribe Page</p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 justify-start text-xs"
+                        onClick={() => window.open(`${window.location.origin}/unsubscribe/${contact.id}`, '_blank')}
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Open
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="overflow-hidden"
+                        onClick={() =>
+                          copyToClipboard(
+                            `${window.location.origin}/unsubscribe/${contact.id}`,
+                            'Unsubscribe link',
+                            'unsubscribe',
+                          )
+                        }
+                      >
+                        <AnimatePresence mode="wait" initial={false}>
+                          {copiedId === 'unsubscribe' ? (
+                            <motion.span
+                              key="copied"
+                              initial={{opacity: 0, y: 4}}
+                              animate={{opacity: 1, y: 0}}
+                              exit={{opacity: 0, y: -4}}
+                              transition={{duration: 0.15}}
+                            >
+                              <Check className="h-3 w-3 text-green-600" />
+                            </motion.span>
+                          ) : (
+                            <motion.span
+                              key="idle"
+                              initial={{opacity: 0, y: 4}}
+                              animate={{opacity: 1, y: 0}}
+                              exit={{opacity: 0, y: -4}}
+                              transition={{duration: 0.15}}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-neutral-700">Manage Preferences</p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 justify-start text-xs"
+                        onClick={() => window.open(`${window.location.origin}/manage/${contact.id}`, '_blank')}
+                      >
+                        <Settings className="h-3 w-3" />
+                        Open
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="overflow-hidden"
+                        onClick={() =>
+                          copyToClipboard(
+                            `${window.location.origin}/manage/${contact.id}`,
+                            'Manage preferences link',
+                            'manage',
+                          )
+                        }
+                      >
+                        <AnimatePresence mode="wait" initial={false}>
+                          {copiedId === 'manage' ? (
+                            <motion.span
+                              key="copied"
+                              initial={{opacity: 0, y: 4}}
+                              animate={{opacity: 1, y: 0}}
+                              exit={{opacity: 0, y: -4}}
+                              transition={{duration: 0.15}}
+                            >
+                              <Check className="h-3 w-3 text-green-600" />
+                            </motion.span>
+                          ) : (
+                            <motion.span
+                              key="idle"
+                              initial={{opacity: 0, y: 4}}
+                              animate={{opacity: 1, y: 0}}
+                              exit={{opacity: 0, y: -4}}
+                              transition={{duration: 0.15}}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Edit Form */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Contact Information</CardTitle>
-                <CardDescription>Update contact details and subscription status</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <Label htmlFor="email">Email Address *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      required
-                      placeholder="contact@example.com"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <Label htmlFor="subscribed" className="text-sm font-medium text-neutral-900 cursor-pointer">
-                        Subscribed to emails
-                      </Label>
-                      <p className="text-xs text-neutral-500 mt-0.5">
-                        {subscribed ? 'Contact will receive emails' : 'Contact will not receive emails'}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      id="subscribed"
-                      onClick={() => setSubscribed(!subscribed)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2 ${
-                        subscribed ? 'bg-neutral-900' : 'bg-neutral-300'
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          subscribed ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  <div>
-                    {contact && (
-                      <KeyValueEditor
-                        key={`${contact.id}-${JSON.stringify(contact.data)}`}
-                        initialData={contact.data as Record<string, string | number | boolean> | null}
-                        onChange={setCustomData}
-                      />
-                    )}
-                  </div>
-
-                  <Button type="submit" disabled={isSubmitting}>
-                    <Save className="h-4 w-4" />
-                    {isSubmitting ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            {/* Activity Feed */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Activity Feed</CardTitle>
-                <CardDescription>Recent activity for this contact</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ActivityFeed contactId={id as string} />
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Metadata Sidebar */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Metadata</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Mail className="h-5 w-5 text-neutral-500 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-900">Email</p>
-                    <p className="text-sm text-neutral-500 break-all">{contact.email}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Database className="h-5 w-5 text-neutral-500 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-900">Contact ID</p>
-                    <p className="text-xs text-neutral-500 font-mono break-all">{contact.id}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-neutral-900">Created</p>
-                  <div className="group relative inline-block cursor-help">
-                    <p className="text-sm text-neutral-500">{dayjs(contact.createdAt).fromNow()}</p>
-                    <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
-                      {dayjs(contact.createdAt).format('DD MMMM YYYY, hh:mm')}
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-neutral-900">Last Updated</p>
-                  <div className="group relative inline-block cursor-help">
-                    <p className="text-sm text-neutral-500">{dayjs(contact.updatedAt).fromNow()}</p>
-                    <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
-                      {dayjs(contact.updatedAt).format('DD MMMM YYYY, hh:mm')}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Stats Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Activity</CardTitle>
-                <CardDescription>Email engagement statistics</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-neutral-600">Emails Sent</span>
-                  <span className="text-sm font-medium text-neutral-900">0</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-neutral-600">Emails Opened</span>
-                  <span className="text-sm font-medium text-neutral-900">0</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-neutral-600">Links Clicked</span>
-                  <span className="text-sm font-medium text-neutral-900">0</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Public Links Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Public Links</CardTitle>
-                <CardDescription>Share these links with the contact</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="space-y-2">
-                  <p className="text-xs font-medium text-neutral-700">Subscribe Page</p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 justify-start text-xs"
-                      onClick={() => window.open(`${window.location.origin}/subscribe/${contact.id}`, '_blank')}
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      Open
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copyToClipboard(`${window.location.origin}/subscribe/${contact.id}`, 'Subscribe')}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-xs font-medium text-neutral-700">Unsubscribe Page</p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 justify-start text-xs"
-                      onClick={() => window.open(`${window.location.origin}/unsubscribe/${contact.id}`, '_blank')}
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      Open
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        copyToClipboard(`${window.location.origin}/unsubscribe/${contact.id}`, 'Unsubscribe')
-                      }
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-xs font-medium text-neutral-700">Manage Preferences</p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 justify-start text-xs"
-                      onClick={() => window.open(`${window.location.origin}/manage/${contact.id}`, '_blank')}
-                    >
-                      <Settings className="h-3 w-3" />
-                      Open
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copyToClipboard(`${window.location.origin}/manage/${contact.id}`, 'Manage')}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t">
-                  <p className="text-xs text-neutral-500">
-                    These public links allow the contact to manage their subscription without logging in.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-
-      <ConfirmDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        onConfirm={handleDelete}
-        title="Delete Contact"
-        description="Are you sure you want to delete this contact? This action cannot be undone."
-        confirmText="Delete"
-        variant="destructive"
-      />
-    </DashboardLayout>
+        <ConfirmDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          onConfirm={handleDelete}
+          title="Delete Contact"
+          description="Are you sure you want to delete this contact? This action cannot be undone."
+          confirmText="Delete"
+          variant="destructive"
+        />
+      </DashboardLayout>
+    </>
   );
 }

@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
   Input,
@@ -12,7 +13,6 @@ import {
   SelectItemWithDescription,
   SelectTrigger,
   SelectValue,
-  Textarea,
 } from '@plunk/ui';
 import type {Segment, Template} from '@plunk/db';
 import {CampaignAudienceType, TemplateType} from '@plunk/db';
@@ -20,10 +20,9 @@ import {NextSeo} from 'next-seo';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {EmailSettings} from '../../components/EmailSettings';
 import {EmailEditor} from '../../components/EmailEditor';
-import {StepHeader} from '../../components/StepHeader';
 import {network} from '../../lib/network';
 import {EmailFormValidator} from '../../lib/validation';
-import {ArrowLeft, Save, TriangleAlert, Users} from 'lucide-react';
+import {ArrowLeft, TriangleAlert} from 'lucide-react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
@@ -50,7 +49,6 @@ export default function CreateCampaignPage() {
 
   const {data: segments} = useSWR<Segment[]>('/segments', {revalidateOnFocus: false});
 
-  // Load template or campaign data if provided in query params
   useEffect(() => {
     const loadData = async () => {
       const {
@@ -65,36 +63,26 @@ export default function CreateCampaignPage() {
         segmentId: querySegmentId,
       } = router.query;
 
-      // Handle template loading
       if (templateId && typeof templateId === 'string') {
         setLoadingTemplate(true);
         try {
-          // Fetch the full template to get the body content
           const template = await network.fetch<Template>('GET', `/templates/${templateId}`);
-
-          // Pre-fill form with template data
           if (queryName && typeof queryName === 'string') setName(queryName);
           if (querySubject && typeof querySubject === 'string') setSubject(querySubject);
           if (queryFrom && typeof queryFrom === 'string') setFrom(queryFrom);
           if (queryFromName && typeof queryFromName === 'string') setFromName(queryFromName);
           if (queryReplyTo && typeof queryReplyTo === 'string') setReplyTo(queryReplyTo);
           setBody(template.body);
-
           toast.success('Template loaded successfully');
         } catch {
           toast.error('Failed to load template');
         } finally {
           setLoadingTemplate(false);
         }
-      }
-      // Handle campaign loading
-      else if (campaignId && typeof campaignId === 'string') {
+      } else if (campaignId && typeof campaignId === 'string') {
         setLoadingTemplate(true);
         try {
-          // Fetch the full campaign to get the body content
           const campaign = await network.fetch<{data: {body: string}}>('GET', `/campaigns/${campaignId}`);
-
-          // Pre-fill form with campaign data
           if (queryName && typeof queryName === 'string') setName(queryName);
           if (querySubject && typeof querySubject === 'string') setSubject(querySubject);
           if (queryFrom && typeof queryFrom === 'string') setFrom(queryFrom);
@@ -105,16 +93,13 @@ export default function CreateCampaignPage() {
           }
           if (querySegmentId && typeof querySegmentId === 'string') setSegmentId(querySegmentId);
           setBody(campaign.data.body);
-
           toast.success('Campaign loaded successfully');
         } catch {
           toast.error('Failed to load campaign');
         } finally {
           setLoadingTemplate(false);
         }
-      }
-      // Handle query params without template/campaign ID (direct field values)
-      else {
+      } else {
         if (queryName && typeof queryName === 'string') setName(queryName);
         if (querySubject && typeof querySubject === 'string') setSubject(querySubject);
         if (queryFrom && typeof queryFrom === 'string') setFrom(queryFrom);
@@ -166,13 +151,12 @@ export default function CreateCampaignPage() {
     }
   };
 
-  // Calculate estimated recipients
   const getEstimatedRecipients = () => {
     if (audienceType === CampaignAudienceType.SEGMENT && segmentId && segments) {
       const segment = segments.find(s => s.id === segmentId);
       return segment?.memberCount || 0;
     }
-    return 0; // We don't have total contact count here, but in a real scenario you'd fetch it
+    return 0;
   };
 
   const estimatedRecipients = getEstimatedRecipients();
@@ -217,19 +201,15 @@ export default function CreateCampaignPage() {
             </div>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit}>
-            <div className="grid gap-6 lg:grid-cols-3">
-              {/* Left Column - Settings (2/3 width) */}
-              <div className="lg:col-span-2 space-y-6">
+            <div className="space-y-6">
+              {/* Row 1: Basic Info + Campaign Type */}
+              <div className="grid gap-6 md:grid-cols-2">
                 {/* Basic Information */}
                 <Card>
                   <CardHeader>
-                    <StepHeader
-                      stepNumber={1}
-                      title="Basic Information"
-                      description="Name and describe your campaign"
-                    />
+                    <CardTitle>Basic Information</CardTitle>
+                    <CardDescription>Name and describe your campaign</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
@@ -246,14 +226,12 @@ export default function CreateCampaignPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="description">Description (Optional)</Label>
-                      <Textarea
+                      <Label htmlFor="description">Description</Label>
+                      <Input
                         id="description"
                         placeholder="Internal notes about this campaign"
                         value={description}
                         onChange={e => setDescription(e.target.value)}
-                        rows={2}
-                        className="resize-none"
                       />
                     </div>
                   </CardContent>
@@ -262,56 +240,30 @@ export default function CreateCampaignPage() {
                 {/* Campaign Type */}
                 <Card>
                   <CardHeader>
-                    <StepHeader
-                      stepNumber={2}
-                      title="Campaign Type"
-                      description="Choose how this campaign should be treated"
-                    />
+                    <CardTitle>Campaign Type</CardTitle>
+                    <CardDescription>Choose how this campaign should be treated</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-3 gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setCampaignType(TemplateType.MARKETING)}
-                        className={`text-left p-4 rounded-lg border-2 transition-colors ${
-                          campaignType === TemplateType.MARKETING
-                            ? 'border-neutral-900 bg-neutral-50'
-                            : 'border-neutral-200 hover:border-neutral-300'
-                        }`}
-                      >
-                        <p className="font-medium text-sm text-neutral-900">Marketing</p>
-                        <p className="text-xs text-neutral-500 mt-1">
-                          Sent to subscribed contacts only. Includes unsubscribe link.
-                        </p>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setCampaignType(TemplateType.TRANSACTIONAL)}
-                        className={`text-left p-4 rounded-lg border-2 transition-colors ${
-                          campaignType === TemplateType.TRANSACTIONAL
-                            ? 'border-neutral-900 bg-neutral-50'
-                            : 'border-neutral-200 hover:border-neutral-300'
-                        }`}
-                      >
-                        <p className="font-medium text-sm text-neutral-900">Transactional</p>
-                        <p className="text-xs text-neutral-500 mt-1">
-                          Sent to all contacts regardless of subscription status. No unsubscribe footer.
-                        </p>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setCampaignType(TemplateType.HEADLESS)}
-                        className={`text-left p-4 rounded-lg border-2 transition-colors ${
-                          campaignType === TemplateType.HEADLESS
-                            ? 'border-neutral-900 bg-neutral-50'
-                            : 'border-neutral-200 hover:border-neutral-300'
-                        }`}
-                      >
-                        <p className="font-medium text-sm text-neutral-900">Headless</p>
-                        <p className="text-xs text-neutral-500 mt-1">
-                          Sent to subscribed contacts only. No Plunk footer — you provide the unsubscribe link.
-                        </p>
-                      </button>
+                    <div className="flex flex-col gap-2">
+                      {([
+                        {value: TemplateType.MARKETING, label: 'Marketing', description: 'Subscribed contacts, includes unsubscribe link'},
+                        {value: TemplateType.TRANSACTIONAL, label: 'Transactional', description: 'All contacts, no subscription check or footer'},
+                        {value: TemplateType.HEADLESS, label: 'Headless', description: 'Subscribed contacts, no Plunk footer'},
+                      ] as const).map(({value, label, description}) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setCampaignType(value)}
+                          className={`flex items-center justify-between w-full min-h-[44px] px-4 py-3 rounded-lg border-2 text-left transition-colors ${
+                            campaignType === value
+                              ? 'border-neutral-900 bg-neutral-50'
+                              : 'border-neutral-200 hover:border-neutral-300'
+                          }`}
+                        >
+                          <span className="font-medium text-sm text-neutral-900 shrink-0">{label}</span>
+                          <span className="text-xs text-neutral-500 ml-4 text-right">{description}</span>
+                        </button>
+                      ))}
                     </div>
                     {campaignType === TemplateType.HEADLESS && !detectUnsubscribeSignal(body) && (
                       <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 overflow-hidden">
@@ -336,249 +288,131 @@ export default function CreateCampaignPage() {
                     )}
                   </CardContent>
                 </Card>
-
-                {/* Email Settings */}
-                <Card>
-                  <CardHeader>
-                    <StepHeader
-                      stepNumber={3}
-                      title="Email Settings"
-                      description="Configure sender information and subject"
-                    />
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <EmailSettings
-                      from={from}
-                      fromName={fromName}
-                      replyTo={replyTo}
-                      onFromChange={setFrom}
-                      onFromNameChange={setFromName}
-                      onReplyToChange={setReplyTo}
-                      fromNamePlaceholder={activeProject?.name || 'Your Company'}
-                    />
-
-                    <div className="space-y-2">
-                      <Label htmlFor="subject">
-                        Email Subject <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="subject"
-                        placeholder="e.g., Introducing our Spring Sale!"
-                        value={subject}
-                        onChange={e => setSubject(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Email Content */}
-                <Card className="overflow-visible">
-                  <CardHeader>
-                    <StepHeader stepNumber={4} title="Email Content" description="Design your email message" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <Label htmlFor="body">
-                        Email Body <span className="text-red-500">*</span>
-                      </Label>
-                      <EmailEditor value={body} onChange={setBody} />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Audience Selection */}
-                <Card>
-                  <CardHeader>
-                    <StepHeader stepNumber={5} title="Audience" description="Choose who will receive this campaign" />
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="audienceType">
-                        Audience Type <span className="text-red-500">*</span>
-                      </Label>
-                      <Select
-                        value={audienceType}
-                        onValueChange={value => setAudienceType(value as CampaignAudienceType)}
-                        required
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select audience type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItemWithDescription
-                            value={CampaignAudienceType.ALL}
-                            title={campaignType === TemplateType.TRANSACTIONAL ? 'All Contacts' : 'All Subscribed Contacts'}
-                            description={campaignType === TemplateType.TRANSACTIONAL ? 'Send to all contacts regardless of subscription status' : "Send to everyone who hasn't unsubscribed"}
-                          />
-                          <SelectItemWithDescription
-                            value={CampaignAudienceType.SEGMENT}
-                            title="Specific Segment"
-                            description="Target a defined group of contacts"
-                          />
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {audienceType === CampaignAudienceType.SEGMENT && (
-                      <div className="space-y-2">
-                        <Label htmlFor="segment">
-                          Select Segment <span className="text-red-500">*</span>
-                        </Label>
-                        <Select value={segmentId} onValueChange={setSegmentId} required>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Choose a segment" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {segments?.map(segment => (
-                              <SelectItemWithDescription
-                                key={segment.id}
-                                value={segment.id}
-                                title={segment.name}
-                                description={`${segment.memberCount.toLocaleString()} contacts`}
-                              />
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {segments?.length === 0 && (
-                          <p className="text-sm text-neutral-500 mt-2">
-                            No segments found.{' '}
-                            <Link href="/segments/new" className="text-primary hover:underline">
-                              Create one first
-                            </Link>
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {audienceType === CampaignAudienceType.SEGMENT && estimatedRecipients > 0 && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-                        <Users className="h-5 w-5 text-blue-600 mt-0.5" />
-                        <div>
-                          <p className="text-sm font-medium text-blue-900">
-                            {estimatedRecipients.toLocaleString()} recipients
-                          </p>
-                          <p className="text-xs text-blue-700 mt-1">
-                            This campaign will be sent to all contacts in the selected segment
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {audienceType === CampaignAudienceType.ALL && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-                        <Users className="h-5 w-5 text-blue-600 mt-0.5" />
-                        <div>
-                          <p className="text-sm font-medium text-blue-900">
-                            {campaignType === TemplateType.TRANSACTIONAL ? 'All contacts' : 'All subscribed contacts'}
-                          </p>
-                          <p className="text-xs text-blue-700 mt-1">
-                            {campaignType === TemplateType.TRANSACTIONAL
-                              ? 'This campaign will be sent to all contacts regardless of subscription status'
-                              : "This campaign will be sent to all contacts who haven't unsubscribed"}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
               </div>
 
-              {/* Right Column - Summary & Actions (1/3 width) */}
-              <div className="space-y-6">
-                {/* Campaign Summary */}
-                <Card className="sticky top-6">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Campaign Summary</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3 text-sm">
-                      <div className="flex justify-between py-2 border-b border-neutral-100">
-                        <span className="text-neutral-500">Status</span>
-                        <span className="font-medium">Draft</span>
-                      </div>
+              {/* Email Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Email Settings</CardTitle>
+                  <CardDescription>Configure sender information and subject</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <EmailSettings
+                    from={from}
+                    fromName={fromName}
+                    replyTo={replyTo}
+                    onFromChange={setFrom}
+                    onFromNameChange={setFromName}
+                    onReplyToChange={setReplyTo}
+                    fromNamePlaceholder={activeProject?.name || 'Your Company'}
+                  />
 
-                      {name && (
-                        <div className="flex justify-between py-2 border-b border-neutral-100">
-                          <span className="text-neutral-500">Name</span>
-                          <span className="font-medium text-right truncate ml-2" title={name}>
-                            {name}
-                          </span>
-                        </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="subject">
+                      Email Subject <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="subject"
+                      placeholder="e.g., Introducing our Spring Sale!"
+                      value={subject}
+                      onChange={e => setSubject(e.target.value)}
+                      required
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Email Content */}
+              <Card className="overflow-visible">
+                <CardHeader>
+                  <CardTitle>Email Content</CardTitle>
+                  <CardDescription>Design your email message</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <EmailEditor value={body} onChange={setBody} />
+                </CardContent>
+              </Card>
+
+              {/* Audience */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Audience</CardTitle>
+                  <CardDescription>Choose who will receive this campaign</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="audienceType">
+                      Audience Type <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      value={audienceType}
+                      onValueChange={value => setAudienceType(value as CampaignAudienceType)}
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select audience type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItemWithDescription
+                          value={CampaignAudienceType.ALL}
+                          title={campaignType === TemplateType.TRANSACTIONAL ? 'All Contacts' : 'All Subscribed Contacts'}
+                          description={campaignType === TemplateType.TRANSACTIONAL ? 'Send to all contacts regardless of subscription status' : "Send to everyone who hasn't unsubscribed"}
+                        />
+                        <SelectItemWithDescription
+                          value={CampaignAudienceType.SEGMENT}
+                          title="Specific Segment"
+                          description="Target a defined group of contacts"
+                        />
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {audienceType === CampaignAudienceType.SEGMENT && (
+                    <div className="space-y-2">
+                      <Label htmlFor="segment">
+                        Select Segment <span className="text-red-500">*</span>
+                      </Label>
+                      <Select value={segmentId} onValueChange={setSegmentId} required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose a segment" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {segments?.map(segment => (
+                            <SelectItemWithDescription
+                              key={segment.id}
+                              value={segment.id}
+                              title={segment.name}
+                              description={`${segment.memberCount.toLocaleString()} contacts`}
+                            />
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {segments?.length === 0 && (
+                        <p className="text-sm text-neutral-500">
+                          No segments found.{' '}
+                          <Link href="/segments/new" className="underline">
+                            Create one first
+                          </Link>
+                        </p>
                       )}
-
-                      {subject && (
-                        <div className="py-2 border-b border-neutral-100">
-                          <span className="text-neutral-500 block mb-1">Subject</span>
-                          <span className="font-medium text-sm">{subject}</span>
-                        </div>
-                      )}
-
-                      {from && (
-                        <div className="flex justify-between py-2 border-b border-neutral-100">
-                          <span className="text-neutral-500">From</span>
-                          <span className="font-medium text-right truncate ml-2" title={from}>
-                            {from}
-                          </span>
-                        </div>
-                      )}
-
-                      <div className="flex justify-between py-2 border-b border-neutral-100">
-                        <span className="text-neutral-500">Type</span>
-                        <span className="font-medium">
-                          {campaignType === TemplateType.MARKETING ? 'Marketing' : campaignType === TemplateType.HEADLESS ? 'Headless' : 'Transactional'}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between py-2 border-b border-neutral-100">
-                        <span className="text-neutral-500">Audience</span>
-                        <span className="font-medium">
-                          {audienceType === CampaignAudienceType.ALL ? 'All Contacts' : 'Segment'}
-                        </span>
-                      </div>
-
-                      {audienceType === CampaignAudienceType.SEGMENT && estimatedRecipients > 0 && (
-                        <div className="flex justify-between py-2">
-                          <span className="text-neutral-500">Recipients</span>
-                          <span className="font-medium">{estimatedRecipients.toLocaleString()}</span>
-                        </div>
-                      )}
-
-                      {audienceType === CampaignAudienceType.ALL && (
-                        <div className="flex justify-between py-2">
-                          <span className="text-neutral-500">Recipients</span>
-                          <span className="font-medium">All subscribed</span>
-                        </div>
+                      {estimatedRecipients > 0 && (
+                        <p className="text-sm text-neutral-500">
+                          <span className="font-medium text-neutral-900">{estimatedRecipients.toLocaleString()} recipients</span> in this segment
+                        </p>
                       )}
                     </div>
+                  )}
+                </CardContent>
+              </Card>
 
-                    {/* Info Note */}
-                    <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-3 mt-4">
-                      <p className="text-xs text-neutral-600 leading-relaxed">
-                        After creating this campaign, you&apos;ll be able to review it and choose when to send it.
-                      </p>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex flex-col gap-2 pt-4">
-                      <Button type="submit" disabled={saving} className="w-full">
-                        {saving ? (
-                          <>Creating...</>
-                        ) : (
-                          <>
-                            <Save className="h-4 w-4" />
-                            Create Campaign
-                          </>
-                        )}
-                      </Button>
-                      <Link href="/campaigns" className="w-full">
-                        <Button type="button" variant="outline" className="w-full">
-                          Cancel
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* Actions */}
+              <div className="flex justify-end gap-3">
+                <Link href="/campaigns">
+                  <Button type="button" variant="outline">Cancel</Button>
+                </Link>
+                <Button type="submit" disabled={saving}>
+                  {saving ? 'Creating...' : 'Create Campaign'}
+                </Button>
               </div>
             </div>
           </form>

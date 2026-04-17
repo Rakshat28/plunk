@@ -41,7 +41,6 @@ import {
   ArrowLeft,
   Calendar,
   ChevronDown,
-  Info,
   Mail,
   MousePointer,
   Save,
@@ -622,24 +621,20 @@ export default function CampaignDetailsPage() {
 
                 {/* Show recipient count */}
                 {draftRecipientCount > 0 && (
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg space-y-2">
+                  <div className="mt-4 p-3 bg-neutral-50 border border-neutral-200 rounded-lg space-y-1.5">
                     <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-blue-600" />
-                      <span className="text-sm font-medium text-blue-900">
+                      <Users className="h-4 w-4 text-neutral-400" />
+                      <span className="text-sm font-medium text-neutral-900">
                         {draftRecipientCount.toLocaleString()} recipients
                       </span>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <Info className="h-3.5 w-3.5 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <p className="text-xs text-blue-800">
-                        This count will be recalculated right before sending to ensure accuracy. The final number may
-                        differ if contacts{' '}
-                        {(editedCampaign.type ?? c.type) === TemplateType.TRANSACTIONAL
-                          ? 'are added or removed, or segment membership changes.'
-                          : 'subscribe, unsubscribe, or segment membership changes.'
-                        }
-                      </p>
-                    </div>
+                    <p className="text-xs text-neutral-500 pl-6">
+                      Recalculated at send time. Final count may differ if contacts{' '}
+                      {(editedCampaign.type ?? c.type) === TemplateType.TRANSACTIONAL
+                        ? 'are added or removed, or segment membership changes.'
+                        : 'subscribe, unsubscribe, or segment membership changes.'
+                      }
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -792,12 +787,10 @@ export default function CampaignDetailsPage() {
                     className="mt-2"
                   />
                   {scheduledDateTime && (
-                    <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-xs font-medium text-blue-900 mb-1">Scheduled for:</p>
-                      <p className="text-sm text-blue-800">
-                        <span className="font-medium">{formatFullDateTime(new Date(scheduledDateTime))}</span>
-                      </p>
-                      <p className="text-xs text-blue-700 mt-1">
+                    <div className="mt-2 p-3 bg-neutral-50 border border-neutral-200 rounded-lg">
+                      <p className="text-xs font-medium text-neutral-500 mb-1">Scheduled for:</p>
+                      <p className="text-sm font-medium text-neutral-900">{formatFullDateTime(new Date(scheduledDateTime))}</p>
+                      <p className="text-xs text-neutral-500 mt-1">
                         UTC: {formatUTCDateTime(new Date(scheduledDateTime))}
                       </p>
                     </div>
@@ -884,30 +877,30 @@ export default function CampaignDetailsPage() {
 
         {/* Sending Progress Banner */}
         {c.status === CampaignStatus.SENDING && s && (
-          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+          <Card>
             <CardContent className="pt-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-semibold text-neutral-900 text-lg">Sending in progress</h3>
-                    <p className="text-sm text-neutral-600 mt-1">
+                    <p className="text-sm text-neutral-500 mt-1">
                       {s.sentCount.toLocaleString()} of {s.totalRecipients.toLocaleString()} emails sent
                     </p>
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-blue-600">
+                    <div className="text-3xl font-bold text-neutral-900">
                       {((s.sentCount / s.totalRecipients) * 100).toFixed(0)}%
                     </div>
                     <p className="text-xs text-neutral-500 mt-1">Complete</p>
                   </div>
                 </div>
-                <div className="w-full bg-neutral-200 rounded-full h-3">
+                <div className="w-full bg-neutral-100 rounded-full h-2">
                   <div
-                    className="bg-blue-500 h-3 rounded-full transition-all duration-500"
+                    className="bg-neutral-900 h-2 rounded-full transition-all duration-500"
                     style={{width: `${(s.sentCount / s.totalRecipients) * 100}%`}}
                   />
                 </div>
-                <p className="text-xs text-neutral-500">This page updates automatically every 5 seconds</p>
+                <p className="text-xs text-neutral-400">This page updates automatically every 5 seconds</p>
               </div>
             </CardContent>
           </Card>
@@ -916,12 +909,10 @@ export default function CampaignDetailsPage() {
         {/* Stats Cards */}
         {s && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="border-l-4 border-l-blue-500">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-neutral-600">Total Recipients</CardTitle>
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Users className="h-4 w-4 text-blue-600" />
-                </div>
+                <CardTitle className="text-sm font-medium text-neutral-500">Total Recipients</CardTitle>
+                <Users className="h-4 w-4 text-neutral-400" />
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-neutral-900">{s.totalRecipients.toLocaleString()}</div>
@@ -931,12 +922,10 @@ export default function CampaignDetailsPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-green-500">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-neutral-600">Delivery Rate</CardTitle>
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Mail className="h-4 w-4 text-green-600" />
-                </div>
+                <CardTitle className="text-sm font-medium text-neutral-500">Delivery Rate</CardTitle>
+                <Mail className="h-4 w-4 text-neutral-400" />
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-neutral-900">{s.deliveryRate.toFixed(1)}%</div>
@@ -947,12 +936,10 @@ export default function CampaignDetailsPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-purple-500">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-neutral-600">Open Rate</CardTitle>
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <TrendingUp className="h-4 w-4 text-purple-600" />
-                </div>
+                <CardTitle className="text-sm font-medium text-neutral-500">Open Rate</CardTitle>
+                <TrendingUp className="h-4 w-4 text-neutral-400" />
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-neutral-900">{s.openRate.toFixed(1)}%</div>
@@ -960,12 +947,10 @@ export default function CampaignDetailsPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-orange-500">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-neutral-600">Click Rate</CardTitle>
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <MousePointer className="h-4 w-4 text-orange-600" />
-                </div>
+                <CardTitle className="text-sm font-medium text-neutral-500">Click Rate</CardTitle>
+                <MousePointer className="h-4 w-4 text-neutral-400" />
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-neutral-900">{s.clickRate.toFixed(1)}%</div>
@@ -1063,10 +1048,7 @@ export default function CampaignDetailsPage() {
                         </p>
                       </div>
                       {c.status === CampaignStatus.SCHEDULED && (
-                        <div className="flex items-start gap-1.5 p-2 bg-blue-50 border border-blue-200 rounded">
-                          <Info className="h-3 w-3 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <p className="text-xs text-blue-800">Recipient count will be recalculated at send time</p>
-                        </div>
+                        <p className="text-xs text-neutral-500">Recipient count will be recalculated at send time</p>
                       )}
                     </div>
                   </div>

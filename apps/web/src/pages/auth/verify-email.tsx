@@ -2,11 +2,29 @@ import {AuthenticationSchemas} from '@plunk/shared';
 import {Button, Card, CardContent} from '@plunk/ui';
 import {AnimatePresence, motion} from 'framer-motion';
 import {NextSeo} from 'next-seo';
+import Image from 'next/image';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import React, {useEffect, useRef, useState} from 'react';
 
 import {network} from '../../lib/network';
+
+const dotGrid = {
+  backgroundColor: '#fafafa',
+  backgroundImage: 'radial-gradient(#e5e7eb 1px, transparent 1px)',
+  backgroundSize: '20px 20px',
+};
+
+const Spinner = () => (
+  <svg className="h-6 w-6 animate-spin text-neutral-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+    />
+  </svg>
+);
 
 export default function VerifyEmail() {
   const router = useRouter();
@@ -21,7 +39,6 @@ export default function VerifyEmail() {
   const processedToken = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    // Wait for router to be ready before processing
     if (!router.isReady) {
       return;
     }
@@ -34,7 +51,6 @@ export default function VerifyEmail() {
 
     processedToken.current = normalizedToken;
 
-    // If no token, show the pending verification state
     if (!token || typeof token !== 'string') {
       setStatus('pending');
       return;
@@ -69,29 +85,24 @@ export default function VerifyEmail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.isReady, token]);
 
-  // Initialize cooldown from localStorage on mount
   useEffect(() => {
     const storedExpiry = localStorage.getItem('plunk:email-verification-cooldown');
     if (storedExpiry) {
       const expiryTime = parseInt(storedExpiry, 10);
-      // Validate: not NaN, in the future, and within reasonable range (< 1 hour from now)
       if (!isNaN(expiryTime) && expiryTime > Date.now() && expiryTime < Date.now() + 3600000) {
         setCooldownExpiry(expiryTime);
       } else {
-        // Clean up invalid/expired cooldown
         localStorage.removeItem('plunk:email-verification-cooldown');
       }
     }
   }, []);
 
-  // Countdown timer effect
   useEffect(() => {
     if (!cooldownExpiry) {
       setRemainingSeconds(0);
       return;
     }
 
-    // Update immediately
     const updateRemaining = () => {
       const remaining = Math.max(0, Math.ceil((cooldownExpiry - Date.now()) / 1000));
       setRemainingSeconds(remaining);
@@ -116,7 +127,6 @@ export default function VerifyEmail() {
 
       if (response.success) {
         setResendMessage('Verification email sent! Please check your inbox.');
-        // Set 60-second cooldown
         const expiryTime = Date.now() + 60000;
         setCooldownExpiry(expiryTime);
         localStorage.setItem('plunk:email-verification-cooldown', expiryTime.toString());
@@ -124,9 +134,7 @@ export default function VerifyEmail() {
         setResendMessage('Failed to send verification email. Please try again.');
       }
     } catch (error) {
-      // Show error message but still apply cooldown to prevent spam
       setResendMessage(error instanceof Error ? error.message : 'Failed to send verification email. Please try again.');
-      // Apply cooldown even on error to prevent retry spam
       const expiryTime = Date.now() + 60000;
       setCooldownExpiry(expiryTime);
       localStorage.setItem('plunk:email-verification-cooldown', expiryTime.toString());
@@ -138,8 +146,15 @@ export default function VerifyEmail() {
   return (
     <>
       <NextSeo title="Verify Email" />
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50 py-12">
+      <div className="min-h-screen flex items-center justify-center py-12" style={dotGrid}>
         <div className="flex flex-col gap-6 max-w-md w-full px-4">
+          <div className="flex items-center justify-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-white shadow-sm border border-neutral-200 flex items-center justify-center p-1">
+              <Image src="/assets/logo.svg" alt="" aria-hidden width={24} height={24} />
+            </div>
+            <span className="text-lg font-bold tracking-tight text-neutral-900">Plunk</span>
+          </div>
+
           <Card>
             <CardContent className="p-8">
               <div className="flex flex-col gap-6 text-center">
@@ -147,13 +162,14 @@ export default function VerifyEmail() {
                   {status === 'pending' && (
                     <motion.div
                       key="pending"
-                      initial={{opacity: 0, scale: 0.95}}
+                      initial={{opacity: 0, scale: 0.97}}
                       animate={{opacity: 1, scale: 1}}
                       exit={{opacity: 0}}
+                      transition={{duration: 0.2}}
                       className="flex flex-col items-center gap-4"
                     >
-                      <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center">
-                        <svg className="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="h-12 w-12 rounded-full bg-neutral-100 flex items-center justify-center">
+                        <svg className="h-6 w-6 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -162,21 +178,24 @@ export default function VerifyEmail() {
                           />
                         </svg>
                       </div>
-                      <h1 className="text-2xl font-bold tracking-tight">Verify your email</h1>
-                      <p className="text-neutral-600">
-                        Please check your inbox for a verification link. Click the link in the email to verify your
-                        account.
-                      </p>
+                      <div className="flex flex-col gap-1.5">
+                        <h1 className="text-xl font-bold tracking-tight">Check your email</h1>
+                        <p className="text-sm text-neutral-500">
+                          We sent a verification link to your inbox. Click it to verify your account.
+                        </p>
+                      </div>
 
-                      <div className="flex flex-col gap-3 w-full mt-4">
+                      <div className="flex flex-col gap-2 w-full mt-2">
                         <Button onClick={handleResend} disabled={isResending || cooldownExpiry !== null} className="w-full">
-                          {isResending ? 'Sending...' : cooldownExpiry !== null ? `Resend in ${remainingSeconds}s` : 'Resend verification email'}
+                          {isResending
+                            ? 'Sending...'
+                            : cooldownExpiry !== null
+                              ? `Resend in ${remainingSeconds}s`
+                              : 'Resend verification email'}
                         </Button>
 
                         {resendMessage && (
-                          <p
-                            className={`text-sm ${resendMessage.includes('sent') ? 'text-green-600' : 'text-red-500'}`}
-                          >
+                          <p className={`text-sm ${resendMessage.includes('sent') ? 'text-neutral-600' : 'text-red-500'}`}>
                             {resendMessage}
                           </p>
                         )}
@@ -196,73 +215,70 @@ export default function VerifyEmail() {
                       initial={{opacity: 0}}
                       animate={{opacity: 1}}
                       exit={{opacity: 0}}
+                      transition={{duration: 0.2}}
                       className="flex flex-col items-center gap-4"
                     >
-                      <div className="h-16 w-16 rounded-full bg-neutral-100 flex items-center justify-center">
-                        <svg
-                          className="h-8 w-8 animate-spin text-neutral-600"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
-                        </svg>
+                      <div className="h-12 w-12 rounded-full bg-neutral-100 flex items-center justify-center">
+                        <Spinner />
                       </div>
-                      <h1 className="text-2xl font-bold tracking-tight">Verifying your email...</h1>
-                      <p className="text-neutral-600">Please wait while we verify your email address.</p>
+                      <div className="flex flex-col gap-1.5">
+                        <h1 className="text-xl font-bold tracking-tight">Verifying...</h1>
+                        <p className="text-sm text-neutral-500">Please wait a moment.</p>
+                      </div>
                     </motion.div>
                   )}
 
                   {status === 'success' && (
                     <motion.div
                       key="success"
-                      initial={{opacity: 0, scale: 0.95}}
+                      initial={{opacity: 0, scale: 0.97}}
                       animate={{opacity: 1, scale: 1}}
                       exit={{opacity: 0}}
+                      transition={{duration: 0.2}}
                       className="flex flex-col items-center gap-4"
                     >
-                      <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
-                        <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="h-12 w-12 rounded-full bg-neutral-100 flex items-center justify-center">
+                        <svg className="h-6 w-6 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                       </div>
-                      <h1 className="text-2xl font-bold tracking-tight text-green-600">Email verified!</h1>
-                      <p className="text-neutral-600">
-                        Your email has been successfully verified. Redirecting to dashboard...
-                      </p>
+                      <div className="flex flex-col gap-1.5">
+                        <h1 className="text-xl font-bold tracking-tight">Email verified</h1>
+                        <p className="text-sm text-neutral-500">Redirecting to your dashboard...</p>
+                      </div>
                     </motion.div>
                   )}
 
                   {status === 'error' && (
                     <motion.div
                       key="error"
-                      initial={{opacity: 0, scale: 0.95}}
+                      initial={{opacity: 0, scale: 0.97}}
                       animate={{opacity: 1, scale: 1}}
                       exit={{opacity: 0}}
+                      transition={{duration: 0.2}}
                       className="flex flex-col items-center gap-4"
                     >
-                      <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center">
-                        <svg className="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center">
+                        <svg className="h-6 w-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </div>
-                      <h1 className="text-2xl font-bold tracking-tight text-red-600">Verification failed</h1>
-                      <p className="text-neutral-600">{errorMessage}</p>
+                      <div className="flex flex-col gap-1.5">
+                        <h1 className="text-xl font-bold tracking-tight">Verification failed</h1>
+                        <p className="text-sm text-neutral-500">{errorMessage}</p>
+                      </div>
 
-                      <div className="flex flex-col gap-3 w-full mt-4">
+                      <div className="flex flex-col gap-2 w-full mt-2">
                         <Button onClick={handleResend} disabled={isResending || cooldownExpiry !== null} className="w-full">
-                          {isResending ? 'Sending...' : cooldownExpiry !== null ? `Resend in ${remainingSeconds}s` : 'Resend verification email'}
+                          {isResending
+                            ? 'Sending...'
+                            : cooldownExpiry !== null
+                              ? `Resend in ${remainingSeconds}s`
+                              : 'Resend verification email'}
                         </Button>
 
                         {resendMessage && (
-                          <p
-                            className={`text-sm ${resendMessage.includes('sent') ? 'text-green-600' : 'text-red-500'}`}
-                          >
+                          <p className={`text-sm ${resendMessage.includes('sent') ? 'text-neutral-600' : 'text-red-500'}`}>
                             {resendMessage}
                           </p>
                         )}

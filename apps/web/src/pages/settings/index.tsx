@@ -5,6 +5,7 @@ import {ProjectSchemas, SUPPORTED_LANGUAGES} from '@plunk/shared';
 import {TrackingMode} from '@plunk/db';
 import {
   Alert,
+  AlertDescription,
   Button,
   Card,
   CardContent,
@@ -825,14 +826,14 @@ export default function Settings() {
                 <AlertTriangle className="h-5 w-5 text-orange-500" />
                 Regenerate API Keys
               </DialogTitle>
-              <DialogDescription className="space-y-2">
+              <DialogDescription className="space-y-3">
                 <p>Are you sure you want to regenerate your API keys?</p>
-                <Alert className="bg-orange-50 border-orange-200 text-orange-900 text-xs">
+                <Alert variant="warning">
                   <AlertTriangle className="h-4 w-4" />
-                  <div className="ml-2">
-                    <strong>Warning:</strong> This action will immediately invalidate your current API keys. Any
-                    applications using the old keys will stop working until you update them with the new keys.
-                  </div>
+                  <AlertDescription>
+                    Current keys will be <strong>immediately invalidated</strong>. Any integrations using the old keys
+                    will stop working until updated.
+                  </AlertDescription>
                 </Alert>
               </DialogDescription>
             </DialogHeader>

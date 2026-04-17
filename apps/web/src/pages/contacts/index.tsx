@@ -19,6 +19,7 @@ import {
 import type {Contact} from '@plunk/db';
 import type {CursorPaginatedResponse} from '@plunk/types';
 import {DashboardLayout} from '../../components/DashboardLayout';
+import {EmptyState} from '../../components/EmptyState';
 import {KeyValueEditor} from '../../components/KeyValueEditor';
 import {network} from '../../lib/network';
 import {formatRelativeTime} from '../../lib/dateUtils';
@@ -282,19 +283,19 @@ export default function ContactsPage() {
                   </div>
                 </div>
               ) : contacts.length === 0 ? (
-                <div className="text-center py-12">
-                  <Mail className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-neutral-900 mb-2">No contacts found</h3>
-                  <p className="text-neutral-500 mb-6">
-                    {search ? 'Try adjusting your search terms' : 'Get started by creating your first contact'}
-                  </p>
-                  {!search && (
-                    <Button onClick={() => setShowCreateDialog(true)}>
-                      <Plus className="h-4 w-4" />
-                      Add Contact
-                    </Button>
-                  )}
-                </div>
+                <EmptyState
+                  icon={Mail}
+                  title={search ? 'No contacts match' : 'No contacts yet'}
+                  description={search ? 'Try a different search term.' : 'Add contacts to start tracking engagement.'}
+                  action={
+                    !search ? (
+                      <Button onClick={() => setShowCreateDialog(true)}>
+                        <Plus className="h-4 w-4" />
+                        Add Contact
+                      </Button>
+                    ) : undefined
+                  }
+                />
               ) : (
                 <>
                   {/* Desktop Table View - Hidden on mobile */}
@@ -547,7 +548,7 @@ function CreateContactDialog({open, onOpenChange, onSuccess}: CreateContactDialo
           <DialogTitle>Create New Contact</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          <div className="space-y-1.5">
             <Label htmlFor="email">Email Address *</Label>
             <Input
               id="email"
@@ -559,21 +560,19 @@ function CreateContactDialog({open, onOpenChange, onSuccess}: CreateContactDialo
             />
           </div>
 
-          <div className="flex items-start gap-3 p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-            <Switch id="subscribed" checked={subscribed} onCheckedChange={setSubscribed} />
-            <div className="flex-1">
+          <div className="flex items-center justify-between gap-4">
+            <div>
               <Label htmlFor="subscribed" className="font-medium cursor-pointer">
                 Subscribed
               </Label>
-              <p className="text-xs text-neutral-500 mt-1">
-                When enabled, this contact will receive emails from your campaigns and workflows.
+              <p className="text-xs text-neutral-500 mt-0.5">
+                Receive emails from campaigns and workflows.
               </p>
             </div>
+            <Switch id="subscribed" checked={subscribed} onCheckedChange={setSubscribed} />
           </div>
 
-          <div>
-            <KeyValueEditor key={open ? 'create' : 'closed'} initialData={customData} onChange={setCustomData} />
-          </div>
+          <KeyValueEditor key={open ? 'create' : 'closed'} initialData={customData} onChange={setCustomData} />
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
@@ -778,19 +777,8 @@ function ImportContactsDialog({open, onOpenChange, onSuccess}: ImportContactsDia
 
           <div className="space-y-4">
             {/* Instructions */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-medium text-blue-900 mb-2">CSV Format Requirements</h4>
-              <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-                <li>First row must contain column headers</li>
-                <li>
-                  Required column: <code className="bg-blue-100 px-1 rounded">email</code>
-                </li>
-                <li>
-                  Optional: <code className="bg-blue-100 px-1 rounded">subscribed</code> (true/false, 1/0, yes/no)
-                </li>
-                <li>Optional: Add any custom fields (e.g., firstName, lastName, plan)</li>
-                <li>Maximum file size: 5MB</li>
-              </ul>
+            <div className="text-sm text-neutral-500 space-y-1">
+              <p>Required column: <code className="text-neutral-700 bg-neutral-100 px-1 py-0.5 rounded text-xs">email</code>. Optional: <code className="text-neutral-700 bg-neutral-100 px-1 py-0.5 rounded text-xs">subscribed</code> (true/false) and any custom fields. Max 5MB.</p>
             </div>
 
             {/* File Upload */}
@@ -828,9 +816,9 @@ function ImportContactsDialog({open, onOpenChange, onSuccess}: ImportContactsDia
                   </span>
                   <span className="text-neutral-900 font-medium">{progress}%</span>
                 </div>
-                <div className="w-full bg-neutral-200 rounded-full h-2">
+                <div className="w-full bg-neutral-200 rounded-full h-1.5">
                   <div
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    className="bg-neutral-900 h-1.5 rounded-full transition-all duration-300"
                     style={{width: `${progress}%`}}
                   />
                 </div>
@@ -840,50 +828,31 @@ function ImportContactsDialog({open, onOpenChange, onSuccess}: ImportContactsDia
             {/* Results */}
             {status === 'completed' && result && (
               <div className="space-y-3">
-                <div className="grid grid-cols-4 gap-3">
-                  <div className="bg-neutral-50 rounded-lg p-4">
-                    <div className="text-2xl font-bold text-neutral-900">{result.totalRows}</div>
-                    <div className="text-sm text-neutral-600">Total</div>
-                  </div>
-                  <div className="bg-green-50 rounded-lg p-4">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      <div className="text-2xl font-bold text-green-900">{result.createdCount}</div>
-                    </div>
-                    <div className="text-sm text-green-700">Created</div>
-                  </div>
-                  <div className="bg-blue-50 rounded-lg p-4">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5 text-blue-600" />
-                      <div className="text-2xl font-bold text-blue-900">{result.updatedCount}</div>
-                    </div>
-                    <div className="text-sm text-blue-700">Updated</div>
-                  </div>
-                  <div className="bg-red-50 rounded-lg p-4">
-                    <div className="flex items-center gap-2">
-                      <XCircle className="h-5 w-5 text-red-600" />
-                      <div className="text-2xl font-bold text-red-900">{result.failureCount}</div>
-                    </div>
-                    <div className="text-sm text-red-700">Failed</div>
-                  </div>
+                <div className="flex items-center gap-1.5 text-sm text-neutral-600">
+                  <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                  <span>
+                    <span className="font-medium text-neutral-900">{result.totalRows}</span> processed —{' '}
+                    <span className="text-neutral-900">{result.createdCount}</span> created,{' '}
+                    <span className="text-neutral-900">{result.updatedCount}</span> updated
+                    {result.failureCount > 0 && (
+                      <>, <span className="text-red-600">{result.failureCount}</span> failed</>
+                    )}
+                  </span>
                 </div>
 
                 {/* Error Details */}
                 {result.errors && result.errors.length > 0 && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-h-48 overflow-y-auto">
-                    <h4 className="font-medium text-red-900 mb-2">Import Errors</h4>
-                    <div className="space-y-1 text-sm text-red-800">
+                  <div className="max-h-40 overflow-y-auto border border-neutral-200 rounded-md">
+                    <div className="space-y-0 text-xs text-neutral-600">
                       {result.errors.slice(0, 10).map((error, idx) => (
-                        <div key={idx} className="flex gap-2">
-                          <span className="font-mono text-xs">Row {error.row}:</span>
-                          <span>
-                            {error.email || 'N/A'} - {error.error}
-                          </span>
+                        <div key={idx} className="flex gap-3 px-3 py-2 border-b border-neutral-100 last:border-0">
+                          <span className="font-mono text-neutral-400 flex-shrink-0">Row {error.row}</span>
+                          <span className="text-red-600">{error.email || 'N/A'} — {error.error}</span>
                         </div>
                       ))}
                       {result.errors.length > 10 && (
-                        <div className="text-red-700 font-medium mt-2">
-                          ...and {result.errors.length - 10} more errors
+                        <div className="px-3 py-2 text-neutral-500">
+                          +{result.errors.length - 10} more errors
                         </div>
                       )}
                     </div>
@@ -893,14 +862,9 @@ function ImportContactsDialog({open, onOpenChange, onSuccess}: ImportContactsDia
             )}
 
             {status === 'failed' && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <div className="flex items-center gap-2 text-red-900">
-                  <XCircle className="h-5 w-5" />
-                  <span className="font-medium">Import failed</span>
-                </div>
-                <p className="text-sm text-red-800 mt-1">
-                  {errorMessage || 'Please check your CSV file and try again.'}
-                </p>
+              <div className="flex items-start gap-2 text-sm">
+                <XCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                <p className="text-red-600">{errorMessage || 'Please check your CSV file and try again.'}</p>
               </div>
             )}
           </div>
@@ -1111,13 +1075,13 @@ function BulkActionsDialog({open, onOpenChange, operation, contactIds, onSuccess
 
           <div className="space-y-4">
             {status === 'idle' && (
-              <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-4">
-                <p className="text-sm text-neutral-900">
-                  Are you sure you want to {operation} {contactIds.length} contact
-                  {contactIds.length !== 1 ? 's' : ''}?
+              <div className="space-y-1">
+                <p className="text-sm text-neutral-700">
+                  {operation === 'delete' ? 'Permanently delete' : operation === 'subscribe' ? 'Subscribe' : 'Unsubscribe'}{' '}
+                  <span className="font-medium text-neutral-900">{contactIds.length} contact{contactIds.length !== 1 ? 's' : ''}</span>?
                 </p>
                 {operation === 'delete' && (
-                  <p className="text-sm text-red-600 mt-2 font-medium">This action cannot be undone.</p>
+                  <p className="text-xs text-red-500">This action cannot be undone.</p>
                 )}
               </div>
             )}
@@ -1128,9 +1092,9 @@ function BulkActionsDialog({open, onOpenChange, operation, contactIds, onSuccess
                   <span className="text-neutral-600">Processing contacts...</span>
                   <span className="text-neutral-900 font-medium">{progress}%</span>
                 </div>
-                <div className="w-full bg-neutral-200 rounded-full h-2">
+                <div className="w-full bg-neutral-200 rounded-full h-1.5">
                   <div
-                    className={`bg-${getOperationColor()}-600 h-2 rounded-full transition-all duration-300`}
+                    className="bg-neutral-900 h-1.5 rounded-full transition-all duration-300"
                     style={{width: `${progress}%`}}
                   />
                 </div>
@@ -1139,35 +1103,27 @@ function BulkActionsDialog({open, onOpenChange, operation, contactIds, onSuccess
 
             {status === 'completed' && result && (
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-green-50 rounded-lg p-4">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      <div className="text-2xl font-bold text-green-900">{result.successCount}</div>
-                    </div>
-                    <div className="text-sm text-green-700">Succeeded</div>
-                  </div>
-                  {result.failureCount > 0 && (
-                    <div className="bg-red-50 rounded-lg p-4">
-                      <div className="flex items-center gap-2">
-                        <XCircle className="h-5 w-5 text-red-600" />
-                        <div className="text-2xl font-bold text-red-900">{result.failureCount}</div>
-                      </div>
-                      <div className="text-sm text-red-700">Failed</div>
-                    </div>
-                  )}
+                <div className="flex items-center gap-1.5 text-sm text-neutral-600">
+                  <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                  <span>
+                    <span className="font-medium text-neutral-900">{result.successCount}</span> succeeded
+                    {result.failureCount > 0 && (
+                      <>, <span className="text-red-600">{result.failureCount}</span> failed</>
+                    )}
+                  </span>
                 </div>
 
                 {result.errors && result.errors.length > 0 && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-h-48 overflow-y-auto">
-                    <h4 className="font-medium text-red-900 mb-2">Errors</h4>
-                    <div className="space-y-1 text-sm text-red-800">
+                  <div className="max-h-40 overflow-y-auto border border-neutral-200 rounded-md">
+                    <div className="text-xs text-neutral-600">
                       {result.errors.slice(0, 10).map((error, idx) => (
-                        <div key={idx}>{error.error}</div>
+                        <div key={idx} className="px-3 py-2 border-b border-neutral-100 last:border-0 text-red-600">
+                          {error.error}
+                        </div>
                       ))}
                       {result.errors.length > 10 && (
-                        <div className="text-red-700 font-medium mt-2">
-                          ...and {result.errors.length - 10} more errors
+                        <div className="px-3 py-2 text-neutral-500">
+                          +{result.errors.length - 10} more errors
                         </div>
                       )}
                     </div>
@@ -1177,12 +1133,9 @@ function BulkActionsDialog({open, onOpenChange, operation, contactIds, onSuccess
             )}
 
             {status === 'failed' && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <div className="flex items-center gap-2 text-red-900">
-                  <XCircle className="h-5 w-5" />
-                  <span className="font-medium">Operation failed</span>
-                </div>
-                <p className="text-sm text-red-800 mt-1">{errorMessage || 'Please try again.'}</p>
+              <div className="flex items-start gap-2 text-sm">
+                <XCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                <p className="text-red-600">{errorMessage || 'Please try again.'}</p>
               </div>
             )}
           </div>

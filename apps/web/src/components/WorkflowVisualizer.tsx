@@ -143,7 +143,7 @@ function CustomNode({
       />
 
       <div
-        className="px-5 py-4 rounded-xl border-2 bg-white shadow-lg hover:shadow-xl transition-all cursor-grab active:cursor-grabbing"
+        className="px-5 py-4 rounded-xl border-2 bg-white shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing"
         style={{
           borderColor: color,
           minWidth: '250px',
@@ -496,11 +496,11 @@ export function WorkflowVisualizer({steps}: WorkflowVisualizerProps) {
         <Background color="#e5e7eb" gap={16} size={1} />
         <Controls
           showInteractive={false}
-          className="bg-white/90 backdrop-blur-sm border border-neutral-200 rounded-lg shadow-lg"
+          className="bg-white border border-neutral-200 rounded-lg shadow-md"
         />
         <Panel
           position="top-left"
-          className="bg-white/95 backdrop-blur-sm px-4 py-2.5 rounded-lg shadow-lg border border-neutral-200"
+          className="bg-white px-4 py-2.5 rounded-lg shadow-md border border-neutral-200"
         >
           <div className="flex items-center gap-3">
             <GitBranch className="h-4 w-4 text-neutral-700" />
@@ -516,9 +516,9 @@ export function WorkflowVisualizer({steps}: WorkflowVisualizerProps) {
         {rawEdges.length === 0 && steps.length > 1 && (
           <Panel
             position="bottom-center"
-            className="bg-amber-50 border border-amber-200 px-4 py-2.5 rounded-lg shadow-lg"
+            className="bg-white border border-neutral-200 px-4 py-2.5 rounded-lg shadow-sm"
           >
-            <div className="flex items-center gap-2 text-sm text-amber-900">
+            <div className="flex items-center gap-2 text-sm text-neutral-600">
               <AlertTriangle className="h-4 w-4" />
               <span>No transitions found. Connect your steps to see the flow.</span>
             </div>

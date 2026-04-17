@@ -271,9 +271,9 @@ export default function AnalyticsPage() {
               {!hasData ? (
                 <div className="flex h-[400px] w-full items-center justify-center">
                   <div className="text-center">
-                    <Mail className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                    <h3 className="mt-4 text-sm font-semibold text-neutral-900">No email data yet</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">Send your first email to see analytics here</p>
+                    <Mail className="mx-auto h-8 w-8 text-neutral-300" />
+                    <h3 className="mt-3 text-sm font-semibold text-neutral-900">No email data yet</h3>
+                    <p className="mt-1 text-sm text-neutral-500">Send your first email to see analytics here.</p>
                   </div>
                 </div>
               ) : (
@@ -380,10 +380,10 @@ export default function AnalyticsPage() {
               {!hasData ? (
                 <div className="flex h-[300px] w-full items-center justify-center">
                   <div className="text-center">
-                    <Eye className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                    <h3 className="mt-4 text-sm font-semibold text-neutral-900">No engagement data</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      Engagement metrics will appear once emails are opened
+                    <Eye className="mx-auto h-8 w-8 text-neutral-300" />
+                    <h3 className="mt-3 text-sm font-semibold text-neutral-900">No engagement data</h3>
+                    <p className="mt-1 text-sm text-neutral-500">
+                      Engagement metrics will appear once emails are opened.
                     </p>
                   </div>
                 </div>

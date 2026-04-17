@@ -38,22 +38,22 @@ export default function Index() {
   const stats = [
     {
       name: 'Total Contacts',
-      value: isLoading ? '-' : totalContacts.toLocaleString(),
+      value: totalContacts.toLocaleString(),
       icon: Users,
     },
     {
       name: 'Emails Sent',
-      value: isLoading ? '-' : totalEmailsSent.toLocaleString(),
+      value: totalEmailsSent.toLocaleString(),
       icon: Mail,
     },
     {
       name: 'Campaigns',
-      value: isLoading ? '-' : totalCampaigns.toLocaleString(),
+      value: totalCampaigns.toLocaleString(),
       icon: Send,
     },
     {
       name: 'Open Rate',
-      value: isLoading ? '-' : `${openRate.toFixed(1)}%`,
+      value: `${openRate.toFixed(1)}%`,
       icon: TrendingUp,
     },
   ];
@@ -173,9 +173,6 @@ export default function Index() {
           {/* Header */}
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Dashboard</h1>
-            <p className="text-neutral-500 mt-2 text-sm sm:text-base">
-              Welcome back to {activeProject?.name || 'Plunk'}. Here&apos;s what&apos;s happening with your emails.
-            </p>
           </div>
 
           {/* Stats Grid */}
@@ -189,7 +186,13 @@ export default function Index() {
                       <CardDescription>{stat.name}</CardDescription>
                       <Icon className="h-4 w-4 text-neutral-500" />
                     </div>
-                    <CardTitle className="text-2xl">{stat.value}</CardTitle>
+                    <CardTitle className="text-2xl tabular-nums">
+                      {isLoading ? (
+                        <div className="h-7 w-16 bg-neutral-100 rounded animate-pulse" />
+                      ) : (
+                        stat.value
+                      )}
+                    </CardTitle>
                   </CardHeader>
                 </Card>
               );

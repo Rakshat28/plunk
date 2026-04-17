@@ -209,8 +209,8 @@ function AddStepNode({data}: {data: {label: string; onClick?: () => void}}) {
       />
 
       <div className="cursor-pointer hover:scale-105 transition-transform" onClick={data.onClick}>
-        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-neutral-100 to-neutral-200 border-2 border-dashed border-neutral-400 hover:border-neutral-600 hover:from-blue-50 hover:to-blue-100 hover:border-blue-400 flex items-center justify-center shadow-md transition-all">
-          <Plus className="h-8 w-8 text-neutral-500 transition-colors" />
+        <div className="w-16 h-16 rounded-full bg-neutral-100 border-2 border-dashed border-neutral-400 hover:border-neutral-600 hover:bg-white flex items-center justify-center transition-all">
+          <Plus className="h-8 w-8 text-neutral-500 hover:text-neutral-700 transition-colors" />
         </div>
         {data.label && <div className="text-xs text-neutral-500 text-center mt-2 font-medium">{data.label}</div>}
       </div>
@@ -255,7 +255,7 @@ function CustomNode({
       />
 
       <div
-        className="px-5 py-4 rounded-xl border-2 bg-white shadow-lg hover:shadow-xl transition-all relative group"
+        className="px-5 py-4 rounded-xl border-2 bg-white shadow-sm hover:shadow-md transition-all relative group"
         style={{
           borderColor: color,
           minWidth: '280px',
@@ -274,7 +274,7 @@ function CustomNode({
               }}
               variant="outline"
               size="icon"
-              className="h-7 w-7 shadow-md"
+              className="h-7 w-7"
               title="Edit trigger settings"
             >
               <Settings className="h-3.5 w-3.5" />
@@ -290,7 +290,7 @@ function CustomNode({
               }}
               variant="outline"
               size="icon"
-              className="h-7 w-7 shadow-md"
+              className="h-7 w-7"
               title="Edit step"
             >
               <Settings className="h-3.5 w-3.5" />
@@ -302,7 +302,7 @@ function CustomNode({
               }}
               variant="outline"
               size="icon"
-              className="h-7 w-7 shadow-md hover:bg-red-50 hover:border-red-400"
+              className="h-7 w-7 hover:bg-red-50 hover:border-red-400"
               title="Delete step"
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -905,19 +905,19 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
           <Background color="#e5e7eb" gap={16} size={1} />
           <Controls
             showInteractive={false}
-            className="bg-white/90 backdrop-blur-sm border border-neutral-200 rounded-lg shadow-lg"
+            className="bg-white border border-neutral-200 rounded-lg shadow-md"
           />
           <MiniMap
             nodeColor={node => {
               const step = steps.find(s => s.id === node.id);
               return step ? STEP_TYPE_COLORS[step.type as keyof typeof STEP_TYPE_COLORS] : '#6b7280';
             }}
-            className="bg-white/90 backdrop-blur-sm border border-neutral-200 rounded-lg shadow-lg"
+            className="bg-white border border-neutral-200 rounded-lg shadow-md"
             maskColor="rgba(0, 0, 0, 0.05)"
           />
           <Panel
             position="top-left"
-            className="bg-white/95 backdrop-blur-sm px-4 py-2.5 rounded-lg shadow-lg border border-neutral-200"
+            className="bg-white px-4 py-2.5 rounded-lg shadow-md border border-neutral-200"
           >
             <div className="flex items-center gap-3">
               <GitBranch className="h-4 w-4 text-neutral-700" />
@@ -933,7 +933,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
           <Panel position="top-right" className="flex gap-2">
             <button
               onClick={handleAutoLayout}
-              className="bg-white/95 backdrop-blur-sm px-4 py-2 rounded-lg shadow-lg border border-neutral-200 text-sm font-medium text-neutral-700 hover:bg-white hover:text-neutral-900 transition-all"
+              className="bg-white px-4 py-2 rounded-lg shadow-md border border-neutral-200 text-sm font-medium text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 transition-colors"
             >
               Auto Layout
             </button>
@@ -941,11 +941,11 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
           {rawEdges.length === 0 && steps.length > 1 && (
             <Panel
               position="bottom-center"
-              className="bg-blue-50 border border-blue-200 px-4 py-2.5 rounded-lg shadow-lg"
+              className="bg-white border border-neutral-200 px-4 py-2.5 rounded-lg shadow-sm"
             >
-              <div className="flex items-center gap-2 text-sm text-blue-900">
+              <div className="flex items-center gap-2 text-sm text-neutral-600">
                 <Lightbulb className="h-4 w-4" />
-                <span>Click the + buttons to add and connect steps!</span>
+                <span>Click the + buttons to add and connect steps.</span>
               </div>
             </Panel>
           )}
@@ -965,16 +965,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
                 <button
                   key={option.value}
                   onClick={() => handleCreateStep(option.value)}
-                  className="flex flex-col items-center gap-2 p-4 rounded-lg border-2 border-neutral-200 hover:border-neutral-400 hover:bg-neutral-50 transition-all group"
-                  style={{
-                    borderColor: 'transparent',
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.borderColor = option.color;
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.borderColor = 'transparent';
-                  }}
+                  className="flex flex-col items-center gap-2 p-4 rounded-lg border border-neutral-200 hover:border-neutral-400 hover:bg-neutral-50 transition-all group"
                 >
                   <div
                     className="w-12 h-12 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110"

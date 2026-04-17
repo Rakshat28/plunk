@@ -151,7 +151,7 @@ export function DataManagementSettings() {
         </CardHeader>
         <CardContent>
           {customFields.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No custom fields found</p>
+            <p className="text-sm text-neutral-500">No custom fields found</p>
           ) : (
             <Table>
               <TableHeader>
@@ -170,7 +170,7 @@ export function DataManagementSettings() {
                       <Badge variant="secondary">{field.type}</Badge>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm text-muted-foreground">{field.coverage}%</span>
+                      <span className="text-sm text-neutral-500">{field.coverage}%</span>
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => openFieldDeleteDialog(field.field)}>
@@ -196,7 +196,7 @@ export function DataManagementSettings() {
         </CardHeader>
         <CardContent>
           {customEvents.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No custom events found</p>
+            <p className="text-sm text-neutral-500">No custom events found</p>
           ) : (
             <Table>
               <TableHeader>

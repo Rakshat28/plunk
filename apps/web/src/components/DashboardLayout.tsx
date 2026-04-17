@@ -15,7 +15,6 @@ import {
   Menu,
   Plus,
   Settings,
-  User,
   Users,
   Workflow,
 } from 'lucide-react';
@@ -57,7 +56,6 @@ const navigation: NavSection[] = [
     ],
   },
   {
-    title: 'Campaigns',
     items: [{name: 'Campaigns', href: '/campaigns', icon: Megaphone}],
   },
 ];
@@ -127,8 +125,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
 
       // Redirect to login
       await router.push('/auth/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
+    } catch {
       // Even if the API call fails, try to redirect to login
       localStorage.removeItem('token');
       localStorage.removeItem('activeProjectId');
@@ -179,12 +176,14 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
               </div>
               <span className="font-medium text-neutral-900 truncate">{activeProject?.name || 'Select project'}</span>
             </div>
-            <ChevronDown className="h-4 w-4 text-neutral-500 flex-shrink-0" />
+            <ChevronDown
+              className={`h-4 w-4 text-neutral-500 flex-shrink-0 transition-transform duration-200 ${showProjectMenu ? 'rotate-180' : ''}`}
+            />
           </button>
 
           {/* Project Dropdown */}
           {showProjectMenu && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-neutral-200 rounded-lg shadow-lg z-50 py-1 max-h-[400px] overflow-y-auto min-w-full w-max">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-neutral-200 rounded-lg shadow-md z-50 py-1 max-h-[400px] overflow-y-auto min-w-full w-max">
               {sortedProjects.map(project => (
                 <button
                   key={project.id}
@@ -196,7 +195,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
                   }}
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 transition-colors whitespace-nowrap"
                 >
-                  <div className="h-6 w-6 rounded bg-neutral-900 text-white flex items-center justify-center text-xs font-medium flex-shrink-0">
+                  <div className="h-6 w-6 rounded-md bg-neutral-900 text-white flex items-center justify-center text-xs font-medium flex-shrink-0">
                     {project.name.charAt(0).toUpperCase()}
                   </div>
                   <span className="text-neutral-900 text-left flex-1">{project.name}</span>
@@ -230,15 +229,16 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
             )}
             <div className="space-y-1">
               {section.items.map(item => {
-                const isActive = router.pathname === item.href;
+                const isActive =
+                  item.href === '/' ? router.pathname === item.href : router.pathname.startsWith(item.href);
                 const Icon = item.icon;
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
                     onClick={() => setShowMobileMenu(false)}
-                    className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors text-neutral-700  ${
-                      isActive ? 'bg-neutral-100' : 'hover:bg-neutral-50 hover:text-neutral-900'
+                    className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      isActive ? 'bg-neutral-100 text-neutral-900' : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
                     }`}
                   >
                     <Icon className="h-5 w-5" />
@@ -257,7 +257,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
           href={WIKI_URI}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900"
+          className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
         >
           <BookOpen className="h-5 w-5" />
           Documentation
@@ -266,8 +266,10 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
         <Link
           href="/settings"
           onClick={() => setShowMobileMenu(false)}
-          className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors text-neutral-700  ${
-            router.pathname.startsWith('/settings') ? 'bg-neutral-100' : 'hover:bg-neutral-50 hover:text-neutral-900'
+          className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+            router.pathname.startsWith('/settings')
+              ? 'bg-neutral-100 text-neutral-900'
+              : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
           }`}
         >
           <Settings className="h-5 w-5" />
@@ -277,16 +279,23 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
         <div className="relative" ref={userMenuRef}>
           <button
             onClick={handleToggleUserMenu}
-            className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 transition-colors"
           >
-            <User className="h-5 w-5" />
+            <div className="h-5 w-5 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[10px] font-semibold flex-shrink-0">
+              {user?.email?.charAt(0).toUpperCase() ?? '?'}
+            </div>
             <span className="flex-1 text-left truncate">{user?.email}</span>
-            <ChevronDown className="h-4 w-4 text-neutral-500" />
+            <ChevronDown
+              className={`h-4 w-4 text-neutral-500 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`}
+            />
           </button>
 
           {/* User Dropdown */}
           {showUserMenu && (
-            <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-neutral-200 rounded-lg shadow-lg z-50 py-1">
+            <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-neutral-200 rounded-lg shadow-md z-50 py-1">
+              <div className="px-3 py-2 border-b border-neutral-100">
+                <p className="text-xs text-neutral-500 truncate">{user?.email}</p>
+              </div>
               <button
                 onClick={handleLogoutClick}
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 transition-colors text-red-600"
