@@ -10,14 +10,15 @@ import {
   Label,
 } from '@plunk/ui';
 import type {Contact} from '@plunk/db';
+import {AnimatePresence, motion} from 'framer-motion';
+import {ArrowLeft, Check, Copy, Database, ExternalLink, Mail, Save, Settings, Trash2} from 'lucide-react';
+import Link from 'next/link';
+import {useRouter} from 'next/router';
+import {useEffect, useState} from 'react';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {KeyValueEditor} from '../../components/KeyValueEditor';
 import {ActivityFeed} from '../../components/ActivityFeed';
 import {network} from '../../lib/network';
-import {ArrowLeft, Copy, Database, ExternalLink, Mail, Save, Settings, Trash2} from 'lucide-react';
-import Link from 'next/link';
-import {useRouter} from 'next/router';
-import {useEffect, useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
 import {ContactSchemas} from '@plunk/shared';
@@ -33,6 +34,7 @@ export default function ContactDetailPage() {
   const [customData, setCustomData] = useState<Record<string, string | number | boolean> | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Initialize form when contact loads
   useEffect(() => {
@@ -73,9 +75,11 @@ export default function ContactDetailPage() {
     }
   };
 
-  const copyToClipboard = async (url: string, label: string) => {
+  const copyToClipboard = async (url: string, label: string, id: string) => {
     try {
       await navigator.clipboard.writeText(url);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
       toast.success(`${label} link copied to clipboard`);
     } catch {
       toast.error('Failed to copy link');
@@ -325,9 +329,34 @@ export default function ContactDetailPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => copyToClipboard(`${window.location.origin}/subscribe/${contact.id}`, 'Subscribe')}
+                      className="overflow-hidden"
+                      onClick={() =>
+                        copyToClipboard(`${window.location.origin}/subscribe/${contact.id}`, 'Subscribe', 'subscribe')
+                      }
                     >
-                      <Copy className="h-3 w-3" />
+                      <AnimatePresence mode="wait" initial={false}>
+                        {copiedId === 'subscribe' ? (
+                          <motion.span
+                            key="copied"
+                            initial={{opacity: 0, y: 4}}
+                            animate={{opacity: 1, y: 0}}
+                            exit={{opacity: 0, y: -4}}
+                            transition={{duration: 0.15}}
+                          >
+                            <Check className="h-3 w-3 text-green-600" />
+                          </motion.span>
+                        ) : (
+                          <motion.span
+                            key="idle"
+                            initial={{opacity: 0, y: 4}}
+                            animate={{opacity: 1, y: 0}}
+                            exit={{opacity: 0, y: -4}}
+                            transition={{duration: 0.15}}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
                     </Button>
                   </div>
                 </div>
@@ -347,11 +376,38 @@ export default function ContactDetailPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      className="overflow-hidden"
                       onClick={() =>
-                        copyToClipboard(`${window.location.origin}/unsubscribe/${contact.id}`, 'Unsubscribe')
+                        copyToClipboard(
+                          `${window.location.origin}/unsubscribe/${contact.id}`,
+                          'Unsubscribe',
+                          'unsubscribe',
+                        )
                       }
                     >
-                      <Copy className="h-3 w-3" />
+                      <AnimatePresence mode="wait" initial={false}>
+                        {copiedId === 'unsubscribe' ? (
+                          <motion.span
+                            key="copied"
+                            initial={{opacity: 0, y: 4}}
+                            animate={{opacity: 1, y: 0}}
+                            exit={{opacity: 0, y: -4}}
+                            transition={{duration: 0.15}}
+                          >
+                            <Check className="h-3 w-3 text-green-600" />
+                          </motion.span>
+                        ) : (
+                          <motion.span
+                            key="idle"
+                            initial={{opacity: 0, y: 4}}
+                            animate={{opacity: 1, y: 0}}
+                            exit={{opacity: 0, y: -4}}
+                            transition={{duration: 0.15}}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
                     </Button>
                   </div>
                 </div>
@@ -371,9 +427,34 @@ export default function ContactDetailPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => copyToClipboard(`${window.location.origin}/manage/${contact.id}`, 'Manage')}
+                      className="overflow-hidden"
+                      onClick={() =>
+                        copyToClipboard(`${window.location.origin}/manage/${contact.id}`, 'Manage', 'manage')
+                      }
                     >
-                      <Copy className="h-3 w-3" />
+                      <AnimatePresence mode="wait" initial={false}>
+                        {copiedId === 'manage' ? (
+                          <motion.span
+                            key="copied"
+                            initial={{opacity: 0, y: 4}}
+                            animate={{opacity: 1, y: 0}}
+                            exit={{opacity: 0, y: -4}}
+                            transition={{duration: 0.15}}
+                          >
+                            <Check className="h-3 w-3 text-green-600" />
+                          </motion.span>
+                        ) : (
+                          <motion.span
+                            key="idle"
+                            initial={{opacity: 0, y: 4}}
+                            animate={{opacity: 1, y: 0}}
+                            exit={{opacity: 0, y: -4}}
+                            transition={{duration: 0.15}}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
                     </Button>
                   </div>
                 </div>

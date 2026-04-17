@@ -775,19 +775,9 @@ interface SegmentFilterBuilderProps {
 export function SegmentFilterBuilder({condition, onChange}: SegmentFilterBuilderProps) {
   const {fields, loading} = useAvailableOptions();
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-neutral-900">Filter Conditions</h3>
-          <p className="text-sm text-neutral-500 mt-1">Build complex audience filters with AND/OR logic</p>
-        </div>
-      </div>
-      {loading ? (
-        <div className="text-sm text-neutral-500 py-4">Loading available fields and events...</div>
-      ) : (
-        <FilterConditionComponent condition={condition} onChange={onChange} availableFields={fields} />
-      )}
-    </div>
-  );
+  if (loading) {
+    return <div className="text-sm text-neutral-500 py-4">Loading available fields and events...</div>;
+  }
+
+  return <FilterConditionComponent condition={condition} onChange={onChange} availableFields={fields} />;
 }

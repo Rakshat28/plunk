@@ -176,7 +176,11 @@ export default function NewSegmentPage() {
             {/* Filter Builder or Contact Picker */}
             {segmentType === 'DYNAMIC' ? (
               <Card>
-                <CardContent className="pt-6">
+                <CardHeader>
+                  <CardTitle>Filter Conditions</CardTitle>
+                  <CardDescription>Build complex audience filters with AND/OR logic</CardDescription>
+                </CardHeader>
+                <CardContent>
                   <SegmentFilterBuilder condition={condition} onChange={setCondition} />
                 </CardContent>
               </Card>

@@ -35,6 +35,7 @@ import {
 import type {Template, Workflow, WorkflowExecution, WorkflowStep, WorkflowTransition} from '@plunk/db';
 import type {PaginatedResponse} from '@plunk/types';
 import {DashboardLayout} from '../../components/DashboardLayout';
+import {EmptyState} from '../../components/EmptyState';
 import {network} from '../../lib/network';
 import {
   AlertTriangle,
@@ -597,13 +598,11 @@ export default function WorkflowEditorPage() {
             </CardHeader>
             <CardContent>
               {!executionsData?.executions.length ? (
-                <div className="text-center py-12">
-                  <Users className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-neutral-900 mb-2">No executions yet</h3>
-                  <p className="text-neutral-500 mb-6">
-                    This workflow hasn&apos;t been executed yet. Enable it to start processing contacts.
-                  </p>
-                </div>
+                <EmptyState
+                  icon={Users}
+                  title="No executions yet"
+                  description="This workflow hasn't been executed yet. Enable it to start processing contacts."
+                />
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -1254,8 +1253,7 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information Section */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
-              <div className="w-1 h-4 bg-blue-500 rounded-full" />
+            <div className="pb-2 border-b border-neutral-200">
               <h3 className="text-sm font-semibold text-neutral-900">Basic Information</h3>
             </div>
 
@@ -1330,12 +1328,11 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
           {/* SEND_EMAIL Configuration */}
           {type === 'SEND_EMAIL' && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
-                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+              <div className="pb-2 border-b border-neutral-200">
                 <h3 className="text-sm font-semibold text-neutral-900">Email Configuration</h3>
               </div>
 
-              <div className="space-y-4 pl-3">
+              <div className="space-y-4">
                 <div>
                   <Label htmlFor="template" className="text-sm font-medium">
                     Email Template *
@@ -1386,7 +1383,7 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                 </div>
 
                 {recipientType === 'CUSTOM' && (
-                  <div className="pl-3 border-l-2 border-blue-200 bg-blue-50/50 -ml-3 py-3 pr-3">
+                  <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                     <Label htmlFor="customEmail" className="text-sm font-medium">
                       Email Address *
                     </Label>
@@ -1411,12 +1408,11 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
           {/* DELAY Configuration */}
           {type === 'DELAY' && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
-                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+              <div className="pb-2 border-b border-neutral-200">
                 <h3 className="text-sm font-semibold text-neutral-900">Delay Configuration</h3>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pl-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="delayAmount" className="text-sm font-medium">
                     Amount *
@@ -1459,22 +1455,21 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                   </Select>
                 </div>
               </div>
-              <p className="text-xs text-neutral-500 pl-3">Maximum delay: 365 days</p>
+              <p className="text-xs text-neutral-500">Maximum delay: 365 days</p>
             </div>
           )}
 
           {/* CONDITION Configuration */}
           {type === 'CONDITION' && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
-                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+              <div className="pb-2 border-b border-neutral-200">
                 <h3 className="text-sm font-semibold text-neutral-900">Condition Configuration</h3>
               </div>
-              <p className="text-sm text-neutral-600 pl-3">
+              <p className="text-sm text-neutral-600">
                 Define the condition that determines which path contacts will follow
               </p>
 
-              <div className="space-y-4 pl-3">
+              <div className="space-y-4">
                 <div>
                   <Label htmlFor="conditionField" className="text-sm font-medium">
                     Field to Check *
@@ -1628,12 +1623,11 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
           {/* WAIT_FOR_EVENT Configuration */}
           {type === 'WAIT_FOR_EVENT' && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
-                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+              <div className="pb-2 border-b border-neutral-200">
                 <h3 className="text-sm font-semibold text-neutral-900">Wait for Event Configuration</h3>
               </div>
 
-              <div className="space-y-4 pl-3">
+              <div className="space-y-4">
                 <div>
                   <Label htmlFor="eventName" className="text-sm font-medium">
                     Event Name *
@@ -1736,12 +1730,11 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
           {/* WEBHOOK Configuration */}
           {type === 'WEBHOOK' && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
-                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+              <div className="pb-2 border-b border-neutral-200">
                 <h3 className="text-sm font-semibold text-neutral-900">Webhook Configuration</h3>
               </div>
 
-              <div className="space-y-4 pl-3">
+              <div className="space-y-4">
                 <div>
                   <Label htmlFor="webhookUrl" className="text-sm font-medium">
                     Webhook URL *
@@ -1799,12 +1792,11 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
           {/* UPDATE_CONTACT Configuration */}
           {type === 'UPDATE_CONTACT' && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
-                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+              <div className="pb-2 border-b border-neutral-200">
                 <h3 className="text-sm font-semibold text-neutral-900">Contact Update Configuration</h3>
               </div>
 
-              <div className="pl-3">
+              <div>
                 <Label htmlFor="contactUpdates" className="text-sm font-medium">
                   Contact Data Updates (JSON) *
                 </Label>
@@ -1827,12 +1819,11 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
           {/* EXIT Configuration */}
           {type === 'EXIT' && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
-                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+              <div className="pb-2 border-b border-neutral-200">
                 <h3 className="text-sm font-semibold text-neutral-900">Exit Configuration</h3>
               </div>
 
-              <div className="pl-3">
+              <div>
                 <Label htmlFor="exitReason" className="text-sm font-medium">
                   Exit Reason
                 </Label>
@@ -2322,12 +2313,11 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
-              <div className="w-1 h-4 bg-blue-500 rounded-full" />
+            <div className="pb-2 border-b border-neutral-200">
               <h3 className="text-sm font-semibold text-neutral-900">Basic Information</h3>
             </div>
 
-            <div className="pl-3">
+            <div>
               <Label htmlFor="editStepName" className="text-sm font-medium">
                 Step Name *
               </Label>
@@ -2349,12 +2339,11 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
           {/* SEND_EMAIL Configuration */}
           {step.type === 'SEND_EMAIL' && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
-                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+              <div className="pb-2 border-b border-neutral-200">
                 <h3 className="text-sm font-semibold text-neutral-900">Email Configuration</h3>
               </div>
 
-              <div className="space-y-4 pl-3">
+              <div className="space-y-4">
                 <div>
                   <Label htmlFor="editTemplate" className="text-sm font-medium">
                     Email Template *
@@ -2405,7 +2394,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                 </div>
 
                 {recipientType === 'CUSTOM' && (
-                  <div className="pl-3 border-l-2 border-blue-200 bg-blue-50/50 -ml-3 py-3 pr-3">
+                  <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                     <Label htmlFor="editCustomEmail" className="text-sm font-medium">
                       Email Address *
                     </Label>
@@ -2430,12 +2419,11 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
           {/* DELAY Configuration */}
           {step.type === 'DELAY' && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
-                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+              <div className="pb-2 border-b border-neutral-200">
                 <h3 className="text-sm font-semibold text-neutral-900">Delay Configuration</h3>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pl-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="editDelayAmount" className="text-sm font-medium">
                     Amount *
@@ -2478,19 +2466,18 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                   </Select>
                 </div>
               </div>
-              <p className="text-xs text-neutral-500 pl-3">Maximum delay: 365 days</p>
+              <p className="text-xs text-neutral-500">Maximum delay: 365 days</p>
             </div>
           )}
 
           {/* CONDITION Configuration */}
           {step.type === 'CONDITION' && (
             <div className="space-y-6">
-              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
-                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+              <div className="pb-2 border-b border-neutral-200">
                 <h3 className="text-sm font-semibold text-neutral-900">Condition Configuration</h3>
               </div>
 
-              <div className="space-y-4 pl-3">
+              <div className="space-y-4">
                 {/* Mode toggle */}
                 <div>
                   <Label className="text-sm font-medium mb-2 block">Condition Mode</Label>
@@ -2501,10 +2488,10 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                       disabled={conditionMode === 'multi' && hasMultiBranchConnections()}
                       className={`flex-1 px-3 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
                         conditionMode === 'binary'
-                          ? 'border-purple-500 bg-purple-50 text-purple-700'
+                          ? 'border-neutral-900 bg-neutral-900 text-white'
                           : conditionMode === 'multi' && hasMultiBranchConnections()
                             ? 'border-neutral-200 text-neutral-400 bg-neutral-50 cursor-not-allowed opacity-50'
-                            : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
+                            : 'border-neutral-200 text-neutral-700 hover:border-neutral-400 hover:bg-neutral-50'
                       }`}
                     >
                       Simple (If/Else)
@@ -2515,10 +2502,10 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                       disabled={conditionMode === 'binary' && hasBinaryConnections()}
                       className={`flex-1 px-3 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
                         conditionMode === 'multi'
-                          ? 'border-purple-500 bg-purple-50 text-purple-700'
+                          ? 'border-neutral-900 bg-neutral-900 text-white'
                           : conditionMode === 'binary' && hasBinaryConnections()
                             ? 'border-neutral-200 text-neutral-400 bg-neutral-50 cursor-not-allowed opacity-50'
-                            : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
+                            : 'border-neutral-200 text-neutral-700 hover:border-neutral-400 hover:bg-neutral-50'
                       }`}
                     >
                       Multi-branch (Switch)
@@ -2832,12 +2819,11 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
           {/* WAIT_FOR_EVENT Configuration */}
           {step.type === 'WAIT_FOR_EVENT' && (
             <div className="space-y-6">
-              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
-                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+              <div className="pb-2 border-b border-neutral-200">
                 <h3 className="text-sm font-semibold text-neutral-900">Event Configuration</h3>
               </div>
 
-              <div className="space-y-4 pl-3">
+              <div className="space-y-4">
                 <div>
                   <Label htmlFor="editEventName">Event Name *</Label>
                   <div className="relative">
@@ -2937,12 +2923,11 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
           {/* WEBHOOK Configuration */}
           {step.type === 'WEBHOOK' && (
             <div className="space-y-6">
-              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
-                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+              <div className="pb-2 border-b border-neutral-200">
                 <h3 className="text-sm font-semibold text-neutral-900">Webhook Configuration</h3>
               </div>
 
-              <div className="space-y-4 pl-3">
+              <div className="space-y-4">
                 {/* Info Alert about webhook body */}
                 <Alert>
                   <Info className="h-4 w-4" />
@@ -3097,12 +3082,11 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
           {/* UPDATE_CONTACT Configuration */}
           {step.type === 'UPDATE_CONTACT' && (
             <div className="space-y-6">
-              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
-                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+              <div className="pb-2 border-b border-neutral-200">
                 <h3 className="text-sm font-semibold text-neutral-900">Contact Updates</h3>
               </div>
 
-              <div className="space-y-4 pl-3">
+              <div className="space-y-4">
                 <div>
                   <Label htmlFor="editContactUpdates">Contact Data Updates (JSON) *</Label>
                   <textarea
@@ -3136,12 +3120,11 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
           {/* EXIT Configuration */}
           {step.type === 'EXIT' && (
             <div className="space-y-6">
-              <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
-                <div className="w-1 h-4 bg-blue-500 rounded-full" />
+              <div className="pb-2 border-b border-neutral-200">
                 <h3 className="text-sm font-semibold text-neutral-900">Exit Configuration</h3>
               </div>
 
-              <div className="space-y-4 pl-3">
+              <div className="space-y-4">
                 <div>
                   <Label htmlFor="editExitReason">Exit Reason (optional)</Label>
                   <Select value={exitReason} onValueChange={setExitReason}>

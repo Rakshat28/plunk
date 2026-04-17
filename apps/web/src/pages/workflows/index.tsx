@@ -22,6 +22,7 @@ import {
 import type {Workflow} from '@plunk/db';
 import type {PaginatedResponse} from '@plunk/types';
 import {DashboardLayout} from '../../components/DashboardLayout';
+import {EmptyState} from '../../components/EmptyState';
 import {network} from '../../lib/network';
 import {formatRelativeTime} from '../../lib/dateUtils';
 import {Calendar, Edit, Plus, Power, PowerOff, Search, Trash2, Workflow as WorkflowIcon} from 'lucide-react';
@@ -157,20 +158,20 @@ export default function WorkflowsPage() {
               </Card>
             ) : data?.data.length === 0 ? (
               <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center py-12">
-                    <WorkflowIcon className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-neutral-900 mb-2">No workflows found</h3>
-                    <p className="text-neutral-500 mb-6">
-                      {search ? 'Try adjusting your search terms' : 'Get started by creating your first workflow'}
-                    </p>
-                    {!search && (
-                      <Button onClick={() => setShowCreateDialog(true)}>
-                        <Plus className="h-4 w-4" />
-                        Create Workflow
-                      </Button>
-                    )}
-                  </div>
+                <CardContent>
+                  <EmptyState
+                    icon={WorkflowIcon}
+                    title={search ? 'No workflows match' : 'No workflows yet'}
+                    description={search ? 'Try a different search term.' : 'Automate emails triggered by contact events.'}
+                    action={
+                      !search ? (
+                        <Button onClick={() => setShowCreateDialog(true)}>
+                          <Plus className="h-4 w-4" />
+                          Create Workflow
+                        </Button>
+                      ) : undefined
+                    }
+                  />
                 </CardContent>
               </Card>
             ) : (
@@ -366,7 +367,7 @@ function CreateWorkflowDialog({open, onOpenChange, onSuccess}: CreateWorkflowDia
           <DialogTitle>Create New Workflow</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          <div className="space-y-1.5">
             <Label htmlFor="name">Name *</Label>
             <Input
               id="name"
@@ -378,19 +379,19 @@ function CreateWorkflowDialog({open, onOpenChange, onSuccess}: CreateWorkflowDia
             />
           </div>
 
-          <div>
+          <div className="space-y-1.5">
             <Label htmlFor="description">Description</Label>
             <textarea
               id="description"
               value={description}
               onChange={e => setDescription(e.target.value)}
               placeholder="Send a series of welcome emails to new subscribers"
-              className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               rows={3}
             />
           </div>
 
-          <div>
+          <div className="space-y-1.5">
             <Label htmlFor="createEventName">Trigger Event *</Label>
             {/* Combobox: 可自由輸入 event name，同時提供已追蹤 event 的下拉建議 */}
             <div className="relative">
@@ -453,21 +454,20 @@ function CreateWorkflowDialog({open, onOpenChange, onSuccess}: CreateWorkflowDia
             </p>
           </div>
 
-          <div className="flex items-start gap-3 p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+          <div className="flex items-start gap-3">
             <input
               id="allowReentry"
               type="checkbox"
               checked={allowReentry}
               onChange={e => setAllowReentry(e.target.checked)}
-              className="mt-1 h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300 rounded"
+              className="mt-0.5 h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300 rounded"
             />
             <div className="flex-1">
               <Label htmlFor="allowReentry" className="font-medium cursor-pointer">
                 Allow Re-entry
               </Label>
-              <p className="text-xs text-neutral-500 mt-1">
-                When enabled, contacts can enter this workflow multiple times. When disabled, contacts can only enter
-                once, ever.
+              <p className="text-xs text-neutral-500 mt-0.5">
+                When enabled, contacts can enter this workflow multiple times.
               </p>
             </div>
           </div>

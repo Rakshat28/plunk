@@ -12,6 +12,7 @@ import {
 import type {Segment} from '@plunk/db';
 import type {FilterCondition} from '@plunk/types';
 import {DashboardLayout} from '../../components/DashboardLayout';
+import {EmptyState} from '../../components/EmptyState';
 import {network} from '../../lib/network';
 import {formatRelativeTime} from '../../lib/dateUtils';
 import {AlertTriangle, Calendar, Edit, Filter, Plus, Trash2, Users} from 'lucide-react';
@@ -123,20 +124,20 @@ export default function SegmentsPage() {
             </div>
           ) : segments?.length === 0 ? (
             <Card>
-              <CardContent className="py-12">
-                <div className="text-center">
-                  <Filter className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-neutral-900 mb-2">No segments yet</h3>
-                  <p className="text-neutral-500 mb-6">
-                    Create your first segment to group contacts based on attributes and behaviors
-                  </p>
-                  <Link href="/segments/new">
-                    <Button>
-                      <Plus className="h-4 w-4" />
-                      Create Segment
-                    </Button>
-                  </Link>
-                </div>
+              <CardContent>
+                <EmptyState
+                  icon={Filter}
+                  title="No segments yet"
+                  description="Group contacts by attributes to target specific audiences."
+                  action={
+                    <Link href="/segments/new">
+                      <Button>
+                        <Plus className="h-4 w-4" />
+                        Create Segment
+                      </Button>
+                    </Link>
+                  }
+                />
               </CardContent>
             </Card>
           ) : (
@@ -175,17 +176,17 @@ export default function SegmentsPage() {
                         <span className="text-lg font-semibold text-neutral-900">{segment.memberCount}</span>
                       </div>
 
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Filter className="h-4 w-4 text-neutral-500" />
-                          <span className="text-sm text-neutral-600">Filters</span>
+                      {(segment as unknown as {type: string}).type !== 'STATIC' && (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Filter className="h-4 w-4 text-neutral-500" />
+                            <span className="text-sm text-neutral-600">Filters</span>
+                          </div>
+                          <span className="text-sm font-medium text-neutral-900">
+                            {countFiltersInCondition(segment.condition)}
+                          </span>
                         </div>
-                        <span className="text-sm font-medium text-neutral-900">
-                          {(segment as unknown as {type: string}).type === 'STATIC'
-                            ? '—'
-                            : countFiltersInCondition(segment.condition)}
-                        </span>
-                      </div>
+                      )}
 
                       {/* Actions */}
                       <div className="flex items-center gap-2 pt-2 border-t border-neutral-200">

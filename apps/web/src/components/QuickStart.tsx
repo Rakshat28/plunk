@@ -51,7 +51,7 @@ function HelpResources() {
         <motion.button
           onClick={copyEmail}
           whileTap={{scale: 0.97}}
-          className="flex-1 relative flex items-center justify-center gap-1.5 rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 overflow-hidden transition-colors hover:bg-neutral-50 hover:text-neutral-900 hover:border-neutral-300"
+          className="flex-1 relative flex items-center justify-center gap-1.5 h-9 rounded-md border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 overflow-hidden transition-colors hover:bg-neutral-50 hover:text-neutral-900 hover:border-neutral-300"
         >
           <AnimatePresence mode="wait" initial={false}>
             {copied ? (
@@ -230,8 +230,7 @@ export function QuickStart({setupState, isLoading}: QuickStartProps) {
             <div className="flex-1 pt-0.5">
               <p className="text-sm font-semibold text-green-900 mb-1">All set!</p>
               <p className="text-xs text-green-700 leading-relaxed">
-                Your project is fully configured and you&apos;re actively engaging your audience. Keep up the great
-                work!
+                Domain verified, contacts imported, campaigns running. Everything is set up correctly.
               </p>
             </div>
           </div>

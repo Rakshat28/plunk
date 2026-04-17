@@ -12,6 +12,7 @@ import {
 import type {Template} from '@plunk/db';
 import type {PaginatedResponse} from '@plunk/types';
 import {DashboardLayout} from '../../components/DashboardLayout';
+import {EmptyState} from '../../components/EmptyState';
 import {network} from '../../lib/network';
 import {formatRelativeTime} from '../../lib/dateUtils';
 import {Calendar, Copy, Edit, FileText, Plus, Search, Trash2} from 'lucide-react';
@@ -185,22 +186,22 @@ export default function TemplatesPage() {
               </Card>
             ) : data?.data.length === 0 ? (
               <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center py-12">
-                    <FileText className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-neutral-900 mb-2">No templates found</h3>
-                    <p className="text-neutral-500 mb-6">
-                      {search ? 'Try adjusting your search terms' : 'Get started by creating your first template'}
-                    </p>
-                    {!search && (
-                      <Link href="/templates/create">
-                        <Button>
-                          <Plus className="h-4 w-4" />
-                          Create Template
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
+                <CardContent>
+                  <EmptyState
+                    icon={FileText}
+                    title={search ? 'No templates match' : 'No templates yet'}
+                    description={search ? 'Try a different search term.' : 'Create reusable email designs for campaigns.'}
+                    action={
+                      !search ? (
+                        <Link href="/templates/create">
+                          <Button>
+                            <Plus className="h-4 w-4" />
+                            Create Template
+                          </Button>
+                        </Link>
+                      ) : undefined
+                    }
+                  />
                 </CardContent>
               </Card>
             ) : (

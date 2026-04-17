@@ -2,7 +2,8 @@ import {Button} from '@plunk/ui';
 import type {Activity, CursorPaginatedResponse} from '@plunk/types';
 import {network} from '../lib/network';
 import {ActivityItem} from './ActivityItem';
-import {Loader2} from 'lucide-react';
+import {EmptyState} from './EmptyState';
+import {Activity as ActivityIcon, Loader2} from 'lucide-react';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 
 export interface ActivityFeedProps {
@@ -186,11 +187,11 @@ export function ActivityFeed({typeFilter, dateRangeDays = 30, contactId}: Activi
 
   if (activities.length === 0 && upcomingActivities.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-neutral-500 text-sm">
-          No activity found for the selected filters. Activities will appear here as they happen.
-        </p>
-      </div>
+      <EmptyState
+        icon={ActivityIcon}
+        title="No activity yet"
+        description="Events will appear here as contacts interact with your emails."
+      />
     );
   }
 

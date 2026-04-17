@@ -185,8 +185,7 @@ export default function TemplateEditorPage() {
         {/* Template Editor */}
         <div className="space-y-6">
           {/* Template Settings */}
-          <div>
-            <Card>
+          <Card>
               <CardHeader>
                 <CardTitle>Template Settings</CardTitle>
                 <CardDescription>Configure the basic settings for your template</CardDescription>
@@ -287,11 +286,9 @@ export default function TemplateEditorPage() {
                 />
               </CardContent>
             </Card>
-          </div>
 
           {/* Email Body */}
-          <div>
-            <Card className="overflow-visible">
+          <Card className="overflow-visible">
               <CardHeader>
                 <CardTitle>Email Body</CardTitle>
                 <CardDescription>Create your email using the visual editor or paste custom HTML</CardDescription>
@@ -303,7 +300,6 @@ export default function TemplateEditorPage() {
                 />
               </CardContent>
             </Card>
-          </div>
         </div>
       </form>
 

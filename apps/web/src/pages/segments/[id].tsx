@@ -13,7 +13,7 @@ import type {Contact, Segment} from '@plunk/db';
 import type {PaginatedResponse} from '@plunk/types';
 import {DashboardLayout} from '../../components/DashboardLayout';
 import {network} from '../../lib/network';
-import {ArrowLeft, Database, Filter, MailCheck, MailX, RefreshCw, Save, Trash2, UserMinus, Users} from 'lucide-react';
+import {ArrowLeft, Database, Filter, Layers, MailCheck, MailX, RefreshCw, Save, Trash2, UserMinus, Users} from 'lucide-react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
@@ -310,7 +310,11 @@ export default function SegmentDetailPage() {
               {/* Filter Builder (DYNAMIC only) */}
               {!isStatic && (
                 <Card>
-                  <CardContent className="pt-6">
+                  <CardHeader>
+                    <CardTitle>Filter Conditions</CardTitle>
+                    <CardDescription>Build complex audience filters with AND/OR logic</CardDescription>
+                  </CardHeader>
+                  <CardContent>
                     <SegmentFilterBuilder condition={condition} onChange={setCondition} />
                   </CardContent>
                 </Card>
@@ -346,7 +350,9 @@ export default function SegmentDetailPage() {
                   >
                     {isAddingMembers
                       ? 'Adding...'
-                      : `Add ${pickedEmails.length > 0 ? pickedEmails.length : ''} Contact${pickedEmails.length !== 1 ? 's' : ''}`}
+                      : pickedEmails.length > 0
+                        ? `Add ${pickedEmails.length} Contact${pickedEmails.length !== 1 ? 's' : ''}`
+                        : 'Add Contacts'}
                   </Button>
                 </CardContent>
               </Card>
@@ -477,7 +483,7 @@ export default function SegmentDetailPage() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Filter className="h-4 w-4 text-neutral-500" />
+                        <Layers className="h-4 w-4 text-neutral-500" />
                         <span className="text-sm text-neutral-600">Groups</span>
                       </div>
                       <span className="text-lg font-semibold text-neutral-900">

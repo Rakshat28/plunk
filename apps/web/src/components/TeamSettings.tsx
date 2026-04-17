@@ -1,7 +1,6 @@
 import {useState} from 'react';
 import useSWR from 'swr';
 import {
-  Alert,
   Badge,
   Button,
   Card,
@@ -40,7 +39,8 @@ import {
   TableRow,
 } from '@plunk/ui';
 import {MembershipSchemas} from '@plunk/shared';
-import {AlertTriangle, Mail, MoreVertical, Trash2, UserPlus} from 'lucide-react';
+import {MoreVertical, Trash2, UserPlus} from 'lucide-react';
+import {AnimatePresence, motion} from 'framer-motion';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import type {z} from 'zod';
@@ -173,23 +173,30 @@ export function TeamSettings({projectId, currentUserRole, currentUserId}: TeamSe
 
   return (
     <div className="space-y-6">
-      {success && (
-        <Alert>
-          <Mail className="h-4 w-4" />
-          <div className="ml-2">
-            <p className="text-sm font-medium">{success}</p>
-          </div>
-        </Alert>
-      )}
-
-      {error && (
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <div className="ml-2">
-            <p className="text-sm font-medium">{error}</p>
-          </div>
-        </Alert>
-      )}
+      <AnimatePresence mode="wait">
+        {success && (
+          <motion.div
+            key="success"
+            initial={{opacity: 0, y: -10}}
+            animate={{opacity: 1, y: 0}}
+            exit={{opacity: 0}}
+            className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800"
+          >
+            {success}
+          </motion.div>
+        )}
+        {error && (
+          <motion.div
+            key="error"
+            initial={{opacity: 0, y: -10}}
+            animate={{opacity: 1, y: 0}}
+            exit={{opacity: 0}}
+            className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800"
+          >
+            {error}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Card>
         <CardHeader>
@@ -214,10 +221,10 @@ export function TeamSettings({projectId, currentUserRole, currentUserId}: TeamSe
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center py-8">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-neutral-200 border-t-neutral-900" />
             </div>
           ) : members.length === 0 ? (
-            <div className="py-8 text-center text-sm text-gray-500">No members found</div>
+            <div className="py-8 text-center text-sm text-neutral-500">No members found</div>
           ) : (
             <Table>
               <TableHeader>
@@ -314,12 +321,7 @@ export function TeamSettings({projectId, currentUserRole, currentUserId}: TeamSe
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleAddMember)} className="space-y-4">
               {error && (
-                <Alert variant="destructive">
-                  <AlertTriangle className="h-4 w-4" />
-                  <div className="ml-2">
-                    <p className="text-sm font-medium">{error}</p>
-                  </div>
-                </Alert>
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">{error}</div>
               )}
               <FormField
                 control={form.control}

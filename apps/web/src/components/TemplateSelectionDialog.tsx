@@ -236,7 +236,7 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
               {data?.data.map(template => (
                 <Card
                   key={template.id}
-                  className="cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
+                  className="cursor-pointer hover:border-neutral-400 transition-colors"
                   onClick={() => handleTemplateClick(template)}
                 >
                   <CardHeader className="pb-3">
@@ -295,35 +295,29 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
         ) : (
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto space-y-6 pr-2">
+            <div className="flex-1 overflow-y-auto pr-2">
               {/* Template Preview */}
               {selectedTemplate && (
-                <Card className="bg-neutral-50">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <CardTitle className="text-base">{selectedTemplate.name}</CardTitle>
-                          <Badge
-                            className="capitalize"
-                            variant={selectedTemplate.type === 'MARKETING' ? 'info' : 'success'}
-                          >
-                            {selectedTemplate.type.toLowerCase()}
-                          </Badge>
-                        </div>
-                        {selectedTemplate.description && (
-                          <CardDescription className="text-xs">{selectedTemplate.description}</CardDescription>
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
-                </Card>
+                <div className="pb-4 mb-1 border-b border-neutral-100">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-neutral-900">{selectedTemplate.name}</span>
+                    <Badge
+                      className="capitalize"
+                      variant={selectedTemplate.type === 'MARKETING' ? 'info' : 'success'}
+                    >
+                      {selectedTemplate.type.toLowerCase()}
+                    </Badge>
+                  </div>
+                  {selectedTemplate.description && (
+                    <p className="text-xs text-neutral-500 mt-1">{selectedTemplate.description}</p>
+                  )}
+                </div>
               )}
 
               {/* Field Selection */}
-              <div className="space-y-3">
+              <div className="divide-y divide-neutral-100">
                 <div
-                  className="flex items-center space-x-3 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors cursor-pointer"
+                  className="flex items-center gap-3 py-3 cursor-pointer hover:text-neutral-900 transition-colors"
                   onClick={() => toggleField('subject')}
                 >
                   <Checkbox
@@ -336,13 +330,13 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
                       Email Subject
                     </Label>
                     {selectedTemplate?.subject && (
-                      <p className="text-xs text-neutral-500 mt-0.5">{selectedTemplate.subject}</p>
+                      <p className="text-xs text-neutral-400 mt-0.5 truncate">{selectedTemplate.subject}</p>
                     )}
                   </div>
                 </div>
 
                 <div
-                  className="flex items-center space-x-3 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors cursor-pointer"
+                  className="flex items-center gap-3 py-3 cursor-pointer hover:text-neutral-900 transition-colors"
                   onClick={() => toggleField('body')}
                 >
                   <Checkbox id="body" checked={selectedFields.body} onCheckedChange={() => toggleField('body')} />
@@ -350,12 +344,12 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
                     <Label htmlFor="body" className="text-sm font-medium cursor-pointer">
                       Email Body
                     </Label>
-                    <p className="text-xs text-neutral-500 mt-0.5">The full email content and design</p>
+                    <p className="text-xs text-neutral-400 mt-0.5">Full email content and design</p>
                   </div>
                 </div>
 
                 <div
-                  className="flex items-center space-x-3 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors cursor-pointer"
+                  className="flex items-center gap-3 py-3 cursor-pointer hover:text-neutral-900 transition-colors"
                   onClick={() => toggleField('from')}
                 >
                   <Checkbox id="from" checked={selectedFields.from} onCheckedChange={() => toggleField('from')} />
@@ -364,13 +358,13 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
                       From Email
                     </Label>
                     {selectedTemplate?.from && (
-                      <p className="text-xs text-neutral-500 mt-0.5">{selectedTemplate.from}</p>
+                      <p className="text-xs text-neutral-400 mt-0.5">{selectedTemplate.from}</p>
                     )}
                   </div>
                 </div>
 
                 <div
-                  className="flex items-center space-x-3 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors cursor-pointer"
+                  className="flex items-center gap-3 py-3 cursor-pointer hover:text-neutral-900 transition-colors"
                   onClick={() => toggleField('fromName')}
                 >
                   <Checkbox
@@ -383,13 +377,13 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
                       From Name
                     </Label>
                     {selectedTemplate?.fromName && (
-                      <p className="text-xs text-neutral-500 mt-0.5">{selectedTemplate.fromName}</p>
+                      <p className="text-xs text-neutral-400 mt-0.5">{selectedTemplate.fromName}</p>
                     )}
                   </div>
                 </div>
 
                 <div
-                  className="flex items-center space-x-3 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors cursor-pointer"
+                  className="flex items-center gap-3 py-3 cursor-pointer hover:text-neutral-900 transition-colors"
                   onClick={() => toggleField('replyTo')}
                 >
                   <Checkbox
@@ -402,7 +396,7 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
                       Reply-To Email
                     </Label>
                     {selectedTemplate?.replyTo && (
-                      <p className="text-xs text-neutral-500 mt-0.5">{selectedTemplate.replyTo}</p>
+                      <p className="text-xs text-neutral-400 mt-0.5">{selectedTemplate.replyTo}</p>
                     )}
                   </div>
                 </div>
