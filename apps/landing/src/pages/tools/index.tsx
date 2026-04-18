@@ -1,31 +1,50 @@
-import {Footer, Navbar} from '../../components';
+import {Footer, Navbar, SectionHeader} from '../../components';
 import {motion} from 'framer-motion';
 import {DASHBOARD_URI} from '../../lib/constants';
 import React from 'react';
 import Link from 'next/link';
 import {NextSeo} from 'next-seo';
-import {ArrowRight, Code2, Mail, Search, Sparkles, Wrench} from 'lucide-react';
+import {ArrowRight, ArrowUpRight, Code2, Search} from 'lucide-react';
+import {Bricolage_Grotesque, Hanken_Grotesk, JetBrains_Mono} from 'next/font/google';
+
+const display = Bricolage_Grotesque({
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
+});
+
+const body = Hanken_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-body',
+  display: 'swap',
+  weight: ['400', '500', '600', '700'],
+});
+
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+  weight: ['400', '500'],
+});
 
 const tools = [
   {
     name: 'Markdown to Email',
     slug: 'markdown-to-email',
-    description: 'Convert rich text to email-safe HTML with our visual editor and instant preview.',
-    features: ['Visual Editor', 'Email-Safe HTML', 'Inline CSS', 'Copy to Clipboard'],
+    description: 'Convert rich text to email-safe HTML with a visual editor and instant preview.',
     icon: Code2,
+    number: '01',
   },
   {
     name: 'Email Verification',
     slug: 'verify-email',
     description: 'Verify email addresses instantly. Check DNS, MX records, typos, and disposable domains.',
-    features: ['DNS Validation', 'Typo Detection', 'MX Records', 'Disposable Check'],
     icon: Search,
+    number: '02',
   },
 ];
 
-/**
- * Free Email Tools index page
- */
 export default function ToolsIndex() {
   return (
     <>
@@ -44,225 +63,261 @@ export default function ToolsIndex() {
 
       <Navbar />
 
-      <main className={'mx-auto max-w-7xl px-8 sm:px-0'}>
-        {/* Hero Section */}
-        <section className={'relative py-32 sm:py-48'}>
-          <div
-            className={
-              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]'
-            }
-          />
-
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            animate={{opacity: 1, y: 0}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-4xl text-center'}
-          >
+      <div className={`${display.variable} ${body.variable} ${mono.variable}`}>
+        <main className={'text-neutral-800'}>
+          {/* ========== HERO ========== */}
+          <section className={'relative overflow-hidden'}>
             <div
+              aria-hidden
               className={
-                'mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2'
+                'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#eeeeee_1px,transparent_1px),linear-gradient(to_bottom,#eeeeee_1px,transparent_1px)] bg-[size:6rem_6rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_30%,#000_40%,transparent_95%)]'
               }
-            >
-              <Wrench className="h-4 w-4 text-neutral-600" />
-              <span className={'text-sm text-neutral-600'}>Free Email Tools</span>
-            </div>
+            />
 
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
-              Free tools for
-              <br />
-              email developers
-            </h1>
-
-            <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
-              Build better emails with our free tools. Convert markdown to email-safe HTML, verify email addresses, and
-              more. No sign-up required.
-            </p>
-
-            <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
-              <motion.a
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                href={`${DASHBOARD_URI}/auth/signup`}
+            <div className={'mx-auto max-w-[88rem] px-6 pb-24 pt-20 sm:px-10 sm:pt-28 lg:pb-36'}>
+              <motion.div
+                initial={{opacity: 0, y: 8}}
+                animate={{opacity: 1, y: 0}}
+                transition={{duration: 0.5, ease: [0.22, 1, 0.36, 1]}}
+                style={{fontFamily: 'var(--font-mono)'}}
                 className={
-                  'group rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-neutral-900/10 transition hover:bg-neutral-800'
+                  'mb-16 flex items-center justify-between border-t border-neutral-900/90 pt-4 text-[11px] uppercase tracking-[0.18em] text-neutral-700 sm:mb-24'
                 }
               >
-                <span className={'flex items-center gap-2'}>
-                  Try Plunk free
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </motion.a>
-              <Link
-                href="/guides"
-                className={
-                  'rounded-lg border border-neutral-300 bg-white px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-400'
-                }
+                <span className={'font-medium text-neutral-900'}>§ Tools &nbsp;— &nbsp;Plunk</span>
+              </motion.div>
+
+              <motion.div
+                initial={{opacity: 0, y: 16}}
+                animate={{opacity: 1, y: 0}}
+                transition={{duration: 0.9, ease: [0.22, 1, 0.36, 1]}}
+                className={'mx-auto max-w-5xl text-center'}
               >
-                Browse guides
-              </Link>
-            </div>
-          </motion.div>
-        </section>
+                <h1
+                  style={{fontFamily: 'var(--font-display)'}}
+                  className={
+                    'text-[clamp(3rem,9vw,8rem)] font-extrabold leading-[0.92] tracking-[-0.04em] text-neutral-900'
+                  }
+                >
+                  Free email
+                  <br />
+                  developer tools
+                </h1>
+                <p className={'mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-neutral-600 sm:text-xl'}>
+                  Convert markdown to email-safe HTML, verify addresses, and more. No sign-up required.
+                </p>
 
-        {/* Tools Grid */}
-        <section className={'py-32'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mb-16 text-center'}
-          >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Available Tools</h2>
-            <p className={'mt-4 text-lg text-neutral-600'}>Everything you need to work with emails</p>
-          </motion.div>
-
-          <div className={'grid gap-8 md:grid-cols-2 lg:grid-cols-2 max-w-4xl mx-auto'}>
-            {tools.map((tool, index) => {
-              const Icon = tool.icon;
-              return (
-                <Link key={tool.slug} href={`/tools/${tool.slug}`}>
-                  <motion.div
-                    initial={{opacity: 0, y: 20}}
-                    whileInView={{opacity: 1, y: 0}}
-                    viewport={{once: true}}
-                    transition={{duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1]}}
+                <div className={'mt-10 flex flex-wrap justify-center gap-3'}>
+                  <motion.a
+                    whileHover={{scale: 1.015}}
+                    whileTap={{scale: 0.985}}
+                    href={`${DASHBOARD_URI}/auth/signup`}
                     className={
-                      'group rounded-2xl border border-neutral-200 bg-white p-8 transition hover:border-neutral-300 hover:shadow-lg cursor-pointer h-full'
+                      'group inline-flex items-center gap-2 rounded-full bg-neutral-900 px-8 py-4 text-base font-semibold text-white shadow-[0_10px_30px_-10px_rgba(23,23,23,0.35)] transition hover:bg-neutral-800'
                     }
                   >
-                    <div className={'flex items-start justify-between mb-4'}>
-                      <div
+                    Try Plunk free
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  </motion.a>
+                  <Link
+                    href="/guides"
+                    className={
+                      'inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-900'
+                    }
+                  >
+                    Browse guides
+                  </Link>
+                </div>
+              </motion.div>
+            </div>
+          </section>
+
+          {/* ========== TOOLS LIST ========== */}
+          <section className={'mx-auto max-w-[88rem] px-6 py-28 sm:px-10 sm:py-36'}>
+            <SectionHeader
+              number={'01'}
+              label={'Tools'}
+              title={'Available tools.'}
+              subtitle={'Everything you need to work with email. No sign-up, no limits.'}
+            />
+
+            <ul className={'mt-20 divide-y divide-neutral-200 border-y border-neutral-200'}>
+              {tools.map((tool, i) => (
+                <motion.li
+                  key={tool.slug}
+                  initial={{opacity: 0, y: 12}}
+                  whileInView={{opacity: 1, y: 0}}
+                  viewport={{once: true}}
+                  transition={{duration: 0.5, delay: i * 0.06, ease: [0.22, 1, 0.36, 1]}}
+                >
+                  <Link
+                    href={`/tools/${tool.slug}`}
+                    className={
+                      'group flex items-center justify-between gap-6 py-6 transition-colors hover:bg-neutral-50 sm:py-8'
+                    }
+                  >
+                    <div className={'flex items-center gap-6 sm:gap-10'}>
+                      <span
+                        style={{fontFamily: 'var(--font-mono)'}}
+                        className={'w-12 text-xs tabular-nums tracking-[0.18em] text-neutral-400 sm:w-16'}
+                      >
+                        {tool.number}
+                      </span>
+                      <div>
+                        <span
+                          style={{fontFamily: 'var(--font-display)'}}
+                          className={
+                            'block text-4xl font-bold tracking-[-0.03em] text-neutral-900 transition-transform duration-300 group-hover:-translate-x-1 sm:text-5xl lg:text-6xl'
+                          }
+                        >
+                          {tool.name}
+                        </span>
+                        <p className={'mt-2 text-sm text-neutral-500'}>{tool.description}</p>
+                      </div>
+                    </div>
+                    <div className={'flex items-center gap-4'}>
+                      <span
+                        style={{fontFamily: 'var(--font-mono)'}}
                         className={
-                          'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white transition group-hover:scale-110'
+                          'hidden text-xs uppercase tracking-[0.18em] text-neutral-500 transition group-hover:text-neutral-900 sm:inline'
                         }
                       >
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <Sparkles className="h-5 w-5 text-neutral-400" />
+                        Open tool
+                      </span>
+                      <span
+                        className={
+                          'flex h-11 w-11 items-center justify-center rounded-full border border-neutral-300 text-neutral-900 transition group-hover:border-neutral-900 group-hover:bg-neutral-900 group-hover:text-white sm:h-14 sm:w-14'
+                        }
+                      >
+                        <ArrowUpRight className={'h-5 w-5'} strokeWidth={2} />
+                      </span>
                     </div>
-                    <h3 className={'text-2xl font-bold text-neutral-900 mb-3'}>{tool.name}</h3>
-                    <p className={'mb-6 leading-relaxed text-neutral-600'}>{tool.description}</p>
-                    <div className={'space-y-2'}>
-                      {tool.features.map(feature => (
-                        <div key={feature} className={'flex items-center gap-2 text-sm text-neutral-600'}>
-                          <div className={'h-1.5 w-1.5 rounded-full bg-neutral-900'} />
-                          <span>{feature}</span>
-                        </div>
-                      ))}
+                  </Link>
+                </motion.li>
+              ))}
+            </ul>
+          </section>
+
+          {/* ========== WHY ========== */}
+          <section className={'border-t border-neutral-200 bg-neutral-50/60'}>
+            <div className={'mx-auto max-w-[88rem] px-6 py-28 sm:px-10 sm:py-36'}>
+              <SectionHeader
+                number={'02'}
+                label={'Why'}
+                title={'Built for developers,'}
+                titleAccent={'free forever.'}
+                subtitle={'No sign-up, no paywalls. Tools built by email experts for real-world workflows.'}
+              />
+
+              <div className={'mt-20 grid gap-10 sm:grid-cols-3 sm:gap-16'}>
+                {[
+                  {
+                    tag: 'Access',
+                    big: '$0',
+                    title: 'Free forever',
+                    body: 'No sign-up, no paywalls, no limits. Use these tools as much as you need, completely free.',
+                  },
+                  {
+                    tag: 'Focus',
+                    big: 'Dev-first',
+                    title: 'Developer-focused',
+                    body: 'Built by developers who work with email every day. Clean outputs, instant results, real-world workflows.',
+                  },
+                  {
+                    tag: 'Output',
+                    big: '100%',
+                    title: 'Production ready',
+                    body: 'Email-safe HTML that works across all email clients. Industry-standard validation. Battle-tested by thousands.',
+                  },
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.tag}
+                    initial={{opacity: 0, y: 16}}
+                    whileInView={{opacity: 1, y: 0}}
+                    viewport={{once: true}}
+                    transition={{duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1]}}
+                    className={'flex flex-col gap-6'}
+                  >
+                    <span
+                      style={{fontFamily: 'var(--font-mono)'}}
+                      className={'text-[11px] uppercase tracking-[0.2em] text-neutral-500'}
+                    >
+                      / {item.tag}
+                    </span>
+                    <div
+                      style={{fontFamily: 'var(--font-display)'}}
+                      className={'text-5xl font-extrabold tracking-[-0.035em] text-neutral-900 sm:text-6xl'}
+                    >
+                      {item.big}
                     </div>
+                    <div className={'h-px w-full bg-neutral-300'} />
+                    <h3
+                      style={{fontFamily: 'var(--font-display)'}}
+                      className={'text-xl font-semibold text-neutral-900'}
+                    >
+                      {item.title}
+                    </h3>
+                    <p className={'text-base leading-relaxed text-neutral-600'}>{item.body}</p>
                   </motion.div>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Why Use These Tools */}
-        <section className={'border-t border-neutral-200 py-32'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mb-16 text-center'}
-          >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Why use these tools?</h2>
-            <p className={'mt-4 text-lg text-neutral-600'}>Built by email experts for email developers</p>
-          </motion.div>
-
-          <div className={'grid gap-8 lg:grid-cols-3'}>
-            <motion.div
-              initial={{opacity: 0, y: 20}}
-              whileInView={{opacity: 1, y: 0}}
-              viewport={{once: true}}
-              transition={{duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1]}}
-              className={
-                'rounded-2xl border border-neutral-200 bg-white p-8 transition hover:border-neutral-300 hover:shadow-lg'
-              }
-            >
-              <Mail className="h-8 w-8 text-blue-500 mb-4" />
-              <h3 className={'text-2xl font-bold text-neutral-900'}>Free Forever</h3>
-              <p className={'mt-4 leading-relaxed text-neutral-600'}>
-                No sign-up, no paywalls, no limits. Use our tools as much as you need, completely free. We believe in
-                giving back to the email development community.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{opacity: 0, y: 20}}
-              whileInView={{opacity: 1, y: 0}}
-              viewport={{once: true}}
-              transition={{duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1]}}
-              className={
-                'rounded-2xl border border-neutral-200 bg-white p-8 transition hover:border-neutral-300 hover:shadow-lg'
-              }
-            >
-              <Code2 className="h-8 w-8 text-green-500 mb-4" />
-              <h3 className={'text-2xl font-bold text-neutral-900'}>Developer-Focused</h3>
-              <p className={'mt-4 leading-relaxed text-neutral-600'}>
-                Built by developers who work with email every day. Clean outputs, instant results, and designed for
-                real-world email workflows.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{opacity: 0, y: 20}}
-              whileInView={{opacity: 1, y: 0}}
-              viewport={{once: true}}
-              transition={{duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1]}}
-              className={
-                'rounded-2xl border border-neutral-200 bg-white p-8 transition hover:border-neutral-300 hover:shadow-lg'
-              }
-            >
-              <Sparkles className="h-8 w-8 text-yellow-500 mb-4" />
-              <h3 className={'text-2xl font-bold text-neutral-900'}>Production Ready</h3>
-              <p className={'mt-4 leading-relaxed text-neutral-600'}>
-                Generate email-safe HTML that works across all email clients. Verify emails with industry-standard
-                checks. Our tools are battle-tested and used by thousands of developers.
-              </p>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* CTA */}
-        <section className={'border-t border-neutral-200 py-32'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-3xl text-center'}
-          >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Need production-grade email tools?</h2>
-            <p className={'mt-6 text-lg text-neutral-600'}>
-              These free tools are great for development, but Plunk offers so much more: templates, scheduling,
-              automation, analytics, and deliverability optimization. Start free, scale as you grow.
-            </p>
-            <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
-              <motion.a
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                href={`${DASHBOARD_URI}/auth/signup`}
-                className={
-                  'rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white transition hover:bg-neutral-800'
-                }
-              >
-                Start with Plunk
-              </motion.a>
-              <Link
-                href="/pricing"
-                className={
-                  'rounded-lg border border-neutral-300 px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-400'
-                }
-              >
-                View pricing
-              </Link>
+                ))}
+              </div>
             </div>
-          </motion.div>
-        </section>
-      </main>
+          </section>
+
+          {/* ========== CTA ========== */}
+          <section className={'relative overflow-hidden border-t border-neutral-900 bg-neutral-900 text-white'}>
+            <div className={'mx-auto max-w-[88rem] px-6 py-32 sm:px-10 sm:py-40'}>
+              <div className={'flex flex-col items-start gap-12 lg:flex-row lg:items-end lg:justify-between'}>
+                <motion.h2
+                  initial={{opacity: 0, y: 16}}
+                  whileInView={{opacity: 1, y: 0}}
+                  viewport={{once: true}}
+                  transition={{duration: 0.9, ease: [0.22, 1, 0.36, 1]}}
+                  style={{fontFamily: 'var(--font-display)'}}
+                  className={
+                    'text-[clamp(2.5rem,7vw,6rem)] font-extrabold leading-[0.95] tracking-[-0.035em]'
+                  }
+                >
+                  Need production-grade email?
+                </motion.h2>
+
+                <motion.div
+                  initial={{opacity: 0, y: 16}}
+                  whileInView={{opacity: 1, y: 0}}
+                  viewport={{once: true}}
+                  transition={{duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1]}}
+                  className={'flex max-w-md flex-col gap-6'}
+                >
+                  <p className={'text-base text-neutral-300 sm:text-lg'}>
+                    Templates, scheduling, automation, analytics, and deliverability. Start free, scale as you grow.
+                  </p>
+                  <div className={'flex flex-wrap gap-3'}>
+                    <motion.a
+                      whileHover={{scale: 1.015}}
+                      whileTap={{scale: 0.985}}
+                      href={`${DASHBOARD_URI}/auth/signup`}
+                      className={
+                        'inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-100'
+                      }
+                    >
+                      Start with Plunk
+                      <ArrowRight className="h-4 w-4" />
+                    </motion.a>
+                    <Link
+                      href="/pricing"
+                      className={
+                        'inline-flex items-center gap-2 rounded-full border border-neutral-700 px-7 py-3.5 text-sm font-semibold text-white transition hover:border-white'
+                      }
+                    >
+                      View pricing
+                    </Link>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
 
       <Footer />
     </>

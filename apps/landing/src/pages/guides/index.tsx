@@ -10,7 +10,7 @@ interface Guide {
   title: string;
   description: string;
   href: string;
-  icon: React.ComponentType<{className?: string}>;
+  icon: React.ComponentType<{className?: string; strokeWidth?: number}>;
   badge?: string;
 }
 
@@ -94,9 +94,6 @@ const guides: Guide[] = [
   },
 ];
 
-/**
- * Email Guides hub page
- */
 export default function GuidesIndex() {
   return (
     <>
@@ -115,154 +112,171 @@ export default function GuidesIndex() {
 
       <Navbar />
 
-      <main className={'mx-auto max-w-7xl px-8 sm:px-0'}>
-        {/* Hero Section */}
-        <section className={'relative py-32 sm:py-48'}>
+      <main className={'text-neutral-800'}>
+
+        {/* Hero */}
+        <section className={'relative overflow-hidden'}>
           <div
+            aria-hidden
             className={
-              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]'
+              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#eeeeee_1px,transparent_1px),linear-gradient(to_bottom,#eeeeee_1px,transparent_1px)] bg-[size:6rem_6rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_30%,#000_40%,transparent_95%)]'
             }
           />
-
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            animate={{opacity: 1, y: 0}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-4xl text-center'}
-          >
-            <div
-              className={
-                'mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2'
-              }
+          <div className={'mx-auto max-w-[88rem] px-6 pb-20 pt-20 sm:px-10 sm:pt-28 sm:pb-28'}>
+            <motion.div
+              initial={{opacity: 0, y: 16}}
+              animate={{opacity: 1, y: 0}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             >
-              <Book className="h-4 w-4 text-neutral-600" />
-              <span className={'text-sm text-neutral-600'}>Free Email Guides</span>
-            </div>
-
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl'}>
-              Master email
-              <br />
-              marketing & deliverability
-            </h1>
-
-            <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
-              Free guides on email authentication, deliverability, best practices, and technical implementation. Learn
-              from the experts.
-            </p>
-
-            <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
-              <motion.a
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                href={`${DASHBOARD_URI}/auth/signup`}
+              <div
+                style={{fontFamily: 'var(--font-mono)'}}
+                className={'mb-6 text-[11px] uppercase tracking-[0.18em] text-neutral-500'}
+              >
+                Free Guides
+              </div>
+              <h1
+                style={{fontFamily: 'var(--font-display)'}}
                 className={
-                  'group rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-neutral-900/10 transition hover:bg-neutral-800'
+                  'text-[clamp(2.75rem,7vw,6.5rem)] font-extrabold leading-[0.92] tracking-[-0.04em] text-neutral-900'
                 }
               >
-                <span className={'flex items-center gap-2'}>
-                  Try Plunk free
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </motion.a>
-            </div>
-          </motion.div>
-        </section>
+                Master email,
+                <br />
+                start to finish.
+              </h1>
+              <p className={'mt-6 max-w-2xl text-xl text-neutral-600'}>
+                Free guides on email authentication, deliverability, best practices, and technical implementation.
+              </p>
 
-        {/* Guides Grid */}
-        <section className={'py-32'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mb-16 text-center'}
-          >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Browse all guides</h2>
-            <p className={'mt-4 text-lg text-neutral-600'}>Everything you need to master email</p>
-          </motion.div>
-
-          <div className={'grid gap-6 sm:grid-cols-2 lg:grid-cols-3'}>
-            {guides.map((guide, index) => {
-              const Icon = guide.icon;
-              return (
-                <motion.div
-                  key={guide.href}
-                  initial={{opacity: 0, y: 20}}
-                  whileInView={{opacity: 1, y: 0}}
-                  viewport={{once: true}}
-                  transition={{duration: 0.5, delay: index * 0.05, ease: [0.22, 1, 0.36, 1]}}
+              <div className={'mt-10 flex flex-wrap gap-3'}>
+                <motion.a
+                  whileHover={{scale: 1.015}}
+                  whileTap={{scale: 0.985}}
+                  href={`${DASHBOARD_URI}/auth/signup`}
+                  className={
+                    'group inline-flex items-center gap-2 rounded-full bg-neutral-900 px-8 py-4 text-base font-semibold text-white shadow-[0_10px_30px_-10px_rgba(23,23,23,0.35)] transition hover:bg-neutral-800'
+                  }
                 >
-                  <Link
-                    href={guide.href}
-                    className={
-                      'group block h-full rounded-2xl border border-neutral-200 bg-white p-8 transition hover:border-neutral-300 hover:shadow-lg'
-                    }
-                  >
-                    <div className={'flex items-start justify-between mb-4'}>
-                      <div
-                        className={
-                          'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white transition group-hover:scale-110'
-                        }
-                      >
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      {guide.badge && (
-                        <span className={'rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-700'}>
-                          {guide.badge}
-                        </span>
-                      )}
-                    </div>
-                    <h3 className={'text-xl font-semibold text-neutral-900 mb-2 group-hover:text-neutral-700'}>
-                      {guide.title}
-                    </h3>
-                    <p className={'text-sm text-neutral-600 leading-relaxed'}>{guide.description}</p>
-                  </Link>
-                </motion.div>
-              );
-            })}
+                  Try Plunk free
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </motion.a>
+              </div>
+            </motion.div>
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className={'relative overflow-hidden border-t border-neutral-200 py-32'}>
-          <div
-            className={
-              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
-            }
-          />
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-3xl text-center'}
-          >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900'}>Ready to get started?</h2>
-            <p className={'mt-6 text-lg text-neutral-600'}>
-              Put these guides into practice with Plunk's modern email platform. Start free, no credit card required.
-            </p>
-            <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
-              <motion.a
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                href={`${DASHBOARD_URI}/auth/signup`}
-                className={
-                  'rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white transition hover:bg-neutral-800'
-                }
+        {/* Guides grid */}
+        <section className={'border-t border-neutral-200'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+            <motion.div
+              initial={{opacity: 0, y: 20}}
+              whileInView={{opacity: 1, y: 0}}
+              viewport={{once: true}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+              className={'mb-16'}
+            >
+              <h2
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'}
               >
-                Get started free
-              </motion.a>
-              <Link
-                href="/pricing"
-                className={
-                  'rounded-lg border border-neutral-300 px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-400'
-                }
-              >
-                View pricing
-              </Link>
+                Browse all guides
+              </h2>
+              <p className={'mt-4 text-lg text-neutral-600'}>Everything you need to master email</p>
+            </motion.div>
+
+            <div className={'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'}>
+              {guides.map((guide, index) => {
+                const Icon = guide.icon;
+                return (
+                  <motion.div
+                    key={guide.href}
+                    initial={{opacity: 0, y: 16}}
+                    whileInView={{opacity: 1, y: 0}}
+                    viewport={{once: true}}
+                    transition={{duration: 0.5, delay: index * 0.04, ease: [0.22, 1, 0.36, 1]}}
+                  >
+                    <Link
+                      href={guide.href}
+                      className={
+                        'group flex min-h-[16rem] flex-col justify-between rounded-[28px] border border-neutral-200 bg-white p-8 transition hover:border-neutral-900'
+                      }
+                    >
+                      <div className={'flex items-start justify-between'}>
+                        <div className={'text-neutral-900'}>
+                          <Icon className="h-6 w-6" strokeWidth={1.5} />
+                        </div>
+                        {guide.badge && (
+                          <span
+                            style={{fontFamily: 'var(--font-mono)'}}
+                            className={'text-[11px] uppercase tracking-[0.18em] text-neutral-400'}
+                          >
+                            {guide.badge}
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <h3
+                          style={{fontFamily: 'var(--font-display)'}}
+                          className={'mt-8 text-xl font-bold tracking-[-0.02em] text-neutral-900'}
+                        >
+                          {guide.title}
+                        </h3>
+                        <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>{guide.description}</p>
+                      </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </div>
-          </motion.div>
+          </div>
         </section>
+
+        {/* CTA */}
+        <section className={'relative overflow-hidden border-t border-neutral-900 bg-neutral-900 text-white'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-32 sm:px-10 sm:py-40'}>
+            <div className={'flex flex-col items-start gap-12 lg:flex-row lg:items-end lg:justify-between'}>
+              <motion.h2
+                initial={{opacity: 0, y: 16}}
+                whileInView={{opacity: 1, y: 0}}
+                viewport={{once: true}}
+                transition={{duration: 0.9, ease: [0.22, 1, 0.36, 1]}}
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2.5rem,7vw,6rem)] font-extrabold leading-[0.95] tracking-[-0.035em]'}
+              >
+                Put it into practice.
+              </motion.h2>
+              <motion.div
+                initial={{opacity: 0, y: 16}}
+                whileInView={{opacity: 1, y: 0}}
+                viewport={{once: true}}
+                transition={{duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1]}}
+                className={'flex max-w-md flex-col gap-6'}
+              >
+                <p className={'text-base text-neutral-300 sm:text-lg'}>
+                  Start free. No credit card required.
+                </p>
+                <div className={'flex flex-wrap gap-3'}>
+                  <motion.a
+                    whileHover={{scale: 1.015}}
+                    whileTap={{scale: 0.985}}
+                    href={`${DASHBOARD_URI}/auth/signup`}
+                    className={'inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-100'}
+                  >
+                    Get started free
+                    <ArrowRight className="h-4 w-4" />
+                  </motion.a>
+                  <Link
+                    href={'/pricing'}
+                    className={'inline-flex items-center gap-2 rounded-full border border-neutral-700 px-7 py-3.5 text-sm font-semibold text-white transition hover:border-white'}
+                  >
+                    View pricing
+                  </Link>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
       </main>
 
       <Footer />

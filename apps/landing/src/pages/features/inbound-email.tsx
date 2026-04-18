@@ -8,33 +8,33 @@ import Head from 'next/head';
 
 const features = [
   {
-    icon: <Database className="h-5 w-5" />,
+    icon: <Database className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Automatic Contact Capture',
     description: 'Every sender is automatically added to your contact database with no manual data entry required.',
+    featured: true,
   },
   {
-    icon: <Zap className="h-5 w-5" />,
+    icon: <Zap className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Workflow Automation',
     description: 'Trigger automated workflows when emails are received to create sophisticated two-way communication.',
   },
   {
-    icon: <Shield className="h-5 w-5" />,
+    icon: <Shield className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Built-in Security',
-    description:
-      'Spam, virus, SPF, DKIM, and DMARC filtering keeps your inbox clean. The spam stays out, the good stuff gets in.',
+    description: 'Spam, virus, SPF, DKIM, and DMARC filtering keeps your inbox clean. The spam stays out, the good stuff gets in.',
   },
   {
-    icon: <Bell className="h-5 w-5" />,
+    icon: <Bell className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Webhook Notifications',
     description: 'Get instant notifications with rich metadata whenever an email arrives at your domain.',
   },
   {
-    icon: <Mail className="h-5 w-5" />,
+    icon: <Mail className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Simple DNS Setup',
     description: 'Add one MX record to your domain and start receiving emails immediately. No PhD required.',
   },
   {
-    icon: <Inbox className="h-5 w-5" />,
+    icon: <Inbox className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Real-Time Processing',
     description: 'Emails are processed instantly and can trigger workflows or webhooks in real-time.',
   },
@@ -42,21 +42,21 @@ const features = [
 
 const useCases = [
   {
-    icon: <Mail className="h-6 w-6" />,
+    icon: <Mail className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Support Ticket Creation',
     description:
       'Automatically create support tickets when customers email support@yourdomain.com. Send auto-replies and route to your help desk system via webhooks. Your support team will thank you.',
     benefits: ['Instant acknowledgment', 'Automatic ticket creation', 'No emails missed'],
   },
   {
-    icon: <Database className="h-6 w-6" />,
+    icon: <Database className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Lead Capture from Email',
     description:
       'Receive emails at info@yourdomain.com and automatically add senders to your CRM. Trigger nurture workflows based on when they reached out.',
     benefits: ['Zero-friction lead capture', 'Auto-segmentation', 'Instant follow-up'],
   },
   {
-    icon: <Zap className="h-6 w-6" />,
+    icon: <Zap className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Two-Way Conversations',
     description:
       'Let customers reply to your campaign emails and automatically trigger engagement workflows. Tag contacts as "engaged" when they respond.',
@@ -64,9 +64,6 @@ const useCases = [
   },
 ];
 
-/**
- *
- */
 export default function InboundEmailFeature() {
   return (
     <>
@@ -85,343 +82,292 @@ export default function InboundEmailFeature() {
 
       <Navbar />
 
-      <main className={'mx-auto max-w-7xl px-8 sm:px-0'}>
-        {/* Hero Section */}
-        <section className={'relative py-20 sm:py-32'}>
-          {/* Subtle background grid */}
+      <main className={'text-neutral-800'}>
+
+        {/* Hero */}
+        <section className={'relative overflow-hidden'}>
           <div
+            aria-hidden
             className={
-              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]'
+              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#eeeeee_1px,transparent_1px),linear-gradient(to_bottom,#eeeeee_1px,transparent_1px)] bg-[size:6rem_6rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_30%,#000_40%,transparent_95%)]'
             }
           />
-
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            animate={{opacity: 1, y: 0}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-4xl text-center'}
-          >
-            <div className={'mb-6 inline-flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-2 text-sm'}>
-              <Inbox className="h-4 w-4 text-neutral-600" />
-              <span className={'font-medium text-neutral-600'}>Inbound Email</span>
-            </div>
-
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
-              Turn Incoming Emails
-              <br />
-              into Actions
-            </h1>
-            <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
-              Receive emails at your custom domain and automatically trigger workflows, capture leads, or create support
-              tickets. Two-way email communication made simple.
-            </p>
-
-            <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
-              <motion.a
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                href={`${DASHBOARD_URI}/auth/signup`}
+          <div className={'mx-auto max-w-[88rem] px-6 pb-20 pt-20 sm:px-10 sm:pt-28 sm:pb-28'}>
+            <motion.div
+              initial={{opacity: 0, y: 16}}
+              animate={{opacity: 1, y: 0}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+            >
+              <div
+                style={{fontFamily: 'var(--font-mono)'}}
+                className={'mb-6 text-[11px] uppercase tracking-[0.18em] text-neutral-500'}
+              >
+                Inbound Email
+              </div>
+              <h1
+                style={{fontFamily: 'var(--font-display)'}}
                 className={
-                  'group rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-neutral-900/10 transition hover:bg-neutral-800'
+                  'text-[clamp(2.75rem,7vw,6.5rem)] font-extrabold leading-[0.92] tracking-[-0.04em] text-neutral-900'
                 }
               >
-                <span className={'flex items-center gap-2'}>
-                  Start receiving emails
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </motion.a>
-              <Link
-                href={WIKI_URI}
-                target={'_blank'}
-                className={
-                  'rounded-lg border border-neutral-300 bg-white px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-400'
-                }
-              >
-                View documentation
-              </Link>
-            </div>
-          </motion.div>
-        </section>
+                Emails in,
+                <br />
+                actions out.
+              </h1>
+              <p className={'mt-6 max-w-2xl text-xl text-neutral-600'}>
+                Receive emails at your custom domain and automatically trigger workflows, capture leads, or create support
+                tickets. Two-way email communication made simple.
+              </p>
 
-        {/* Features Grid */}
-        <section className={'py-20'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mb-16 text-center'}
-          >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>
-              Complete inbound email solution
-            </h2>
-            <p className={'mt-4 text-lg text-neutral-600'}>
-              Everything you need to receive and process incoming emails
-            </p>
-          </motion.div>
-
-          <div className={'grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3'}>
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{opacity: 0, y: 20}}
-                whileInView={{opacity: 1, y: 0}}
-                viewport={{once: true}}
-                transition={{duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1]}}
-                className={'group bg-white p-10 transition hover:bg-neutral-50'}
-              >
-                <div
+              <div className={'mt-10 flex flex-wrap gap-3'}>
+                <motion.a
+                  whileHover={{scale: 1.015}}
+                  whileTap={{scale: 0.985}}
+                  href={`${DASHBOARD_URI}/auth/signup`}
                   className={
-                    'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white transition group-hover:scale-110'
+                    'group inline-flex items-center gap-2 rounded-full bg-neutral-900 px-8 py-4 text-base font-semibold text-white shadow-[0_10px_30px_-10px_rgba(23,23,23,0.35)] transition hover:bg-neutral-800'
                   }
                 >
-                  {feature.icon}
-                </div>
-                <h3 className={'mt-6 text-lg font-semibold text-neutral-900'}>{feature.title}</h3>
-                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>{feature.description}</p>
-              </motion.div>
-            ))}
+                  Start receiving emails
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </motion.a>
+                <Link
+                  href={WIKI_URI}
+                  target={'_blank'}
+                  className={
+                    'inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-900'
+                  }
+                >
+                  View documentation
+                </Link>
+              </div>
+            </motion.div>
           </div>
         </section>
 
-        {/* How It Works */}
-        <section className={'py-20'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-4xl text-center'}
-          >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>Set up in minutes</h2>
-            <p className={'mt-6 text-lg text-neutral-600'}>Get started with inbound email in three simple steps</p>
-          </motion.div>
-
-          <div className={'mx-auto mt-16 max-w-5xl'}>
-            <div className={'grid gap-12 lg:grid-cols-3'}>
-              <motion.div
-                initial={{opacity: 0, y: 20}}
-                whileInView={{opacity: 1, y: 0}}
-                viewport={{once: true}}
-                transition={{duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1]}}
+        {/* Features grid */}
+        <section className={'border-t border-neutral-200'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+            <motion.div
+              initial={{opacity: 0, y: 20}}
+              whileInView={{opacity: 1, y: 0}}
+              viewport={{once: true}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+              className={'mb-16'}
+            >
+              <h2
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'}
               >
-                <div className={'mb-5 flex items-center gap-4'}>
-                  <div
+                Complete inbound email solution
+              </h2>
+              <p className={'mt-4 text-lg text-neutral-600'}>Everything you need to receive and process incoming emails</p>
+            </motion.div>
+
+            <div className={'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'}>
+              {features.map((feature, index) => {
+                const highlighted = feature.featured;
+                return (
+                  <motion.div
+                    key={feature.title}
+                    initial={{opacity: 0, y: 16}}
+                    whileInView={{opacity: 1, y: 0}}
+                    viewport={{once: true}}
+                    transition={{duration: 0.5, delay: index * 0.06, ease: [0.22, 1, 0.36, 1]}}
                     className={
-                      'flex h-14 w-14 items-center justify-center rounded-full border-2 border-neutral-200 bg-white text-xl font-bold text-neutral-900'
+                      highlighted
+                        ? 'flex min-h-[16rem] flex-col justify-between rounded-[28px] border border-neutral-900 bg-neutral-900 p-8 text-white'
+                        : 'flex min-h-[16rem] flex-col justify-between rounded-[28px] border border-neutral-200 bg-white p-8 transition hover:border-neutral-900'
                     }
                   >
-                    1
-                  </div>
-                </div>
-                <h3 className={'text-lg font-semibold text-neutral-900'}>Verify your domain</h3>
-                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>
-                  Add and verify your custom domain in Plunk by configuring DKIM and SPF records in your DNS settings.
-                </p>
-              </motion.div>
-
-              <motion.div
-                initial={{opacity: 0, y: 20}}
-                whileInView={{opacity: 1, y: 0}}
-                viewport={{once: true}}
-                transition={{duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1]}}
-              >
-                <div className={'mb-5 flex items-center gap-4'}>
-                  <div
-                    className={
-                      'flex h-14 w-14 items-center justify-center rounded-full border-2 border-neutral-200 bg-white text-xl font-bold text-neutral-900'
-                    }
-                  >
-                    2
-                  </div>
-                </div>
-                <h3 className={'text-lg font-semibold text-neutral-900'}>Add MX record</h3>
-                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>
-                  Add one MX record to your DNS to route incoming emails to Plunk. Copy the record from your dashboard.
-                </p>
-              </motion.div>
-
-              <motion.div
-                initial={{opacity: 0, y: 20}}
-                whileInView={{opacity: 1, y: 0}}
-                viewport={{once: true}}
-                transition={{duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1]}}
-              >
-                <div className={'mb-5 flex items-center gap-4'}>
-                  <div
-                    className={
-                      'flex h-14 w-14 items-center justify-center rounded-full border-2 border-neutral-200 bg-white text-xl font-bold text-neutral-900'
-                    }
-                  >
-                    3
-                  </div>
-                </div>
-                <h3 className={'text-lg font-semibold text-neutral-900'}>Start receiving</h3>
-                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>
-                  Emails sent to any address at your domain are automatically received and can trigger workflows or
-                  webhooks.
-                </p>
-              </motion.div>
+                    <div className={'flex items-start justify-between'}>
+                      <div className={highlighted ? 'text-white' : 'text-neutral-900'}>{feature.icon}</div>
+                      <span
+                        style={{fontFamily: 'var(--font-mono)'}}
+                        className={`text-[11px] uppercase tracking-[0.18em] ${highlighted ? 'text-neutral-500' : 'text-neutral-400'}`}
+                      >
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                    </div>
+                    <div>
+                      <h3
+                        style={{fontFamily: 'var(--font-display)'}}
+                        className={`mt-8 text-xl font-bold tracking-[-0.02em] ${highlighted ? 'text-white' : 'text-neutral-900'}`}
+                      >
+                        {feature.title}
+                      </h3>
+                      <p className={`mt-2 text-sm leading-relaxed ${highlighted ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                        {feature.description}
+                      </p>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </section>
 
-        {/* Use Cases */}
-        <section className={'py-20'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mb-16 text-center'}
-          >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>Powerful use cases</h2>
-            <p className={'mt-4 text-lg text-neutral-600'}>
-              From support to sales, inbound email unlocks new automation possibilities
-            </p>
-          </motion.div>
-
-          <div className={'mx-auto max-w-5xl space-y-8'}>
-            {useCases.map((useCase, index) => (
-              <motion.div
-                key={useCase.title}
-                initial={{opacity: 0, y: 20}}
-                whileInView={{opacity: 1, y: 0}}
-                viewport={{once: true}}
-                transition={{duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1]}}
-                className={'rounded-xl border border-neutral-200 bg-white p-8'}
+        {/* How it works */}
+        <section className={'border-t border-neutral-200 bg-neutral-50/60'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+            <motion.div
+              initial={{opacity: 0, y: 20}}
+              whileInView={{opacity: 1, y: 0}}
+              viewport={{once: true}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+              className={'mb-16 text-center'}
+            >
+              <h2
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'}
               >
-                <div className={'flex items-start gap-6'}>
-                  <div
-                    className={
-                      'flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-neutral-900 text-white'
-                    }
-                  >
-                    {useCase.icon}
-                  </div>
-                  <div className={'flex-1'}>
-                    <h3 className={'text-xl font-semibold text-neutral-900'}>{useCase.title}</h3>
-                    <p className={'mt-2 text-neutral-600'}>{useCase.description}</p>
-                    <div className={'mt-4 flex flex-wrap gap-2'}>
-                      {useCase.benefits.map(benefit => (
-                        <span
-                          key={benefit}
-                          className={'rounded-full bg-neutral-100 px-3 py-1 text-sm text-neutral-700'}
-                        >
-                          {benefit}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        {/* Technical Details */}
-        <section className={'py-20'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-4xl'}
-          >
-            <div className={'rounded-2xl border border-neutral-200 bg-white p-8 sm:p-12'}>
-              <h2 className={'text-3xl font-bold tracking-tight text-neutral-900 text-balance'}>
-                What happens when an email arrives?
+                Set up in minutes
               </h2>
-              <div className={'mt-10'}>
+              <p className={'mt-4 text-lg text-neutral-600'}>One MX record is all it takes</p>
+            </motion.div>
+
+            <div className={'mx-auto max-w-4xl'}>
+              <div className={'grid gap-px bg-neutral-200 sm:grid-cols-3'}>
                 {[
                   {
-                    title: 'Email arrives at your domain',
-                    description: 'Your MX record routes the email to Plunk for processing',
+                    step: '01',
+                    title: 'Verify your domain',
+                    body: 'Add and verify your custom domain in Plunk by configuring DKIM and SPF records in your DNS settings.',
                   },
                   {
-                    title: 'Security checks pass',
-                    description: 'Automatic validation of spam, virus, SPF, DKIM, and DMARC',
+                    step: '02',
+                    title: 'Add MX record',
+                    body: 'Add one MX record to your DNS to route incoming emails to Plunk. Copy the record directly from your dashboard.',
                   },
                   {
-                    title: 'Contact is created or updated',
-                    description: 'The sender is automatically added to your contact database',
+                    step: '03',
+                    title: 'Start receiving',
+                    body: 'Emails sent to any address at your domain are automatically received and can trigger workflows or webhooks.',
                   },
-                  {
-                    title: 'Workflows trigger automatically',
-                    description: 'Configured workflows start running based on the incoming email',
-                  },
-                ].map((step, i, arr) => (
-                  <div key={step.title} className={'relative flex gap-6'}>
-                    {/* Vertical connector */}
-                    {i < arr.length - 1 && (
-                      <div className={'absolute left-[1.125rem] top-10 bottom-0 w-px bg-neutral-200'} />
-                    )}
-                    <div className={'relative flex-shrink-0'}>
-                      <div
-                        className={
-                          'flex h-9 w-9 items-center justify-center rounded-full border-2 border-neutral-200 bg-white text-sm font-bold text-neutral-900'
-                        }
-                      >
-                        {i + 1}
-                      </div>
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.step}
+                    initial={{opacity: 0, y: 20}}
+                    whileInView={{opacity: 1, y: 0}}
+                    viewport={{once: true}}
+                    transition={{duration: 0.5, delay: i * 0.1, ease: [0.22, 1, 0.36, 1]}}
+                    className={'bg-white p-10'}
+                  >
+                    <div
+                      style={{fontFamily: 'var(--font-mono)'}}
+                      className={'mb-6 text-[11px] uppercase tracking-[0.18em] text-neutral-400'}
+                    >
+                      Step {item.step}
                     </div>
-                    <div className={i < arr.length - 1 ? 'pb-8' : ''}>
-                      <p className={'font-semibold text-neutral-900'}>{step.title}</p>
-                      <p className={'mt-1 text-sm text-neutral-600'}>{step.description}</p>
-                    </div>
-                  </div>
+                    <h3 className={'text-lg font-semibold text-neutral-900'}>{item.title}</h3>
+                    <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>{item.body}</p>
+                  </motion.div>
                 ))}
               </div>
             </div>
-          </motion.div>
+          </div>
         </section>
 
-        {/* CTA Section */}
-        <section className={'relative overflow-hidden border-t border-neutral-200 py-20'}>
-          <div
-            className={
-              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
-            }
-          />
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-3xl text-center'}
-          >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>
-              Your domain can receive emails too
-            </h2>
-            <p className={'mt-6 text-lg text-neutral-600'}>
-              Set up inbound email on any verified domain in minutes. Replies, support tickets, and webhooks, all from
-              one platform.
-            </p>
-            <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
-              <motion.a
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                href={`${DASHBOARD_URI}/auth/signup`}
-                className={
-                  'group rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white transition hover:bg-neutral-800'
-                }
+        {/* Use cases */}
+        <section className={'border-t border-neutral-200'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+            <motion.div
+              initial={{opacity: 0, y: 20}}
+              whileInView={{opacity: 1, y: 0}}
+              viewport={{once: true}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+              className={'mb-16'}
+            >
+              <h2
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'}
               >
-                <span className={'flex items-center gap-2'}>
-                  Get started for free
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </motion.a>
-              <Link
-                href={'/pricing'}
-                className={
-                  'rounded-lg border border-neutral-300 px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-400'
-                }
-              >
-                View pricing
-              </Link>
+                Powerful use cases
+              </h2>
+              <p className={'mt-4 text-lg text-neutral-600'}>From support to sales, inbound email unlocks new automation possibilities</p>
+            </motion.div>
+
+            <div className={'space-y-4'}>
+              {useCases.map((useCase, index) => (
+                <motion.div
+                  key={useCase.title}
+                  initial={{opacity: 0, y: 20}}
+                  whileInView={{opacity: 1, y: 0}}
+                  viewport={{once: true}}
+                  transition={{duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1]}}
+                  className={'rounded-[24px] border border-neutral-200 bg-white p-8'}
+                >
+                  <div className={'flex items-start gap-6'}>
+                    <div className={'flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-900'}>
+                      {useCase.icon}
+                    </div>
+                    <div className={'flex-1'}>
+                      <h3
+                        style={{fontFamily: 'var(--font-display)'}}
+                        className={'text-xl font-bold tracking-[-0.02em] text-neutral-900'}
+                      >
+                        {useCase.title}
+                      </h3>
+                      <p className={'mt-2 text-neutral-600'}>{useCase.description}</p>
+                      <div className={'mt-4 rounded-xl border border-neutral-100 bg-neutral-50 p-4'}>
+                        <p style={{fontFamily: 'var(--font-mono)'}} className={'text-sm text-neutral-600'}>
+                          {useCase.benefits.join(' → ')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          </motion.div>
+          </div>
         </section>
+
+        {/* CTA */}
+        <section className={'relative overflow-hidden border-t border-neutral-900 bg-neutral-900 text-white'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-32 sm:px-10 sm:py-40'}>
+            <div className={'flex flex-col items-start gap-12 lg:flex-row lg:items-end lg:justify-between'}>
+              <motion.h2
+                initial={{opacity: 0, y: 16}}
+                whileInView={{opacity: 1, y: 0}}
+                viewport={{once: true}}
+                transition={{duration: 0.9, ease: [0.22, 1, 0.36, 1]}}
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2.5rem,7vw,6rem)] font-extrabold leading-[0.95] tracking-[-0.035em]'}
+              >
+                Your domain can receive emails too.
+              </motion.h2>
+              <motion.div
+                initial={{opacity: 0, y: 16}}
+                whileInView={{opacity: 1, y: 0}}
+                viewport={{once: true}}
+                transition={{duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1]}}
+                className={'flex max-w-md flex-col gap-6'}
+              >
+                <p className={'text-base text-neutral-300 sm:text-lg'}>
+                  Free plan available. $0.001 per email on paid. No credit card required.
+                </p>
+                <div className={'flex flex-wrap gap-3'}>
+                  <motion.a
+                    whileHover={{scale: 1.015}}
+                    whileTap={{scale: 0.985}}
+                    href={`${DASHBOARD_URI}/auth/signup`}
+                    className={'inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-100'}
+                  >
+                    Get started for free
+                    <ArrowRight className="h-4 w-4" />
+                  </motion.a>
+                  <Link
+                    href={'/pricing'}
+                    className={'inline-flex items-center gap-2 rounded-full border border-neutral-700 px-7 py-3.5 text-sm font-semibold text-white transition hover:border-white'}
+                  >
+                    View pricing
+                  </Link>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
       </main>
 
       <Footer />

@@ -87,9 +87,6 @@ const competitors = [
   },
 ];
 
-/**
- * Plunk vs Competitors index page
- */
 export default function CompetitorsIndex() {
   return (
     <>
@@ -108,220 +105,225 @@ export default function CompetitorsIndex() {
 
       <Navbar />
 
-      <main className={'mx-auto max-w-7xl px-8 sm:px-0'}>
-        {/* Hero Section */}
-        <section className={'relative py-32 sm:py-48'}>
+      <main className={'text-neutral-800'}>
+
+        {/* Hero */}
+        <section className={'relative overflow-hidden'}>
           <div
-            className={
-              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]'
-            }
+            aria-hidden
+            className={'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#eeeeee_1px,transparent_1px),linear-gradient(to_bottom,#eeeeee_1px,transparent_1px)] bg-[size:6rem_6rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_30%,#000_40%,transparent_95%)]'}
           />
-
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            animate={{opacity: 1, y: 0}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-4xl text-center'}
-          >
-            <div
-              className={
-                'mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2'
-              }
+          <div className={'mx-auto max-w-[88rem] px-6 pb-20 pt-20 sm:px-10 sm:pt-28 sm:pb-28'}>
+            <motion.div
+              initial={{opacity: 0, y: 16}}
+              animate={{opacity: 1, y: 0}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
             >
-              <span className={'text-sm text-neutral-600'}>Email Platform Comparisons</span>
-            </div>
-
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
-              Plunk vs the
-              <br />
-              competition
-            </h1>
-
-            <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
-              Most email platforms charge by the contact, lock you in, and split transactional from marketing. Plunk does all three in one open-source platform at $0.001 per email.
-            </p>
-
-            <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
-              <motion.a
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                href={`${DASHBOARD_URI}/auth/signup`}
-                className={
-                  'group rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-neutral-900/10 transition hover:bg-neutral-800'
-                }
+              <div style={{fontFamily: 'var(--font-mono)'}} className={'mb-6 text-[11px] uppercase tracking-[0.18em] text-neutral-500'}>
+                Comparisons
+              </div>
+              <h1
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2.75rem,7vw,6.5rem)] font-extrabold leading-[0.92] tracking-[-0.04em] text-neutral-900'}
               >
-                <span className={'flex items-center gap-2'}>
-                  Get started free
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </motion.a>
-              <Link
-                href={WIKI_URI}
-                target={'_blank'}
-                className={
-                  'rounded-lg border border-neutral-300 bg-white px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-400'
-                }
-              >
-                View documentation
-              </Link>
-            </div>
-          </motion.div>
-        </section>
-
-        {/* Competitors Grid */}
-        <section className={'py-32'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mb-16 text-center'}
-          >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>
-              Compare Plunk with Industry Leaders
-            </h2>
-            <p className={'mt-4 text-lg text-neutral-600'}>See how Plunk stacks up against popular email platforms</p>
-          </motion.div>
-
-          <div className={'grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}>
-            {competitors.map((competitor, index) => (
-              <Link key={competitor.slug} href={`/vs/${competitor.slug}`}>
-                <motion.div
-                  initial={{opacity: 0, y: 20}}
-                  whileInView={{opacity: 1, y: 0}}
-                  viewport={{once: true}}
-                  transition={{duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1]}}
-                  className={
-                    'group rounded-2xl border border-neutral-200 bg-white p-8 transition hover:border-neutral-300 hover:shadow-lg cursor-pointer'
-                  }
+                Plunk vs the
+                <br />
+                competition.
+              </h1>
+              <p className={'mt-6 max-w-2xl text-xl text-neutral-600'}>
+                Most email platforms charge by the contact, lock you in, and split transactional from marketing. Plunk does all three in one open-source platform at $0.001 per email.
+              </p>
+              <div className={'mt-10 flex flex-wrap gap-3'}>
+                <motion.a
+                  whileHover={{scale: 1.015}}
+                  whileTap={{scale: 0.985}}
+                  href={`${DASHBOARD_URI}/auth/signup`}
+                  className={'group inline-flex items-center gap-2 rounded-full bg-neutral-900 px-8 py-4 text-base font-semibold text-white shadow-[0_10px_30px_-10px_rgba(23,23,23,0.35)] transition hover:bg-neutral-800'}
                 >
-                  <div className={'mb-4 flex items-center justify-between'}>
-                    <h3 className={'text-xl font-bold text-neutral-900'}>{competitor.name}</h3>
-                  </div>
-                  <p className={'mb-6 leading-relaxed text-neutral-600'}>{competitor.description}</p>
-                  <div className={'mb-6 space-y-2'}>
-                    {competitor.features.map(feature => (
-                      <div key={feature} className={'flex items-center gap-2 text-sm text-neutral-600'}>
-                        <div className={'h-1.5 w-1.5 rounded-full bg-neutral-900'} />
-                        <span>{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              </Link>
-            ))}
+                  Get started free
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </motion.a>
+                <Link
+                  href={WIKI_URI}
+                  target={'_blank'}
+                  className={'inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-900'}
+                >
+                  View documentation
+                </Link>
+              </div>
+            </motion.div>
           </div>
         </section>
 
-        {/* Why Choose Plunk */}
-        <section className={'py-32'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mb-16 text-center'}
-          >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Why Choose Plunk</h2>
-            <p className={'mt-4 text-lg text-neutral-600'}>One platform for all your email needs</p>
-          </motion.div>
-
-          <div className={'grid gap-8 lg:grid-cols-3'}>
+        {/* Competitors grid */}
+        <section className={'border-t border-neutral-200'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
             <motion.div
               initial={{opacity: 0, y: 20}}
               whileInView={{opacity: 1, y: 0}}
               viewport={{once: true}}
-              transition={{duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1]}}
-              className={
-                'rounded-2xl border border-neutral-200 bg-white p-8 transition hover:border-neutral-300 hover:shadow-lg'
-              }
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+              className={'mb-16'}
             >
-              <Mail className="h-8 w-8 text-neutral-900 mb-4" />
-              <h3 className={'text-2xl font-bold text-neutral-900'}>Transactional + Marketing</h3>
-              <p className={'mt-4 leading-relaxed text-neutral-600'}>
-                Send transactional emails with the same reliability as dedicated providers, plus marketing campaigns, automation, and segmentation. All in one platform.
-              </p>
+              <h2
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'}
+              >
+                All comparisons
+              </h2>
+              <p className={'mt-4 text-lg text-neutral-600'}>See how Plunk stacks up against popular email platforms</p>
             </motion.div>
 
+            <div className={'grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}>
+              {competitors.map((competitor, index) => (
+                <motion.div
+                  key={competitor.slug}
+                  initial={{opacity: 0, y: 16}}
+                  whileInView={{opacity: 1, y: 0}}
+                  viewport={{once: true}}
+                  transition={{duration: 0.5, delay: index * 0.04, ease: [0.22, 1, 0.36, 1]}}
+                >
+                  <Link
+                    href={`/vs/${competitor.slug}`}
+                    className={'group flex min-h-[14rem] flex-col justify-between rounded-[28px] border border-neutral-200 bg-white p-8 transition hover:border-neutral-900'}
+                  >
+                    <div className={'flex items-start justify-between'}>
+                      <h3
+                        style={{fontFamily: 'var(--font-display)'}}
+                        className={'text-xl font-bold tracking-[-0.02em] text-neutral-900'}
+                      >
+                        {competitor.name}
+                      </h3>
+                      <ArrowRight className="h-4 w-4 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-neutral-900" />
+                    </div>
+                    <div>
+                      <p className={'text-sm text-neutral-600'}>{competitor.description}</p>
+                      <div className={'mt-4 flex flex-wrap gap-1.5'}>
+                        {competitor.features.map(feature => (
+                          <span
+                            key={feature}
+                            style={{fontFamily: 'var(--font-mono)'}}
+                            className={'text-[10px] uppercase tracking-[0.12em] text-neutral-400'}
+                          >
+                            {feature}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Why Plunk */}
+        <section className={'border-t border-neutral-200 bg-neutral-50/60'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
             <motion.div
               initial={{opacity: 0, y: 20}}
               whileInView={{opacity: 1, y: 0}}
               viewport={{once: true}}
-              transition={{duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1]}}
-              className={
-                'rounded-2xl border border-neutral-200 bg-white p-8 transition hover:border-neutral-300 hover:shadow-lg'
-              }
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+              className={'mb-16'}
             >
-              <Code className="h-8 w-8 text-neutral-900 mb-4" />
-              <h3 className={'text-2xl font-bold text-neutral-900'}>Open Source & Self-Hostable</h3>
-              <p className={'mt-4 leading-relaxed text-neutral-600'}>
-                AGPL-3.0 licensed code you can inspect, modify, and self-host. Full control over your data and
-                infrastructure. No vendor lock-in.
-              </p>
+              <h2
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'}
+              >
+                Why Plunk wins
+              </h2>
+              <p className={'mt-4 text-lg text-neutral-600'}>One platform for all your email needs</p>
             </motion.div>
 
-            <motion.div
-              initial={{opacity: 0, y: 20}}
-              whileInView={{opacity: 1, y: 0}}
-              viewport={{once: true}}
-              transition={{duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1]}}
-              className={
-                'rounded-2xl border border-neutral-200 bg-white p-8 transition hover:border-neutral-300 hover:shadow-lg'
-              }
-            >
-              <DollarSign className="h-8 w-8 text-neutral-900 mb-4" />
-              <h3 className={'text-2xl font-bold text-neutral-900'}>Simple Pricing</h3>
-              <p className={'mt-4 leading-relaxed text-neutral-600'}>
-                Pay-as-you-go pricing with all features included. No separate charges for transactional vs marketing
-                emails. No tiers, no commitments.
-              </p>
-            </motion.div>
+            <div className={'grid gap-px bg-neutral-200 sm:grid-cols-3'}>
+              {[
+                {
+                  icon: <Mail className="h-5 w-5" />,
+                  title: 'Transactional + Marketing',
+                  body: 'Send transactional emails with the same reliability as dedicated providers, plus marketing campaigns, automation, and segmentation. All in one platform.',
+                },
+                {
+                  icon: <Code className="h-5 w-5" />,
+                  title: 'Open Source & Self-Hostable',
+                  body: 'AGPL-3.0 licensed code you can inspect, modify, and self-host. Full control over your data and infrastructure. No vendor lock-in.',
+                },
+                {
+                  icon: <DollarSign className="h-5 w-5" />,
+                  title: 'Simple Pricing',
+                  body: 'Pay-as-you-go with all features included. No separate charges for transactional vs marketing emails. No tiers, no commitments.',
+                },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.title}
+                  initial={{opacity: 0, y: 20}}
+                  whileInView={{opacity: 1, y: 0}}
+                  viewport={{once: true}}
+                  transition={{duration: 0.5, delay: i * 0.1, ease: [0.22, 1, 0.36, 1]}}
+                  className={'bg-white p-10'}
+                >
+                  <div className={'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white'}>
+                    {item.icon}
+                  </div>
+                  <h3
+                    style={{fontFamily: 'var(--font-display)'}}
+                    className={'mt-6 text-xl font-bold tracking-[-0.02em] text-neutral-900'}
+                  >
+                    {item.title}
+                  </h3>
+                  <p className={'mt-3 leading-relaxed text-neutral-600'}>{item.body}</p>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </section>
 
         {/* CTA */}
-        <section className={'relative overflow-hidden border-t border-neutral-200 py-32'}>
-          <div
-            className={
-              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
-            }
-          />
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-3xl text-center'}
-          >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Ready to try Plunk?</h2>
-            <p className={'mt-6 text-lg text-neutral-600'}>
-              Join thousands of developers using Plunk for reliable email delivery. Start free, scale as you grow.
-            </p>
-            <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
-              <motion.a
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                href={`${DASHBOARD_URI}/auth/signup`}
-                className={
-                  'group rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white transition hover:bg-neutral-800'
-                }
+        <section className={'relative overflow-hidden border-t border-neutral-900 bg-neutral-900 text-white'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-32 sm:px-10 sm:py-40'}>
+            <div className={'flex flex-col items-start gap-12 lg:flex-row lg:items-end lg:justify-between'}>
+              <motion.h2
+                initial={{opacity: 0, y: 16}}
+                whileInView={{opacity: 1, y: 0}}
+                viewport={{once: true}}
+                transition={{duration: 0.9, ease: [0.22, 1, 0.36, 1]}}
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2.5rem,7vw,6rem)] font-extrabold leading-[0.95] tracking-[-0.035em]'}
               >
-                <span className={'flex items-center gap-2'}>
-                  Get started free
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </motion.a>
-              <Link
-                href="/pricing"
-                className={
-                  'rounded-lg border border-neutral-300 px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-400'
-                }
+                Ready to try Plunk?
+              </motion.h2>
+              <motion.div
+                initial={{opacity: 0, y: 16}}
+                whileInView={{opacity: 1, y: 0}}
+                viewport={{once: true}}
+                transition={{duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1]}}
+                className={'flex max-w-md flex-col gap-6'}
               >
-                View pricing
-              </Link>
+                <p className={'text-base text-neutral-300 sm:text-lg'}>
+                  Start free. No credit card required.
+                </p>
+                <div className={'flex flex-wrap gap-3'}>
+                  <motion.a
+                    whileHover={{scale: 1.015}}
+                    whileTap={{scale: 0.985}}
+                    href={`${DASHBOARD_URI}/auth/signup`}
+                    className={'inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-100'}
+                  >
+                    Get started free
+                    <ArrowRight className="h-4 w-4" />
+                  </motion.a>
+                  <Link
+                    href={'/pricing'}
+                    className={'inline-flex items-center gap-2 rounded-full border border-neutral-700 px-7 py-3.5 text-sm font-semibold text-white transition hover:border-white'}
+                  >
+                    View pricing
+                  </Link>
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
+          </div>
         </section>
+
       </main>
 
       <Footer />

@@ -8,32 +8,33 @@ import Head from 'next/head';
 
 const features = [
   {
-    icon: <Zap className="h-5 w-5" />,
+    icon: <Zap className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Event-Driven Triggers',
     description: 'Start workflows automatically when users sign up, make a purchase, or perform any custom action.',
+    featured: true,
   },
   {
-    icon: <Mail className="h-5 w-5" />,
+    icon: <Mail className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Smart Email Sequences',
     description: 'Send personalized emails at the right time with dynamic content based on user data.',
   },
   {
-    icon: <Clock className="h-5 w-5" />,
+    icon: <Clock className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Time-Based Delays',
     description: 'Add strategic delays between steps to create perfectly timed email journeys. Patience is a virtue.',
   },
   {
-    icon: <GitBranch className="h-5 w-5" />,
+    icon: <GitBranch className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Conditional Logic',
     description: 'Branch workflows based on user behavior, attributes, or engagement to personalize every journey.',
   },
   {
-    icon: <Webhook className="h-5 w-5" />,
+    icon: <Webhook className="h-6 w-6" strokeWidth={1.5} />,
     title: 'External Integrations',
     description: 'Connect to external systems with webhooks to sync data or trigger actions outside of Plunk.',
   },
   {
-    icon: <RefreshCw className="h-5 w-5" />,
+    icon: <RefreshCw className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Re-entry Control',
     description: 'Decide whether contacts can enter workflows multiple times or just once. No spam, just strategy.',
   },
@@ -41,21 +42,21 @@ const features = [
 
 const useCases = [
   {
-    icon: <UserPlus className="h-6 w-6" />,
+    icon: <UserPlus className="h-6 w-6" strokeWidth={1.5} />,
     title: 'User Onboarding',
     description:
       'Welcome new users with a personalized email series that guides them through your product features and helps them get started.',
     example: 'Trigger on signup → Send welcome email → Wait 2 days → Send getting started tips',
   },
   {
-    icon: <Mail className="h-6 w-6" />,
+    icon: <Mail className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Abandoned Cart Recovery',
     description:
-      'Automatically remind customers about items left in their cart with timely follow-ups and special incentives. Those forgotten items need a gentle nudge.',
+      'Automatically remind customers about items left in their cart with timely follow-ups and special incentives.',
     example: 'Trigger on cart abandoned → Wait 1 hour → Send reminder → Wait 1 day → Send discount offer',
   },
   {
-    icon: <RefreshCw className="h-6 w-6" />,
+    icon: <RefreshCw className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Re-engagement Campaigns',
     description:
       'Win back inactive users with targeted campaigns based on their last activity and engagement patterns.',
@@ -63,9 +64,6 @@ const useCases = [
   },
 ];
 
-/**
- *
- */
 export default function WorkflowsFeature() {
   return (
     <>
@@ -84,269 +82,299 @@ export default function WorkflowsFeature() {
 
       <Navbar />
 
-      <main className={'mx-auto max-w-7xl px-8 sm:px-0'}>
-        {/* Hero Section */}
-        <section className={'relative py-20 sm:py-32'}>
-          {/* Subtle background grid */}
+      <main className={'text-neutral-800'}>
+
+        {/* Hero */}
+        <section className={'relative overflow-hidden'}>
           <div
+            aria-hidden
             className={
-              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]'
+              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#eeeeee_1px,transparent_1px),linear-gradient(to_bottom,#eeeeee_1px,transparent_1px)] bg-[size:6rem_6rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_30%,#000_40%,transparent_95%)]'
             }
           />
-
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            animate={{opacity: 1, y: 0}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-4xl text-center'}
-          >
-            <div className={'mb-6 inline-flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-2 text-sm'}>
-              <Zap className="h-4 w-4 text-neutral-600" />
-              <span className={'font-medium text-neutral-600'}>Workflow Automation</span>
-            </div>
-
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
-              Email Automation
-              <br />
-              That Actually Works
-            </h1>
-            <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
-              Turn events into personalized email journeys. Build sophisticated automation workflows with our visual
-              no-code builder.
-            </p>
-
-            <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
-              <motion.a
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                href={`${DASHBOARD_URI}/auth/signup`}
+          <div className={'mx-auto max-w-[88rem] px-6 pb-20 pt-20 sm:px-10 sm:pt-28 sm:pb-28'}>
+            <motion.div
+              initial={{opacity: 0, y: 16}}
+              animate={{opacity: 1, y: 0}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+            >
+              <div
+                style={{fontFamily: 'var(--font-mono)'}}
+                className={'mb-6 text-[11px] uppercase tracking-[0.18em] text-neutral-500'}
+              >
+                Workflow Automation
+              </div>
+              <h1
+                style={{fontFamily: 'var(--font-display)'}}
                 className={
-                  'group rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-neutral-900/10 transition hover:bg-neutral-800'
+                  'text-[clamp(2.75rem,7vw,6.5rem)] font-extrabold leading-[0.92] tracking-[-0.04em] text-neutral-900'
                 }
               >
-                <span className={'flex items-center gap-2'}>
-                  Start building workflows
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </motion.a>
-              <Link
-                href={WIKI_URI}
-                target={'_blank'}
-                className={
-                  'rounded-lg border border-neutral-300 bg-white px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-400'
-                }
-              >
-                View documentation
-              </Link>
-            </div>
-          </motion.div>
-        </section>
+                Email automation
+                <br />
+                that actually works.
+              </h1>
+              <p className={'mt-6 max-w-2xl text-xl text-neutral-600'}>
+                Turn events into personalized email journeys. Build sophisticated automation workflows with our visual
+                no-code builder.
+              </p>
 
-        {/* Features Grid */}
-        <section className={'py-20'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mb-16 text-center'}
-          >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>
-              Everything you need for email automation
-            </h2>
-            <p className={'mt-4 text-lg text-neutral-600'}>Powerful features that make complex automations simple</p>
-          </motion.div>
-
-          <div className={'grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3'}>
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{opacity: 0, y: 20}}
-                whileInView={{opacity: 1, y: 0}}
-                viewport={{once: true}}
-                transition={{duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1]}}
-                className={'group bg-white p-10 transition hover:bg-neutral-50'}
-              >
-                <div
+              <div className={'mt-10 flex flex-wrap gap-3'}>
+                <motion.a
+                  whileHover={{scale: 1.015}}
+                  whileTap={{scale: 0.985}}
+                  href={`${DASHBOARD_URI}/auth/signup`}
                   className={
-                    'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white transition group-hover:scale-110'
+                    'group inline-flex items-center gap-2 rounded-full bg-neutral-900 px-8 py-4 text-base font-semibold text-white shadow-[0_10px_30px_-10px_rgba(23,23,23,0.35)] transition hover:bg-neutral-800'
                   }
                 >
-                  {feature.icon}
-                </div>
-                <h3 className={'mt-6 text-lg font-semibold text-neutral-900'}>{feature.title}</h3>
-                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>{feature.description}</p>
-              </motion.div>
-            ))}
+                  Start building workflows
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </motion.a>
+                <Link
+                  href={WIKI_URI}
+                  target={'_blank'}
+                  className={
+                    'inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-900'
+                  }
+                >
+                  View documentation
+                </Link>
+              </div>
+            </motion.div>
           </div>
         </section>
 
-        {/* How It Works */}
-        <section className={'py-20'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-4xl text-center'}
-          >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>
-              Visual workflow builder
-            </h2>
-            <p className={'mt-6 text-lg text-neutral-600'}>
-              Create complex email automations without writing a single line of code
-            </p>
-          </motion.div>
-
-          <div className={'mx-auto mt-16 max-w-5xl'}>
-            <div className={'grid gap-12 lg:grid-cols-3'}>
-
-              <motion.div
-                initial={{opacity: 0, y: 20}}
-                whileInView={{opacity: 1, y: 0}}
-                viewport={{once: true}}
-                transition={{duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1]}}
+        {/* Features grid */}
+        <section className={'border-t border-neutral-200'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+            <motion.div
+              initial={{opacity: 0, y: 20}}
+              whileInView={{opacity: 1, y: 0}}
+              viewport={{once: true}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+              className={'mb-16'}
+            >
+              <h2
+                style={{fontFamily: 'var(--font-display)'}}
+                className={
+                  'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'
+                }
               >
-                <div className={'mb-5 flex items-center gap-4'}>
-                  <div className={'flex h-14 w-14 items-center justify-center rounded-full border-2 border-neutral-200 bg-white text-xl font-bold text-neutral-900'}>
-                    1
-                  </div>
-                </div>
-                <h3 className={'text-lg font-semibold text-neutral-900'}>Choose a trigger</h3>
-                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>
-                  Select an event that starts your workflow, like user signup, purchase, or any custom action you track.
-                </p>
-              </motion.div>
+                Everything you need for email automation
+              </h2>
+              <p className={'mt-4 text-lg text-neutral-600'}>Powerful features that make complex automations simple</p>
+            </motion.div>
 
-              <motion.div
-                initial={{opacity: 0, y: 20}}
-                whileInView={{opacity: 1, y: 0}}
-                viewport={{once: true}}
-                transition={{duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1]}}
-              >
-                <div className={'mb-5 flex items-center gap-4'}>
-                  <div className={'flex h-14 w-14 items-center justify-center rounded-full border-2 border-neutral-200 bg-white text-xl font-bold text-neutral-900'}>
-                    2
-                  </div>
-                </div>
-                <h3 className={'text-lg font-semibold text-neutral-900'}>Build your flow</h3>
-                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>
-                  Drag and drop steps to create your workflow. Add emails, delays, conditions, webhooks, and more.
-                </p>
-              </motion.div>
-
-              <motion.div
-                initial={{opacity: 0, y: 20}}
-                whileInView={{opacity: 1, y: 0}}
-                viewport={{once: true}}
-                transition={{duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1]}}
-              >
-                <div className={'mb-5 flex items-center gap-4'}>
-                  <div className={'flex h-14 w-14 items-center justify-center rounded-full border-2 border-neutral-200 bg-white text-xl font-bold text-neutral-900'}>
-                    3
-                  </div>
-                </div>
-                <h3 className={'text-lg font-semibold text-neutral-900'}>Activate and monitor</h3>
-                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>
-                  Enable your workflow and watch it run automatically. Monitor executions in real-time with full
-                  visibility.
-                </p>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
-        {/* Use Cases */}
-        <section className={'py-20'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mb-16 text-center'}
-          >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>
-              Built for every use case
-            </h2>
-            <p className={'mt-4 text-lg text-neutral-600'}>From onboarding to re-engagement, workflows handle it all</p>
-          </motion.div>
-
-          <div className={'mx-auto max-w-5xl space-y-8'}>
-            {useCases.map((useCase, index) => (
-              <motion.div
-                key={useCase.title}
-                initial={{opacity: 0, y: 20}}
-                whileInView={{opacity: 1, y: 0}}
-                viewport={{once: true}}
-                transition={{duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1]}}
-                className={'rounded-xl border border-neutral-200 bg-white p-8'}
-              >
-                <div className={'flex items-start gap-6'}>
-                  <div
+            <div className={'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'}>
+              {features.map((feature, index) => {
+                const highlighted = feature.featured;
+                return (
+                  <motion.div
+                    key={feature.title}
+                    initial={{opacity: 0, y: 16}}
+                    whileInView={{opacity: 1, y: 0}}
+                    viewport={{once: true}}
+                    transition={{duration: 0.5, delay: index * 0.06, ease: [0.22, 1, 0.36, 1]}}
                     className={
-                      'flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-neutral-900 text-white'
+                      highlighted
+                        ? 'flex min-h-[16rem] flex-col justify-between rounded-[28px] border border-neutral-900 bg-neutral-900 p-8 text-white'
+                        : 'flex min-h-[16rem] flex-col justify-between rounded-[28px] border border-neutral-200 bg-white p-8 transition hover:border-neutral-900'
                     }
                   >
-                    {useCase.icon}
-                  </div>
-                  <div className={'flex-1'}>
-                    <h3 className={'text-xl font-semibold text-neutral-900'}>{useCase.title}</h3>
-                    <p className={'mt-2 text-neutral-600'}>{useCase.description}</p>
-                    <div className={'mt-4 rounded-lg bg-neutral-50 p-4'}>
-                      <p className={'font-mono text-sm text-neutral-700'}>{useCase.example}</p>
+                    <div className={'flex items-start justify-between'}>
+                      <div className={highlighted ? 'text-white' : 'text-neutral-900'}>{feature.icon}</div>
+                      <span
+                        style={{fontFamily: 'var(--font-mono)'}}
+                        className={`text-[11px] uppercase tracking-[0.18em] ${highlighted ? 'text-neutral-500' : 'text-neutral-400'}`}
+                      >
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
                     </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                    <div>
+                      <h3
+                        style={{fontFamily: 'var(--font-display)'}}
+                        className={`mt-8 text-xl font-bold tracking-[-0.02em] ${highlighted ? 'text-white' : 'text-neutral-900'}`}
+                      >
+                        {feature.title}
+                      </h3>
+                      <p className={`mt-2 text-sm leading-relaxed ${highlighted ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                        {feature.description}
+                      </p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className={'relative overflow-hidden border-t border-neutral-200 py-20'}>
-          <div
-            className={
-              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
-            }
-          />
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-3xl text-center'}
-          >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>
-              Set up your first workflow in minutes
-            </h2>
-            <p className={'mt-6 text-lg text-neutral-600'}>
-              1,000 emails free every month. Then $0.001 per email. No contact limits, no credit card required.
-            </p>
-            <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
-              <motion.a
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                href={`${DASHBOARD_URI}/auth/signup`}
-                className={
-                  'group rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white transition hover:bg-neutral-800'
-                }
+        {/* How it works */}
+        <section className={'border-t border-neutral-200 bg-neutral-50/60'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+            <motion.div
+              initial={{opacity: 0, y: 20}}
+              whileInView={{opacity: 1, y: 0}}
+              viewport={{once: true}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+              className={'mb-16 text-center'}
+            >
+              <h2
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'}
               >
-                <span className={'flex items-center gap-2'}>
-                  Get started for free
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </motion.a>
-              <Link
-                href={'/pricing'}
-                className={
-                  'rounded-lg border border-neutral-300 px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-400'
-                }
-              >
-                View pricing
-              </Link>
+                Visual workflow builder
+              </h2>
+              <p className={'mt-4 text-lg text-neutral-600'}>
+                Create complex email automations without writing a single line of code
+              </p>
+            </motion.div>
+
+            <div className={'mx-auto max-w-4xl'}>
+              <div className={'grid gap-px bg-neutral-200 sm:grid-cols-3'}>
+                {[
+                  {
+                    step: '01',
+                    title: 'Choose a trigger',
+                    body: 'Select an event that starts your workflow, like user signup, purchase, or any custom action you track.',
+                  },
+                  {
+                    step: '02',
+                    title: 'Build your flow',
+                    body: 'Drag and drop steps to create your workflow. Add emails, delays, conditions, webhooks, and more.',
+                  },
+                  {
+                    step: '03',
+                    title: 'Activate and monitor',
+                    body: 'Enable your workflow and watch it run automatically. Monitor executions in real-time with full visibility.',
+                  },
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.step}
+                    initial={{opacity: 0, y: 20}}
+                    whileInView={{opacity: 1, y: 0}}
+                    viewport={{once: true}}
+                    transition={{duration: 0.5, delay: i * 0.1, ease: [0.22, 1, 0.36, 1]}}
+                    className={'bg-white p-10'}
+                  >
+                    <div
+                      style={{fontFamily: 'var(--font-mono)'}}
+                      className={'mb-6 text-[11px] uppercase tracking-[0.18em] text-neutral-400'}
+                    >
+                      Step {item.step}
+                    </div>
+                    <h3 className={'text-lg font-semibold text-neutral-900'}>{item.title}</h3>
+                    <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>{item.body}</p>
+                  </motion.div>
+                ))}
+              </div>
             </div>
-          </motion.div>
+          </div>
         </section>
+
+        {/* Use cases */}
+        <section className={'border-t border-neutral-200'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+            <motion.div
+              initial={{opacity: 0, y: 20}}
+              whileInView={{opacity: 1, y: 0}}
+              viewport={{once: true}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+              className={'mb-16'}
+            >
+              <h2
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'}
+              >
+                Built for every use case
+              </h2>
+              <p className={'mt-4 text-lg text-neutral-600'}>From onboarding to re-engagement, workflows handle it all</p>
+            </motion.div>
+
+            <div className={'space-y-4'}>
+              {useCases.map((useCase, index) => (
+                <motion.div
+                  key={useCase.title}
+                  initial={{opacity: 0, y: 20}}
+                  whileInView={{opacity: 1, y: 0}}
+                  viewport={{once: true}}
+                  transition={{duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1]}}
+                  className={'rounded-[24px] border border-neutral-200 bg-white p-8'}
+                >
+                  <div className={'flex items-start gap-6'}>
+                    <div className={'flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-900'}>
+                      {useCase.icon}
+                    </div>
+                    <div className={'flex-1'}>
+                      <h3
+                        style={{fontFamily: 'var(--font-display)'}}
+                        className={'text-xl font-bold tracking-[-0.02em] text-neutral-900'}
+                      >
+                        {useCase.title}
+                      </h3>
+                      <p className={'mt-2 text-neutral-600'}>{useCase.description}</p>
+                      <div className={'mt-4 rounded-xl border border-neutral-100 bg-neutral-50 p-4'}>
+                        <p
+                          style={{fontFamily: 'var(--font-mono)'}}
+                          className={'text-sm text-neutral-600'}
+                        >
+                          {useCase.example}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className={'relative overflow-hidden border-t border-neutral-900 bg-neutral-900 text-white'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-32 sm:px-10 sm:py-40'}>
+            <div className={'flex flex-col items-start gap-12 lg:flex-row lg:items-end lg:justify-between'}>
+              <motion.h2
+                initial={{opacity: 0, y: 16}}
+                whileInView={{opacity: 1, y: 0}}
+                viewport={{once: true}}
+                transition={{duration: 0.9, ease: [0.22, 1, 0.36, 1]}}
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2.5rem,7vw,6rem)] font-extrabold leading-[0.95] tracking-[-0.035em]'}
+              >
+                Set up your first workflow in minutes.
+              </motion.h2>
+              <motion.div
+                initial={{opacity: 0, y: 16}}
+                whileInView={{opacity: 1, y: 0}}
+                viewport={{once: true}}
+                transition={{duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1]}}
+                className={'flex max-w-md flex-col gap-6'}
+              >
+                <p className={'text-base text-neutral-300 sm:text-lg'}>
+                  Free plan available. $0.001 per email on paid. No credit card required.
+                </p>
+                <div className={'flex flex-wrap gap-3'}>
+                  <motion.a
+                    whileHover={{scale: 1.015}}
+                    whileTap={{scale: 0.985}}
+                    href={`${DASHBOARD_URI}/auth/signup`}
+                    className={'inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-100'}
+                  >
+                    Get started for free
+                    <ArrowRight className="h-4 w-4" />
+                  </motion.a>
+                  <Link
+                    href={'/pricing'}
+                    className={'inline-flex items-center gap-2 rounded-full border border-neutral-700 px-7 py-3.5 text-sm font-semibold text-white transition hover:border-white'}
+                  >
+                    View pricing
+                  </Link>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
       </main>
 
       <Footer />

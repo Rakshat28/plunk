@@ -3,7 +3,19 @@ import React from 'react';
 import {Footer, Navbar} from '../components';
 import {motion} from 'framer-motion';
 import {DASHBOARD_URI} from '../lib/constants';
-import {ArrowRight, BarChart3, Code2, Globe, Mail, PackageOpen, Shield, Users, Zap, X, Check} from 'lucide-react';
+import {
+  ArrowRight,
+  BarChart3,
+  Code2,
+  Globe,
+  Mail,
+  PackageOpen,
+  Shield,
+  Users,
+  Zap,
+  X,
+  Check,
+} from 'lucide-react';
 import Link from 'next/link';
 import {GithubIcon} from 'lucide-react';
 
@@ -55,9 +67,6 @@ const includedFeatures = [
   },
 ];
 
-/**
- *
- */
 export default function Pricing() {
   return (
     <>
@@ -69,232 +78,295 @@ export default function Pricing() {
         openGraph={{
           title: 'Plunk Pricing | The Open-Source Email Platform',
           description:
-            'Transparent email pricing at $0.001 per email with no contact limits. Free plan includes 1,000 emails/month across transactional, workflow, and campaign emails. No hidden fees, pay only for what you use.',
+            'Transparent email pricing at $0.001 per email with no contact limits. Free plan includes 1,000 emails/month. No hidden fees.',
         }}
-        additionalMetaTags={[
-          {
-            property: 'title',
-            content: 'Plunk Pricing | The Open-Source Email Platform',
-          },
-        ]}
+        additionalMetaTags={[{property: 'title', content: 'Plunk Pricing | The Open-Source Email Platform'}]}
       />
 
       <Navbar />
 
-      <main className={'mx-auto max-w-7xl px-8 sm:px-0'}>
+      <main className={'text-neutral-800'}>
+
         {/* Hero */}
-        <section className={'relative py-20 sm:py-32'}>
+        <section className={'relative overflow-hidden'}>
           <div
+            aria-hidden
             className={
-              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]'
+              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#eeeeee_1px,transparent_1px),linear-gradient(to_bottom,#eeeeee_1px,transparent_1px)] bg-[size:6rem_6rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_30%,#000_40%,transparent_95%)]'
             }
           />
-
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            animate={{opacity: 1, y: 0}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-4xl text-center'}
-          >
-            <h1 className="text-5xl font-bold tracking-tight text-neutral-900 sm:text-6xl lg:text-7xl text-balance">
-              Simple, transparent pricing
-            </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-xl text-neutral-600">
-              1,000 emails free every month. Then $0.001 per email. Unlimited contacts, no hidden fees.
-            </p>
-          </motion.div>
+          <div className={'mx-auto max-w-[88rem] px-6 pb-20 pt-20 sm:px-10 sm:pt-28 sm:pb-28'}>
+            <motion.div
+              initial={{opacity: 0, y: 16}}
+              animate={{opacity: 1, y: 0}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+              className={'mx-auto max-w-4xl text-center'}
+            >
+              <h1
+                style={{fontFamily: 'var(--font-display)'}}
+                className={
+                  'text-[clamp(2.75rem,7vw,6.5rem)] font-extrabold leading-[0.92] tracking-[-0.04em] text-neutral-900'
+                }
+              >
+                Simple, transparent pricing
+              </h1>
+              <p className={'mx-auto mt-6 max-w-2xl text-xl text-neutral-600'}>
+                Free plan: 1,000 emails per month. Paid plan: $0.001 per email. Unlimited contacts, no hidden fees.
+              </p>
+            </motion.div>
+          </div>
         </section>
 
         {/* Pricing tiers */}
-        <section className={'pb-20'}>
-          <div className={'mx-auto grid max-w-4xl gap-px bg-neutral-200 sm:grid-cols-2'}>
-            {/* Free */}
-            <motion.div
-              initial={{opacity: 0, y: 20}}
-              animate={{opacity: 1, y: 0}}
-              transition={{delay: 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1]}}
-              className={'flex flex-col bg-white p-10'}
-            >
-              <p className={'text-sm font-semibold uppercase tracking-widest text-neutral-400'}>Free forever</p>
-              <div className={'mt-4 flex items-baseline gap-2'}>
-                <span className={'text-6xl font-bold tracking-tight text-neutral-900'}>1,000</span>
-                <span className={'text-lg text-neutral-500'}>emails / mo</span>
-              </div>
-              <p className={'mt-2 text-sm text-neutral-500'}>No credit card required</p>
-
-              <ul className={'mt-8 flex-1 space-y-3'}>
-                {['Transactional emails', 'Workflow automation', 'Campaign broadcasts', 'Custom domains', 'Click & open tracking', 'Unlimited contacts'].map(item => (
-                  <li key={item} className={'flex items-center gap-3 text-sm text-neutral-600'}>
-                    <Check className={'h-4 w-4 flex-shrink-0 text-neutral-900'} />
-                    {item}
-                  </li>
-                ))}
-                <li className={'flex items-center gap-3 text-sm text-neutral-400'}>
-                  <X className={'h-4 w-4 flex-shrink-0'} />
-                  Plunk branding on emails
-                </li>
-              </ul>
-
-              <motion.a
-                href={`${DASHBOARD_URI}/auth/signup`}
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                className={'mt-10 block w-full rounded-lg border border-neutral-300 px-6 py-3 text-center text-sm font-semibold text-neutral-900 transition hover:border-neutral-400'}
+        <section className={'border-t border-neutral-200'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+            <div className={'mx-auto grid max-w-4xl gap-px bg-neutral-200 sm:grid-cols-2'}>
+              {/* Free */}
+              <motion.div
+                initial={{opacity: 0, y: 20}}
+                animate={{opacity: 1, y: 0}}
+                transition={{delay: 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1]}}
+                className={'flex flex-col bg-white p-10'}
               >
-                Start for free
-              </motion.a>
-            </motion.div>
+                <p
+                  style={{fontFamily: 'var(--font-mono)'}}
+                  className={'text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-400'}
+                >
+                  Free forever
+                </p>
+                <div className={'mt-4 flex items-baseline gap-2'}>
+                  <span
+                    style={{fontFamily: 'var(--font-display)'}}
+                    className={'text-6xl font-extrabold tracking-[-0.03em] text-neutral-900'}
+                  >
+                    1,000
+                  </span>
+                  <span className={'text-lg text-neutral-500'}>emails / mo</span>
+                </div>
+                <p className={'mt-2 text-sm text-neutral-500'}>No credit card required</p>
 
-            {/* Pay as you grow */}
-            <motion.div
-              initial={{opacity: 0, y: 20}}
-              animate={{opacity: 1, y: 0}}
-              transition={{delay: 0.2, duration: 0.6, ease: [0.22, 1, 0.36, 1]}}
-              className={'flex flex-col bg-white p-10'}
-            >
-              <p className={'text-sm font-semibold uppercase tracking-widest text-neutral-400'}>Pay as you grow</p>
-              <div className={'mt-4 flex items-baseline gap-2'}>
-                <span className={'text-6xl font-bold tracking-tight text-neutral-900'}>$0.001</span>
-                <span className={'text-lg text-neutral-500'}>/ email</span>
-              </div>
-              <p className={'mt-2 text-sm'}>&nbsp;</p>
-
-              <ul className={'mt-8 flex-1 space-y-3'}>
-                {['Everything in Free', 'No Plunk branding', 'Monthly spend cap', 'Unlimited emails'].map(item => (
-                  <li key={item} className={'flex items-center gap-3 text-sm text-neutral-600'}>
-                    <Check className={'h-4 w-4 flex-shrink-0 text-neutral-900'} />
-                    {item}
+                <ul className={'mt-8 flex-1 space-y-3'}>
+                  {[
+                    'Transactional emails',
+                    'Workflow automation',
+                    'Campaign broadcasts',
+                    'Custom domains',
+                    'Click & open tracking',
+                    'Unlimited contacts',
+                  ].map(item => (
+                    <li key={item} className={'flex items-center gap-3 text-sm text-neutral-600'}>
+                      <Check className={'h-4 w-4 flex-shrink-0 text-neutral-900'} />
+                      {item}
+                    </li>
+                  ))}
+                  <li className={'flex items-center gap-3 text-sm text-neutral-400'}>
+                    <X className={'h-4 w-4 flex-shrink-0'} />
+                    Plunk branding on emails
                   </li>
-                ))}
-              </ul>
+                </ul>
 
-              <motion.a
-                href={`${DASHBOARD_URI}/auth/signup`}
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                className={'mt-10 block w-full rounded-lg bg-neutral-900 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-neutral-800'}
+                <motion.a
+                  href={`${DASHBOARD_URI}/auth/signup`}
+                  whileHover={{scale: 1.02}}
+                  whileTap={{scale: 0.98}}
+                  className={
+                    'mt-10 block w-full rounded-full border border-neutral-300 px-6 py-3 text-center text-sm font-semibold text-neutral-900 transition hover:border-neutral-900'
+                  }
+                >
+                  Start for free
+                </motion.a>
+              </motion.div>
+
+              {/* Pay as you grow */}
+              <motion.div
+                initial={{opacity: 0, y: 20}}
+                animate={{opacity: 1, y: 0}}
+                transition={{delay: 0.2, duration: 0.6, ease: [0.22, 1, 0.36, 1]}}
+                className={'flex flex-col bg-neutral-900 p-10 text-white'}
               >
-                Get started
+                <p
+                  style={{fontFamily: 'var(--font-mono)'}}
+                  className={'text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-400'}
+                >
+                  Pay as you grow
+                </p>
+                <div className={'mt-4 flex items-baseline gap-2'}>
+                  <span
+                    style={{fontFamily: 'var(--font-display)'}}
+                    className={'text-6xl font-extrabold tracking-[-0.03em] text-white'}
+                  >
+                    $0.001
+                  </span>
+                  <span className={'text-lg text-neutral-400'}>/ email</span>
+                </div>
+                <p className={'mt-2 text-sm'}>&nbsp;</p>
 
-              </motion.a>
-            </motion.div>
+                <ul className={'mt-8 flex-1 space-y-3'}>
+                  {['Everything in Free', 'No Plunk branding', 'Monthly spend cap', 'Unlimited emails'].map(item => (
+                    <li key={item} className={'flex items-center gap-3 text-sm text-neutral-300'}>
+                      <Check className={'h-4 w-4 flex-shrink-0 text-white'} />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+
+                <motion.a
+                  href={`${DASHBOARD_URI}/auth/signup`}
+                  whileHover={{scale: 1.02}}
+                  whileTap={{scale: 0.98}}
+                  className={
+                    'mt-10 block w-full rounded-full bg-white px-6 py-3 text-center text-sm font-semibold text-neutral-900 transition hover:bg-neutral-100'
+                  }
+                >
+                  Get started
+                </motion.a>
+              </motion.div>
+            </div>
           </div>
         </section>
 
         {/* Every feature included */}
-        <section className={'py-20'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mb-16 text-center'}
-          >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>
-              Every feature on every plan
-            </h2>
-            <p className={'mt-4 text-lg text-neutral-600'}>No feature tiers, no add-ons, no surprises</p>
-          </motion.div>
-
-          <div className={'grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3'}>
-            {includedFeatures.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{opacity: 0, y: 20}}
-                whileInView={{opacity: 1, y: 0}}
-                viewport={{once: true}}
-                transition={{duration: 0.5, delay: index * 0.05, ease: [0.22, 1, 0.36, 1]}}
-                className={'group bg-white p-10 transition hover:bg-neutral-50'}
+        <section className={'border-t border-neutral-200 bg-neutral-50/60'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+            <motion.div
+              initial={{opacity: 0, y: 20}}
+              whileInView={{opacity: 1, y: 0}}
+              viewport={{once: true}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+              className={'mb-16 text-center'}
+            >
+              <h2
+                style={{fontFamily: 'var(--font-display)'}}
+                className={
+                  'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'
+                }
               >
-                <div className={'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white transition group-hover:scale-110'}>
-                  {feature.icon}
-                </div>
-                <h3 className={'mt-6 text-lg font-semibold text-neutral-900'}>{feature.title}</h3>
-                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>{feature.description}</p>
-              </motion.div>
-            ))}
+                Every feature on every plan
+              </h2>
+              <p className={'mt-4 text-lg text-neutral-600'}>No feature tiers, no add-ons, no surprises</p>
+            </motion.div>
+
+            <div className={'grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3'}>
+              {includedFeatures.map((feature, index) => (
+                <motion.div
+                  key={feature.title}
+                  initial={{opacity: 0, y: 20}}
+                  whileInView={{opacity: 1, y: 0}}
+                  viewport={{once: true}}
+                  transition={{duration: 0.5, delay: index * 0.05, ease: [0.22, 1, 0.36, 1]}}
+                  className={'group bg-white p-10 transition hover:bg-neutral-50'}
+                >
+                  <div className={'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white'}>
+                    {feature.icon}
+                  </div>
+                  <h3 className={'mt-6 text-lg font-semibold text-neutral-900'}>{feature.title}</h3>
+                  <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>{feature.description}</p>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </section>
 
         {/* Self-host */}
-        <section className={'py-20'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'overflow-hidden rounded-xl border border-neutral-200 bg-white'}
-          >
-            <div className={'flex flex-col items-center gap-6 p-10 sm:flex-row sm:gap-0'}>
-              <div className={'flex-1 text-center sm:text-left'}>
-                <div className={'mb-3 inline-flex items-center gap-2 rounded-full bg-neutral-100 px-3 py-1 text-sm font-medium text-neutral-700'}>
-                  <PackageOpen className={'h-3.5 w-3.5'} />
-                  Self-hostable
+        <section className={'border-t border-neutral-200'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+            <motion.div
+              initial={{opacity: 0, y: 20}}
+              whileInView={{opacity: 1, y: 0}}
+              viewport={{once: true}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+              className={'overflow-hidden rounded-[24px] border border-neutral-200 bg-white'}
+            >
+              <div className={'flex flex-col items-center gap-6 p-10 sm:flex-row sm:gap-0'}>
+                <div className={'flex-1 text-center sm:text-left'}>
+                  <div
+                    style={{fontFamily: 'var(--font-mono)'}}
+                    className={'mb-3 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-neutral-500'}
+                  >
+                    <PackageOpen className={'h-3.5 w-3.5'} />
+                    Self-hostable
+                  </div>
+                  <h2
+                    style={{fontFamily: 'var(--font-display)'}}
+                    className={'text-2xl font-bold tracking-[-0.025em] text-neutral-900'}
+                  >
+                    Run it on your own infrastructure
+                  </h2>
+                  <p className={'mt-2 text-neutral-600'}>
+                    Full data ownership, no per-email costs, and GDPR compliance by default. Deploy with Docker Compose
+                    in minutes.
+                  </p>
                 </div>
-                <h2 className={'text-2xl font-bold text-neutral-900'}>Run it on your own infrastructure</h2>
-                <p className={'mt-2 text-neutral-600'}>
-                  Full data ownership, no per-email costs, and GDPR compliance by default. Deploy with Docker Compose in minutes.
-                </p>
+                <div className={'sm:ml-auto sm:pl-8'}>
+                  <motion.button
+                    onClick={() => window.open('https://github.com/useplunk/plunk', '_blank')}
+                    whileHover={{scale: 1.02}}
+                    whileTap={{scale: 0.98}}
+                    className={
+                      'flex w-full items-center justify-center gap-x-3 rounded-full bg-neutral-900 px-6 py-3 text-base font-semibold text-white transition hover:bg-neutral-800 sm:w-auto'
+                    }
+                  >
+                    <GithubIcon size={18} />
+                    View on GitHub
+                  </motion.button>
+                </div>
               </div>
-              <div className={'sm:ml-auto sm:pl-8'}>
-                <motion.button
-                  onClick={() => {
-                    window.open('https://github.com/useplunk/plunk', '_blank');
-                  }}
-                  whileHover={{scale: 1.02}}
-                  whileTap={{scale: 0.98}}
-                  className={'flex w-full items-center justify-center gap-x-3 rounded-lg bg-neutral-900 px-6 py-3 text-base font-semibold text-white transition hover:bg-neutral-800 sm:w-auto'}
-                >
-                  <GithubIcon size={18} />
-                  View on GitHub
-                </motion.button>
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </section>
 
         {/* CTA */}
-        <section className={'relative overflow-hidden border-t border-neutral-200 py-20'}>
-          <div
-            className={
-              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
-            }
-          />
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-3xl text-center'}
-          >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>
-              Start sending in 5 minutes
-            </h2>
-            <p className={'mt-6 text-lg text-neutral-600'}>
-              1,000 emails free every month. No credit card required.
-            </p>
-            <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
-              <motion.a
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                href={`${DASHBOARD_URI}/auth/signup`}
-                className={'group rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white transition hover:bg-neutral-800'}
+        <section className={'relative overflow-hidden border-t border-neutral-900 bg-neutral-900 text-white'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-32 sm:px-10 sm:py-40'}>
+            <div className={'flex flex-col items-start gap-12 lg:flex-row lg:items-end lg:justify-between'}>
+              <motion.h2
+                initial={{opacity: 0, y: 16}}
+                whileInView={{opacity: 1, y: 0}}
+                viewport={{once: true}}
+                transition={{duration: 0.9, ease: [0.22, 1, 0.36, 1]}}
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2.5rem,7vw,6rem)] font-extrabold leading-[0.95] tracking-[-0.035em]'}
               >
-                <span className={'flex items-center gap-2'}>
-                  Create free account
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </motion.a>
-              <Link
-                href={'https://github.com/useplunk/plunk'}
-                target={'_blank'}
-                className={'rounded-lg border border-neutral-300 px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-400'}
+                Start sending in 5 minutes.
+              </motion.h2>
+
+              <motion.div
+                initial={{opacity: 0, y: 16}}
+                whileInView={{opacity: 1, y: 0}}
+                viewport={{once: true}}
+                transition={{duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1]}}
+                className={'flex max-w-md flex-col gap-6'}
               >
-                Self-host for free
-              </Link>
+                <p className={'text-base text-neutral-300 sm:text-lg'}>
+                  Start free. No credit card required.
+                </p>
+                <div className={'flex flex-wrap gap-3'}>
+                  <motion.a
+                    whileHover={{scale: 1.015}}
+                    whileTap={{scale: 0.985}}
+                    href={`${DASHBOARD_URI}/auth/signup`}
+                    className={
+                      'inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-100'
+                    }
+                  >
+                    Create free account
+                    <ArrowRight className="h-4 w-4" />
+                  </motion.a>
+                  <Link
+                    href={'https://github.com/useplunk/plunk'}
+                    target={'_blank'}
+                    className={
+                      'inline-flex items-center gap-2 rounded-full border border-neutral-700 px-7 py-3.5 text-sm font-semibold text-white transition hover:border-white'
+                    }
+                  >
+                    Self-host for free
+                  </Link>
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
+          </div>
         </section>
+
       </main>
 
       <Footer />

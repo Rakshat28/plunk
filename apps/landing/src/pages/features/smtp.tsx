@@ -8,34 +8,33 @@ import Head from 'next/head';
 
 const features = [
   {
-    icon: <Settings className="h-5 w-5" />,
+    icon: <Settings className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Simple Configuration',
     description: 'Quick setup with your project credentials. Works with any email client or application.',
+    featured: true,
   },
   {
-    icon: <Lock className="h-5 w-5" />,
+    icon: <Lock className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Secure Connections',
     description: 'TLS/SSL encryption on ports 465 and 587. Your emails are always transmitted securely.',
   },
   {
-    icon: <Mail className="h-5 w-5" />,
+    icon: <Mail className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Universal Compatibility',
-    description:
-      'Works with Outlook, Thunderbird, Apple Mail, or any SMTP-compatible application. Even that ancient email client from 2005.',
+    description: 'Works with Outlook, Thunderbird, Apple Mail, or any SMTP-compatible application.',
   },
   {
-    icon: <Server className="h-5 w-5" />,
+    icon: <Server className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Domain Validation',
     description: 'Automatic verification that your sender domain is verified before accepting emails.',
   },
   {
-    icon: <Shield className="h-5 w-5" />,
+    icon: <Shield className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Full Feature Support',
-    description:
-      'Attachments, custom headers, HTML emails, and multiple recipients. Send those cat memes with confidence.',
+    description: 'Attachments, custom headers, HTML emails, and multiple recipients.',
   },
   {
-    icon: <Code2 className="h-5 w-5" />,
+    icon: <Code2 className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Same Infrastructure',
     description: 'SMTP emails use the same reliable delivery infrastructure as API emails with full tracking.',
   },
@@ -54,21 +53,21 @@ const comparisonData = [
 
 const useCases = [
   {
-    icon: <Settings className="h-6 w-6" />,
+    icon: <Settings className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Legacy System Integration',
     description:
-      'Already have applications using SMTP? No need to rewrite code. Just swap your SMTP credentials and keep everything else the same. Your PM will love you.',
+      'Already have applications using SMTP? No need to rewrite code. Just swap your SMTP credentials and keep everything else the same.',
     benefit: 'Zero code changes required',
   },
   {
-    icon: <Mail className="h-6 w-6" />,
+    icon: <Mail className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Email Client Sending',
     description:
       'Marketing teams can send emails directly from Outlook, Thunderbird, or Apple Mail using familiar tools without learning new APIs.',
     benefit: 'No technical knowledge needed',
   },
   {
-    icon: <Code2 className="h-6 w-6" />,
+    icon: <Code2 className="h-6 w-6" strokeWidth={1.5} />,
     title: 'Framework Compatibility',
     description:
       'Works with any framework or language that supports SMTP. Perfect for older systems or platforms without HTTP API support.',
@@ -76,9 +75,6 @@ const useCases = [
   },
 ];
 
-/**
- *
- */
 export default function SMTPFeature() {
   return (
     <>
@@ -97,236 +93,283 @@ export default function SMTPFeature() {
 
       <Navbar />
 
-      <main className={'mx-auto max-w-7xl px-8 sm:px-0'}>
-        {/* Hero Section */}
-        <section className={'relative py-20 sm:py-32'}>
-          {/* Subtle background grid */}
+      <main className={'text-neutral-800'}>
+
+        {/* Hero */}
+        <section className={'relative overflow-hidden'}>
           <div
+            aria-hidden
             className={
-              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]'
+              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#eeeeee_1px,transparent_1px),linear-gradient(to_bottom,#eeeeee_1px,transparent_1px)] bg-[size:6rem_6rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_30%,#000_40%,transparent_95%)]'
             }
           />
-
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            animate={{opacity: 1, y: 0}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-4xl text-center'}
-          >
-            <div className={'mb-6 inline-flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-2 text-sm'}>
-              <Server className="h-4 w-4 text-neutral-600" />
-              <span className={'font-medium text-neutral-600'}>SMTP Email Sending</span>
-            </div>
-
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
-              Send Emails via SMTP or API
-            </h1>
-            <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
-              Use our HTTP API for modern apps or drop in SMTP credentials for any legacy system. Same deliverability, same pricing, zero lock-in.
-            </p>
-
-            <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
-              <motion.a
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                href={`${DASHBOARD_URI}/auth/signup`}
+          <div className={'mx-auto max-w-[88rem] px-6 pb-20 pt-20 sm:px-10 sm:pt-28 sm:pb-28'}>
+            <motion.div
+              initial={{opacity: 0, y: 16}}
+              animate={{opacity: 1, y: 0}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+            >
+              <div
+                style={{fontFamily: 'var(--font-mono)'}}
+                className={'mb-6 text-[11px] uppercase tracking-[0.18em] text-neutral-500'}
+              >
+                SMTP
+              </div>
+              <h1
+                style={{fontFamily: 'var(--font-display)'}}
                 className={
-                  'group rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-neutral-900/10 transition hover:bg-neutral-800'
+                  'text-[clamp(2.75rem,7vw,6.5rem)] font-extrabold leading-[0.92] tracking-[-0.04em] text-neutral-900'
                 }
               >
-                <span className={'flex items-center gap-2'}>
-                  Get SMTP credentials
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </motion.a>
-              <Link
-                href={WIKI_URI}
-                target={'_blank'}
-                className={
-                  'rounded-lg border border-neutral-300 bg-white px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-400'
-                }
-              >
-                View documentation
-              </Link>
-            </div>
-          </motion.div>
-        </section>
+                Send via SMTP
+                <br />
+                or API. Your call.
+              </h1>
+              <p className={'mt-6 max-w-2xl text-xl text-neutral-600'}>
+                Use our HTTP API for modern apps or drop in SMTP credentials for any legacy system. Same deliverability,
+                same pricing, zero lock-in.
+              </p>
 
-        {/* Features Grid */}
-        <section className={'py-20'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mb-16 text-center'}
-          >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>SMTP that works with everything</h2>
-            <p className={'mt-4 text-lg text-neutral-600'}>Full authentication, tracking, and deliverability out of the box</p>
-          </motion.div>
-
-          <div className={'grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3'}>
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{opacity: 0, y: 20}}
-                whileInView={{opacity: 1, y: 0}}
-                viewport={{once: true}}
-                transition={{duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1]}}
-                className={'group bg-white p-10 transition hover:bg-neutral-50'}
-              >
-                <div
+              <div className={'mt-10 flex flex-wrap gap-3'}>
+                <motion.a
+                  whileHover={{scale: 1.015}}
+                  whileTap={{scale: 0.985}}
+                  href={`${DASHBOARD_URI}/auth/signup`}
                   className={
-                    'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white transition group-hover:scale-110'
+                    'group inline-flex items-center gap-2 rounded-full bg-neutral-900 px-8 py-4 text-base font-semibold text-white shadow-[0_10px_30px_-10px_rgba(23,23,23,0.35)] transition hover:bg-neutral-800'
                   }
                 >
-                  {feature.icon}
-                </div>
-                <h3 className={'mt-6 text-lg font-semibold text-neutral-900'}>{feature.title}</h3>
-                <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>{feature.description}</p>
-              </motion.div>
-            ))}
+                  Get SMTP credentials
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </motion.a>
+                <Link
+                  href={WIKI_URI}
+                  target={'_blank'}
+                  className={
+                    'inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-900'
+                  }
+                >
+                  View documentation
+                </Link>
+              </div>
+            </motion.div>
           </div>
         </section>
 
-        {/* Comparison Table */}
-        <section className={'py-20'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mb-12 text-center'}
-          >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>SMTP vs API</h2>
-            <p className={'mt-4 text-lg text-neutral-600'}>Choose the right option for your use case</p>
-          </motion.div>
+        {/* Features grid */}
+        <section className={'border-t border-neutral-200'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+            <motion.div
+              initial={{opacity: 0, y: 20}}
+              whileInView={{opacity: 1, y: 0}}
+              viewport={{once: true}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+              className={'mb-16'}
+            >
+              <h2
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'}
+              >
+                SMTP that works with everything
+              </h2>
+              <p className={'mt-4 text-lg text-neutral-600'}>
+                Full authentication, tracking, and deliverability out of the box
+              </p>
+            </motion.div>
 
-          <div className={'mx-auto max-w-4xl'}>
-            <div className={'overflow-hidden rounded-xl border border-neutral-200 bg-white'}>
+            <div className={'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'}>
+              {features.map((feature, index) => {
+                const highlighted = feature.featured;
+                return (
+                  <motion.div
+                    key={feature.title}
+                    initial={{opacity: 0, y: 16}}
+                    whileInView={{opacity: 1, y: 0}}
+                    viewport={{once: true}}
+                    transition={{duration: 0.5, delay: index * 0.06, ease: [0.22, 1, 0.36, 1]}}
+                    className={
+                      highlighted
+                        ? 'flex min-h-[16rem] flex-col justify-between rounded-[28px] border border-neutral-900 bg-neutral-900 p-8 text-white'
+                        : 'flex min-h-[16rem] flex-col justify-between rounded-[28px] border border-neutral-200 bg-white p-8 transition hover:border-neutral-900'
+                    }
+                  >
+                    <div className={'flex items-start justify-between'}>
+                      <div className={highlighted ? 'text-white' : 'text-neutral-900'}>{feature.icon}</div>
+                      <span
+                        style={{fontFamily: 'var(--font-mono)'}}
+                        className={`text-[11px] uppercase tracking-[0.18em] ${highlighted ? 'text-neutral-500' : 'text-neutral-400'}`}
+                      >
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                    </div>
+                    <div>
+                      <h3
+                        style={{fontFamily: 'var(--font-display)'}}
+                        className={`mt-8 text-xl font-bold tracking-[-0.02em] ${highlighted ? 'text-white' : 'text-neutral-900'}`}
+                      >
+                        {feature.title}
+                      </h3>
+                      <p className={`mt-2 text-sm leading-relaxed ${highlighted ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                        {feature.description}
+                      </p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Comparison table */}
+        <section className={'border-t border-neutral-200 bg-neutral-50/60'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+            <motion.div
+              initial={{opacity: 0, y: 20}}
+              whileInView={{opacity: 1, y: 0}}
+              viewport={{once: true}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+              className={'mb-12'}
+            >
+              <h2
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'}
+              >
+                SMTP vs API
+              </h2>
+              <p className={'mt-4 text-lg text-neutral-600'}>Choose the right option for your use case</p>
+            </motion.div>
+
+            <div className={'overflow-hidden rounded-[24px] border border-neutral-200 bg-white'}>
               <table className={'w-full'}>
-                <thead className={'bg-neutral-50'}>
+                <thead className={'border-b border-neutral-200 bg-neutral-50'}>
                   <tr>
                     <th className={'px-6 py-4 text-left text-sm font-semibold text-neutral-900'}>Feature</th>
-                    <th className={'px-6 py-4 text-center text-sm font-semibold text-neutral-900'}>Traditional SMTP</th>
-                    <th className={'bg-neutral-100 px-6 py-4 text-center text-sm font-semibold text-neutral-900'}>
-                      Plunk SMTP
-                    </th>
-                    <th className={'px-6 py-4 text-center text-sm font-semibold text-neutral-900'}>Plunk API</th>
+                    <th className={'px-6 py-4 text-center text-sm font-semibold text-neutral-500'}>Traditional SMTP</th>
+                    <th className={'bg-neutral-900 px-6 py-4 text-center text-sm font-semibold text-white'}>Plunk SMTP</th>
+                    <th className={'px-6 py-4 text-center text-sm font-semibold text-neutral-500'}>Plunk API</th>
                   </tr>
                 </thead>
-                <tbody className={'divide-y divide-neutral-200'}>
+                <tbody className={'divide-y divide-neutral-100'}>
                   {comparisonData.map((row, index) => (
                     <tr key={index} className={'transition hover:bg-neutral-50'}>
-                      <td className={'px-6 py-4 text-sm text-neutral-900'}>{row.feature}</td>
-                      <td className={'px-6 py-4 text-center text-sm text-neutral-600'}>{row.traditional}</td>
-                      <td className={'bg-neutral-50 px-6 py-4 text-center text-sm font-medium text-neutral-900'}>
-                        {row.plunkSMTP}
-                      </td>
-                      <td className={'px-6 py-4 text-center text-sm text-neutral-600'}>{row.plunkAPI}</td>
+                      <td className={'px-6 py-4 text-sm font-medium text-neutral-900'}>{row.feature}</td>
+                      <td className={'px-6 py-4 text-center text-sm text-neutral-500'}>{row.traditional}</td>
+                      <td className={'bg-neutral-50 px-6 py-4 text-center text-sm font-semibold text-neutral-900'}>{row.plunkSMTP}</td>
+                      <td className={'px-6 py-4 text-center text-sm text-neutral-500'}>{row.plunkAPI}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <div className={'mt-6 rounded-lg bg-neutral-50 p-4 text-center'}>
-              <p className={'text-sm text-neutral-600'}>
-                <strong>Recommendation:</strong> Use API for modern applications with workflow automation. Use SMTP for
-                email clients and legacy systems.
-              </p>
-            </div>
+            <p className={'mt-4 text-sm text-neutral-500'}>
+              Recommendation: Use the API for modern applications with workflow automation. Use SMTP for email clients
+              and legacy systems.
+            </p>
           </div>
         </section>
 
-        {/* Use Cases */}
-        <section className={'py-20'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mb-16 text-center'}
-          >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>When to use SMTP</h2>
-            <p className={'mt-4 text-lg text-neutral-600'}>Perfect for these scenarios</p>
-          </motion.div>
-
-          <div className={'mx-auto max-w-5xl space-y-8'}>
-            {useCases.map((useCase, index) => (
-              <motion.div
-                key={useCase.title}
-                initial={{opacity: 0, y: 20}}
-                whileInView={{opacity: 1, y: 0}}
-                viewport={{once: true}}
-                transition={{duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1]}}
-                className={'rounded-xl border border-neutral-200 bg-white p-8'}
+        {/* Use cases */}
+        <section className={'border-t border-neutral-200'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+            <motion.div
+              initial={{opacity: 0, y: 20}}
+              whileInView={{opacity: 1, y: 0}}
+              viewport={{once: true}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+              className={'mb-16'}
+            >
+              <h2
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'}
               >
-                <div className={'flex items-start gap-6'}>
-                  <div
-                    className={
-                      'flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-neutral-900 text-white'
-                    }
-                  >
-                    {useCase.icon}
-                  </div>
-                  <div className={'flex-1'}>
-                    <h3 className={'text-xl font-semibold text-neutral-900'}>{useCase.title}</h3>
-                    <p className={'mt-2 text-neutral-600'}>{useCase.description}</p>
-                    <div className={'mt-4 inline-flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-2'}>
-                      <div className={'h-2 w-2 rounded-full bg-green-500'} />
-                      <span className={'text-sm font-medium text-neutral-700'}>{useCase.benefit}</span>
+                When to use SMTP
+              </h2>
+              <p className={'mt-4 text-lg text-neutral-600'}>Perfect for these scenarios</p>
+            </motion.div>
+
+            <div className={'space-y-4'}>
+              {useCases.map((useCase, index) => (
+                <motion.div
+                  key={useCase.title}
+                  initial={{opacity: 0, y: 20}}
+                  whileInView={{opacity: 1, y: 0}}
+                  viewport={{once: true}}
+                  transition={{duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1]}}
+                  className={'rounded-[24px] border border-neutral-200 bg-white p-8'}
+                >
+                  <div className={'flex items-start gap-6'}>
+                    <div className={'flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-900'}>
+                      {useCase.icon}
+                    </div>
+                    <div className={'flex-1'}>
+                      <h3
+                        style={{fontFamily: 'var(--font-display)'}}
+                        className={'text-xl font-bold tracking-[-0.02em] text-neutral-900'}
+                      >
+                        {useCase.title}
+                      </h3>
+                      <p className={'mt-2 text-neutral-600'}>{useCase.description}</p>
+                      <div
+                        style={{fontFamily: 'var(--font-mono)'}}
+                        className={'mt-4 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-neutral-500'}
+                      >
+                        <div className={'h-1.5 w-1.5 rounded-full bg-neutral-900'} />
+                        {useCase.benefit}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className={'relative overflow-hidden border-t border-neutral-200 py-20'}>
-          <div
-            className={
-              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
-            }
-          />
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-3xl text-center'}
-          >
-            <h2 className={'text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl text-balance'}>Start sending via SMTP</h2>
-            <p className={'mt-6 text-lg text-neutral-600'}>
-              Get your SMTP credentials and start sending emails from any client or application. No credit card
-              required.
-            </p>
-            <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
-              <motion.a
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                href={`${DASHBOARD_URI}/auth/signup`}
-                className={
-                  'group rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white transition hover:bg-neutral-800'
-                }
+        {/* CTA */}
+        <section className={'relative overflow-hidden border-t border-neutral-900 bg-neutral-900 text-white'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-32 sm:px-10 sm:py-40'}>
+            <div className={'flex flex-col items-start gap-12 lg:flex-row lg:items-end lg:justify-between'}>
+              <motion.h2
+                initial={{opacity: 0, y: 16}}
+                whileInView={{opacity: 1, y: 0}}
+                viewport={{once: true}}
+                transition={{duration: 0.9, ease: [0.22, 1, 0.36, 1]}}
+                style={{fontFamily: 'var(--font-display)'}}
+                className={'text-[clamp(2.5rem,7vw,6rem)] font-extrabold leading-[0.95] tracking-[-0.035em]'}
               >
-                <span className={'flex items-center gap-2'}>
-                  Get started for free
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </motion.a>
-              <Link
-                href={'/pricing'}
-                className={
-                  'rounded-lg border border-neutral-300 px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-400'
-                }
+                Start sending via SMTP today.
+              </motion.h2>
+              <motion.div
+                initial={{opacity: 0, y: 16}}
+                whileInView={{opacity: 1, y: 0}}
+                viewport={{once: true}}
+                transition={{duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1]}}
+                className={'flex max-w-md flex-col gap-6'}
               >
-                View pricing
-              </Link>
+                <p className={'text-base text-neutral-300 sm:text-lg'}>
+                  Get your SMTP credentials and start sending from any client or application. No credit card required.
+                </p>
+                <div className={'flex flex-wrap gap-3'}>
+                  <motion.a
+                    whileHover={{scale: 1.015}}
+                    whileTap={{scale: 0.985}}
+                    href={`${DASHBOARD_URI}/auth/signup`}
+                    className={'inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-100'}
+                  >
+                    Get started for free
+                    <ArrowRight className="h-4 w-4" />
+                  </motion.a>
+                  <Link
+                    href={'/pricing'}
+                    className={'inline-flex items-center gap-2 rounded-full border border-neutral-700 px-7 py-3.5 text-sm font-semibold text-white transition hover:border-white'}
+                  >
+                    View pricing
+                  </Link>
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
+          </div>
         </section>
+
       </main>
 
       <Footer />

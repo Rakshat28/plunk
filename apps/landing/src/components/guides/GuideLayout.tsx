@@ -114,7 +114,7 @@ export function GuideLayout({
 
       <Navbar />
 
-      <main className={'mx-auto max-w-7xl px-4 sm:px-8 w-full overflow-x-hidden'}>
+      <main className={'mx-auto max-w-[88rem] px-4 sm:px-8 w-full overflow-x-hidden'}>
         <div className={'flex flex-col lg:flex-row gap-8 lg:gap-12 py-8 sm:py-16 w-full'}>
           {/* Main Content */}
           <article className={'flex-1 max-w-full lg:max-w-4xl w-full'}>
