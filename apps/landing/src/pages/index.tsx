@@ -187,7 +187,7 @@ export default function Index() {
                 'acceptedAnswer': {
                   '@type': 'Answer',
                   'text':
-                    'Plunk supports all programming languages and frameworks that are capable of sending API calls.. You can use Plunk to send emails from your backend, frontend, mobile app, or any other platform.',
+                    'Plunk supports all programming languages and frameworks that are capable of sending API calls. You can use Plunk to send emails from your backend, frontend, mobile app, or any other platform.',
                 },
               },
               {
