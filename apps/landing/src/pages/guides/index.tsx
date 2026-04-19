@@ -94,7 +94,13 @@ const guides: Guide[] = [
   },
 ];
 
+const badgeOrder = ['Authentication', 'Deliverability', 'Analytics', 'Technical', 'Best Practices', 'Fundamentals'];
+
 export default function GuidesIndex() {
+  const categories = badgeOrder
+    .map(name => ({name, guides: guides.filter(g => g.badge === name)}))
+    .filter(c => c.guides.length > 0);
+
   return (
     <>
       <NextSeo
@@ -165,68 +171,63 @@ export default function GuidesIndex() {
           </div>
         </section>
 
-        {/* Guides grid */}
+        {/* Guides - Categorized */}
         <section className={'border-t border-neutral-200'}>
           <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
-            <motion.div
-              initial={{opacity: 0, y: 20}}
-              whileInView={{opacity: 1, y: 0}}
-              viewport={{once: true}}
-              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-              className={'mb-16'}
-            >
-              <h2
-                style={{fontFamily: 'var(--font-display)'}}
-                className={'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'}
-              >
-                Browse all guides
-              </h2>
-              <p className={'mt-4 text-lg text-neutral-600'}>Everything you need to master email</p>
-            </motion.div>
-
-            <div className={'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'}>
-              {guides.map((guide, index) => {
-                const Icon = guide.icon;
-                return (
-                  <motion.div
-                    key={guide.href}
-                    initial={{opacity: 0, y: 16}}
-                    whileInView={{opacity: 1, y: 0}}
-                    viewport={{once: true}}
-                    transition={{duration: 0.5, delay: index * 0.04, ease: [0.22, 1, 0.36, 1]}}
-                  >
-                    <Link
-                      href={guide.href}
-                      className={
-                        'group flex min-h-[16rem] flex-col justify-between rounded-[28px] border border-neutral-200 bg-white p-8 transition hover:border-neutral-900'
-                      }
+            <div className={'space-y-16'}>
+              {categories.map((category, catIndex) => (
+                <motion.div
+                  key={category.name}
+                  initial={{opacity: 0, y: 16}}
+                  whileInView={{opacity: 1, y: 0}}
+                  viewport={{once: true}}
+                  transition={{duration: 0.6, delay: catIndex * 0.06, ease: [0.22, 1, 0.36, 1]}}
+                >
+                  <div className={'mb-6 flex items-center gap-4'}>
+                    <span
+                      style={{fontFamily: 'var(--font-mono)'}}
+                      className={'shrink-0 text-[11px] uppercase tracking-[0.18em] text-neutral-400'}
                     >
-                      <div className={'flex items-start justify-between'}>
-                        <div className={'text-neutral-900'}>
-                          <Icon className="h-6 w-6" strokeWidth={1.5} />
-                        </div>
-                        {guide.badge && (
-                          <span
-                            style={{fontFamily: 'var(--font-mono)'}}
-                            className={'text-[11px] uppercase tracking-[0.18em] text-neutral-400'}
-                          >
-                            {guide.badge}
-                          </span>
-                        )}
-                      </div>
-                      <div>
-                        <h3
-                          style={{fontFamily: 'var(--font-display)'}}
-                          className={'mt-8 text-xl font-bold tracking-[-0.02em] text-neutral-900'}
+                      {category.name}
+                    </span>
+                    <div className={'h-px flex-1 bg-neutral-200'} />
+                  </div>
+
+                  <div className={'divide-y divide-neutral-100'}>
+                    {category.guides.map(guide => {
+                      const Icon = guide.icon;
+                      return (
+                        <Link
+                          key={guide.href}
+                          href={guide.href}
+                          className={
+                            'group -mx-4 flex items-center gap-5 rounded-lg px-4 py-5 transition hover:bg-neutral-50 sm:gap-6'
+                          }
                         >
-                          {guide.title}
-                        </h3>
-                        <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>{guide.description}</p>
-                      </div>
-                    </Link>
-                  </motion.div>
-                );
-              })}
+                          <Icon
+                            className={'h-5 w-5 shrink-0 text-neutral-400 transition group-hover:text-neutral-600'}
+                            strokeWidth={1.5}
+                          />
+                          <div className={'min-w-0 flex-1'}>
+                            <h3
+                              style={{fontFamily: 'var(--font-display)'}}
+                              className={'font-bold tracking-[-0.01em] text-neutral-900'}
+                            >
+                              {guide.title}
+                            </h3>
+                            <p className={'mt-0.5 truncate text-sm text-neutral-500'}>{guide.description}</p>
+                          </div>
+                          <ArrowRight
+                            className={
+                              'h-4 w-4 shrink-0 text-neutral-300 transition-transform group-hover:translate-x-0.5 group-hover:text-neutral-600'
+                            }
+                          />
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
         </section>

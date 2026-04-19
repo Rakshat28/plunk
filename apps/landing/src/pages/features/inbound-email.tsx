@@ -100,9 +100,11 @@ export default function InboundEmailFeature() {
             >
               <div
                 style={{fontFamily: 'var(--font-mono)'}}
-                className={'mb-6 text-[11px] uppercase tracking-[0.18em] text-neutral-500'}
+                className={'mb-10 border-t border-neutral-900/90 pt-4 text-[11px] uppercase tracking-[0.18em] text-neutral-700'}
               >
-                Inbound Email
+                <span className={'text-neutral-400'}>Features</span>
+                <span className={'mx-3 text-neutral-300'}>—</span>
+                <span className={'font-medium text-neutral-900'}>Inbound Email</span>
               </div>
               <h1
                 style={{fontFamily: 'var(--font-display)'}}
@@ -147,7 +149,7 @@ export default function InboundEmailFeature() {
 
         {/* Features grid */}
         <section className={'border-t border-neutral-200'}>
-          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-24 sm:px-10 sm:py-32'}>
             <motion.div
               initial={{opacity: 0, y: 20}}
               whileInView={{opacity: 1, y: 0}}
@@ -164,7 +166,7 @@ export default function InboundEmailFeature() {
               <p className={'mt-4 text-lg text-neutral-600'}>Everything you need to receive and process incoming emails</p>
             </motion.div>
 
-            <div className={'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'}>
+            <div className={'grid gap-5 sm:grid-cols-2 lg:grid-cols-3'}>
               {features.map((feature, index) => {
                 const highlighted = feature.featured;
                 return (
@@ -209,13 +211,13 @@ export default function InboundEmailFeature() {
 
         {/* How it works */}
         <section className={'border-t border-neutral-200 bg-neutral-50/60'}>
-          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-24 sm:px-10 sm:py-32'}>
             <motion.div
               initial={{opacity: 0, y: 20}}
               whileInView={{opacity: 1, y: 0}}
               viewport={{once: true}}
               transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-              className={'mb-16 text-center'}
+              className={'mb-16'}
             >
               <h2
                 style={{fontFamily: 'var(--font-display)'}}
@@ -270,7 +272,7 @@ export default function InboundEmailFeature() {
 
         {/* Use cases */}
         <section className={'border-t border-neutral-200'}>
-          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-24 sm:px-10 sm:py-32'}>
             <motion.div
               initial={{opacity: 0, y: 20}}
               whileInView={{opacity: 1, y: 0}}
@@ -287,38 +289,45 @@ export default function InboundEmailFeature() {
               <p className={'mt-4 text-lg text-neutral-600'}>From support to sales, inbound email unlocks new automation possibilities</p>
             </motion.div>
 
-            <div className={'space-y-4'}>
+            <ul className={'divide-y divide-neutral-200 border-y border-neutral-200'}>
               {useCases.map((useCase, index) => (
-                <motion.div
+                <motion.li
                   key={useCase.title}
-                  initial={{opacity: 0, y: 20}}
+                  initial={{opacity: 0, y: 12}}
                   whileInView={{opacity: 1, y: 0}}
                   viewport={{once: true}}
-                  transition={{duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1]}}
-                  className={'rounded-[24px] border border-neutral-200 bg-white p-8'}
+                  transition={{duration: 0.5, delay: index * 0.08, ease: [0.22, 1, 0.36, 1]}}
+                  className={'grid grid-cols-12 gap-6 py-10 sm:py-12'}
                 >
-                  <div className={'flex items-start gap-6'}>
-                    <div className={'flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-900'}>
-                      {useCase.icon}
-                    </div>
-                    <div className={'flex-1'}>
-                      <h3
-                        style={{fontFamily: 'var(--font-display)'}}
-                        className={'text-xl font-bold tracking-[-0.02em] text-neutral-900'}
-                      >
-                        {useCase.title}
-                      </h3>
-                      <p className={'mt-2 text-neutral-600'}>{useCase.description}</p>
-                      <div className={'mt-4 rounded-xl border border-neutral-100 bg-neutral-50 p-4'}>
-                        <p style={{fontFamily: 'var(--font-mono)'}} className={'text-sm text-neutral-600'}>
-                          {useCase.benefits.join(' → ')}
-                        </p>
-                      </div>
+                  <span
+                    style={{fontFamily: 'var(--font-mono)'}}
+                    className={'col-span-12 text-[11px] uppercase tracking-[0.18em] text-neutral-400 sm:col-span-1 sm:pt-1.5'}
+                  >
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <h3
+                    style={{fontFamily: 'var(--font-display)'}}
+                    className={'col-span-12 text-xl font-bold tracking-[-0.02em] text-neutral-900 sm:col-span-3'}
+                  >
+                    {useCase.title}
+                  </h3>
+                  <div className={'col-span-12 sm:col-span-8'}>
+                    <p className={'leading-relaxed text-neutral-600'}>{useCase.description}</p>
+                    <div className={'mt-5 flex flex-wrap gap-x-6 gap-y-1'}>
+                      {useCase.benefits.map(b => (
+                        <span
+                          key={b}
+                          style={{fontFamily: 'var(--font-mono)'}}
+                          className={'text-[11px] uppercase tracking-[0.16em] text-neutral-400'}
+                        >
+                          → {b}
+                        </span>
+                      ))}
                     </div>
                   </div>
-                </motion.div>
+                </motion.li>
               ))}
-            </div>
+            </ul>
           </div>
         </section>
 

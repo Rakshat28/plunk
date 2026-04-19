@@ -107,7 +107,7 @@ export default function EmailMarketingBestPractices() {
         <h2 className="text-3xl font-bold text-neutral-900 mb-6">Email Content Best Practices</h2>
 
         <div className="space-y-6 mb-8">
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">1. Craft Compelling Subject Lines</h3>
             <p className="text-neutral-700 mb-3">
               Your subject line determines whether emails get opened. Keep them under 50 characters, create curiosity,
@@ -125,7 +125,7 @@ export default function EmailMarketingBestPractices() {
             </div>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">2. Personalize Beyond First Names</h3>
             <p className="text-neutral-700">
               Use behavioral data, purchase history, browsing activity, or preferences. Personalized emails deliver 6x
@@ -133,7 +133,7 @@ export default function EmailMarketingBestPractices() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">3. Focus on One Primary Goal</h3>
             <p className="text-neutral-700">
               Each email should have one clear call-to-action (CTA). Multiple CTAs confuse readers and reduce conversion
@@ -141,7 +141,7 @@ export default function EmailMarketingBestPractices() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">4. Write Scannable Content</h3>
             <p className="text-neutral-700 mb-3">Most people skim emails. Structure content for easy scanning:</p>
             <ul className="list-disc list-inside space-y-1 text-neutral-700">
@@ -153,7 +153,7 @@ export default function EmailMarketingBestPractices() {
             </ul>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">5. Create Compelling CTAs</h3>
             <p className="text-neutral-700 mb-3">Effective CTAs are:</p>
             <ul className="list-disc list-inside space-y-1 text-neutral-700">
@@ -172,7 +172,7 @@ export default function EmailMarketingBestPractices() {
             </ul>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">6. Provide Real Value</h3>
             <p className="text-neutral-700">
               Every email should benefit the reader. Share insights, solve problems, offer exclusive content, or provide
@@ -361,7 +361,7 @@ export default function EmailMarketingBestPractices() {
         </p>
 
         <div className="space-y-6">
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">What to A/B Test</h3>
             <ul className="space-y-2 text-neutral-700">
               <li>
@@ -385,7 +385,7 @@ export default function EmailMarketingBestPractices() {
             </ul>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">A/B Testing Best Practices</h3>
             <ul className="space-y-2 text-neutral-700">
               <li>• Test one variable at a time for clear results</li>

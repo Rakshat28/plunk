@@ -1,6 +1,6 @@
 import {NextSeo} from 'next-seo';
 import React from 'react';
-import {Footer, Navbar} from '../components';
+import {Footer, Navbar, SectionHeader} from '../components';
 import {motion} from 'framer-motion';
 import {DASHBOARD_URI} from '../lib/constants';
 import {
@@ -228,42 +228,33 @@ export default function Pricing() {
         {/* Every feature included */}
         <section className={'border-t border-neutral-200 bg-neutral-50/60'}>
           <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
-            <motion.div
-              initial={{opacity: 0, y: 20}}
-              whileInView={{opacity: 1, y: 0}}
-              viewport={{once: true}}
-              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-              className={'mb-16 text-center'}
-            >
-              <h2
-                style={{fontFamily: 'var(--font-display)'}}
-                className={
-                  'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'
-                }
-              >
-                Every feature on every plan
-              </h2>
-              <p className={'mt-4 text-lg text-neutral-600'}>No feature tiers, no add-ons, no surprises</p>
-            </motion.div>
+            <SectionHeader
+              number={'01'}
+              label={'Included'}
+              title={'Every feature, every plan.'}
+              subtitle={'No feature tiers, no add-ons, no surprises.'}
+            />
 
-            <div className={'grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3'}>
+            <ul className={'mt-16 divide-y divide-neutral-200 border-y border-neutral-200'}>
               {includedFeatures.map((feature, index) => (
-                <motion.div
+                <motion.li
                   key={feature.title}
-                  initial={{opacity: 0, y: 20}}
+                  initial={{opacity: 0, y: 12}}
                   whileInView={{opacity: 1, y: 0}}
                   viewport={{once: true}}
-                  transition={{duration: 0.5, delay: index * 0.05, ease: [0.22, 1, 0.36, 1]}}
-                  className={'group bg-white p-10 transition hover:bg-neutral-50'}
+                  transition={{duration: 0.5, delay: index * 0.04, ease: [0.22, 1, 0.36, 1]}}
+                  className={'grid gap-3 py-7 sm:grid-cols-[1fr_2fr] sm:items-baseline sm:gap-12 sm:py-8'}
                 >
-                  <div className={'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white'}>
-                    {feature.icon}
-                  </div>
-                  <h3 className={'mt-6 text-lg font-semibold text-neutral-900'}>{feature.title}</h3>
-                  <p className={'mt-2 text-sm leading-relaxed text-neutral-600'}>{feature.description}</p>
-                </motion.div>
+                  <h3
+                    style={{fontFamily: 'var(--font-display)'}}
+                    className={'text-base font-semibold text-neutral-900'}
+                  >
+                    {feature.title}
+                  </h3>
+                  <p className={'text-sm leading-relaxed text-neutral-600'}>{feature.description}</p>
+                </motion.li>
               ))}
-            </div>
+            </ul>
           </div>
         </section>
 

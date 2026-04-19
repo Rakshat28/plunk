@@ -39,9 +39,9 @@ export function ComparisonTable({competitorName, rows}: ComparisonTableProps) {
             className={'grid grid-cols-3 gap-px bg-neutral-200'}
           >
             <div className={'bg-white p-6'}>
-              <span className={'text-sm text-neutral-600'}>{row.feature}</span>
+              <span className={'text-sm text-neutral-700'}>{row.feature}</span>
             </div>
-            <div className={'bg-white p-6'}>
+            <div className={'bg-neutral-50/70 p-6'}>
               <div className={'flex justify-center'}>
                 {typeof row.plunk === 'boolean' ? (
                   row.plunk ? (

@@ -71,7 +71,7 @@ export default function EmailDeliverability() {
         </p>
 
         <div className="space-y-6">
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">1. Sender Reputation</h3>
             <p className="text-neutral-700">
               Email providers track your sending behavior over time. High engagement rates, low spam complaints, and few
@@ -79,7 +79,7 @@ export default function EmailDeliverability() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">2. Email Authentication</h3>
             <p className="text-neutral-700">
               SPF, DKIM, and DMARC authenticate your emails and prove they're legitimate. Without proper authentication,
@@ -87,7 +87,7 @@ export default function EmailDeliverability() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">3. Email Content</h3>
             <p className="text-neutral-700">
               Spam filters analyze your subject lines, body content, links, and images. Spammy language, excessive
@@ -95,7 +95,7 @@ export default function EmailDeliverability() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">4. List Quality & Engagement</h3>
             <p className="text-neutral-700">
               Sending to engaged subscribers who want your emails is crucial. High open rates and clicks signal quality.
@@ -103,7 +103,7 @@ export default function EmailDeliverability() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">5. Technical Infrastructure</h3>
             <p className="text-neutral-700">
               Your sending IP address, domain reputation, and email infrastructure affect how providers perceive your

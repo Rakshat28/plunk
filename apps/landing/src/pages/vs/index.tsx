@@ -157,13 +157,13 @@ export default function CompetitorsIndex() {
 
         {/* Competitors grid */}
         <section className={'border-t border-neutral-200'}>
-          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-16 sm:px-10 sm:py-24'}>
             <motion.div
               initial={{opacity: 0, y: 20}}
               whileInView={{opacity: 1, y: 0}}
               viewport={{once: true}}
               transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-              className={'mb-16'}
+              className={'mb-10'}
             >
               <h2
                 style={{fontFamily: 'var(--font-display)'}}
@@ -185,7 +185,7 @@ export default function CompetitorsIndex() {
                 >
                   <Link
                     href={`/vs/${competitor.slug}`}
-                    className={'group flex min-h-[14rem] flex-col justify-between rounded-[28px] border border-neutral-200 bg-white p-8 transition hover:border-neutral-900'}
+                    className={'group flex flex-col justify-between rounded-[28px] border border-neutral-200 bg-white p-6 sm:p-8 transition hover:border-neutral-900'}
                   >
                     <div className={'flex items-start justify-between'}>
                       <h3
@@ -198,15 +198,17 @@ export default function CompetitorsIndex() {
                     </div>
                     <div>
                       <p className={'text-sm text-neutral-600'}>{competitor.description}</p>
-                      <div className={'mt-4 flex flex-wrap gap-1.5'}>
-                        {competitor.features.map(feature => (
-                          <span
-                            key={feature}
-                            style={{fontFamily: 'var(--font-mono)'}}
-                            className={'text-[10px] uppercase tracking-[0.12em] text-neutral-400'}
-                          >
-                            {feature}
-                          </span>
+                      <div className={'mt-4 flex flex-wrap items-center gap-x-2 gap-y-1'}>
+                        {competitor.features.map((feature, i) => (
+                          <React.Fragment key={feature}>
+                            {i > 0 && <span className={'text-neutral-300'} aria-hidden>·</span>}
+                            <span
+                              style={{fontFamily: 'var(--font-mono)'}}
+                              className={'text-[10px] uppercase tracking-[0.12em] text-neutral-400'}
+                            >
+                              {feature}
+                            </span>
+                          </React.Fragment>
                         ))}
                       </div>
                     </div>
@@ -219,13 +221,13 @@ export default function CompetitorsIndex() {
 
         {/* Why Plunk */}
         <section className={'border-t border-neutral-200 bg-neutral-50/60'}>
-          <div className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-14 sm:px-10 sm:py-20'}>
             <motion.div
               initial={{opacity: 0, y: 20}}
               whileInView={{opacity: 1, y: 0}}
               viewport={{once: true}}
               transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-              className={'mb-16'}
+              className={'mb-10'}
             >
               <h2
                 style={{fontFamily: 'var(--font-display)'}}
@@ -280,7 +282,7 @@ export default function CompetitorsIndex() {
 
         {/* CTA */}
         <section className={'relative overflow-hidden border-t border-neutral-900 bg-neutral-900 text-white'}>
-          <div className={'mx-auto max-w-[88rem] px-6 py-32 sm:px-10 sm:py-40'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-24 sm:px-10 sm:py-32'}>
             <div className={'flex flex-col items-start gap-12 lg:flex-row lg:items-end lg:justify-between'}>
               <motion.h2
                 initial={{opacity: 0, y: 16}}

@@ -32,7 +32,7 @@ export default function WhatIsSPF() {
         </p>
 
         <div className="space-y-6 mb-8">
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">1. You Publish an SPF Record</h3>
             <p className="text-neutral-700">
               You add a TXT record to your domain's DNS that lists all IP addresses and services authorized to send
@@ -40,7 +40,7 @@ export default function WhatIsSPF() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">2. An Email is Sent</h3>
             <p className="text-neutral-700">
               When someone sends an email claiming to be from your domain, the receiving server notes the IP address of
@@ -48,7 +48,7 @@ export default function WhatIsSPF() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">3. The Receiving Server Checks SPF</h3>
             <p className="text-neutral-700">
               The receiving server looks up your domain's SPF record in DNS and checks if the sending server's IP
@@ -56,7 +56,7 @@ export default function WhatIsSPF() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">4. Pass or Fail</h3>
             <p className="text-neutral-700">
               If the IP matches, SPF passes. If not, SPF fails and the email may be flagged as spam or rejected,
@@ -268,7 +268,7 @@ export default function WhatIsSPF() {
         <h2 className="text-3xl font-bold text-neutral-900 mb-6">Common SPF Mistakes to Avoid</h2>
 
         <div className="space-y-6">
-          <div className="border-l-4 border-red-500 pl-6 py-2">
+          <div className="py-2">
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">✗ Multiple SPF Records</h3>
             <p className="text-neutral-700">
               Never create multiple SPF TXT records. You can only have ONE SPF record per domain. Combine all authorized
@@ -276,7 +276,7 @@ export default function WhatIsSPF() {
             </p>
           </div>
 
-          <div className="border-l-4 border-red-500 pl-6 py-2">
+          <div className="py-2">
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">✗ Exceeding 10 DNS Lookups</h3>
             <p className="text-neutral-700">
               Each <code>include:</code> mechanism counts toward the 10 lookup limit. Too many includes will cause SPF
@@ -284,7 +284,7 @@ export default function WhatIsSPF() {
             </p>
           </div>
 
-          <div className="border-l-4 border-red-500 pl-6 py-2">
+          <div className="py-2">
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">✗ Forgetting to Update SPF</h3>
             <p className="text-neutral-700">
               When you add new email services, remember to update your SPF record. Outdated SPF records cause legitimate
@@ -292,7 +292,7 @@ export default function WhatIsSPF() {
             </p>
           </div>
 
-          <div className="border-l-4 border-red-500 pl-6 py-2">
+          <div className="py-2">
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">✗ Using +all</h3>
             <p className="text-neutral-700">
               Never use <code>+all</code> (pass all). This completely defeats the purpose of SPF by allowing anyone to

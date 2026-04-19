@@ -284,7 +284,7 @@ export default function Index() {
                 <h1
                   style={{fontFamily: 'var(--font-display)'}}
                   className={
-                    'text-[clamp(3rem,9vw,8rem)] font-extrabold leading-[0.92] tracking-[-0.04em] text-neutral-900'
+                    'text-[clamp(3rem,9vw,8rem)] font-extrabold leading-none tracking-[-0.04em] text-neutral-900'
                   }
                 >
                   The open-source
@@ -328,7 +328,7 @@ export default function Index() {
                 viewport={{once: true, margin: '-10%'}}
                 transition={{duration: 0.9, delay: 0.25, ease: [0.22, 1, 0.36, 1]}}
                 className={
-                  'mt-20 grid grid-cols-2 gap-x-8 gap-y-10 border-t border-neutral-200 pt-10 sm:mt-28 sm:grid-cols-4'
+                  'mt-20 grid grid-cols-2 gap-x-12 gap-y-10 border-t border-neutral-200 pt-10 sm:mt-28 sm:grid-cols-4 sm:gap-x-20'
                 }
               >
                 {[
@@ -391,7 +391,7 @@ export default function Index() {
           </section>
 
           {/* ========== COMPETITORS — EDITORIAL LIST ========== */}
-          <section className={'mx-auto max-w-[88rem] px-6 py-28 sm:px-10 sm:py-36'}>
+          <section className={'mx-auto max-w-[88rem] px-6 py-20 sm:px-10 sm:py-28'}>
             <SectionHeader
               number={'02'}
               label={'The Alternatives'}
@@ -399,7 +399,7 @@ export default function Index() {
               subtitle={'One tool in place of Resend, SendGrid, Mailchimp, Customer.io, and Mailgun.'}
             />
 
-            <ul className={'mt-20 divide-y divide-neutral-200 border-y border-neutral-200'}>
+            <ul className={'mt-12 divide-y divide-neutral-200 border-y border-neutral-200'}>
               {competitors.map((c, i) => (
                 <motion.li
                   key={c.slug}
@@ -463,7 +463,7 @@ export default function Index() {
                 subtitle={'Three things Plunk gets right, out of the box.'}
               />
 
-              <div className={'mt-20 grid gap-10 sm:grid-cols-3 sm:gap-16'}>
+              <div className={'mt-20 grid gap-10 sm:grid-cols-3 sm:gap-20 lg:gap-28'}>
                 {[
                   {
                     tag: 'Setup',
@@ -523,7 +523,7 @@ export default function Index() {
               subtitle={'Every Plunk install ships with the full platform — no upsell pages, no locked modules.'}
             />
 
-            <div className={'mt-20 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'}>
+            <div className={'mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-3'}>
               {features.map((feature, index) => {
                 const highlighted = feature.feature;
                 return (
@@ -535,8 +535,8 @@ export default function Index() {
                     transition={{duration: 0.5, delay: index * 0.06, ease: [0.22, 1, 0.36, 1]}}
                     className={
                       highlighted
-                        ? 'group relative flex min-h-[18rem] flex-col justify-between overflow-hidden rounded-[28px] border border-neutral-900 bg-neutral-900 p-8 text-white'
-                        : 'group relative flex min-h-[18rem] flex-col justify-between overflow-hidden rounded-[28px] border border-neutral-200 bg-white p-8 transition hover:border-neutral-900'
+                        ? 'flex min-h-72 flex-col justify-between overflow-hidden rounded-[28px] border border-neutral-900 bg-neutral-900 p-8 text-white'
+                        : 'flex min-h-72 flex-col justify-between overflow-hidden rounded-[28px] border border-neutral-200 bg-white p-8 transition hover:border-neutral-900'
                     }
                   >
                     <div className={'flex items-start justify-between'}>
@@ -622,8 +622,8 @@ export default function Index() {
                   ))}
                 </div>
 
-                <div className={'relative my-12'}>
-                  <svg className={'mx-auto h-28 w-full'} viewBox="0 0 600 120" preserveAspectRatio="xMidYMid meet">
+                <div className={'relative my-12 hidden lg:block'}>
+                  <svg className={'mx-auto h-28 w-full'} viewBox="0 0 600 120" preserveAspectRatio="none">
                     <defs>
                       <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
                         <polygon points="0 0, 10 3, 0 6" fill="#a3a3a3" />
@@ -734,7 +734,7 @@ export default function Index() {
               subtitle={'AGPL-3.0 licensed, EU-hosted, GDPR compliant. Inspect the code, self-host, or use our cloud.'}
             />
 
-            <div className={'mt-20 grid gap-6 sm:grid-cols-3'}>
+            <div className={'mt-14 grid gap-5 sm:grid-cols-3'}>
               {[
                 {
                   icon: <PackageOpen className="h-8 w-8" strokeWidth={1.25} />,
@@ -801,7 +801,7 @@ export default function Index() {
 
           {/* ========== PRICING — BIG MOMENT ========== */}
           <section className={'border-t border-neutral-200 bg-neutral-50/60'}>
-            <div className={'mx-auto max-w-[88rem] px-6 py-28 sm:px-10 sm:py-36'}>
+            <div className={'mx-auto max-w-[88rem] px-6 py-40 sm:px-10 sm:py-56'}>
               <SectionHeader
                 number={'07'}
                 label={'Pricing'}
@@ -815,7 +815,7 @@ export default function Index() {
                 whileInView={{opacity: 1, y: 0}}
                 viewport={{once: true}}
                 transition={{duration: 0.9, ease: [0.22, 1, 0.36, 1]}}
-                className={'mt-20 text-center'}
+                className={'mt-24 text-center'}
               >
                 <div className={'flex items-baseline justify-center gap-3 text-neutral-900'}>
                   <span
@@ -899,7 +899,7 @@ export default function Index() {
               subtitle={'No hyperbole. Just the people building products on Plunk.'}
             />
 
-            <div className={'mt-20 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'}>
+            <div className={'mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-3'}>
               {testimonials.map((t, i) => {
                 const highlighted = t.featured;
                 return (
@@ -911,8 +911,8 @@ export default function Index() {
                     transition={{duration: 0.5, delay: i * 0.06, ease: [0.22, 1, 0.36, 1]}}
                     className={
                       highlighted
-                        ? 'flex min-h-[18rem] flex-col justify-between rounded-[28px] border border-neutral-900 bg-neutral-900 p-8 text-white'
-                        : 'flex min-h-[18rem] flex-col justify-between rounded-[28px] border border-neutral-200 bg-white p-8'
+                        ? 'flex min-h-72 flex-col justify-between rounded-[28px] border border-neutral-900 bg-neutral-900 p-8 text-white'
+                        : 'flex min-h-72 flex-col justify-between rounded-[28px] border border-neutral-200 bg-white p-8'
                     }
                   >
                     <blockquote
@@ -1000,7 +1000,7 @@ export default function Index() {
                         'inline-flex items-center gap-2 rounded-full border border-neutral-700 px-7 py-3.5 text-sm font-semibold text-white transition hover:border-white'
                       }
                     >
-                      Read documentation
+                      Read the docs
                     </Link>
                   </div>
                 </motion.div>

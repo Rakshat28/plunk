@@ -205,7 +205,7 @@ export default function VerifyEmailPage() {
                 subtitle={'Invalid addresses hurt deliverability. Verification keeps your list clean before you send.'}
               />
 
-              <div className={'mt-20 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'}>
+              <div className={'mt-20 grid gap-6 sm:grid-cols-2 lg:grid-cols-3'}>
                 {EMAIL_VERIFICATION_FEATURES.map((feature, index) => {
                   const Icon = feature.icon;
                   return (
@@ -216,7 +216,7 @@ export default function VerifyEmailPage() {
                       viewport={{once: true}}
                       transition={{duration: 0.5, delay: index * 0.05, ease: [0.22, 1, 0.36, 1]}}
                       className={
-                        'flex min-h-[14rem] flex-col justify-between rounded-[28px] border border-neutral-200 bg-white p-8 transition hover:border-neutral-900'
+                        'flex flex-col gap-8 rounded-[20px] border border-neutral-200 bg-white p-8 transition hover:border-neutral-900'
                       }
                     >
                       <div className={'text-neutral-900'}>
@@ -225,7 +225,7 @@ export default function VerifyEmailPage() {
                       <div>
                         <h3
                           style={{fontFamily: 'var(--font-display)'}}
-                          className={'mt-10 text-xl font-bold tracking-[-0.02em] text-neutral-900'}
+                          className={'text-xl font-bold tracking-[-0.02em] text-neutral-900'}
                         >
                           {feature.title}
                         </h3>
