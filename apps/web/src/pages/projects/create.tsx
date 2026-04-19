@@ -54,8 +54,8 @@ export default function CreateProject() {
       // Set the newly created project as active
       setActiveProject(newProject);
 
-      // Redirect to dashboard
-      await router.push('/');
+      // Redirect into onboarding for this project
+      await router.push('/onboarding');
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Something went wrong');
     }

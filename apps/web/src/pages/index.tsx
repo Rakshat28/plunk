@@ -19,6 +19,8 @@ import {QuickStart} from '../components/QuickStart';
 import {SecurityWarningBanner} from '../components/SecurityWarningBanner';
 import {useActiveProject} from '../lib/contexts/ActiveProjectProvider';
 import {useDashboardStats} from '../lib/hooks/useDashboardStats';
+import {useOnboardingPath} from '../lib/hooks/useOnboardingPath';
+import {useOnboardingStatus} from '../lib/hooks/useOnboardingStatus';
 import {useProjectSetupState} from '../lib/hooks/useProjectSetupState';
 import {useProjectSecurity} from '../lib/hooks/useProjectSecurity';
 import {useConfig} from '../lib/hooks/useConfig';
@@ -32,6 +34,9 @@ export default function Index() {
   const {securityMetrics} = useProjectSecurity(activeProject?.id);
   const {data: config} = useConfig();
   const {data: user} = useUser();
+  const onboardingStatus = useOnboardingStatus();
+  const {path: onboardingPath} = useOnboardingPath(activeProject?.id);
+  const bannerActive = onboardingStatus === 'show' && Boolean(onboardingPath);
   const [isResending, setIsResending] = useState(false);
   const [resendMessage, setResendMessage] = useState<string>('');
 
@@ -200,9 +205,9 @@ export default function Index() {
           </div>
 
           {/* Quick Actions & API Keys */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Quick Start */}
-            <QuickStart setupState={setupState} isLoading={isLoadingSetupState} />
+          <div className={`grid grid-cols-1 gap-6 ${bannerActive ? '' : 'lg:grid-cols-2'}`}>
+            {/* Quick Start — hidden when the persistent onboarding banner is guiding the user */}
+            {!bannerActive && <QuickStart setupState={setupState} isLoading={isLoadingSetupState} />}
 
             {/* API Keys */}
             <Card>

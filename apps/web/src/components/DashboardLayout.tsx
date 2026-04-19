@@ -2,6 +2,7 @@ import {useActiveProject} from '../lib/contexts/ActiveProjectProvider';
 import {useUser} from '../lib/hooks/useUser';
 import {WIKI_URI} from '../lib/constants';
 import {network} from '../lib/network';
+import {OnboardingBanner} from './onboarding/OnboardingBanner';
 import {
   Activity,
   BarChart3,
@@ -352,7 +353,10 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto">
-          <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">{children}</div>
+          <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+            <OnboardingBanner />
+            {children}
+          </div>
         </main>
       </div>
     </div>
