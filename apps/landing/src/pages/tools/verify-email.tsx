@@ -10,6 +10,7 @@ import {EmailVerificationResult} from '../../components/tools/EmailVerificationR
 import {Button, Input} from '@plunk/ui';
 import {EMAIL_VERIFICATION_FEATURES} from '../../lib/toolsContent';
 import {Bricolage_Grotesque, Hanken_Grotesk, JetBrains_Mono} from 'next/font/google';
+import Link from 'next/link';
 
 const display = Bricolage_Grotesque({
   subsets: ['latin'],
@@ -92,9 +93,9 @@ export default function VerifyEmailPage() {
                 }
               >
                 <span className={'font-medium text-neutral-900'}>§ T-02 &nbsp;— &nbsp;Tool</span>
-                <a href="/tools" className={'text-neutral-500 transition hover:text-neutral-900'}>
+                <Link href="/tools" className={'text-neutral-500 transition hover:text-neutral-900'}>
                   ← All tools
-                </a>
+                </Link>
               </motion.div>
 
               <motion.div

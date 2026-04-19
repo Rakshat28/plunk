@@ -8,6 +8,7 @@ import {MarkdownEmailEditor} from '../../components/tools/MarkdownEmailEditor';
 import {convertToCompleteEmailHtml} from '../../lib/emailHtmlConverter';
 import {Button} from '@plunk/ui';
 import {Bricolage_Grotesque, Hanken_Grotesk, JetBrains_Mono} from 'next/font/google';
+import Link from 'next/link';
 
 const display = Bricolage_Grotesque({
   subsets: ['latin'],
@@ -81,12 +82,12 @@ export default function MarkdownToEmail() {
                 }
               >
                 <span className={'font-medium text-neutral-900'}>§ T-01 &nbsp;— &nbsp;Tool</span>
-                <a
+                <Link
                   href="/tools"
                   className={'text-neutral-500 transition hover:text-neutral-900'}
                 >
                   ← All tools
-                </a>
+                </Link>
               </motion.div>
 
               <motion.div
