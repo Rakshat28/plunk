@@ -131,7 +131,7 @@ Open Rate = (285 ÷ 950) × 100 = 30%`}
         <h2 className="text-3xl font-bold text-neutral-900 mb-6">What Affects Email Open Rates?</h2>
 
         <div className="space-y-6">
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">1. Subject Line</h3>
             <p className="text-neutral-700 mb-3">
               Your subject line is the #1 factor. It must be compelling, relevant, and create curiosity without being
@@ -161,7 +161,7 @@ Open Rate = (285 ÷ 950) × 100 = 30%`}
             </div>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">2. Sender Name</h3>
             <p className="text-neutral-700">
               Recipients decide whether to open based on who it's from. Use a recognizable name—either your brand or a
@@ -169,7 +169,7 @@ Open Rate = (285 ÷ 950) × 100 = 30%`}
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">3. Send Time & Day</h3>
             <p className="text-neutral-700">
               Timing impacts visibility. B2B emails typically perform best Tuesday-Thursday, 10am-2pm. B2C varies more
@@ -177,7 +177,7 @@ Open Rate = (285 ÷ 950) × 100 = 30%`}
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">4. List Quality & Segmentation</h3>
             <p className="text-neutral-700">
               Engaged subscribers open more. Segmenting by behavior, interests, or demographics ensures relevance.
@@ -185,7 +185,7 @@ Open Rate = (285 ÷ 950) × 100 = 30%`}
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">5. Deliverability & Sender Reputation</h3>
             <p className="text-neutral-700">
               If emails land in spam, they won't be opened. Maintain good sender reputation through proper
@@ -193,7 +193,7 @@ Open Rate = (285 ÷ 950) × 100 = 30%`}
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">6. Email Frequency</h3>
             <p className="text-neutral-700">
               Too frequent leads to fatigue and unsubscribes. Too infrequent and subscribers forget you. Find the sweet
@@ -201,7 +201,7 @@ Open Rate = (285 ÷ 950) × 100 = 30%`}
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">7. Mobile Optimization</h3>
             <p className="text-neutral-700">
               60%+ of emails are opened on mobile. Use short subject lines (40-50 characters), clear preview text, and

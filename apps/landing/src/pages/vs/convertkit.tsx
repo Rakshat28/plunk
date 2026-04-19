@@ -4,7 +4,7 @@ import {DASHBOARD_URI, WIKI_URI} from '../../lib/constants';
 import React from 'react';
 import Link from 'next/link';
 import {NextSeo} from 'next-seo';
-import {ArrowRight, Code2, DollarSign, Globe, PackageOpen, Users, Zap} from 'lucide-react';
+import {ArrowRight, Check, Code2, DollarSign, Globe, PackageOpen, Users, Zap} from 'lucide-react';
 import type {ComparisonRow} from '../../components/ComparisonTable';
 import type {FAQ} from '../../components/FAQSection';
 
@@ -70,365 +70,152 @@ export default function ConvertkitComparison() {
 
       <Navbar />
 
-      <main className={'mx-auto max-w-7xl px-8 sm:px-0'}>
-        {/* Hero Section */}
-        <section className={'relative py-32 sm:py-48'}>
-          <div
-            className={
-              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]'
-            }
-          />
+      <main className={'text-neutral-800'}>
 
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            animate={{opacity: 1, y: 0}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-4xl text-center'}
-          >
-            <div
-              className={
-                'mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2'
-              }
-            >
-              <span className={'text-sm text-neutral-600'}>Comparing</span>
-              <span className={'text-sm font-semibold text-neutral-900'}>Plunk vs ConvertKit</span>
-            </div>
-
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
-              Open-source alternative
-              <br />
-              for ConvertKit
-            </h1>
-
-            <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
-              ConvertKit is built for creators. Plunk is built for developers who need powerful email automation without
-              the creator-focused bloat. Same automation, better DX, pay-as-you-go.
-            </p>
-
-            <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
-              <motion.a
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                href={`${DASHBOARD_URI}/auth/signup`}
-                className={
-                  'group rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-neutral-900/10 transition hover:bg-neutral-800'
-                }
-              >
-                <span className={'flex items-center gap-2'}>
-                  Get started free
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </motion.a>
-              <Link
-                href={WIKI_URI}
-                target={'_blank'}
-                className={
-                  'rounded-lg border border-neutral-300 bg-white px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-400'
-                }
-              >
-                View documentation
-              </Link>
-            </div>
-          </motion.div>
-        </section>
-
-        {/* Pricing Model Comparison */}
-        <section className={'py-32'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mb-16 text-center'}
-          >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Pay for Emails, Not Subscribers</h2>
-            <p className={'mt-4 text-lg text-neutral-600'}>Pricing that grows with usage, not list size</p>
-          </motion.div>
-
-          <div className={'grid gap-8 lg:grid-cols-2'}>
-            <motion.div
-              initial={{opacity: 0, x: -20}}
-              whileInView={{opacity: 1, x: 0}}
-              viewport={{once: true}}
-              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-              className={'rounded-2xl border-2 border-neutral-900 bg-white p-10'}
-            >
-              <div className={'mb-4 inline-flex items-center gap-2 rounded-full bg-neutral-900 px-4 py-1.5'}>
-                <span className={'text-sm font-semibold text-white'}>Plunk</span>
+        {/* Hero */}
+        <section className={'relative overflow-hidden'}>
+          <div aria-hidden className={'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#eeeeee_1px,transparent_1px),linear-gradient(to_bottom,#eeeeee_1px,transparent_1px)] bg-[size:6rem_6rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_30%,#000_40%,transparent_95%)]'} />
+          <div className={'mx-auto max-w-[88rem] px-6 pb-20 pt-20 sm:px-10 sm:pt-28 sm:pb-28'}>
+            <motion.div initial={{opacity: 0, y: 16}} animate={{opacity: 1, y: 0}} transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}>
+              <div style={{fontFamily: 'var(--font-mono)'}} className={'mb-6 text-[11px] uppercase tracking-[0.18em] text-neutral-500'}>
+                Plunk vs ConvertKit
               </div>
-              <h3 className={'mt-6 text-2xl font-bold text-neutral-900'}>Pay per email sent</h3>
-              <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Pay-as-you-go pricing. Only pay for emails you send, not for subscribers you store.
-              </p>
-              <div className={'mt-6 text-4xl font-bold text-neutral-900'}>Pay-as-you-go</div>
-              <div className={'mt-8 space-y-3'}>
-                <div className={'flex items-center gap-3 text-sm text-neutral-600'}>
-                  <div className={'h-5 w-5 rounded-full bg-neutral-900 flex items-center justify-center'}>
-                    <div className={'h-1.5 w-1.5 rounded-full bg-white'} />
-                  </div>
-                  <span>Unlimited subscribers at no cost</span>
-                </div>
-                <div className={'flex items-center gap-3 text-sm text-neutral-600'}>
-                  <div className={'h-5 w-5 rounded-full bg-neutral-900 flex items-center justify-center'}>
-                    <div className={'h-1.5 w-1.5 rounded-full bg-white'} />
-                  </div>
-                  <span>Only pay when you actually send</span>
-                </div>
-                <div className={'flex items-center gap-3 text-sm text-neutral-600'}>
-                  <div className={'h-5 w-5 rounded-full bg-neutral-900 flex items-center justify-center'}>
-                    <div className={'h-1.5 w-1.5 rounded-full bg-white'} />
-                  </div>
-                  <span>Grow your list without price increases</span>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{opacity: 0, x: 20}}
-              whileInView={{opacity: 1, x: 0}}
-              viewport={{once: true}}
-              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-              className={'rounded-2xl border border-neutral-200 bg-neutral-50 p-10'}
-            >
-              <div className={'mb-4 inline-flex items-center gap-2 rounded-full bg-neutral-200 px-4 py-1.5'}>
-                <span className={'text-sm font-semibold text-neutral-900'}>ConvertKit</span>
-              </div>
-              <h3 className={'mt-6 text-2xl font-bold text-neutral-900'}>Pay per subscriber count</h3>
-              <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Monthly subscription based on total subscribers, whether you email them or not.
-              </p>
-              <div className={'mt-6 text-4xl font-bold text-neutral-900'}>From $25/month</div>
-              <div className={'mt-8 space-y-3'}>
-                <div className={'flex items-center gap-3 text-sm text-neutral-600'}>
-                  <div className={'h-5 w-5 rounded-full bg-neutral-300 flex items-center justify-center'}>
-                    <div className={'h-1.5 w-1.5 rounded-full bg-neutral-600'} />
-                  </div>
-                  <span>Price increases with subscriber count</span>
-                </div>
-                <div className={'flex items-center gap-3 text-sm text-neutral-600'}>
-                  <div className={'h-5 w-5 rounded-full bg-neutral-300 flex items-center justify-center'}>
-                    <div className={'h-1.5 w-1.5 rounded-full bg-neutral-600'} />
-                  </div>
-                  <span>Pay even if you don't send emails</span>
-                </div>
-                <div className={'flex items-center gap-3 text-sm text-neutral-600'}>
-                  <div className={'h-5 w-5 rounded-full bg-neutral-300 flex items-center justify-center'}>
-                    <div className={'h-1.5 w-1.5 rounded-full bg-neutral-600'} />
-                  </div>
-                  <span>10K subscribers = $119/month</span>
-                </div>
+              <h1 style={{fontFamily: 'var(--font-display)'}} className={'text-[clamp(2.75rem,7vw,6.5rem)] font-extrabold leading-[0.92] tracking-[-0.04em] text-neutral-900'}>
+                Open-source alternative
+                <br />
+                for ConvertKit
+              </h1>
+              <p className={'mt-6 max-w-2xl text-xl text-neutral-600'}>ConvertKit is built for creators. Plunk is built for developers who need powerful email automation without the creator-focused bloat. Same automation, better DX, pay-as-you-go.</p>
+              <div className={'mt-10 flex flex-wrap gap-3'}>
+                <motion.a whileHover={{scale: 1.015}} whileTap={{scale: 0.985}} href={`${DASHBOARD_URI}/auth/signup`} className={'group inline-flex items-center gap-2 rounded-full bg-neutral-900 px-8 py-4 text-base font-semibold text-white shadow-[0_10px_30px_-10px_rgba(23,23,23,0.35)] transition hover:bg-neutral-800'}>
+                  Get started free <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </motion.a>
+                <Link href={WIKI_URI} target={'_blank'} className={'inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-900'}>
+                  View documentation
+                </Link>
               </div>
             </motion.div>
           </div>
         </section>
 
-        {/* Key Advantages */}
-        <section className={'py-32'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mb-20 text-center'}
-          >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Built for Developers, Not Creators</h2>
-          </motion.div>
-
-          <div className={'grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3'}>
-            <motion.div
-              initial={{opacity: 0, y: 20}}
-              whileInView={{opacity: 1, y: 0}}
-              viewport={{once: true}}
-              transition={{duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1]}}
-              className={'group bg-white p-12 transition hover:bg-neutral-50'}
-            >
-              <div
-                className={
-                  'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white transition group-hover:scale-110'
-                }
-              >
-                <Code2 className="h-5 w-5" />
-              </div>
-              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Developer-First API</h3>
-              <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Modern REST API designed for developers. No visual builder complexity, just clean endpoints for sending
-                emails and managing workflows.
-              </p>
+        {/* Pricing comparison */}
+        <section className={'border-t border-neutral-200'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-16 sm:py-20 sm:px-10'}>
+            <motion.div initial={{opacity: 0, y: 20}} whileInView={{opacity: 1, y: 0}} viewport={{once: true}} transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}} className={'mb-10'}>
+              <h2 style={{fontFamily: 'var(--font-display)'}} className={'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'}>
+                Pay for Emails, Not Subscribers
+              </h2>
+              <p className={'mt-4 text-lg text-neutral-600'}>Pricing that grows with usage, not list size</p>
             </motion.div>
-
-            <motion.div
-              initial={{opacity: 0, y: 20}}
-              whileInView={{opacity: 1, y: 0}}
-              viewport={{once: true}}
-              transition={{duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1]}}
-              className={'group bg-white p-12 transition hover:bg-neutral-50'}
-            >
-              <div
-                className={
-                  'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white transition group-hover:scale-110'
-                }
-              >
-                <DollarSign className="h-5 w-5" />
-              </div>
-              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Pay-as-you-go Pricing</h3>
-              <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Only pay for emails sent, not subscribers stored. Grow your list without worrying about tier upgrades or
-                subscription increases.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{opacity: 0, y: 20}}
-              whileInView={{opacity: 1, y: 0}}
-              viewport={{once: true}}
-              transition={{duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1]}}
-              className={'group bg-white p-12 transition hover:bg-neutral-50'}
-            >
-              <div
-                className={
-                  'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white transition group-hover:scale-110'
-                }
-              >
-                <PackageOpen className="h-5 w-5" />
-              </div>
-              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Open Source</h3>
-              <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                AGPL-3.0 licensed. Inspect the code, contribute features, understand exactly how your emails are sent.
-                ConvertKit is proprietary.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{opacity: 0, y: 20}}
-              whileInView={{opacity: 1, y: 0}}
-              viewport={{once: true}}
-              transition={{duration: 0.5, delay: 0.4, ease: [0.22, 1, 0.36, 1]}}
-              className={'group bg-white p-12 transition hover:bg-neutral-50'}
-            >
-              <div
-                className={
-                  'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white transition group-hover:scale-110'
-                }
-              >
-                <Globe className="h-5 w-5" />
-              </div>
-              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Self-Hostable</h3>
-              <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Run on your own infrastructure with Docker. Full data control, compliance-ready, cost-optimized for
-                scale. ConvertKit is cloud-only.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{opacity: 0, y: 20}}
-              whileInView={{opacity: 1, y: 0}}
-              viewport={{once: true}}
-              transition={{duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1]}}
-              className={'group bg-white p-12 transition hover:bg-neutral-50'}
-            >
-              <div
-                className={
-                  'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white transition group-hover:scale-110'
-                }
-              >
-                <Zap className="h-5 w-5" />
-              </div>
-              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>5-Minute Setup</h3>
-              <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Start sending emails in minutes. No form builders to configure, no landing pages to design. Just
-                authenticate and send.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{opacity: 0, y: 20}}
-              whileInView={{opacity: 1, y: 0}}
-              viewport={{once: true}}
-              transition={{duration: 0.5, delay: 0.6, ease: [0.22, 1, 0.36, 1]}}
-              className={'group bg-white p-12 transition hover:bg-neutral-50'}
-            >
-              <div
-                className={
-                  'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white transition group-hover:scale-110'
-                }
-              >
-                <Users className="h-5 w-5" />
-              </div>
-              <h3 className={'mt-6 text-xl font-semibold text-neutral-900'}>Unlimited Contacts</h3>
-              <p className={'mt-3 leading-relaxed text-neutral-600'}>
-                Store unlimited contacts without penalty. No subscriber tiers, no forced upgrades. Your contact database
-                grows freely.
-              </p>
-            </motion.div>
+            <div className={'grid gap-4 lg:grid-cols-2'}>
+              <motion.div initial={{opacity: 0, x: -20}} whileInView={{opacity: 1, x: 0}} viewport={{once: true}} transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}} className={'rounded-[24px] border border-neutral-900 bg-neutral-900 p-10 text-white'}>
+                <div style={{fontFamily: 'var(--font-mono)'}} className={'text-[11px] uppercase tracking-[0.18em] text-neutral-400'}>Plunk</div>
+                <h3 style={{fontFamily: 'var(--font-display)'}} className={'mt-6 text-2xl font-bold tracking-[-0.025em] text-white'}>Pay per email sent</h3>
+                <p className={'mt-3 leading-relaxed text-neutral-300'}>Pay-as-you-go pricing. Only pay for emails you send, not for subscribers you store.</p>
+                <div style={{fontFamily: 'var(--font-display)'}} className={'mt-6 text-4xl font-extrabold tracking-[-0.03em] text-white'}>Pay-as-you-go</div>
+                <ul className={'mt-8 space-y-3'}>
+                  <li className={'flex items-center gap-3 text-sm text-neutral-300'}><Check className="h-4 w-4 flex-shrink-0 text-neutral-400" />Unlimited subscribers at no cost</li>
+                  <li className={'flex items-center gap-3 text-sm text-neutral-300'}><Check className="h-4 w-4 flex-shrink-0 text-neutral-400" />Only pay when you actually send</li>
+                  <li className={'flex items-center gap-3 text-sm text-neutral-300'}><Check className="h-4 w-4 flex-shrink-0 text-neutral-400" />Grow your list without price increases</li>
+                </ul>
+              </motion.div>
+              <motion.div initial={{opacity: 0, x: 20}} whileInView={{opacity: 1, x: 0}} viewport={{once: true}} transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}} className={'rounded-[24px] border border-neutral-200 bg-white p-10'}>
+                <div style={{fontFamily: 'var(--font-mono)'}} className={'text-[11px] uppercase tracking-[0.18em] text-neutral-500'}>ConvertKit</div>
+                <h3 style={{fontFamily: 'var(--font-display)'}} className={'mt-6 text-2xl font-bold tracking-[-0.025em] text-neutral-900'}>Pay per subscriber count</h3>
+                <p className={'mt-3 leading-relaxed text-neutral-600'}>Monthly subscription based on total subscribers, whether you email them or not.</p>
+                <div style={{fontFamily: 'var(--font-display)'}} className={'mt-6 text-4xl font-extrabold tracking-[-0.03em] text-neutral-900'}>From $25/month</div>
+                <ul className={'mt-8 space-y-3'}>
+                  <li className={'flex items-center gap-3 text-sm text-neutral-600'}><div className={'h-1.5 w-1.5 flex-shrink-0 rounded-full bg-neutral-400'} />Price increases with subscriber count</li>
+                  <li className={'flex items-center gap-3 text-sm text-neutral-600'}><div className={'h-1.5 w-1.5 flex-shrink-0 rounded-full bg-neutral-400'} />Pay even if you don't send emails</li>
+                  <li className={'flex items-center gap-3 text-sm text-neutral-600'}><div className={'h-1.5 w-1.5 flex-shrink-0 rounded-full bg-neutral-400'} />10K subscribers = $119/month</li>
+                </ul>
+              </motion.div>
+            </div>
           </div>
         </section>
 
-        {/* Feature Comparison */}
-        <section className={'py-32'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mb-16 text-center'}
-          >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Feature Comparison</h2>
-          </motion.div>
+        {/* Key advantages */}
+        <section className={'border-t border-neutral-200 bg-neutral-50/60'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-16 sm:py-20 sm:px-10'}>
+            <motion.div initial={{opacity: 0, y: 20}} whileInView={{opacity: 1, y: 0}} viewport={{once: true}} transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}} className={'mb-10'}>
+              <h2 style={{fontFamily: 'var(--font-display)'}} className={'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'}>Built for Developers, Not Creators</h2>
+            </motion.div>
+            <div className={'grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3'}>
+              <motion.div initial={{opacity: 0, y: 20}} whileInView={{opacity: 1, y: 0}} viewport={{once: true}} transition={{duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1]}} className={'bg-white p-10'}>
+                <div className={'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white'}><Code2 className="h-5 w-5" /></div>
+                <h3 style={{fontFamily: 'var(--font-display)'}} className={'mt-6 text-xl font-bold tracking-[-0.02em] text-neutral-900'}>Developer-First API</h3>
+                <p className={'mt-3 leading-relaxed text-neutral-600'}>Modern REST API designed for developers. No visual builder complexity, just clean endpoints for sending emails and managing workflows.</p>
+              </motion.div>
 
-          <ComparisonTable competitorName="ConvertKit" rows={comparisonData} />
+              <motion.div initial={{opacity: 0, y: 20}} whileInView={{opacity: 1, y: 0}} viewport={{once: true}} transition={{duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1]}} className={'bg-white p-10'}>
+                <div className={'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white'}><DollarSign className="h-5 w-5" /></div>
+                <h3 style={{fontFamily: 'var(--font-display)'}} className={'mt-6 text-xl font-bold tracking-[-0.02em] text-neutral-900'}>Pay-as-you-go Pricing</h3>
+                <p className={'mt-3 leading-relaxed text-neutral-600'}>Only pay for emails sent, not subscribers stored. Grow your list without worrying about tier upgrades or subscription increases.</p>
+              </motion.div>
+
+              <motion.div initial={{opacity: 0, y: 20}} whileInView={{opacity: 1, y: 0}} viewport={{once: true}} transition={{duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1]}} className={'bg-white p-10'}>
+                <div className={'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white'}><PackageOpen className="h-5 w-5" /></div>
+                <h3 style={{fontFamily: 'var(--font-display)'}} className={'mt-6 text-xl font-bold tracking-[-0.02em] text-neutral-900'}>Open Source</h3>
+                <p className={'mt-3 leading-relaxed text-neutral-600'}>AGPL-3.0 licensed. Inspect the code, contribute features, understand exactly how your emails are sent. ConvertKit is proprietary.</p>
+              </motion.div>
+
+              <motion.div initial={{opacity: 0, y: 20}} whileInView={{opacity: 1, y: 0}} viewport={{once: true}} transition={{duration: 0.5, delay: 0.4, ease: [0.22, 1, 0.36, 1]}} className={'bg-white p-10'}>
+                <div className={'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white'}><Globe className="h-5 w-5" /></div>
+                <h3 style={{fontFamily: 'var(--font-display)'}} className={'mt-6 text-xl font-bold tracking-[-0.02em] text-neutral-900'}>Self-Hostable</h3>
+                <p className={'mt-3 leading-relaxed text-neutral-600'}>Run on your own infrastructure with Docker. Full data control, compliance-ready, cost-optimized for scale. ConvertKit is cloud-only.</p>
+              </motion.div>
+
+              <motion.div initial={{opacity: 0, y: 20}} whileInView={{opacity: 1, y: 0}} viewport={{once: true}} transition={{duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1]}} className={'bg-white p-10'}>
+                <div className={'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white'}><Zap className="h-5 w-5" /></div>
+                <h3 style={{fontFamily: 'var(--font-display)'}} className={'mt-6 text-xl font-bold tracking-[-0.02em] text-neutral-900'}>5-Minute Setup</h3>
+                <p className={'mt-3 leading-relaxed text-neutral-600'}>Start sending emails in minutes. No form builders to configure, no landing pages to design. Just authenticate and send.</p>
+              </motion.div>
+
+              <motion.div initial={{opacity: 0, y: 20}} whileInView={{opacity: 1, y: 0}} viewport={{once: true}} transition={{duration: 0.5, delay: 0.6, ease: [0.22, 1, 0.36, 1]}} className={'bg-white p-10'}>
+                <div className={'flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900 text-white'}><Users className="h-5 w-5" /></div>
+                <h3 style={{fontFamily: 'var(--font-display)'}} className={'mt-6 text-xl font-bold tracking-[-0.02em] text-neutral-900'}>Unlimited Contacts</h3>
+                <p className={'mt-3 leading-relaxed text-neutral-600'}>Store unlimited contacts without penalty. No subscriber tiers, no forced upgrades. Your contact database grows freely.</p>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* Feature comparison table */}
+        <section className={'border-t border-neutral-200'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-16 sm:py-20 sm:px-10'}>
+            <motion.div initial={{opacity: 0, y: 20}} whileInView={{opacity: 1, y: 0}} viewport={{once: true}} transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}} className={'mb-10'}>
+              <h2 style={{fontFamily: 'var(--font-display)'}} className={'text-[clamp(2rem,5vw,4rem)] font-extrabold leading-[0.95] tracking-[-0.03em] text-neutral-900'}>Feature comparison</h2>
+            </motion.div>
+            <ComparisonTable competitorName="ConvertKit" rows={comparisonData} />
+          </div>
         </section>
 
         {/* FAQ */}
         <FAQSection faqs={faqs} schemaId="faq-schema-convertkit" />
 
         {/* CTA */}
-        <section className={'relative overflow-hidden border-t border-neutral-200 py-32'}>
-          <div
-            className={
-              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_70%,transparent_110%)]'
-            }
-          />
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-3xl text-center'}
-          >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>
-              Ready for a developer-first email platform?
-            </h2>
-            <p className={'mt-6 text-lg text-neutral-600'}>
-              Join developers who've switched from ConvertKit to Plunk for better API design and transparent
-              pay-as-you-go pricing.
-            </p>
-            <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
-              <motion.a
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                href={`${DASHBOARD_URI}/auth/signup`}
-                className={
-                  'group rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white transition hover:bg-neutral-800'
-                }
-              >
-                <span className={'flex items-center gap-2'}>
-                  Get started free
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </motion.a>
-              <Link
-                href="/pricing"
-                className={
-                  'rounded-lg border border-neutral-300 px-8 py-4 text-base font-semibold text-neutral-900 transition hover:border-neutral-400'
-                }
-              >
-                View pricing
-              </Link>
+        <section className={'relative overflow-hidden border-t border-neutral-900 bg-neutral-900 text-white'}>
+          <div className={'mx-auto max-w-[88rem] px-6 py-24 sm:px-10 sm:py-32'}>
+            <div className={'flex flex-col items-start gap-12 lg:flex-row lg:items-end lg:justify-between'}>
+              <motion.h2 initial={{opacity: 0, y: 16}} whileInView={{opacity: 1, y: 0}} viewport={{once: true}} transition={{duration: 0.9, ease: [0.22, 1, 0.36, 1]}} style={{fontFamily: 'var(--font-display)'}} className={'text-[clamp(2.5rem,7vw,6rem)] font-extrabold leading-[0.95] tracking-[-0.035em]'}>
+                Ready for a developer-first email platform?
+              </motion.h2>
+              <motion.div initial={{opacity: 0, y: 16}} whileInView={{opacity: 1, y: 0}} viewport={{once: true}} transition={{duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1]}} className={'flex max-w-md flex-col gap-6'}>
+                <p className={'text-base text-neutral-300 sm:text-lg'}>Join developers who've switched from ConvertKit to Plunk for better API design and transparent pay-as-you-go pricing.</p>
+                <div className={'flex flex-wrap gap-3'}>
+                  <motion.a whileHover={{scale: 1.015}} whileTap={{scale: 0.985}} href={`${DASHBOARD_URI}/auth/signup`} className={'inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-100'}>
+                    Get started free <ArrowRight className="h-4 w-4" />
+                  </motion.a>
+                  <Link href={'/pricing'} className={'inline-flex items-center gap-2 rounded-full border border-neutral-700 px-7 py-3.5 text-sm font-semibold text-white transition hover:border-white'}>
+                    View pricing
+                  </Link>
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
+          </div>
         </section>
-      </main>
 
+      </main>
       <Footer />
     </>
   );

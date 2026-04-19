@@ -32,7 +32,7 @@ export default function WhatIsDMARC() {
         </p>
 
         <div className="space-y-6 mb-8">
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">1. Email Authentication</h3>
             <p className="text-neutral-700">
               When an email is received, the server first checks SPF and DKIM authentication. At least one of these must
@@ -40,7 +40,7 @@ export default function WhatIsDMARC() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">2. Alignment Check</h3>
             <p className="text-neutral-700">
               DMARC checks if the domain in the "From" header aligns with the domain that passed SPF or DKIM. This is
@@ -48,7 +48,7 @@ export default function WhatIsDMARC() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">3. Policy Application</h3>
             <p className="text-neutral-700">
               If authentication and alignment pass, the email is delivered. If they fail, the receiving server follows
@@ -56,7 +56,7 @@ export default function WhatIsDMARC() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">4. Reporting</h3>
             <p className="text-neutral-700">
               Receiving servers send daily reports to your specified email address, showing authentication results for

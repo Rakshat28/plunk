@@ -7,6 +7,28 @@ import {SWRConfig} from 'swr';
 import {network} from '../lib/network';
 import {DefaultSeo} from 'next-seo';
 import Script from 'next/script';
+import {Bricolage_Grotesque, Hanken_Grotesk, JetBrains_Mono} from 'next/font/google';
+
+const display = Bricolage_Grotesque({
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
+});
+
+const body = Hanken_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-body',
+  display: 'swap',
+  weight: ['400', '500', '600', '700'],
+});
+
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+  weight: ['400', '500'],
+});
 
 /**
  * Main app component
@@ -25,7 +47,7 @@ function App({Component, pageProps}: AppProps) {
   }, []);
 
   return (
-    <>
+    <div className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <Head>
         <title>Plunk | The Open-Source Email Platform</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" key={'viewport'} />
@@ -33,7 +55,7 @@ function App({Component, pageProps}: AppProps) {
       <Toaster position={'top-right'} />
 
       <Component {...pageProps} />
-    </>
+    </div>
   );
 }
 

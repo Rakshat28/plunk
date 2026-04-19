@@ -141,7 +141,7 @@ CTOR = (294 ÷ 2,450) × 100 = 12.0%`}
         <h2 className="text-3xl font-bold text-neutral-900 mb-6">What Affects Click-Through Rates?</h2>
 
         <div className="space-y-6">
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">1. Call-to-Action (CTA) Design</h3>
             <p className="text-neutral-700">
               Your CTA's design, placement, and copy directly impact clicks. Clear, prominent, action-oriented CTAs
@@ -149,7 +149,7 @@ CTOR = (294 ÷ 2,450) × 100 = 12.0%`}
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">2. Email Relevance</h3>
             <p className="text-neutral-700">
               Targeted, personalized content generates 2-3x higher CTR than generic blasts. Segmentation and
@@ -157,7 +157,7 @@ CTOR = (294 ÷ 2,450) × 100 = 12.0%`}
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">3. Value Proposition</h3>
             <p className="text-neutral-700">
               Recipients need a clear reason to click. Compelling value propositions—exclusive content, limited offers,
@@ -165,7 +165,7 @@ CTOR = (294 ÷ 2,450) × 100 = 12.0%`}
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">4. Mobile Optimization</h3>
             <p className="text-neutral-700">
               60%+ of emails are read on mobile. Unoptimized emails with small links or poorly formatted content see 50%
@@ -173,7 +173,7 @@ CTOR = (294 ÷ 2,450) × 100 = 12.0%`}
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">5. Content Scannability</h3>
             <p className="text-neutral-700">
               Most people skim emails. Clear structure with headers, bullet points, and whitespace helps readers find
@@ -181,7 +181,7 @@ CTOR = (294 ÷ 2,450) × 100 = 12.0%`}
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">6. Number of CTAs</h3>
             <p className="text-neutral-700">
               More CTAs = divided attention. Emails with one primary CTA convert 371% better than those with multiple
@@ -402,14 +402,14 @@ CTOR = (294 ÷ 2,450) × 100 = 12.0%`}
         <h2 className="text-3xl font-bold text-neutral-900 mb-6">Common CTR Mistakes to Avoid</h2>
 
         <div className="space-y-6">
-          <div className="border-l-4 border-red-500 pl-6 py-2">
+          <div className="py-2">
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">✗ Too Many CTAs</h3>
             <p className="text-neutral-700">
               Multiple competing CTAs confuse readers and reduce overall clicks. Focus on one primary action per email.
             </p>
           </div>
 
-          <div className="border-l-4 border-red-500 pl-6 py-2">
+          <div className="py-2">
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">✗ Vague CTA Copy</h3>
             <p className="text-neutral-700">
               "Click here" and "Learn more" don't communicate value. Be specific: "Download free guide" or "Start 14-day
@@ -417,7 +417,7 @@ CTOR = (294 ÷ 2,450) × 100 = 12.0%`}
             </p>
           </div>
 
-          <div className="border-l-4 border-red-500 pl-6 py-2">
+          <div className="py-2">
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">✗ Image-Only CTAs</h3>
             <p className="text-neutral-700">
               Many email clients block images by default. If your CTA is an image, users won't see it. Use HTML buttons
@@ -425,14 +425,14 @@ CTOR = (294 ÷ 2,450) × 100 = 12.0%`}
             </p>
           </div>
 
-          <div className="border-l-4 border-red-500 pl-6 py-2">
+          <div className="py-2">
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">✗ Small, Hard-to-Tap Links</h3>
             <p className="text-neutral-700">
               Tiny text links are difficult to tap on mobile. Use large buttons (minimum 44x44px) for easy tapping.
             </p>
           </div>
 
-          <div className="border-l-4 border-red-500 pl-6 py-2">
+          <div className="py-2">
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">✗ No Clear Value Proposition</h3>
             <p className="text-neutral-700">
               Readers won't click if they don't know why they should. Clearly communicate the benefit of clicking before

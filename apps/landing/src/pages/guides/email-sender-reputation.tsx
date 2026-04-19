@@ -70,7 +70,7 @@ export default function EmailSenderReputation() {
         <h2 className="text-3xl font-bold text-neutral-900 mb-6">What Affects Sender Reputation?</h2>
 
         <div className="space-y-6">
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">1. Spam Complaint Rate</h3>
             <p className="text-neutral-700 mb-3">
               <strong>Impact: Critical.</strong> When recipients mark your emails as spam, it severely damages
@@ -81,7 +81,7 @@ export default function EmailSenderReputation() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">2. Engagement Metrics</h3>
             <p className="text-neutral-700 mb-3">
               <strong>Impact: Very High.</strong> Email providers track opens, clicks, replies, forwards, and deletes.
@@ -92,7 +92,7 @@ export default function EmailSenderReputation() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">3. Bounce Rate</h3>
             <p className="text-neutral-700 mb-3">
               <strong>Impact: High.</strong> High bounce rates (especially hard bounces) indicate poor list hygiene,
@@ -103,7 +103,7 @@ export default function EmailSenderReputation() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">4. Email Authentication</h3>
             <p className="text-neutral-700 mb-3">
               <strong>Impact: High.</strong> Proper SPF, DKIM, and DMARC authentication proves your emails are
@@ -114,7 +114,7 @@ export default function EmailSenderReputation() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">5. Spam Trap Hits</h3>
             <p className="text-neutral-700 mb-3">
               <strong>Impact: Critical.</strong> Spam traps are email addresses used to catch senders with poor
@@ -125,7 +125,7 @@ export default function EmailSenderReputation() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">6. Sending Volume & Consistency</h3>
             <p className="text-neutral-700 mb-3">
               <strong>Impact: Moderate.</strong> Sudden spikes in volume look suspicious. Inconsistent sending (long
@@ -136,7 +136,7 @@ export default function EmailSenderReputation() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">7. Content Quality</h3>
             <p className="text-neutral-700 mb-3">
               <strong>Impact: Moderate.</strong> Spammy content (excessive links, misleading subject lines, all caps)
@@ -147,7 +147,7 @@ export default function EmailSenderReputation() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">8. Blacklist Status</h3>
             <p className="text-neutral-700 mb-3">
               <strong>Impact: Critical.</strong> Being listed on major blacklists (Spamhaus, Barracuda, SURBL) can block
@@ -158,7 +158,7 @@ export default function EmailSenderReputation() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">9. Sending History</h3>
             <p className="text-neutral-700 mb-3">
               <strong>Impact: Cumulative.</strong> Reputation is built over time. New domains/IPs have no history (zero

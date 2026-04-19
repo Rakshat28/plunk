@@ -33,7 +33,7 @@ export default function WhatIsDKIM() {
         </p>
 
         <div className="space-y-6 mb-8">
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">1. The Sending Server Signs the Email</h3>
             <p className="text-neutral-700">
               When you send an email, your email server adds a DKIM signature to the email header. This signature is
@@ -41,7 +41,7 @@ export default function WhatIsDKIM() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">2. The Signature is Added to Headers</h3>
             <p className="text-neutral-700">
               The DKIM signature includes a hash of specific email components (like the subject, body, and sender) and
@@ -49,7 +49,7 @@ export default function WhatIsDKIM() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">3. The Receiving Server Verifies</h3>
             <p className="text-neutral-700">
               When the email arrives, the receiving server looks up your domain's public DKIM key in DNS, then uses it
@@ -57,7 +57,7 @@ export default function WhatIsDKIM() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">4. Delivery Decision</h3>
             <p className="text-neutral-700">
               Passing DKIM verification improves your sender reputation and deliverability. Failing or missing DKIM may
@@ -252,7 +252,7 @@ export default function WhatIsDKIM() {
         <h2 className="text-3xl font-bold text-neutral-900 mb-6">DKIM Best Practices</h2>
 
         <div className="space-y-6">
-          <div className="border-l-4 border-green-500 pl-6 py-2">
+          <div className="py-2">
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">✓ Use 2048-bit Keys</h3>
             <p className="text-neutral-700">
               While 1024-bit keys still work, 2048-bit keys provide better security and are recommended by Gmail and
@@ -260,7 +260,7 @@ export default function WhatIsDKIM() {
             </p>
           </div>
 
-          <div className="border-l-4 border-green-500 pl-6 py-2">
+          <div className="py-2">
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">✓ Implement SPF and DMARC Too</h3>
             <p className="text-neutral-700">
               DKIM works best when combined with SPF and DMARC for comprehensive email authentication. Use all three for
@@ -268,7 +268,7 @@ export default function WhatIsDKIM() {
             </p>
           </div>
 
-          <div className="border-l-4 border-green-500 pl-6 py-2">
+          <div className="py-2">
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">✓ Monitor DKIM Status</h3>
             <p className="text-neutral-700">
               Regularly check that your DKIM signatures are passing. Most email platforms provide authentication
@@ -276,7 +276,7 @@ export default function WhatIsDKIM() {
             </p>
           </div>
 
-          <div className="border-l-4 border-green-500 pl-6 py-2">
+          <div className="py-2">
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">✓ Rotate Keys Periodically</h3>
             <p className="text-neutral-700">
               For enhanced security, rotate your DKIM keys every 6-12 months. Plan key rotation carefully to avoid
@@ -284,14 +284,14 @@ export default function WhatIsDKIM() {
             </p>
           </div>
 
-          <div className="border-l-4 border-red-500 pl-6 py-2">
+          <div className="py-2">
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">✗ Don't Share Private Keys</h3>
             <p className="text-neutral-700">
               Your DKIM private key should never be shared or stored insecurely. Treat it like a password.
             </p>
           </div>
 
-          <div className="border-l-4 border-red-500 pl-6 py-2">
+          <div className="py-2">
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">✗ Don't Use the Same Key Across Domains</h3>
             <p className="text-neutral-700">
               Each domain should have its own unique DKIM key pair for security and proper authentication.

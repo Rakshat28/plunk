@@ -10,7 +10,7 @@ export default function Footer() {
   return (
     <>
       <footer className={'border-t border-neutral-200 bg-white'}>
-        <div className="mx-auto max-w-7xl px-8 py-20 xl:px-0">
+        <div className="mx-auto max-w-[88rem] px-6 py-20 sm:px-10">
           <div className="grid gap-12 lg:grid-cols-12">
             {/* Logo and description */}
             <div className="space-y-6 lg:col-span-3">
@@ -59,7 +59,7 @@ export default function Footer() {
             {/* Links */}
             <div className="grid grid-cols-2 gap-8 lg:col-span-9 lg:grid-cols-5">
               <div>
-                <h3 className="text-sm font-semibold text-neutral-900">Product</h3>
+                <h3 style={{fontFamily: 'var(--font-mono)'}} className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">Product</h3>
                 <ul role="list" className="mt-6 space-y-4">
                   <li>
                     <Link href={'/pricing'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
@@ -90,7 +90,7 @@ export default function Footer() {
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold text-neutral-900">Features</h3>
+                <h3 style={{fontFamily: 'var(--font-mono)'}} className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">Features</h3>
                 <ul role="list" className="mt-6 space-y-4">
                   <li>
                     <Link href={'/features/email-editor'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
@@ -121,7 +121,7 @@ export default function Footer() {
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold text-neutral-900">Compare</h3>
+                <h3 style={{fontFamily: 'var(--font-mono)'}} className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">Compare</h3>
                 <ul role="list" className="mt-6 space-y-4">
                   <li>
                     <Link href={'/vs'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
@@ -162,7 +162,7 @@ export default function Footer() {
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold text-neutral-900">Community</h3>
+                <h3 style={{fontFamily: 'var(--font-mono)'}} className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">Community</h3>
                 <ul role="list" className="mt-6 space-y-4">
                   <li>
                     <Link href={'/discord'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
@@ -181,7 +181,7 @@ export default function Footer() {
                   </li>
                 </ul>
 
-                <h3 className="mt-8 text-sm font-semibold text-neutral-900">Legal</h3>
+                <h3 style={{fontFamily: 'var(--font-mono)'}} className="mt-8 text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">Legal</h3>
                 <ul role="list" className="mt-6 space-y-4">
                   <li>
                     <Link href={'/privacy'} className="text-sm text-neutral-600 transition hover:text-neutral-900">
@@ -202,7 +202,7 @@ export default function Footer() {
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold text-neutral-900">Guides</h3>
+                <h3 style={{fontFamily: 'var(--font-mono)'}} className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">Guides</h3>
                 <ul role="list" className="mt-6 space-y-4">
                   <li>
                     <Link href={'/guides/email-deliverability'} className="text-sm text-neutral-600 transition hover:text-neutral-900">

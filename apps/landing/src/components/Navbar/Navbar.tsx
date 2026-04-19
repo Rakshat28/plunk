@@ -47,8 +47,8 @@ export default function Navbar() {
   const [featuresOpen, setFeaturesOpen] = useState(false);
 
   return (
-    <header className={'sticky top-0 z-40 w-full border-b border-neutral-100 bg-white/95 backdrop-blur-sm'}>
-      <div className={'relative mx-auto max-w-7xl px-8 xl:px-0'}>
+    <header className={'sticky top-0 z-40 w-full border-b border-neutral-200 bg-white/95 backdrop-blur-sm'}>
+      <div className={'relative mx-auto max-w-[88rem] px-6 sm:px-10'}>
         <div className={'py-5'}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-12">
@@ -83,14 +83,14 @@ export default function Navbar() {
                         onMouseEnter={() => setFeaturesOpen(true)}
                         onMouseLeave={() => setFeaturesOpen(false)}
                         className={
-                          'absolute left-0 top-full z-50 mt-2 w-80 rounded-lg border border-neutral-200 bg-white p-2 shadow-lg'
+                          'absolute left-0 top-full z-50 mt-2 w-80 rounded-[16px] border border-neutral-200 bg-white p-2 shadow-lg'
                         }
                       >
                         {featuresMenu.map(feature => (
                           <Link
                             key={feature.href}
                             href={feature.href}
-                            className={'flex items-start gap-3 rounded-lg p-3 transition hover:bg-neutral-50'}
+                            className={'flex items-start gap-3 rounded-[10px] p-3 transition hover:bg-neutral-50'}
                           >
                             <div
                               className={
@@ -166,7 +166,7 @@ export default function Navbar() {
                 whileTap={{scale: 0.98}}
                 href={`${DASHBOARD_URI}/auth/signup`}
                 className={
-                  'rounded-lg bg-neutral-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800'
+                  'rounded-full bg-neutral-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800'
                 }
               >
                 Get started
@@ -226,7 +226,7 @@ export default function Navbar() {
                 className="space-y-1 p-4"
               >
                 <div className="mb-2">
-                  <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                  <div style={{fontFamily: 'var(--font-mono)'}} className="px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
                     Features
                   </div>
                   {featuresMenu.map(feature => (
@@ -293,7 +293,7 @@ export default function Navbar() {
                   </a>
                   <a
                     href={`${DASHBOARD_URI}/auth/signup`}
-                    className="mt-2 block rounded-lg bg-neutral-900 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-neutral-800"
+                    className="mt-2 block rounded-full bg-neutral-900 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-neutral-800"
                   >
                     Get started
                   </a>

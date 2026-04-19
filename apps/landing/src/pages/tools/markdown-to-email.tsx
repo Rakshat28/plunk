@@ -1,21 +1,41 @@
-import {Footer, Navbar} from '../../components';
+import {Footer, Navbar, SectionHeader} from '../../components';
 import {motion} from 'framer-motion';
 import {DASHBOARD_URI} from '../../lib/constants';
 import React, {useMemo, useState} from 'react';
 import {NextSeo} from 'next-seo';
-import {ArrowRight, Check, Code2, Copy, Sparkles} from 'lucide-react';
+import {ArrowRight, Check, Code2, Copy} from 'lucide-react';
 import {MarkdownEmailEditor} from '../../components/tools/MarkdownEmailEditor';
 import {convertToCompleteEmailHtml} from '../../lib/emailHtmlConverter';
 import {Button} from '@plunk/ui';
+import {Bricolage_Grotesque, Hanken_Grotesk, JetBrains_Mono} from 'next/font/google';
+import Link from 'next/link';
+
+const display = Bricolage_Grotesque({
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
+});
+
+const body = Hanken_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-body',
+  display: 'swap',
+  weight: ['400', '500', '600', '700'],
+});
+
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+  weight: ['400', '500'],
+});
 
 export default function MarkdownToEmail() {
   const [editorContent, setEditorContent] = useState('<p>Hello!</p><p>Try editing this text...</p>');
   const [copied, setCopied] = useState(false);
 
-  // Convert editor content to complete, ready-to-send email HTML
-  const emailSafeHtml = useMemo(() => {
-    return convertToCompleteEmailHtml(editorContent);
-  }, [editorContent]);
+  const emailSafeHtml = useMemo(() => convertToCompleteEmailHtml(editorContent), [editorContent]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(emailSafeHtml);
@@ -40,123 +60,230 @@ export default function MarkdownToEmail() {
 
       <Navbar />
 
-      <main className={'mx-auto max-w-7xl px-8 sm:px-0'}>
-        {/* Hero Section */}
-        <section className={'relative py-32 sm:py-48'}>
-          <div
-            className={
-              'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]'
-            }
-          />
-
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            animate={{opacity: 1, y: 0}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-4xl text-center'}
-          >
+      <div className={`${display.variable} ${body.variable} ${mono.variable}`}>
+        <main className={'text-neutral-800'}>
+          {/* ========== HERO ========== */}
+          <section className={'relative overflow-hidden'}>
             <div
+              aria-hidden
               className={
-                'mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2'
+                'absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#eeeeee_1px,transparent_1px),linear-gradient(to_bottom,#eeeeee_1px,transparent_1px)] bg-[size:6rem_6rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_30%,#000_40%,transparent_95%)]'
               }
-            >
-              <Sparkles className="h-4 w-4 text-neutral-600" />
-              <span className={'text-sm text-neutral-600'}>Free Tool</span>
-            </div>
+            />
 
-            <h1 className={'text-6xl font-bold tracking-tight text-neutral-900 sm:text-7xl lg:text-8xl text-balance'}>
-              Markdown to Email
-              <br />
-              HTML Converter
-            </h1>
-
-            <p className={'mx-auto mt-8 max-w-2xl text-xl text-neutral-600'}>
-              Create beautiful, email-safe HTML instantly. Format your text with our visual editor and get
-              production-ready HTML with inlined styles that works across all email clients.
-            </p>
-          </motion.div>
-        </section>
-
-        {/* Editor Section */}
-        <section className={'py-16'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'grid gap-6 lg:grid-cols-2'}
-          >
-            {/* Left: Editor */}
-            <div>
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-neutral-900">Visual Editor</h2>
-                <div className="flex items-center gap-2 text-sm text-neutral-600">
-                  <Code2 className="h-4 w-4" />
-                  <span>Format your content</span>
-                </div>
-              </div>
-              <MarkdownEmailEditor value={editorContent} onChange={setEditorContent} />
-            </div>
-
-            {/* Right: Email-Safe HTML Output */}
-            <div>
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-neutral-900">Email-Safe HTML</h2>
-                <Button onClick={handleCopy} size="sm" variant="outline" className="gap-2">
-                  {copied ? (
-                    <>
-                      <Check className="h-4 w-4" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-4 w-4" />
-                      Copy
-                    </>
-                  )}
-                </Button>
-              </div>
-              <div className="border border-neutral-200 rounded-lg overflow-hidden bg-white">
-                <pre className="p-4 text-xs font-mono overflow-x-auto min-h-[500px] max-h-[500px] overflow-y-auto">
-                  <code className="text-neutral-700">{emailSafeHtml}</code>
-                </pre>
-              </div>
-            </div>
-          </motion.div>
-        </section>
-
-        {/* CTA Section */}
-        <section className={'border-t border-neutral-200 py-32'}>
-          <motion.div
-            initial={{opacity: 0, y: 20}}
-            whileInView={{opacity: 1, y: 0}}
-            viewport={{once: true}}
-            transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
-            className={'mx-auto max-w-3xl text-center'}
-          >
-            <h2 className={'text-5xl font-bold tracking-tight text-neutral-900 text-balance'}>Ready to send great emails?</h2>
-            <p className={'mt-6 text-lg text-neutral-600'}>
-              This tool is great for creating email HTML, but Plunk handles everything: templates, sending, tracking,
-              and deliverability. Start free, no credit card required.
-            </p>
-            <div className={'mt-12 flex flex-wrap justify-center gap-4'}>
-              <motion.a
-                whileHover={{scale: 1.02}}
-                whileTap={{scale: 0.98}}
-                href={`${DASHBOARD_URI}/auth/signup`}
+            <div className={'mx-auto max-w-[88rem] px-6 pb-24 pt-20 sm:px-10 sm:pt-28 lg:pb-36'}>
+              <motion.div
+                initial={{opacity: 0, y: 8}}
+                animate={{opacity: 1, y: 0}}
+                transition={{duration: 0.5, ease: [0.22, 1, 0.36, 1]}}
+                style={{fontFamily: 'var(--font-mono)'}}
                 className={
-                  'group rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white transition hover:bg-neutral-800'
+                  'mb-16 flex items-center justify-between border-t border-neutral-900/90 pt-4 text-[11px] uppercase tracking-[0.18em] text-neutral-700 sm:mb-24'
                 }
               >
-                <span className={'flex items-center gap-2'}>
-                  Start with Plunk
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </motion.a>
+                <span className={'font-medium text-neutral-900'}>§ T-01 &nbsp;— &nbsp;Tool</span>
+                <Link
+                  href="/tools"
+                  className={'text-neutral-500 transition hover:text-neutral-900'}
+                >
+                  ← All tools
+                </Link>
+              </motion.div>
+
+              <motion.div
+                initial={{opacity: 0, y: 16}}
+                animate={{opacity: 1, y: 0}}
+                transition={{duration: 0.9, ease: [0.22, 1, 0.36, 1]}}
+                className={'mx-auto max-w-5xl text-center'}
+              >
+                <h1
+                  style={{fontFamily: 'var(--font-display)'}}
+                  className={
+                    'text-[clamp(2.5rem,7vw,6.5rem)] font-extrabold leading-[0.92] tracking-[-0.04em] text-neutral-900'
+                  }
+                >
+                  Markdown to
+                  <br />
+                  Email HTML
+                </h1>
+                <p className={'mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-neutral-600 sm:text-xl'}>
+                  Format your content with the visual editor and get production-ready HTML with inlined styles that works across all email clients.
+                </p>
+              </motion.div>
             </div>
-          </motion.div>
-        </section>
-      </main>
+          </section>
+
+          {/* ========== EDITOR ========== */}
+          <section className={'mx-auto max-w-[88rem] px-6 py-16 sm:px-10 sm:py-20'}>
+            <motion.div
+              initial={{opacity: 0, y: 20}}
+              whileInView={{opacity: 1, y: 0}}
+              viewport={{once: true}}
+              transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+              className={'grid gap-6 lg:grid-cols-2'}
+            >
+              {/* Left: Editor */}
+              <div>
+                <div className={'mb-4 flex items-center justify-between'}>
+                  <div className={'flex items-center gap-3'}>
+                    <Code2 className={'h-4 w-4 text-neutral-500'} strokeWidth={1.5} />
+                    <span
+                      style={{fontFamily: 'var(--font-mono)'}}
+                      className={'text-[11px] uppercase tracking-[0.18em] text-neutral-500'}
+                    >
+                      Visual Editor
+                    </span>
+                  </div>
+                </div>
+                <MarkdownEmailEditor value={editorContent} onChange={setEditorContent} />
+              </div>
+
+              {/* Right: Email-Safe HTML Output */}
+              <div>
+                <div className={'mb-4 flex items-center justify-between'}>
+                  <span
+                    style={{fontFamily: 'var(--font-mono)'}}
+                    className={'text-[11px] uppercase tracking-[0.18em] text-neutral-500'}
+                  >
+                    Email-Safe HTML
+                  </span>
+                  <Button onClick={handleCopy} size="sm" variant="outline" className={'gap-2'}>
+                    {copied ? (
+                      <>
+                        <Check className={'h-4 w-4'} />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className={'h-4 w-4'} />
+                        Copy
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <div className={'overflow-hidden rounded-[16px] border border-neutral-200 bg-white'}>
+                  <pre className={'max-h-[500px] min-h-[500px] overflow-x-auto overflow-y-auto p-4 text-xs'}>
+                    <code style={{fontFamily: 'var(--font-mono)'}} className={'text-neutral-700'}>
+                      {emailSafeHtml}
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            </motion.div>
+          </section>
+
+          {/* ========== ABOUT ========== */}
+          <section className={'border-t border-neutral-200 bg-neutral-50/60'}>
+            <div className={'mx-auto max-w-[88rem] px-6 py-28 sm:px-10 sm:py-36'}>
+              <SectionHeader
+                number={'01'}
+                label={'How it works'}
+                title={'Write once,'}
+                titleAccent={'send everywhere.'}
+                subtitle={
+                  'Email clients ignore most CSS. This tool inlines every style rule so your formatting survives any inbox.'
+                }
+              />
+
+              <div className={'mt-20 grid gap-10 sm:grid-cols-3 sm:gap-16'}>
+                {[
+                  {
+                    tag: 'Step 1',
+                    big: 'Write',
+                    title: 'Format your content',
+                    body: 'Use the visual editor to format text, add headings, lists, and links — just like a word processor.',
+                  },
+                  {
+                    tag: 'Step 2',
+                    big: 'Convert',
+                    title: 'Styles get inlined',
+                    body: 'Every CSS rule is moved inline so email clients like Outlook, Gmail, and Apple Mail render it correctly.',
+                  },
+                  {
+                    tag: 'Step 3',
+                    big: 'Copy',
+                    title: 'Drop it in your send',
+                    body: 'Copy the output HTML and paste it into any email service, SMTP template, or API payload.',
+                  },
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.tag}
+                    initial={{opacity: 0, y: 16}}
+                    whileInView={{opacity: 1, y: 0}}
+                    viewport={{once: true}}
+                    transition={{duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1]}}
+                    className={'flex flex-col gap-6'}
+                  >
+                    <span
+                      style={{fontFamily: 'var(--font-mono)'}}
+                      className={'text-[11px] uppercase tracking-[0.2em] text-neutral-500'}
+                    >
+                      / {item.tag}
+                    </span>
+                    <div
+                      style={{fontFamily: 'var(--font-display)'}}
+                      className={'text-5xl font-extrabold tracking-[-0.035em] text-neutral-900 sm:text-6xl'}
+                    >
+                      {item.big}
+                    </div>
+                    <div className={'h-px w-full bg-neutral-300'} />
+                    <h3
+                      style={{fontFamily: 'var(--font-display)'}}
+                      className={'text-xl font-semibold text-neutral-900'}
+                    >
+                      {item.title}
+                    </h3>
+                    <p className={'text-base leading-relaxed text-neutral-600'}>{item.body}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ========== CTA ========== */}
+          <section className={'relative overflow-hidden border-t border-neutral-900 bg-neutral-900 text-white'}>
+            <div className={'mx-auto max-w-[88rem] px-6 py-32 sm:px-10 sm:py-40'}>
+              <div className={'flex flex-col items-start gap-12 lg:flex-row lg:items-end lg:justify-between'}>
+                <motion.h2
+                  initial={{opacity: 0, y: 16}}
+                  whileInView={{opacity: 1, y: 0}}
+                  viewport={{once: true}}
+                  transition={{duration: 0.9, ease: [0.22, 1, 0.36, 1]}}
+                  style={{fontFamily: 'var(--font-display)'}}
+                  className={'text-[clamp(2.5rem,7vw,6rem)] font-extrabold leading-[0.95] tracking-[-0.035em]'}
+                >
+                  Ready to send great emails?
+                </motion.h2>
+
+                <motion.div
+                  initial={{opacity: 0, y: 16}}
+                  whileInView={{opacity: 1, y: 0}}
+                  viewport={{once: true}}
+                  transition={{duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1]}}
+                  className={'flex max-w-md flex-col gap-6'}
+                >
+                  <p className={'text-base text-neutral-300 sm:text-lg'}>
+                    Plunk handles everything: templates, sending, tracking, and deliverability. Start free, no credit card required.
+                  </p>
+                  <div className={'flex flex-wrap gap-3'}>
+                    <motion.a
+                      whileHover={{scale: 1.015}}
+                      whileTap={{scale: 0.985}}
+                      href={`${DASHBOARD_URI}/auth/signup`}
+                      className={
+                        'inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-100'
+                      }
+                    >
+                      Start with Plunk
+                      <ArrowRight className={'h-4 w-4'} />
+                    </motion.a>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
 
       <Footer />
     </>

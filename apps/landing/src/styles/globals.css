@@ -161,6 +161,26 @@
 
     body {
         @apply bg-background text-neutral-800;
+        font-family: var(--font-body, ui-sans-serif, system-ui, sans-serif);
         font-feature-settings: "rlig" 1, "calt" 1;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: var(--font-display, ui-sans-serif, system-ui, sans-serif);
+    }
+}
+
+@keyframes marquee-x {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+
+.marquee-track {
+    animation: marquee-x 40s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+        animation: none;
     }
 }

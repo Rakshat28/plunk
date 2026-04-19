@@ -78,7 +78,7 @@ export default function EmailAPIGuide() {
         <h2 className="text-3xl font-bold text-neutral-900 mb-6">How Email APIs Work</h2>
 
         <div className="space-y-6">
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">1. Authentication</h3>
             <p className="text-neutral-700">
               You authenticate requests using an API key (usually passed in headers). This identifies your account and
@@ -86,14 +86,14 @@ export default function EmailAPIGuide() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">2. Make HTTP Request</h3>
             <p className="text-neutral-700">
               Send a POST request to the API endpoint with email details (recipient, subject, body, etc.) as JSON.
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">3. API Validates & Queues</h3>
             <p className="text-neutral-700">
               The API validates your request, queues the email for delivery, and returns a response with the email ID
@@ -101,14 +101,14 @@ export default function EmailAPIGuide() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">4. Email Delivery</h3>
             <p className="text-neutral-700">
               The service handles SMTP connections, retry logic, and delivery to the recipient's mail server.
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">5. Webhooks & Tracking</h3>
             <p className="text-neutral-700">
               You receive webhook notifications for delivery events (delivered, bounced, opened, clicked) and can query
@@ -535,7 +535,7 @@ func main() {
         </p>
 
         <div className="space-y-6">
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">Deliverability Reputation</h3>
             <p className="text-neutral-700">
               Choose providers with strong deliverability rates and sender reputation. Poor deliverability means your
@@ -543,7 +543,7 @@ func main() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">Feature Set</h3>
             <p className="text-neutral-700">
               Ensure the API supports your needs: templates, webhooks, analytics, scheduling, attachments, etc. Some
@@ -551,7 +551,7 @@ func main() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">Pricing Model</h3>
             <p className="text-neutral-700">
               Understand pricing: per-email charges, monthly tiers, overage fees. Calculate costs for your expected
@@ -559,7 +559,7 @@ func main() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">Developer Experience</h3>
             <p className="text-neutral-700">
               Good documentation, SDKs in your language, clear error messages, and responsive support make
@@ -567,7 +567,7 @@ func main() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">Scalability & Reliability</h3>
             <p className="text-neutral-700">
               Can the provider handle your peak volumes? What's their uptime guarantee (SLA)? Do they have redundancy
@@ -575,7 +575,7 @@ func main() {
             </p>
           </div>
 
-          <div className="border-l-4 border-neutral-900 pl-6">
+          <div className="">
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">Compliance & Security</h3>
             <p className="text-neutral-700">
               Ensure the provider complies with GDPR, CAN-SPAM, and other relevant regulations. Check their security
