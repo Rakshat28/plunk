@@ -23,7 +23,7 @@ import {NextSeo} from 'next-seo';
 import Image from 'next/image';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {useForm} from 'react-hook-form';
 import type {z} from 'zod';
 
@@ -57,16 +57,13 @@ export default function Login() {
     },
   });
 
-  const [lastUsed, setLastUsed] = useState<'email' | 'google' | 'github' | null>(null);
+  const [lastUsed] = useState<'email' | 'google' | 'github' | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const stored = localStorage.getItem('plunk_last_auth_method');
+    return stored === 'email' || stored === 'google' || stored === 'github' ? stored : null;
+  });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showReset, setShowReset] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('plunk_last_auth_method');
-    if (stored === 'email' || stored === 'google' || stored === 'github') {
-      setLastUsed(stored);
-    }
-  }, []);
   const [resetEmail, setResetEmail] = useState('');
   const [resetStatus, setResetStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [resetError, setResetError] = useState<string | null>(null);
