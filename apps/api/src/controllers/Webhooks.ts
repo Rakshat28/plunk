@@ -36,6 +36,13 @@ export class Webhooks {
   @CatchAsync
   public async receiveSNSWebhook(req: Request, res: Response) {
     try {
+      // Verify SNS message signature before processing anything
+      const signatureValid = await SecurityService.verifySnsSignature(req.body as Record<string, string>);
+      if (!signatureValid) {
+        signale.warn('[WEBHOOK] SNS signature verification failed — request rejected');
+        return res.status(403).json({success: false, message: 'Invalid SNS signature'});
+      }
+
       // Handle SNS subscription confirmation FIRST (before parsing Message field)
       if (req.body.Type === 'SubscriptionConfirmation') {
         signale.info('SNS Subscription Confirmation received');

@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 import {ProjectDisabledEmail, sendPlatformEmail} from '@plunk/email';
 import React from 'react';
 import signale from 'signale';
@@ -84,8 +86,75 @@ interface SecurityStatus {
   warnings: string[];
 }
 
+const SNS_CERT_HOST_RE = /^sns\.[a-z0-9-]+\.amazonaws\.(com|cn)$/;
+const snsSigningCertCache = new Map<string, string>();
+
+async function fetchSigningCert(certUrl: string): Promise<string> {
+  const cached = snsSigningCertCache.get(certUrl);
+  if (cached) return cached;
+
+  const response = await fetch(certUrl);
+  if (!response.ok) throw new Error(`Failed to fetch SNS signing cert: ${response.statusText}`);
+
+  const pem = await response.text();
+  snsSigningCertCache.set(certUrl, pem);
+  return pem;
+}
+
+function buildSnsStringToSign(message: Record<string, string>): string {
+  const fields =
+    message['Type'] === 'Notification'
+      ? ['Message', 'MessageId', 'Subject', 'Timestamp', 'TopicArn', 'Type']
+      : ['Message', 'MessageId', 'SubscribeURL', 'Timestamp', 'Token', 'TopicArn', 'Type'];
+
+  return fields
+    .filter(key => message[key] !== undefined)
+    .map(key => `${key}\n${message[key]}\n`)
+    .join('');
+}
+
 export class SecurityService {
   private static readonly CACHE_TTL = 300; // 5 minutes
+
+  /**
+   * Verify an AWS SNS message signature. Returns false if the cert URL is
+   * untrusted, or the signature doesn't match.
+   */
+  public static async verifySnsSignature(body: Record<string, string>): Promise<boolean> {
+    try {
+      const certUrl = body['SigningCertURL'];
+      const signature = body['Signature'];
+
+      if (!certUrl || !signature) {
+        signale.warn('[SNS] Missing SigningCertURL or Signature');
+        return false;
+      }
+
+      let parsedUrl: URL;
+      try {
+        parsedUrl = new URL(certUrl);
+      } catch {
+        signale.warn('[SNS] Unparseable SigningCertURL');
+        return false;
+      }
+
+      if (parsedUrl.protocol !== 'https:' || !SNS_CERT_HOST_RE.test(parsedUrl.hostname)) {
+        signale.warn(`[SNS] Untrusted SigningCertURL host: ${parsedUrl.hostname}`);
+        return false;
+      }
+
+      const pem = await fetchSigningCert(certUrl);
+      const stringToSign = buildSnsStringToSign(body);
+      const algorithm = body['SignatureVersion'] === '2' ? 'RSA-SHA256' : 'RSA-SHA1';
+
+      const verifier = crypto.createVerify(algorithm);
+      verifier.update(stringToSign, 'utf8');
+      return verifier.verify(pem, signature, 'base64');
+    } catch (err) {
+      signale.error('[SNS] Signature verification error:', err);
+      return false;
+    }
+  }
 
   /**
    * Get security status for a project (with caching)
