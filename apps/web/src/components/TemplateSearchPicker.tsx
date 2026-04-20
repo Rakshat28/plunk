@@ -2,7 +2,7 @@ import {Input} from '@plunk/ui';
 import type {Template} from '@plunk/db';
 import type {PaginatedResponse} from '@plunk/types';
 import {Command, CommandGroup, CommandItem, CommandList} from '@plunk/ui';
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useRef, useState} from 'react';
 import useSWR from 'swr';
 
 interface TemplateSearchPickerProps {
@@ -23,11 +23,13 @@ export function TemplateSearchPicker({value, initialName, onChange}: TemplateSea
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [open, setOpen] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevInitialName = useRef(initialName);
 
-  // When the dialog re-opens with an existing selection, sync the display name
-  useEffect(() => {
+  // Sync display name when initialName changes (e.g. dialog re-opens with a different selection)
+  if (initialName !== prevInitialName.current) {
+    prevInitialName.current = initialName;
     setQuery(initialName ?? '');
-  }, [initialName]);
+  }
 
   const handleInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
