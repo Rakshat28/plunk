@@ -61,6 +61,7 @@ import {useEffect, useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
 import {WorkflowBuilder} from '../../components/WorkflowBuilder';
+import {TemplateSearchPicker} from '../../components/TemplateSearchPicker';
 import {ReactFlowProvider} from '@xyflow/react';
 import {WorkflowSchemas} from '@plunk/shared';
 import dayjs from 'dayjs';
@@ -1003,7 +1004,7 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const {data: templatesData} = useSWR<PaginatedResponse<Template>>('/templates?pageSize=100');
+  // templates fetched on-demand by TemplateSearchPicker
   const {data: workflow} = useSWR<WorkflowWithDetails>(workflowId ? `/workflows/${workflowId}` : null);
 
   // Fetch available event names when dialog opens
@@ -1337,21 +1338,7 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                   <Label htmlFor="template" className="text-sm font-medium">
                     Email Template *
                   </Label>
-                  <Select value={templateId} onValueChange={setTemplateId} required>
-                    <SelectTrigger id="template" className="mt-1.5">
-                      <SelectValue placeholder="Select a template..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {templatesData?.data.map(template => (
-                        <SelectItemWithDescription
-                          key={template.id}
-                          value={template.id}
-                          title={template.name}
-                          description={`${template.type === 'TRANSACTIONAL' ? 'Transactional' : 'Marketing'} • Subject: ${template.subject}`}
-                        />
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <TemplateSearchPicker value={templateId} onChange={setTemplateId} />
                   <p className="text-xs text-neutral-500 mt-1.5">The email template to use for this step</p>
                 </div>
 
@@ -2064,7 +2051,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
   // EXIT fields
   const [exitReason, setExitReason] = useState(String(config?.reason || 'completed'));
 
-  const {data: templatesData} = useSWR<PaginatedResponse<Template>>('/templates?pageSize=100');
+  // templates fetched on-demand by TemplateSearchPicker
   const {data: workflow} = useSWR<WorkflowWithDetails>(workflowId ? `/workflows/${workflowId}` : null);
 
   // Fetch available event names when dialog opens
@@ -2348,21 +2335,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                   <Label htmlFor="editTemplate" className="text-sm font-medium">
                     Email Template *
                   </Label>
-                  <Select value={templateId} onValueChange={setTemplateId} required>
-                    <SelectTrigger id="editTemplate" className="mt-1.5">
-                      <SelectValue placeholder="Select a template..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {templatesData?.data.map(template => (
-                        <SelectItemWithDescription
-                          key={template.id}
-                          value={template.id}
-                          title={template.name}
-                          description={`${template.type === 'TRANSACTIONAL' ? 'Transactional' : 'Marketing'} • Subject: ${template.subject}`}
-                        />
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <TemplateSearchPicker value={templateId} initialName={step.template?.name} onChange={setTemplateId} />
                   <p className="text-xs text-neutral-500 mt-1.5">The email template to use for this step</p>
                 </div>
 
