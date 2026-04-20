@@ -20,14 +20,13 @@ interface TemplateSearchPickerProps {
  */
 export function TemplateSearchPicker({value, initialName, onChange}: TemplateSearchPickerProps) {
   const [query, setQuery] = useState(initialName ?? '');
+  const [prevInitialName, setPrevInitialName] = useState(initialName);
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [open, setOpen] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const prevInitialName = useRef(initialName);
 
-  // Sync display name when initialName changes (e.g. dialog re-opens with a different selection)
-  if (initialName !== prevInitialName.current) {
-    prevInitialName.current = initialName;
+  if (initialName !== prevInitialName) {
+    setPrevInitialName(initialName);
     setQuery(initialName ?? '');
   }
 
