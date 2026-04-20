@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.9.0](https://github.com/useplunk/plunk/compare/v0.8.0...v0.9.0) (2026-04-20)
+
+
+### Features
+
+* Add accept/markdown to apps/landing ([df76be1](https://github.com/useplunk/plunk/commit/df76be1b87de14769a219ae0e6c99711edf993a1))
+* Add emailId field to webhook events for better correlation with send requests ([ae64c2d](https://github.com/useplunk/plunk/commit/ae64c2dbb5b76f16b562641953f262d76ea0d8e8)), closes [#344](https://github.com/useplunk/plunk/issues/344)
+* Add headless template type ([fb5aa87](https://github.com/useplunk/plunk/commit/fb5aa8796a8550be7a70fdd91616c9a41ed3047d))
+* Add onboarding flow ([bd5a085](https://github.com/useplunk/plunk/commit/bd5a0858021b9d74fae07cca5d2a0b8c10deabd7))
+* Add type to campaign ([d24259e](https://github.com/useplunk/plunk/commit/d24259e8d202edd1b8c7771a63cc212c982b52e1))
+* Block domain changes for disabled projects with appropriate error handling ([44c8657](https://github.com/useplunk/plunk/commit/44c86572c275221b5068605c64958f43a1f96ff4))
+* Disable projects on failed payment ([3343e89](https://github.com/useplunk/plunk/commit/3343e891bdbcfee7d17d73a0d7fb181652e7c262))
+* Enhance email processing to include parsed HTML body content in inbound email records ([e339508](https://github.com/useplunk/plunk/commit/e3395083db11fdb4b6cfdbace46518792ec132a3)), closes [#342](https://github.com/useplunk/plunk/issues/342)
+* Enhance login forms with last used authentication method ([f2ebce0](https://github.com/useplunk/plunk/commit/f2ebce0ef2ac9c9c4e994cb754f67f6fa8a3f465))
+* Enhance security metrics handling with new thresholds and improved messaging ([c0b2aba](https://github.com/useplunk/plunk/commit/c0b2abaeca5656743e189f975ab82ff9b25b577b))
+* implement AWS SNS signature verification in SecurityService ([b79d416](https://github.com/useplunk/plunk/commit/b79d4166671cc04cc1458d2c24af262af0e16c9e))
+* integrate DOMPurify for sanitizing HTML content ([bf12392](https://github.com/useplunk/plunk/commit/bf12392b88fc92b0760333e1b568e3d6d1b6ed74))
+* Update new project bounce thresholds for stricter email handling ([5e62f51](https://github.com/useplunk/plunk/commit/5e62f517fc896849c270e795cd31a110b83707cc))
+
+
+### Bug Fixes
+
+* Enhance email processing to support campaign types and improve unsubscribe logic ([9e2400c](https://github.com/useplunk/plunk/commit/9e2400c6de6f13c498f02c489f956ebf89de36b0))
+* Hint custom event names in combobox when no matches are found ([3214f6c](https://github.com/useplunk/plunk/commit/3214f6c42d4ca6ab628e905ac69ed82648ccf47c))
+* Implement content negotiation for markdown and html in middleware ([37ed1e4](https://github.com/useplunk/plunk/commit/37ed1e49b78eb9339e7b62fd2fd5b60d451707d6))
+* Implement SSRF protection in webhook handling with safeFetch method ([2c5a715](https://github.com/useplunk/plunk/commit/2c5a71518da358927bd5e41035b85fd278790b47))
+* Refactor date filtering logic for pagination in ActivityFeed and ActivityService ([52cb2b6](https://github.com/useplunk/plunk/commit/52cb2b6c77bc3912b356887bdd48e9c8b9b1728a))
+* Update language validation regex to support locale variants ([7834b9e](https://github.com/useplunk/plunk/commit/7834b9e7ef615ba029a1a091b0c37c8f40eb543c))
+
+
+### Documentation
+
+* Add content negotiation to apps/wiki ([545d733](https://github.com/useplunk/plunk/commit/545d7337948f41f006f9cb0270b4bfff2b08ed2c))
+
 ## [0.8.0](https://github.com/useplunk/plunk/compare/v0.7.1...v0.8.0) (2026-03-31)
 
 
