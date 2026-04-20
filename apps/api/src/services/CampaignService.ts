@@ -505,6 +505,48 @@ export class CampaignService {
         limit,
         cursor: nextCursor,
       });
+    } else {
+      // Last batch: reconcile totalRecipients to the actual number of emails created.
+      // Dynamic segments re-evaluate on each batch query, so contacts that left the
+      // segment after totalRecipients was calculated are silently skipped. Without this
+      // reconciliation, sentCount can never reach the original totalRecipients and the
+      // campaign remains stuck in SENDING forever.
+      const [actualEmailCount, alreadySentCount] = await Promise.all([
+        prisma.email.count({where: {campaignId}}),
+        prisma.email.count({where: {campaignId, sentAt: {not: null}}}),
+      ]);
+
+      await prisma.campaign.update({
+        where: {id: campaignId},
+        data: {totalRecipients: actualEmailCount},
+      });
+
+      // If all emails were already processed by the time the last batch finished
+      // (race: worker was faster than the batch chain), finalize the campaign now.
+      if (actualEmailCount === 0 || alreadySentCount >= actualEmailCount) {
+        const finalCampaign = await prisma.campaign.findUnique({
+          where: {id: campaignId},
+          include: {project: {select: {name: true}}},
+        });
+
+        if (finalCampaign && finalCampaign.status === CampaignStatus.SENDING) {
+          await prisma.campaign.update({
+            where: {id: campaignId},
+            data: {status: CampaignStatus.SENT, sentCount: alreadySentCount},
+          });
+
+          signale.success(
+            `[CAMPAIGN] Campaign ${finalCampaign.name} finalized after last batch: ${alreadySentCount}/${actualEmailCount} emails sent`,
+          );
+
+          await NtfyService.notifyCampaignSendCompleted(
+            finalCampaign.name,
+            finalCampaign.project.name,
+            finalCampaign.projectId,
+            alreadySentCount,
+          );
+        }
+      }
     }
   }
 
