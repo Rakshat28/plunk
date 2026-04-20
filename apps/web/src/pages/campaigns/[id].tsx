@@ -52,6 +52,7 @@ import {
   Users,
   XCircle,
 } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
@@ -996,7 +997,7 @@ export default function CampaignDetailsPage() {
                 <p className="text-sm font-medium text-neutral-700 mb-3">Message Content</p>
                 <div className="border-2 border-neutral-200 rounded-lg overflow-hidden bg-white">
                   <div className="p-6 max-h-96 overflow-y-auto">
-                    <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{__html: c.body}} />
+                    <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(c.body)}} />
                   </div>
                 </div>
               </div>
