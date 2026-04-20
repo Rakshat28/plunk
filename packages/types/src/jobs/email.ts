@@ -9,3 +9,13 @@
 export interface SendEmailJobData {
   emailId: string;
 }
+
+/**
+ * Job data for recording a Stripe meter event
+ * Used by: meterQueue worker
+ */
+export interface MeterEventJobData {
+  customerId: string;
+  value: number;
+  idempotencyKey?: string;
+}

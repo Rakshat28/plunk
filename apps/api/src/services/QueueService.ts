@@ -7,6 +7,7 @@ import type {
   CampaignBatchJobData,
   ContactImportJobData,
   DomainVerificationJobData,
+  MeterEventJobData,
   ScheduledCampaignJobData,
   SegmentCountJobData,
   SendEmailJobData,
@@ -155,6 +156,19 @@ export const bulkContactQueue = new Queue<BulkContactActionJobData>('bulk-contac
     },
     removeOnComplete: 50, // Keep last 50 completed bulk operations
     removeOnFail: 100, // Keep last 100 failed bulk operations
+  },
+});
+
+export const meterQueue = new Queue<MeterEventJobData>('meter', {
+  connection: redisConnection,
+  defaultJobOptions: {
+    attempts: 10,
+    backoff: {
+      type: 'exponential',
+      delay: 5000,
+    },
+    removeOnComplete: 5000,
+    removeOnFail: 10000,
   },
 });
 
@@ -314,6 +328,23 @@ export class QueueService {
   }
 
   /**
+   * Queue a Stripe meter event for reliable delivery with retries
+   */
+  public static async queueMeterEvent(
+    customerId: string,
+    value: number,
+    idempotencyKey?: string,
+  ): Promise<Job<MeterEventJobData>> {
+    return meterQueue.add(
+      'record-meter-event',
+      {customerId, value, idempotencyKey},
+      {
+        jobId: idempotencyKey ? `meter-${idempotencyKey}` : undefined,
+      },
+    );
+  }
+
+  /**
    * Queue bulk contact action job
    */
   public static async queueBulkContactAction(
@@ -390,6 +421,7 @@ export class QueueService {
       domainVerificationCounts,
       apiRequestCleanupCounts,
       bulkContactCounts,
+      meterCounts,
     ] = await Promise.all([
       emailQueue.getJobCounts('waiting', 'active', 'completed', 'failed', 'delayed'),
       campaignQueue.getJobCounts('waiting', 'active', 'completed', 'failed', 'delayed'),
@@ -400,6 +432,7 @@ export class QueueService {
       domainVerificationQueue.getJobCounts('waiting', 'active', 'completed', 'failed', 'delayed'),
       apiRequestCleanupQueue.getJobCounts('waiting', 'active', 'completed', 'failed', 'delayed'),
       bulkContactQueue.getJobCounts('waiting', 'active', 'completed', 'failed', 'delayed'),
+      meterQueue.getJobCounts('waiting', 'active', 'completed', 'failed', 'delayed'),
     ]);
 
     return {
@@ -412,6 +445,7 @@ export class QueueService {
       domainVerification: domainVerificationCounts,
       apiRequestCleanup: apiRequestCleanupCounts,
       bulkContact: bulkContactCounts,
+      meter: meterCounts,
     };
   }
 
@@ -429,6 +463,7 @@ export class QueueService {
       domainVerificationQueue.pause(),
       apiRequestCleanupQueue.pause(),
       bulkContactQueue.pause(),
+      meterQueue.pause(),
     ]);
   }
 
@@ -446,6 +481,7 @@ export class QueueService {
       domainVerificationQueue.resume(),
       apiRequestCleanupQueue.resume(),
       bulkContactQueue.resume(),
+      meterQueue.resume(),
     ]);
   }
 
@@ -472,6 +508,8 @@ export class QueueService {
       domainVerificationQueue.clean(gracePeriod * 7, 50, 'failed'),
       bulkContactQueue.clean(gracePeriod, 50, 'completed'),
       bulkContactQueue.clean(gracePeriod * 7, 100, 'failed'),
+      meterQueue.clean(gracePeriod * 30, 5000, 'completed'), // Keep 30 days for billing audit
+      meterQueue.clean(gracePeriod * 30, 10000, 'failed'),
     ]);
   }
 
@@ -557,6 +595,7 @@ export class QueueService {
       domainVerificationQueue.close(),
       apiRequestCleanupQueue.close(),
       bulkContactQueue.close(),
+      meterQueue.close(),
     ]);
   }
 }

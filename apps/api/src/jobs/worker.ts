@@ -15,6 +15,7 @@ import {createCampaignWorker} from './campaign-processor.js';
 import {createDomainVerificationWorker} from './domain-verification-processor.js';
 import {createEmailWorker} from './email-processor.js';
 import {createImportWorker} from './import-processor.js';
+import {createMeterWorker} from './meter-processor.js';
 import {createScheduledCampaignWorker} from './scheduled-processor.js';
 import {createSegmentCountWorker} from './segment-count-processor.js';
 import {createWorkflowWorker} from './workflow-processor-queue.js';
@@ -69,6 +70,11 @@ async function startWorkers() {
     const apiRequestCleanupWorker = createApiRequestCleanupWorker();
     workers.push({name: 'api-request-cleanup', worker: apiRequestCleanupWorker});
     signale.success('[WORKER] API request cleanup worker started');
+
+    // Start meter worker
+    const meterWorker = createMeterWorker();
+    workers.push({name: 'meter', worker: meterWorker});
+    signale.success('[WORKER] Meter worker started');
 
     signale.success('[WORKER] All workers started successfully');
   } catch (error) {
