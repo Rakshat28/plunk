@@ -20,8 +20,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  IconSpinner,
 } from '@plunk/ui';
-import {AlertCircle, Database, Loader2, Trash2, Zap} from 'lucide-react';
+import {AlertCircle, Database, Trash2, Zap} from 'lucide-react';
 import {EmptyState} from './EmptyState';
 import {toast} from 'sonner';
 import useSWR from 'swr';
@@ -345,7 +346,7 @@ export function DataManagementSettings() {
                 isDeleting || (!!selectedField && !fieldUsage?.canDelete) || (!!selectedEvent && !eventUsage?.canDelete)
               }
             >
-              {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isDeleting && <IconSpinner size="sm" className="mr-2" />}
               Delete
             </Button>
           </DialogFooter>

@@ -16,6 +16,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  IconSpinner,
   Input,
 } from '@plunk/ui';
 import {AnimatePresence, motion} from 'framer-motion';
@@ -33,16 +34,6 @@ import {useProjects} from '../../lib/hooks/useProject';
 import {useUser} from '../../lib/hooks/useUser';
 import {network} from '../../lib/network';
 
-const Spinner = () => (
-  <svg className="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-    <path
-      className="opacity-75"
-      fill="currentColor"
-      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-    />
-  </svg>
-);
 
 export default function Login() {
   const {mutate: userMutate} = useUser();
@@ -296,7 +287,7 @@ export default function Login() {
                     <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
                       {form.formState.isSubmitting ? (
                         <>
-                          <Spinner />
+                          <IconSpinner size="sm" />
                           Signing in...
                         </>
                       ) : (
@@ -352,7 +343,7 @@ export default function Login() {
                   <Button className="w-full" type="submit" disabled={resetStatus === 'loading'}>
                     {resetStatus === 'loading' ? (
                       <>
-                        <Spinner />
+                        <IconSpinner size="sm" />
                         Sending...
                       </>
                     ) : (

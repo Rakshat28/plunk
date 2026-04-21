@@ -1,9 +1,9 @@
-import {Button} from '@plunk/ui';
+import {Button, IconSpinner} from '@plunk/ui';
 import type {Activity, CursorPaginatedResponse} from '@plunk/types';
 import {network} from '../lib/network';
 import {ActivityItem} from './ActivityItem';
 import {EmptyState} from './EmptyState';
-import {Activity as ActivityIcon, Loader2} from 'lucide-react';
+import {Activity as ActivityIcon} from 'lucide-react';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 
 export interface ActivityFeedProps {
@@ -169,7 +169,7 @@ export function ActivityFeed({typeFilter, dateRangeDays = 30, contactId}: Activi
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
+        <IconSpinner />
       </div>
     );
   }
@@ -215,7 +215,7 @@ export function ActivityFeed({typeFilter, dateRangeDays = 30, contactId}: Activi
           <Button onClick={loadMore} variant="outline" disabled={isLoadingMore}>
             {isLoadingMore ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <IconSpinner size="sm" className="mr-2" />
                 Loading...
               </>
             ) : (

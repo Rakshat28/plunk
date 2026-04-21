@@ -5,13 +5,14 @@ import {
   CardHeader,
   CardTitle,
   ConfirmDialog,
+  IconSpinner,
   Input,
   Label,
   Switch,
 } from '@plunk/ui';
 import type {Contact} from '@plunk/db';
 import {AnimatePresence, motion} from 'framer-motion';
-import {ArrowLeft, Check, Copy, Database, ExternalLink, Loader2, Save, Settings, Trash2} from 'lucide-react';
+import {ArrowLeft, Check, Copy, Database, ExternalLink, Save, Settings, Trash2} from 'lucide-react';
 import Link from 'next/link';
 import {NextSeo} from 'next-seo';
 import {useRouter} from 'next/router';
@@ -90,7 +91,7 @@ export default function ContactDetailPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
+          <IconSpinner />
         </div>
       </DashboardLayout>
     );

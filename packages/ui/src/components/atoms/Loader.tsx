@@ -1,24 +1,19 @@
 import Image from 'next/image';
 import {useEffect, useState} from 'react';
 import {useRouter} from 'next/router';
+import {IconSpinner} from './IconSpinner';
 
 export interface LoaderProps {
   message?: string;
   showLogo?: boolean;
 }
 
-/**
- * Full-screen loader component with animated logo and spinner
- */
-export function Loader({message = 'Loading...', showLogo = true}: LoaderProps) {
+export function Loader({message, showLogo = true}: LoaderProps) {
   const [showClearCache, setShowClearCache] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowClearCache(true);
-    }, 5000);
-
+    const timer = setTimeout(() => setShowClearCache(true), 5000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -26,60 +21,28 @@ export function Loader({message = 'Loading...', showLogo = true}: LoaderProps) {
     document.cookie.split(';').forEach(c => {
       document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
     });
-
     localStorage.clear();
     sessionStorage.clear();
-
     void router.push('/auth/login');
   };
 
   return (
     <div className="h-screen flex items-center justify-center bg-white">
-      <div className="text-center animate-in fade-in duration-500">
+      <div className="flex flex-col items-center gap-6 animate-in fade-in duration-500">
         {showLogo && (
-          <div className="mb-8 animate-in zoom-in-95 duration-700">
-            <div className="relative w-20 h-20 mx-auto p-4 bg-white rounded-2xl shadow-sm border border-neutral-200/50">
-              <Image src="/assets/logo.png" alt="Plunk" width={48} height={48} className="rounded-lg" priority />
-            </div>
-          </div>
+          <Image src="/assets/logo.png" alt="Plunk" width={40} height={40} className="rounded-lg" priority />
         )}
 
-        {/* Animated spinner */}
-        <div className="relative w-16 h-16 mx-auto mb-6">
-          {/* Outer glow effect */}
-          <div className="absolute inset-0 rounded-full bg-neutral-900/10 blur-xl animate-pulse" />
+        <IconSpinner />
 
-          {/* Base circle */}
-          <div className="absolute inset-0 rounded-full border-[3px] border-neutral-100" />
+        {message && <p className="text-xs text-neutral-400">{message}</p>}
 
-          {/* Primary animated ring */}
-          <div
-            className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-neutral-900 border-r-neutral-700 animate-spin"
-            style={{animationDuration: '0.8s'}}
-          />
-
-          {/* Secondary animated ring (counter-rotating) */}
-          <div
-            className="absolute inset-2 rounded-full border-[3px] border-transparent border-b-neutral-800 border-l-neutral-600 animate-spin"
-            style={{animationDuration: '1.2s', animationDirection: 'reverse'}}
-          />
-
-          {/* Center dot */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-2.5 h-2.5 bg-neutral-900 rounded-full animate-pulse shadow-lg" />
-          </div>
-        </div>
-
-        {/* Loading message */}
-        {message && <p className="text-sm font-medium text-neutral-700 animate-in fade-in duration-1000">{message}</p>}
-
-        {/* Clear cache button - appears after 5 seconds */}
         {showClearCache && (
-          <div className="mt-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <p className="text-xs text-neutral-500 mb-3">Taking too long?</p>
+          <div className="animate-in fade-in slide-in-from-bottom-1 duration-500 text-center">
+            <p className="text-xs text-neutral-400 mb-2">Taking too long?</p>
             <button
               onClick={handleClearCache}
-              className="px-4 py-2 text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg transition-colors duration-200"
+              className="text-xs text-neutral-500 hover:text-neutral-800 underline underline-offset-2 transition-colors duration-150"
             >
               Clear cache and reload
             </button>

@@ -37,6 +37,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  IconSpinner,
 } from '@plunk/ui';
 import {MembershipSchemas} from '@plunk/shared';
 import {MoreVertical, Trash2, UserPlus} from 'lucide-react';
@@ -221,7 +222,7 @@ export function TeamSettings({projectId, currentUserRole, currentUserId}: TeamSe
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center py-8">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-neutral-200 border-t-neutral-900" />
+              <IconSpinner />
             </div>
           ) : members.length === 0 ? (
             <div className="py-8 text-center text-sm text-neutral-500">No members found</div>

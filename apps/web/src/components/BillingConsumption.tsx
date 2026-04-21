@@ -1,4 +1,4 @@
-import {Alert, Card, CardContent, CardDescription, CardHeader, CardTitle} from '@plunk/ui';
+import {Alert, Card, CardContent, CardDescription, CardHeader, CardTitle, IconSpinner} from '@plunk/ui';
 import {AlertCircle, Coins, TrendingUp} from 'lucide-react';
 import {useBillingConsumption} from '../lib/hooks/useBillingConsumption';
 import {useConfig} from '../lib/hooks/useConfig';
@@ -67,7 +67,9 @@ export function BillingConsumption({projectId, hasSubscription}: BillingConsumpt
           <CardDescription>View your current month email consumption and costs</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-neutral-500">Loading...</p>
+          <div className="flex items-center justify-center py-4">
+            <IconSpinner size="sm" />
+          </div>
         </CardContent>
       </Card>
     );

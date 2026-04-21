@@ -13,6 +13,7 @@ import {
   Form,
   FormControl,
   FormDescription,
+  IconSpinner,
   FormField,
   FormItem,
   FormLabel,
@@ -146,7 +147,9 @@ export function BillingLimits({projectId, hasSubscription, billingEnabled}: Bill
           <CardDescription>Set monthly limits for each email category</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-neutral-500">Loading...</p>
+          <div className="flex items-center justify-center py-4">
+            <IconSpinner size="sm" />
+          </div>
         </CardContent>
       </Card>
     );

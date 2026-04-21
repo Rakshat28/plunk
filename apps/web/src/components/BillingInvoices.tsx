@@ -1,4 +1,4 @@
-import {Alert, Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle} from '@plunk/ui';
+import {Alert, Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, IconSpinner} from '@plunk/ui';
 import {AlertCircle, Download, ExternalLink, FileText} from 'lucide-react';
 import {useBillingInvoices} from '../lib/hooks/useBillingInvoices';
 
@@ -41,7 +41,9 @@ export function BillingInvoices({projectId, hasSubscription, onManageBilling}: B
           <CardDescription>View and download your billing history</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-neutral-500">Loading...</p>
+          <div className="flex items-center justify-center py-4">
+            <IconSpinner size="sm" />
+          </div>
         </CardContent>
       </Card>
     );

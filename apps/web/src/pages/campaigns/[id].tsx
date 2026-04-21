@@ -26,6 +26,7 @@ import {
   SelectItemWithDescription,
   SelectTrigger,
   SelectValue,
+  IconSpinner,
   StickySaveBar,
 } from '@plunk/ui';
 import type {Campaign, Segment} from '@plunk/db';
@@ -308,10 +309,7 @@ export default function CampaignDetailsPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="h-8 w-8 animate-spin mx-auto border-4 border-neutral-200 border-t-neutral-900 rounded-full" />
-            <p className="mt-2 text-sm text-neutral-500">Loading campaign...</p>
-          </div>
+          <IconSpinner />
         </div>
       </DashboardLayout>
     );

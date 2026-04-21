@@ -17,10 +17,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  IconSpinner,
   Input,
 } from '@plunk/ui';
 import {AnimatePresence, motion} from 'framer-motion';
-import {Check, CheckCircle2, ChevronDown, Copy, Globe, Loader2, RefreshCw, Trash2, XCircle} from 'lucide-react';
+import {Check, CheckCircle2, ChevronDown, Copy, Globe, RefreshCw, Trash2, XCircle} from 'lucide-react';
 import {EmptyState} from './EmptyState';
 import {useConfig} from '../lib/hooks/useConfig';
 import {useAddDomain, useCheckDomainVerification, useDomains, useRemoveDomain} from '../lib/hooks/useDomains';
@@ -322,7 +323,7 @@ export function DomainsSettings({projectId}: DomainsSettingsProps) {
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-neutral-400" />
+              <IconSpinner />
             </div>
           ) : !domains || domains.length === 0 ? (
             <EmptyState
@@ -360,7 +361,7 @@ export function DomainsSettings({projectId}: DomainsSettingsProps) {
                           className="min-w-[80px]"
                         >
                           {checkingVerification === domain.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <IconSpinner size="sm" />
                           ) : (cooldownSeconds[domain.id] ?? 0) > 0 ? (
                             <span className="text-xs">{cooldownSeconds[domain.id]}s</span>
                           ) : (
