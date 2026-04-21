@@ -14,6 +14,7 @@ import {EmailService} from '../services/EmailService.js';
 import {EventService} from '../services/EventService.js';
 import {MeterService} from '../services/MeterService.js';
 import {emailQueue} from '../services/QueueService.js';
+import {SecurityService} from '../services/SecurityService.js';
 import {getSendingQuota, sendRawEmail} from '../services/SESService.js';
 
 /**
@@ -145,6 +146,36 @@ export async function createEmailWorker() {
 
         // Determine tracking based on project settings and email type
         const shouldTrack = EmailService.shouldTrackEmail(email.project.tracking, email.sourceType);
+
+        // Check for phishing/dangerous content before sending
+        const phishingCheck = await SecurityService.checkPhishingContent(
+          email.projectId,
+          formattedEmail.subject,
+          compiledHtml,
+        );
+
+        if (phishingCheck.shouldDisable) {
+          // Disable project immediately
+          await SecurityService.disableProjectForPhishing(
+            email.projectId,
+            formattedEmail.subject,
+            phishingCheck.confidence,
+            'Phishing content detected',
+          );
+
+          // Mark email as failed
+          await prisma.email.update({
+            where: {id: emailId},
+            data: {
+              status: EmailStatus.FAILED,
+              error: `Phishing content detected with ${phishingCheck.confidence}% confidence - project disabled`,
+            },
+          });
+
+          throw new Error(
+            `Phishing content detected with ${phishingCheck.confidence}% confidence - project ${email.projectId} disabled`,
+          );
+        }
 
         // Send via AWS SES
         const result = await sendRawEmail({

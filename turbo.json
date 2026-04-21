@@ -77,7 +77,10 @@
         "PORT_SUBMISSION",
         "AUTO_PROJECT_DISABLE",
         "DISABLE_SIGNUPS",
-        "VERIFY_EMAIL_ON_SIGNUP"
+        "VERIFY_EMAIL_ON_SIGNUP",
+        "OPENROUTER_API_KEY",
+        "OPENROUTER_MODEL",
+        "PHISHING_DETECTION_SAMPLE_RATE"
       ],
       "inputs": ["$TURBO_DEFAULT$", ".env*"]
     },
@@ -137,7 +140,10 @@
         "PORT_SUBMISSION",
         "AUTO_PROJECT_DISABLE",
         "DISABLE_SIGNUPS",
-        "VERIFY_EMAIL_ON_SIGNUP"
+        "VERIFY_EMAIL_ON_SIGNUP",
+        "OPENROUTER_API_KEY",
+        "OPENROUTER_MODEL",
+        "PHISHING_DETECTION_SAMPLE_RATE"
       ]
     },
     "dev:worker": {
@@ -188,7 +194,10 @@
         "PORT_SUBMISSION",
         "AUTO_PROJECT_DISABLE",
         "DISABLE_SIGNUPS",
-        "VERIFY_EMAIL_ON_SIGNUP"
+        "VERIFY_EMAIL_ON_SIGNUP",
+        "OPENROUTER_API_KEY",
+        "OPENROUTER_MODEL",
+        "PHISHING_DETECTION_SAMPLE_RATE"
       ]
     },
     "clean": {

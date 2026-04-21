@@ -154,6 +154,10 @@ Required for builds and deployment (see turbo.json and .env.example):
     plus-addressing, domain existence, and MX records
 - Security (optional): `AUTO_PROJECT_DISABLE` (default: true) - Controls whether projects are automatically disabled when
   bounce/complaint rate thresholds are exceeded
+- Phishing Detection (optional):
+  - `OPENROUTER_API_KEY` - API key for OpenRouter (enables phishing detection)
+  - `OPENROUTER_MODEL` (default: anthropic/claude-3-haiku) - LLM model to use for content analysis
+  - `PHISHING_DETECTION_SAMPLE_RATE` (default: 0.1) - Percentage of emails to check (0.0-1.0, e.g., 0.1 = 10%)
 
 **Important Notes:**
 

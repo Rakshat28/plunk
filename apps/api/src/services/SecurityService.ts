@@ -10,7 +10,15 @@ import {Keys} from './keys.js';
 import {MembershipService} from './MembershipService.js';
 import {NtfyService} from './NtfyService.js';
 import {QueueService} from './QueueService.js';
-import {AUTO_PROJECT_DISABLE, DASHBOARD_URI, LANDING_URI} from '../app/constants.js';
+import {
+  AUTO_PROJECT_DISABLE,
+  DASHBOARD_URI,
+  LANDING_URI,
+  OPENROUTER_API_KEY,
+  OPENROUTER_MODEL,
+  PHISHING_DETECTION_ENABLED,
+  PHISHING_DETECTION_SAMPLE_RATE,
+} from '../app/constants.js';
 
 /**
  * Security thresholds for bounce and complaint rates
@@ -697,6 +705,210 @@ export class SecurityService {
       }
     } catch (error) {
       signale.error(`[SECURITY] Failed to disable project ${projectId}:`, error);
+    }
+  }
+
+  /**
+   * Check email content for phishing or dangerous content using LLM
+   * Uses sampling to reduce costs - only checks a percentage of emails
+   * @returns { isPhishing: boolean, confidence: number, shouldDisable: boolean }
+   */
+  public static async checkPhishingContent(
+    projectId: string,
+    subject: string,
+    body: string,
+  ): Promise<{isPhishing: boolean; confidence: number; shouldDisable: boolean}> {
+    // Default safe response
+    const safeResponse = {isPhishing: false, confidence: 0, shouldDisable: false};
+
+    try {
+      // Check if phishing detection is enabled
+      if (!PHISHING_DETECTION_ENABLED) {
+        return safeResponse;
+      }
+
+      // Sample-based checking - only check a percentage of emails
+      if (Math.random() > PHISHING_DETECTION_SAMPLE_RATE) {
+        return safeResponse;
+      }
+
+      signale.info(`[PHISHING] Checking email for project ${projectId} (sampled)`);
+
+      // Strip HTML tags for content analysis (basic HTML removal)
+      const strippedBody = body
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      // Call OpenRouter API
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://useplunk.com',
+          'X-Title': 'Plunk Email Platform',
+        },
+        body: JSON.stringify({
+          model: OPENROUTER_MODEL,
+          messages: [
+            {
+              role: 'system',
+              content: `You are a security expert analyzing emails for phishing, scams, and dangerous content. Analyze the email subject and body and respond ONLY with a JSON object in this exact format:
+{
+  "is_phishing": true/false,
+  "confidence": 0-100,
+  "reason": "brief explanation"
+}
+
+Criteria for phishing/dangerous content:
+- Credential theft attempts (fake login pages, password requests)
+- Financial scams (fake invoices, lottery scams, advance-fee fraud)
+- Malicious links or attachments references
+- Impersonation of banks, government, or well-known companies
+- Urgent threats or fear-based manipulation
+- Suspicious cryptocurrency or investment schemes
+- Requests for sensitive personal information
+
+Be strict but fair. Marketing emails and legitimate transactional emails are NOT phishing.
+Only flag content that is CLEARLY attempting to deceive or harm recipients.
+Set confidence to 100 only if you are absolutely certain it's phishing.`,
+            },
+            {
+              role: 'user',
+              content: `Subject: ${subject}\n\nBody:\n${strippedBody.substring(0, 2000)}`,
+            },
+          ],
+          temperature: 0.1,
+          max_tokens: 200,
+        }),
+      });
+
+      if (!response.ok) {
+        signale.error(`[PHISHING] OpenRouter API error: ${response.status} ${response.statusText}`);
+        return safeResponse;
+      }
+
+      const data = (await response.json()) as {
+        choices?: Array<{message?: {content?: string}}>;
+      };
+
+      const content = data.choices?.[0]?.message?.content;
+      if (!content) {
+        signale.error('[PHISHING] No content in OpenRouter response');
+        return safeResponse;
+      }
+
+      // Parse the JSON response
+      const result = JSON.parse(content) as {
+        is_phishing: boolean;
+        confidence: number;
+        reason: string;
+      };
+
+      const isPhishing = result.is_phishing === true;
+      const confidence = Math.min(100, Math.max(0, result.confidence || 0));
+
+      if (isPhishing) {
+        signale.warn(
+          `[PHISHING] Detected phishing content for project ${projectId} - Confidence: ${confidence}% - Reason: ${result.reason}`,
+        );
+      }
+
+      // Auto-disable project if 100% confidence
+      const shouldDisable = isPhishing && confidence === 100;
+
+      if (shouldDisable) {
+        signale.error(
+          `[PHISHING] High confidence phishing detected (${confidence}%) - will disable project ${projectId}`,
+        );
+      }
+
+      return {
+        isPhishing,
+        confidence,
+        shouldDisable,
+      };
+    } catch (error) {
+      // Log error but don't throw - we don't want phishing checks to break email sending
+      // Better to let a phishing email through than to break legitimate emails
+      signale.error(`[PHISHING] Failed to check content for project ${projectId}:`, error);
+      return safeResponse;
+    }
+  }
+
+  /**
+   * Disable a project due to phishing detection
+   */
+  public static async disableProjectForPhishing(
+    projectId: string,
+    subject: string,
+    confidence: number,
+    reason?: string,
+  ): Promise<void> {
+    try {
+      // Check if already disabled to avoid duplicate logs
+      const project = await prisma.project.findUnique({
+        where: {id: projectId},
+        select: {id: true, disabled: true, name: true},
+      });
+
+      if (!project) {
+        signale.error(`[PHISHING] Project ${projectId} not found`);
+        return;
+      }
+
+      if (project.disabled) {
+        signale.warn(`[PHISHING] Project ${projectId} (${project.name}) already disabled`);
+        return;
+      }
+
+      // Disable the project
+      await prisma.project.update({
+        where: {id: projectId},
+        data: {disabled: true},
+      });
+
+      const violation = `Phishing content detected with ${confidence}% confidence in email: "${subject}"${reason ? ` - ${reason}` : ''}`;
+
+      // Log critical security event
+      signale.error(
+        `[PHISHING] Project ${projectId} (${project.name}) has been automatically disabled due to phishing detection:`,
+        violation,
+      );
+
+      // Cancel all pending jobs for this project
+      try {
+        await QueueService.cancelAllProjectJobs(projectId);
+        signale.info(`[PHISHING] Cancelled all pending jobs for project ${projectId}`);
+      } catch (error) {
+        signale.error(`[PHISHING] Failed to cancel pending jobs for project ${projectId}:`, error);
+      }
+
+      // Send urgent notification about project suspension
+      await NtfyService.notifyProjectDisabledForSecurity(project.name, projectId, [violation]);
+
+      // Send email notification to project members
+      try {
+        const members = await MembershipService.getMembers(projectId);
+        const emails = members.map(m => m.email);
+        if (emails.length > 0) {
+          const template = React.createElement(ProjectDisabledEmail, {
+            projectName: project.name,
+            projectId,
+            violations: [violation],
+            dashboardUrl: DASHBOARD_URI,
+            landingUrl: LANDING_URI,
+          });
+          await Promise.all(
+            emails.map(email => sendPlatformEmail(email, 'Project Disabled - Phishing Detected', template)),
+          );
+        }
+      } catch (emailError) {
+        signale.error(`[PHISHING] Failed to send project disabled email:`, emailError);
+      }
+    } catch (error) {
+      signale.error(`[PHISHING] Failed to disable project ${projectId}:`, error);
     }
   }
 }

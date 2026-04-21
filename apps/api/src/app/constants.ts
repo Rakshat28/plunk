@@ -115,3 +115,10 @@ export const TOKEN_EXPIRY_SECONDS = 3600; // 1 hour
 export const EMAIL_VERIFICATION_RATE_LIMIT = 3; // Max 3 emails per hour
 export const PASSWORD_RESET_RATE_LIMIT = 3; // Max 3 emails per hour
 export const EMAIL_VERIFICATION_RATE_WINDOW = 3600; // 1 hour in seconds
+
+// Phishing Detection (optional)
+// OpenRouter API integration for content safety checks
+export const OPENROUTER_API_KEY = validateEnv('OPENROUTER_API_KEY', '');
+export const OPENROUTER_MODEL = validateEnv('OPENROUTER_MODEL', 'anthropic/claude-3-haiku');
+export const PHISHING_DETECTION_SAMPLE_RATE = Number(validateEnv('PHISHING_DETECTION_SAMPLE_RATE', '0.1')); // Default 10% of emails
+export const PHISHING_DETECTION_ENABLED = OPENROUTER_API_KEY !== '';
