@@ -36,6 +36,12 @@ function negotiate(accept: string): Negotiated {
 export function middleware(request: NextRequest) {
   const accept = request.headers.get('accept') ?? '';
   const { pathname } = request.nextUrl;
+
+  if (pathname.endsWith('.md')) {
+    const rewriteUrl = new URL(`/llms.mdx${pathname.slice(0, -3)}`, request.url);
+    return NextResponse.rewrite(rewriteUrl);
+  }
+
   const result = negotiate(accept);
 
   if (result === 'none') {

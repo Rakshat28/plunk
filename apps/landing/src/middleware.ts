@@ -36,6 +36,13 @@ function negotiate(accept: string): Negotiated {
 export function middleware(request: NextRequest) {
   const accept = request.headers.get('accept') ?? '';
   const { pathname } = request.nextUrl;
+
+  if (pathname.endsWith('.md')) {
+    const headers = new Headers(request.headers);
+    headers.set('x-md-path', pathname.slice(0, -3));
+    return NextResponse.rewrite(new URL('/api/md', request.url), { request: { headers } });
+  }
+
   const result = negotiate(accept);
 
   if (result === 'none') {
