@@ -20,6 +20,7 @@ import type {PaginatedResponse} from '@plunk/types';
 import {ArrowLeft, FileText, Search} from 'lucide-react';
 import {useState} from 'react';
 import useSWR from 'swr';
+import {EmptyState} from './EmptyState';
 
 interface TemplateSelectionDialogProps {
   open: boolean;
@@ -224,13 +225,11 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
               )}
 
               {!isLoading && data?.data.length === 0 && (
-                <div className="text-center py-12">
-                  <FileText className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-neutral-900 mb-2">No templates found</h3>
-                  <p className="text-neutral-500">
-                    {search ? 'Try adjusting your search terms' : 'Create a template first to use this feature'}
-                  </p>
-                </div>
+                <EmptyState
+                  icon={FileText}
+                  title="No templates found"
+                  description={search ? 'Try adjusting your search terms.' : 'Create a template first to use this feature.'}
+                />
               )}
 
               {data?.data.map(template => (

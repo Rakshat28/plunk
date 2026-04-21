@@ -25,6 +25,7 @@ import type {PaginatedResponse} from '@plunk/types';
 import {ArrowLeft, Calendar, Mail, Users} from 'lucide-react';
 import {useState} from 'react';
 import useSWR from 'swr';
+import {EmptyState} from './EmptyState';
 
 interface CampaignSelectionDialogProps {
   open: boolean;
@@ -186,13 +187,11 @@ export function CampaignSelectionDialog({open, onOpenChange, onSelectCampaign}: 
               )}
 
               {!isLoading && data?.data.length === 0 && (
-                <div className="text-center py-12">
-                  <Mail className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-neutral-900 mb-2">No campaigns found</h3>
-                  <p className="text-neutral-500">
-                    {statusFilter !== 'ALL' ? 'Try adjusting your filter' : 'Create your first campaign to get started'}
-                  </p>
-                </div>
+                <EmptyState
+                  icon={Mail}
+                  title="No campaigns found"
+                  description={statusFilter !== 'ALL' ? 'Try adjusting your filter.' : 'Create your first campaign to get started.'}
+                />
               )}
 
               {data?.data.map(campaign => (

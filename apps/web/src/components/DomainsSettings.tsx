@@ -20,7 +20,8 @@ import {
   Input,
 } from '@plunk/ui';
 import {AnimatePresence, motion} from 'framer-motion';
-import {Check, CheckCircle2, ChevronDown, Copy, Loader2, RefreshCw, Trash2, XCircle} from 'lucide-react';
+import {Check, CheckCircle2, ChevronDown, Copy, Globe, Loader2, RefreshCw, Trash2, XCircle} from 'lucide-react';
+import {EmptyState} from './EmptyState';
 import {useConfig} from '../lib/hooks/useConfig';
 import {useAddDomain, useCheckDomainVerification, useDomains, useRemoveDomain} from '../lib/hooks/useDomains';
 
@@ -324,9 +325,11 @@ export function DomainsSettings({projectId}: DomainsSettingsProps) {
               <Loader2 className="h-6 w-6 animate-spin text-neutral-400" />
             </div>
           ) : !domains || domains.length === 0 ? (
-            <div className="text-center py-8 text-neutral-500">
-              <p>No domains added yet</p>
-            </div>
+            <EmptyState
+              icon={Globe}
+              title="No domains added"
+              description="Add a custom domain above to send emails from your own address."
+            />
           ) : (
             <div className="space-y-4">
               {domains.map(domain => {

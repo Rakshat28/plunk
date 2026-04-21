@@ -21,7 +21,8 @@ import {
   TableHeader,
   TableRow,
 } from '@plunk/ui';
-import {AlertCircle, Loader2, Trash2} from 'lucide-react';
+import {AlertCircle, Database, Loader2, Trash2, Zap} from 'lucide-react';
+import {EmptyState} from './EmptyState';
 import {toast} from 'sonner';
 import useSWR from 'swr';
 import {useActiveProject} from '../lib/contexts/ActiveProjectProvider';
@@ -151,7 +152,11 @@ export function DataManagementSettings() {
         </CardHeader>
         <CardContent>
           {customFields.length === 0 ? (
-            <p className="text-sm text-neutral-500">No custom fields found</p>
+            <EmptyState
+              icon={Database}
+              title="No custom fields"
+              description="Custom fields appear here once contacts have data properties set via the API."
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -196,7 +201,11 @@ export function DataManagementSettings() {
         </CardHeader>
         <CardContent>
           {customEvents.length === 0 ? (
-            <p className="text-sm text-neutral-500">No custom events found</p>
+            <EmptyState
+              icon={Zap}
+              title="No custom events"
+              description="Custom events appear here once your contacts trigger events via the API."
+            />
           ) : (
             <Table>
               <TableHeader>

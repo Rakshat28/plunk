@@ -271,9 +271,11 @@ export default function AnalyticsPage() {
               {!hasData ? (
                 <div className="flex h-[400px] w-full items-center justify-center">
                   <div className="text-center">
-                    <Mail className="mx-auto h-8 w-8 text-neutral-300" />
-                    <h3 className="mt-3 text-sm font-semibold text-neutral-900">No email data yet</h3>
-                    <p className="mt-1 text-sm text-neutral-500">Send your first email to see analytics here.</p>
+                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-md border border-neutral-200 bg-neutral-50 mb-4">
+                      <Mail className="h-5 w-5 text-neutral-400" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-neutral-900 mb-1">No email data yet</h3>
+                    <p className="text-sm text-neutral-500">Send your first email to see analytics here.</p>
                   </div>
                 </div>
               ) : (
@@ -380,9 +382,11 @@ export default function AnalyticsPage() {
               {!hasData ? (
                 <div className="flex h-[300px] w-full items-center justify-center">
                   <div className="text-center">
-                    <Eye className="mx-auto h-8 w-8 text-neutral-300" />
-                    <h3 className="mt-3 text-sm font-semibold text-neutral-900">No engagement data</h3>
-                    <p className="mt-1 text-sm text-neutral-500">
+                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-md border border-neutral-200 bg-neutral-50 mb-4">
+                      <Eye className="h-5 w-5 text-neutral-400" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-neutral-900 mb-1">No engagement data</h3>
+                    <p className="text-sm text-neutral-500">
                       Engagement metrics will appear once emails are opened.
                     </p>
                   </div>
