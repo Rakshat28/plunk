@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@plunk/ui';
 import {DashboardLayout} from '../../components/DashboardLayout';
+import {EmptyState} from '../../components/EmptyState';
 import {useAnalytics} from '../../lib/hooks/useAnalytics';
 import useSWR from 'swr';
 import {
@@ -270,13 +271,12 @@ export default function AnalyticsPage() {
             <CardContent>
               {!hasData ? (
                 <div className="flex h-[400px] w-full items-center justify-center">
-                  <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-md border border-neutral-200 bg-neutral-50 mb-4">
-                      <Mail className="h-5 w-5 text-neutral-400" />
-                    </div>
-                    <h3 className="text-sm font-semibold text-neutral-900 mb-1">No email data yet</h3>
-                    <p className="text-sm text-neutral-500">Send your first email to see analytics here.</p>
-                  </div>
+                  <EmptyState
+                    className="py-0"
+                    icon={Mail}
+                    title="No email data yet"
+                    description="Send your first email to see analytics here."
+                  />
                 </div>
               ) : (
                 <ChartContainer config={volumeChartConfig} className="h-[400px] w-full">
@@ -381,15 +381,12 @@ export default function AnalyticsPage() {
             <CardContent>
               {!hasData ? (
                 <div className="flex h-[300px] w-full items-center justify-center">
-                  <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-md border border-neutral-200 bg-neutral-50 mb-4">
-                      <Eye className="h-5 w-5 text-neutral-400" />
-                    </div>
-                    <h3 className="text-sm font-semibold text-neutral-900 mb-1">No engagement data</h3>
-                    <p className="text-sm text-neutral-500">
-                      Engagement metrics will appear once emails are opened.
-                    </p>
-                  </div>
+                  <EmptyState
+                    className="py-0"
+                    icon={Eye}
+                    title="No engagement data"
+                    description="Engagement metrics will appear once emails are opened."
+                  />
                 </div>
               ) : (
                 <ChartContainer config={engagementChartConfig} className="h-[300px] w-full">
