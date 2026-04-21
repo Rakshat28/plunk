@@ -754,7 +754,7 @@ export class SecurityService {
           messages: [
             {
               role: 'system',
-              content: `You are a security expert analyzing emails for phishing, scams, and dangerous content. Analyze the email subject and body and respond ONLY with a JSON object in this exact format:
+              content: `You are a security expert analyzing emails for phishing, scams, and dangerous content. Analyze the email subject and body and respond with a JSON object in this exact format:
 {
   "is_phishing": true/false,
   "confidence": 0-100,
@@ -781,6 +781,7 @@ Set confidence to 100 only if you are absolutely certain it's phishing.`,
           ],
           temperature: 0.1,
           max_tokens: 200,
+          response_format: {type: 'json_object'},
         }),
       });
 
@@ -799,7 +800,7 @@ Set confidence to 100 only if you are absolutely certain it's phishing.`,
         return safeResponse;
       }
 
-      // Parse the JSON response
+      // Parse the JSON response (response_format ensures clean JSON)
       const result = JSON.parse(content) as {
         is_phishing: boolean;
         confidence: number;
