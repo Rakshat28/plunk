@@ -815,7 +815,7 @@ Set confidence to 100 only if you are absolutely certain it's phishing.`,
           `[PHISHING] Detected phishing content for project ${projectId} - Confidence: ${confidence}% - Reason: ${result.reason}`,
         );
       } else {
-        signale.warn(`[PHISHING] Passed phishing check for project: ${projectId}`);
+        signale.success(`[PHISHING] Passed phishing check for project: ${projectId}`);
       }
 
       // Auto-disable project if 100% confidence
