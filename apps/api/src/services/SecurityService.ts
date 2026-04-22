@@ -770,6 +770,8 @@ export class SecurityService {
    */
   public static async checkPhishingContent(
     projectId: string,
+    projectName: string,
+    fromEmail: string,
     subject: string,
     body: string,
   ): Promise<{isPhishing: boolean; confidence: number; shouldDisable: boolean}> {
@@ -794,6 +796,13 @@ export class SecurityService {
         .replace(/<[^>]*>/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
+
+      // Extract URLs from the original HTML body for domain analysis
+      const urlMatches = body.match(/https?:\/\/[^\s"'<>]+/g) ?? [];
+      const uniqueUrls = [...new Set(urlMatches.map(u => u.replace(/[.,;)]+$/, '')))].slice(0, 20);
+
+      // Extract sender domain for context
+      const senderDomain = fromEmail.includes('@') ? fromEmail.split('@')[1] : fromEmail;
 
       // Call OpenRouter API
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -825,13 +834,26 @@ Criteria for phishing/dangerous content:
 - Suspicious cryptocurrency or investment schemes
 - Requests for sensitive personal information
 
+IMPORTANT - Use sender and project context when evaluating:
+- The sender project name and domain are provided. Links to the sender's own domain(s) are expected and NOT suspicious.
+- URLs that match or are clearly related to the project name or sender domain add credibility.
+- Only flag a URL as suspicious if it is unrelated to or impersonates a different known brand.
+- Lack of recognizable brand does NOT make an email phishing — many legitimate businesses are not famous.
+
 Be strict but fair. Marketing emails and legitimate transactional emails are NOT phishing.
 Only flag content that is CLEARLY attempting to deceive or harm recipients.
 Set confidence to 100 only if you are absolutely certain it's phishing.`,
             },
             {
               role: 'user',
-              content: `Subject: ${subject}\n\nBody:\n${strippedBody.substring(0, 2000)}`,
+              content: `Sender project name: ${projectName}
+Sender domain: ${senderDomain}
+${uniqueUrls.length > 0 ? `URLs found in email: ${uniqueUrls.join(', ')}` : ''}
+
+Subject: ${subject}
+
+Body:
+${strippedBody.substring(0, 2000)}`,
             },
           ],
           temperature: 0.1,
