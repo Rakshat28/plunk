@@ -16,6 +16,9 @@ import {
   LANDING_URI,
   OPENROUTER_API_KEY,
   OPENROUTER_MODEL,
+  PHISHING_CONFIDENCE_THRESHOLD,
+  PHISHING_CUMULATIVE_THRESHOLD,
+  PHISHING_CUMULATIVE_WINDOW_MS,
   PHISHING_DETECTION_ENABLED,
   PHISHING_DETECTION_SAMPLE_RATE,
 } from '../app/constants.js';
@@ -73,6 +76,58 @@ const SECURITY_THRESHOLDS = {
   NEW_PROJECT_COMPLAINT_7DAY_CEILING_WARNING: 10,
   NEW_PROJECT_COMPLAINT_7DAY_CEILING_CRITICAL: 20,
 } as const;
+
+/**
+ * Redis-based tracking for phishing detections per project
+ * Tracks timestamp and confidence of recent phishing detections
+ * Uses sorted sets for efficient time-based filtering
+ */
+interface PhishingDetection {
+  timestamp: number;
+  confidence: number;
+  subject: string;
+}
+
+/**
+ * Track a phishing detection for cumulative analysis using Redis
+ */
+async function trackPhishingDetection(projectId: string, confidence: number, subject: string): Promise<void> {
+  const now = Date.now();
+  const key = `phishing:detections:${projectId}`;
+
+  // Store detection as sorted set member (score = timestamp)
+  // Value is JSON with confidence and subject
+  const detection: PhishingDetection = {timestamp: now, confidence, subject};
+  await redis.zadd(key, now, JSON.stringify(detection));
+
+  // Remove detections outside the time window
+  const cutoff = now - PHISHING_CUMULATIVE_WINDOW_MS;
+  await redis.zremrangebyscore(key, '-inf', cutoff);
+
+  // Set TTL to window duration to auto-cleanup old keys
+  await redis.expire(key, Math.ceil(PHISHING_CUMULATIVE_WINDOW_MS / 1000));
+}
+
+/**
+ * Get count of recent phishing detections for a project from Redis
+ */
+async function getRecentPhishingCount(projectId: string): Promise<number> {
+  const now = Date.now();
+  const cutoff = now - PHISHING_CUMULATIVE_WINDOW_MS;
+  const key = `phishing:detections:${projectId}`;
+
+  // Count detections within the time window
+  const count = await redis.zcount(key, cutoff, '+inf');
+  return count;
+}
+
+/**
+ * Clear phishing detection history for a project (e.g., after disable)
+ */
+async function clearPhishingHistory(projectId: string): Promise<void> {
+  const key = `phishing:detections:${projectId}`;
+  await redis.del(key);
+}
 
 interface RateData {
   total: number;
@@ -814,17 +869,42 @@ Set confidence to 100 only if you are absolutely certain it's phishing.`,
         signale.warn(
           `[PHISHING] Detected phishing content for project ${projectId} - Confidence: ${confidence}% - Reason: ${result.reason}`,
         );
+
+        // Track this detection for cumulative analysis
+        await trackPhishingDetection(projectId, confidence, subject);
+
+        // Get count of recent detections
+        const recentCount = await getRecentPhishingCount(projectId);
+        signale.info(
+          `[PHISHING] Project ${projectId} has ${recentCount} phishing detection(s) in the last ${PHISHING_CUMULATIVE_WINDOW_MS / 1000 / 60} minutes`,
+        );
       } else {
         signale.success(`[PHISHING] Passed phishing check for project: ${projectId}`);
       }
 
-      // Auto-disable project if 100% confidence
-      const shouldDisable = isPhishing && confidence === 100;
+      // Determine if project should be disabled
+      // Disable if EITHER:
+      // 1. Single detection with high confidence (>= threshold)
+      // 2. Multiple detections within time window (>= cumulative threshold)
+      const meetsConfidenceThreshold = isPhishing && confidence >= PHISHING_CONFIDENCE_THRESHOLD;
+      const recentCount = await getRecentPhishingCount(projectId);
+      const meetsCumulativeThreshold = isPhishing && recentCount >= PHISHING_CUMULATIVE_THRESHOLD;
+      const shouldDisable = meetsConfidenceThreshold || meetsCumulativeThreshold;
 
       if (shouldDisable) {
-        signale.error(
-          `[PHISHING] High confidence phishing detected (${confidence}%) - will disable project ${projectId}`,
-        );
+        if (meetsConfidenceThreshold) {
+          signale.error(
+            `[PHISHING] High confidence phishing detected (${confidence}% >= ${PHISHING_CONFIDENCE_THRESHOLD}%) - will disable project ${projectId}`,
+          );
+        }
+        if (meetsCumulativeThreshold) {
+          signale.error(
+            `[PHISHING] Cumulative threshold reached (${recentCount} >= ${PHISHING_CUMULATIVE_THRESHOLD} detections) - will disable project ${projectId}`,
+          );
+        }
+
+        // Clear history after disabling
+        await clearPhishingHistory(projectId);
       }
 
       return {
