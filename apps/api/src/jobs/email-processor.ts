@@ -150,6 +150,8 @@ export async function createEmailWorker() {
         // Check for phishing/dangerous content before sending
         const phishingCheck = await SecurityService.checkPhishingContent(
           email.projectId,
+          email.project.name,
+          email.from,
           formattedEmail.subject,
           compiledHtml,
         );
