@@ -29,8 +29,8 @@ export function SecurityWarningBanner({status}: SecurityWarningBannerProps) {
         <div className="space-y-2 flex-1">
           <p className={`text-sm ${messageColor}`}>
             {hasCriticalViolations
-              ? 'Your bounce or complaint rates have exceeded acceptable levels. Review your contact lists and sending practices to avoid project suspension.'
-              : 'Your bounce or complaint rates are approaching limits. Review your contact lists and remove invalid addresses to maintain good standing.'}
+              ? 'Your account requires immediate attention. Review your sending practices to avoid suspension. Contact support for more details.'
+              : 'Your account health needs attention. Review your contact lists and sending practices to maintain good standing.'}
           </p>
         </div>
         <Button asChild size="sm" variant="outline" className="w-full sm:w-auto flex-shrink-0">

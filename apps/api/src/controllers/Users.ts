@@ -68,7 +68,7 @@ export class Users {
     if (hasDisabledProject) {
       throw new HttpException(
         403,
-        `You cannot create new projects while you are a member of disabled projects: ${disabledProjectNames.join(', ')}. Please contact support to resolve security violations.`,
+        `You cannot create new projects at this time. Please contact support for assistance.`,
         ErrorCode.PROJECT_DISABLED,
       );
     }
@@ -615,7 +615,7 @@ export class Users {
     if (isDisabled) {
       throw new HttpException(
         403,
-        'Cannot reset a disabled project. Please contact support to resolve security violations before making changes.',
+        'This project has been disabled. Please contact support for assistance.',
         ErrorCode.PROJECT_DISABLED,
       );
     }
@@ -703,7 +703,7 @@ export class Users {
     if (project.disabled) {
       throw new HttpException(
         403,
-        'Cannot delete a disabled project. Please contact support to resolve security violations.',
+        'This project has been disabled. Please contact support for assistance.',
         ErrorCode.PROJECT_DISABLED,
       );
     }

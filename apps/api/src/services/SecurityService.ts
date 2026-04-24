@@ -752,7 +752,7 @@ export class SecurityService {
             landingUrl: LANDING_URI,
           });
           await Promise.all(
-            emails.map(email => sendPlatformEmail(email, 'Project Disabled - Security Risk', template)),
+            emails.map(email => sendPlatformEmail(email, 'Project Disabled', template)),
           );
         }
       } catch (emailError) {
@@ -974,7 +974,7 @@ ${strippedBody.substring(0, 2000)}`,
         data: {disabled: true},
       });
 
-      const violation = `Phishing content detected with ${confidence}% confidence in email: "${subject}"${reason ? ` - ${reason}` : ''}`;
+      const violation = `A policy violation was detected. Please contact support for more details.`;
 
       // Log critical security event
       signale.error(
@@ -1006,7 +1006,7 @@ ${strippedBody.substring(0, 2000)}`,
             landingUrl: LANDING_URI,
           });
           await Promise.all(
-            emails.map(email => sendPlatformEmail(email, 'Project Disabled - Phishing Detected', template)),
+            emails.map(email => sendPlatformEmail(email, 'Project Disabled', template)),
           );
         }
       } catch (emailError) {

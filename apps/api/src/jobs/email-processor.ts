@@ -170,13 +170,11 @@ export async function createEmailWorker() {
             where: {id: emailId},
             data: {
               status: EmailStatus.FAILED,
-              error: `Phishing content detected with ${phishingCheck.confidence}% confidence - project disabled`,
+              error: 'This email could not be sent. The project has been disabled. Please contact support.',
             },
           });
 
-          throw new Error(
-            `Phishing content detected with ${phishingCheck.confidence}% confidence - project ${email.projectId} disabled`,
-          );
+          throw new Error(`Project ${email.projectId} has been disabled due to a policy violation`);
         }
 
         // Send via AWS SES

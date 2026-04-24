@@ -135,7 +135,7 @@ export const requirePublicKey = async (req: Request, res: Response, next: NextFu
       if (isWriteOperation) {
         throw new HttpException(
           403,
-          'Project is disabled due to security violations. All write operations are blocked.',
+          'This project has been disabled. Please contact support for assistance.',
           ErrorCode.PROJECT_DISABLED,
         );
       }
@@ -204,7 +204,7 @@ export const requireSecretKey = async (req: Request, res: Response, next: NextFu
       if (isWriteOperation) {
         throw new HttpException(
           403,
-          'Project is disabled due to security violations. All write operations are blocked.',
+          'This project has been disabled. Please contact support for assistance.',
           ErrorCode.PROJECT_DISABLED,
         );
       }
@@ -271,7 +271,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
         if (isWriteOperation) {
           throw new HttpException(
             403,
-            'Project is disabled due to security violations. All write operations are blocked.',
+            'This project has been disabled. Please contact support for assistance.',
             ErrorCode.PROJECT_DISABLED,
           );
         }
@@ -315,7 +315,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
       if (isWriteOperation) {
         throw new HttpException(
           403,
-          'Project is disabled due to security violations. All write operations are blocked.',
+          'This project has been disabled. Please contact support for assistance.',
           ErrorCode.PROJECT_DISABLED,
         );
       }

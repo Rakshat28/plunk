@@ -52,7 +52,15 @@ export class Domains {
     const isDisabled = await SecurityService.isProjectDisabled(projectId);
     if (isDisabled) {
       throw new NotAllowed(
-        'Cannot add domains to a disabled project. Please contact support to resolve security violations before making changes.',
+        'This project has been disabled. Please contact support for assistance.',
+      );
+    }
+
+    // Block subdomains whose root domain belongs to a disabled project
+    const rootCheck = await DomainService.checkSubdomainOfDisabledRoot(domain);
+    if (rootCheck.blocked) {
+      throw new NotAllowed(
+        'This domain cannot be added at this time. Please contact support for assistance.',
       );
     }
 
@@ -138,7 +146,7 @@ export class Domains {
     const isDisabled = await SecurityService.isProjectDisabled(domain.projectId);
     if (isDisabled) {
       throw new NotAllowed(
-        'Cannot remove domains from a disabled project. Please contact support to resolve security violations before making changes.',
+        'This project has been disabled. Please contact support for assistance.',
       );
     }
 

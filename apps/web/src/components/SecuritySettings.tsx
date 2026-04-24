@@ -63,7 +63,7 @@ export function SecuritySettings({metrics, isLoading}: SecuritySettingsProps) {
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Project Disabled</AlertTitle>
               <AlertDescription>
-                This project has been disabled due to security violations. Contact support to resolve.
+                This project has been disabled. Please contact support for more details.
               </AlertDescription>
             </Alert>
           )}
@@ -73,8 +73,8 @@ export function SecuritySettings({metrics, isLoading}: SecuritySettingsProps) {
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Critical</AlertTitle>
               <AlertDescription>
-                Your bounce or complaint rates have exceeded acceptable levels. Review your contact lists and sending
-                practices to avoid project suspension.
+                Your account requires immediate attention. Please contact support or review your sending practices to
+                avoid suspension.
               </AlertDescription>
             </Alert>
           )}
@@ -84,8 +84,8 @@ export function SecuritySettings({metrics, isLoading}: SecuritySettingsProps) {
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Warning</AlertTitle>
               <AlertDescription>
-                Your bounce or complaint rates are approaching limits. Review your contact lists and remove invalid
-                addresses to maintain good standing.
+                Your account health needs attention. Review your contact lists and sending practices to maintain good
+                standing.
               </AlertDescription>
             </Alert>
           )}

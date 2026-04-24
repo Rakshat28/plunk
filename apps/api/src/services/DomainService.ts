@@ -389,6 +389,49 @@ export class DomainService {
   }
 
   /**
+   * Extract the registrable root domain (last two labels) from a domain name.
+   * e.g. "mail.example.com" → "example.com", "example.com" → "example.com"
+   */
+  private static rootDomain(domain: string): string {
+    const parts = domain.split('.');
+    return parts.length > 2 ? parts.slice(-2).join('.') : domain;
+  }
+
+  /**
+   * Check whether the root domain of `domain` is owned by a disabled project.
+   * Prevents subdomains from being added when the parent domain is flagged.
+   */
+  public static async checkSubdomainOfDisabledRoot(
+    domain: string,
+  ): Promise<{blocked: boolean; projectName?: string; projectId?: string}> {
+    const root = this.rootDomain(domain);
+
+    // Only relevant when the submitted domain is actually a subdomain
+    if (root === domain) {
+      return {blocked: false};
+    }
+
+    const rootDomainRecord = await prisma.domain.findFirst({
+      where: {domain: root},
+      include: {
+        project: {
+          select: {id: true, name: true, disabled: true},
+        },
+      },
+    });
+
+    if (rootDomainRecord?.project.disabled) {
+      return {
+        blocked: true,
+        projectName: rootDomainRecord.project.name,
+        projectId: rootDomainRecord.project.id,
+      };
+    }
+
+    return {blocked: false};
+  }
+
+  /**
    * Check if a domain is already linked to another project
    * Used when adding a new domain to verify if the user has access to the existing project
    * @param domain Domain name to check
