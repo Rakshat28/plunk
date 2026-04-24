@@ -114,13 +114,7 @@ export function KeyValueEditor({initialData, onChange}: KeyValueEditorProps) {
                   className="text-sm"
                 />
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => removePair(pair.id)}
-                className="text-red-500 hover:text-red-700 hover:bg-red-50"
-              >
+              <Button type="button" variant="destructiveGhost" size="icon" onClick={() => removePair(pair.id)}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>

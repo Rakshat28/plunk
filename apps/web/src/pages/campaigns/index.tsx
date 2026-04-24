@@ -17,8 +17,8 @@ import {
 import type {Campaign, Template} from '@plunk/db';
 import {CampaignStatus} from '@plunk/db';
 import type {PaginatedResponse} from '@plunk/types';
+import {EmptyState} from '@plunk/ui';
 import {DashboardLayout} from '../../components/DashboardLayout';
-import {EmptyState} from '../../components/EmptyState';
 import {TemplateSelectionDialog} from '../../components/TemplateSelectionDialog';
 import {CampaignSelectionDialog} from '../../components/CampaignSelectionDialog';
 import {network} from '../../lib/network';
@@ -49,15 +49,15 @@ export default function CampaignsPage() {
   );
 
   const getStatusBadge = (status: CampaignStatus) => {
-    const config: Record<CampaignStatus, {label: string; className: string}> = {
-      DRAFT:     {label: 'Draft',     className: 'bg-neutral-100 text-neutral-600 border-transparent'},
-      SCHEDULED: {label: 'Scheduled', className: 'bg-blue-100 text-blue-700 border-transparent'},
-      SENDING:   {label: 'Sending',   className: 'bg-purple-100 text-purple-700 border-transparent'},
-      SENT:      {label: 'Sent',      className: 'bg-green-100 text-green-700 border-transparent'},
-      CANCELLED: {label: 'Cancelled', className: 'bg-red-100 text-red-700 border-transparent'},
+    const config: Record<CampaignStatus, {label: string; variant: 'neutral' | 'default' | 'success'}> = {
+      DRAFT:     {label: 'Draft',     variant: 'neutral'},
+      SCHEDULED: {label: 'Scheduled', variant: 'default'},
+      SENDING:   {label: 'Sending',   variant: 'default'},
+      SENT:      {label: 'Sent',      variant: 'success'},
+      CANCELLED: {label: 'Cancelled', variant: 'neutral'},
     };
-    const {label, className} = config[status];
-    return <Badge className={`${className} shrink-0`}>{label}</Badge>;
+    const {label, variant} = config[status];
+    return <Badge variant={variant} className="shrink-0">{label}</Badge>;
   };
 
   const handleCancel = async () => {

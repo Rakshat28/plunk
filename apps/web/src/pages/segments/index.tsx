@@ -11,8 +11,8 @@ import {
 } from '@plunk/ui';
 import type {Segment} from '@plunk/db';
 import type {FilterCondition} from '@plunk/types';
+import {EmptyState} from '@plunk/ui';
 import {DashboardLayout} from '../../components/DashboardLayout';
-import {EmptyState} from '../../components/EmptyState';
 import {network} from '../../lib/network';
 import {formatRelativeTime} from '../../lib/dateUtils';
 import {AlertTriangle, Calendar, Edit, Filter, Plus, Search, Trash2, X} from 'lucide-react';
@@ -170,7 +170,7 @@ export default function SegmentsPage() {
                     >
                       <div className="flex items-start justify-between gap-3 mb-3">
                         <h3 className="font-semibold text-neutral-900 leading-snug">{segment.name}</h3>
-                        <Badge variant={isDynamic ? 'info' : 'default'} className="shrink-0 mt-0.5">
+                        <Badge variant={isDynamic ? 'default' : 'neutral'} className="shrink-0 mt-0.5">
                           {isDynamic ? 'Dynamic' : 'Static'}
                         </Badge>
                       </div>

@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
   ConfirmDialog,
+  EmptyState,
   Form,
   FormControl,
   FormField,
@@ -22,7 +23,6 @@ import {
 } from '@plunk/ui';
 import {AnimatePresence, motion} from 'framer-motion';
 import {Check, CheckCircle2, ChevronDown, Copy, Globe, RefreshCw, Trash2, XCircle} from 'lucide-react';
-import {EmptyState} from './EmptyState';
 import {useConfig} from '../lib/hooks/useConfig';
 import {useAddDomain, useCheckDomainVerification, useDomains, useRemoveDomain} from '../lib/hooks/useDomains';
 
@@ -369,13 +369,12 @@ export function DomainsSettings({projectId}: DomainsSettingsProps) {
                           )}
                         </Button>
                         <Button
-                          variant="ghost"
+                          variant="destructiveGhost"
                           size="sm"
                           onClick={() => {
                             setDomainToRemove({id: domain.id, name: domain.domain});
                             setShowRemoveDialog(true);
                           }}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

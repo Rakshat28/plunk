@@ -1,4 +1,4 @@
-import {Button} from '@plunk/ui';
+import {Button, Skeleton} from '@plunk/ui';
 import {motion} from 'framer-motion';
 import {ArrowLeft, ArrowRight, KeyRound, Mail, ShieldCheck} from 'lucide-react';
 import {NextSeo} from 'next-seo';
@@ -192,7 +192,7 @@ export default function OnboardingDeveloper() {
                           isSecret
                         />
                       ) : (
-                        <div className="h-16 animate-pulse rounded-lg bg-neutral-100" />
+                        <Skeleton className="h-16 rounded-lg" />
                       )}
                     </div>
                   )}

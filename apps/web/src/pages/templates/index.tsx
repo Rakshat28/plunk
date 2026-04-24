@@ -9,8 +9,8 @@ import {
 } from '@plunk/ui';
 import type {Template} from '@plunk/db';
 import type {PaginatedResponse} from '@plunk/types';
+import {EmptyState} from '@plunk/ui';
 import {DashboardLayout} from '../../components/DashboardLayout';
-import {EmptyState} from '../../components/EmptyState';
 import {network} from '../../lib/network';
 import {formatRelativeTime} from '../../lib/dateUtils';
 import {Calendar, Copy, Edit, FileText, Plus, Search, Trash2, X} from 'lucide-react';
@@ -174,7 +174,7 @@ export default function TemplatesPage() {
                           <h3 className="font-semibold text-neutral-900 leading-snug">{template.name}</h3>
                           <Badge
                             className="capitalize shrink-0 mt-0.5"
-                            variant={template.type === 'MARKETING' ? 'info' : template.type === 'HEADLESS' ? 'warning' : 'success'}
+                            variant="neutral"
                           >
                             {template.type.toLowerCase()}
                           </Badge>

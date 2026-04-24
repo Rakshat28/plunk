@@ -9,7 +9,7 @@ interface SecuritySettingsProps {
 
 const STATUS_CONFIG: Record<SecurityLevel, {color: string; icon: typeof CheckCircle; bg: string; label: string}> = {
   healthy: {color: 'text-green-600', icon: CheckCircle, bg: 'bg-green-100', label: 'Healthy'},
-  warning: {color: 'text-orange-600', icon: AlertTriangle, bg: 'bg-orange-100', label: 'Warning'},
+  warning: {color: 'text-amber-700', icon: AlertTriangle, bg: 'bg-amber-100', label: 'Warning'},
   critical: {color: 'text-red-600', icon: AlertCircle, bg: 'bg-red-100', label: 'Critical'},
 };
 

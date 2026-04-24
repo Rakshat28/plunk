@@ -133,8 +133,8 @@ function getActivityConfig(activity: Activity): ActivityConfig {
     case 'event.triggered':
       return {
         icon: Zap,
-        color: 'text-blue-600',
-        bgColor: 'bg-blue-100',
+        color: 'text-neutral-600',
+        bgColor: 'bg-neutral-100',
         title: (typeof metadata.eventName === 'string' ? metadata.eventName : undefined) || 'Event triggered',
         description: undefined,
         badge: {
@@ -150,8 +150,8 @@ function getActivityConfig(activity: Activity): ActivityConfig {
     case 'email.sent':
       return {
         icon: Send,
-        color: 'text-green-600',
-        bgColor: 'bg-green-100',
+        color: 'text-green-700',
+        bgColor: 'bg-green-50',
         title: (typeof metadata.subject === 'string' ? metadata.subject : undefined) || 'Email sent',
         description: metadata.campaignName
           ? `Campaign: ${String(metadata.campaignName)}`
@@ -169,8 +169,8 @@ function getActivityConfig(activity: Activity): ActivityConfig {
     case 'email.delivered':
       return {
         icon: CheckCircle,
-        color: 'text-green-600',
-        bgColor: 'bg-green-100',
+        color: 'text-green-700',
+        bgColor: 'bg-green-50',
         title: (typeof metadata.subject === 'string' ? metadata.subject : undefined) || 'Email delivered',
         description: metadata.campaignName
           ? `Campaign: ${String(metadata.campaignName)}`
@@ -186,8 +186,8 @@ function getActivityConfig(activity: Activity): ActivityConfig {
     case 'email.received':
       return {
         icon: Inbox,
-        color: 'text-blue-600',
-        bgColor: 'bg-blue-100',
+        color: 'text-neutral-600',
+        bgColor: 'bg-neutral-100',
         title: (typeof metadata.subject === 'string' ? metadata.subject : undefined) || 'Email received',
         description: typeof metadata.from === 'string' ? `From: ${metadata.from}` : 'Inbound email',
         badge: {
@@ -199,8 +199,8 @@ function getActivityConfig(activity: Activity): ActivityConfig {
     case 'email.opened':
       return {
         icon: Eye,
-        color: 'text-purple-600',
-        bgColor: 'bg-purple-100',
+        color: 'text-neutral-600',
+        bgColor: 'bg-neutral-100',
         title: (typeof metadata.subject === 'string' ? metadata.subject : undefined) || 'Email opened',
         description:
           typeof metadata.totalOpens === 'number' && metadata.totalOpens > 1
@@ -219,8 +219,8 @@ function getActivityConfig(activity: Activity): ActivityConfig {
     case 'email.clicked':
       return {
         icon: MousePointerClick,
-        color: 'text-orange-600',
-        bgColor: 'bg-orange-100',
+        color: 'text-neutral-600',
+        bgColor: 'bg-neutral-100',
         title: (typeof metadata.subject === 'string' ? metadata.subject : undefined) || 'Email clicked',
         description:
           typeof metadata.totalClicks === 'number' && metadata.totalClicks > 1
@@ -239,8 +239,8 @@ function getActivityConfig(activity: Activity): ActivityConfig {
     case 'email.bounced':
       return {
         icon: XCircle,
-        color: 'text-red-600',
-        bgColor: 'bg-red-100',
+        color: 'text-red-700',
+        bgColor: 'bg-red-50',
         title: (typeof metadata.subject === 'string' ? metadata.subject : undefined) || 'Email bounced',
         description: (typeof metadata.error === 'string' ? metadata.error : undefined) || 'Email failed to deliver',
         badge: {
@@ -252,8 +252,8 @@ function getActivityConfig(activity: Activity): ActivityConfig {
     case 'email.complaint':
       return {
         icon: ShieldAlert,
-        color: 'text-red-600',
-        bgColor: 'bg-red-100',
+        color: 'text-red-700',
+        bgColor: 'bg-red-50',
         title: (typeof metadata.subject === 'string' ? metadata.subject : undefined) || 'Spam complaint',
         description: metadata.campaignName
           ? `Campaign: ${String(metadata.campaignName)}`
@@ -269,8 +269,8 @@ function getActivityConfig(activity: Activity): ActivityConfig {
     case 'workflow.started':
       return {
         icon: Workflow,
-        color: 'text-indigo-600',
-        bgColor: 'bg-indigo-100',
+        color: 'text-neutral-600',
+        bgColor: 'bg-neutral-100',
         title: (typeof metadata.workflowName === 'string' ? metadata.workflowName : undefined) || 'Workflow started',
         description: `Status: ${String(metadata.status || 'unknown')}`,
         badge: {
@@ -282,8 +282,8 @@ function getActivityConfig(activity: Activity): ActivityConfig {
     case 'workflow.completed':
       return {
         icon: CheckCheck,
-        color: 'text-green-600',
-        bgColor: 'bg-green-100',
+        color: 'text-green-700',
+        bgColor: 'bg-green-50',
         title: (typeof metadata.workflowName === 'string' ? metadata.workflowName : undefined) || 'Workflow completed',
         description: metadata.exitReason
           ? `Exit: ${String(metadata.exitReason)}`
@@ -297,8 +297,8 @@ function getActivityConfig(activity: Activity): ActivityConfig {
     case 'campaign.scheduled':
       return {
         icon: Calendar,
-        color: 'text-blue-600',
-        bgColor: 'bg-blue-50',
+        color: 'text-neutral-600',
+        bgColor: 'bg-neutral-100',
         title: (typeof metadata.campaignName === 'string' ? metadata.campaignName : undefined) || 'Campaign scheduled',
         description: metadata.subject
           ? `${String(metadata.subject)}${metadata.totalRecipients ? ` • ${metadata.totalRecipients} recipients` : ''}`
@@ -314,8 +314,8 @@ function getActivityConfig(activity: Activity): ActivityConfig {
     case 'workflow.email.scheduled':
       return {
         icon: Calendar,
-        color: 'text-indigo-600',
-        bgColor: 'bg-indigo-50',
+        color: 'text-neutral-600',
+        bgColor: 'bg-neutral-100',
         title: (typeof metadata.stepName === 'string' ? metadata.stepName : undefined) || 'Workflow email scheduled',
         description: metadata.workflowName
           ? `Workflow: ${String(metadata.workflowName)}${metadata.subject ? ` • ${String(metadata.subject)}` : ''}`
@@ -353,7 +353,7 @@ export const ActivityItem = memo(function ActivityItem({activity, isUpcoming = f
     <div className={`flex items-start gap-4 ${isUpcoming ? 'opacity-80' : ''}`}>
       {/* Icon */}
       <div
-        className={`h-10 w-10 rounded-lg ${config.bgColor} flex items-center justify-center flex-shrink-0 ${isUpcoming ? 'ring-2 ring-offset-2 ring-blue-200' : ''}`}
+        className={`h-10 w-10 rounded-lg ${config.bgColor} flex items-center justify-center flex-shrink-0 ${isUpcoming ? 'ring-2 ring-offset-2 ring-neutral-300' : ''}`}
       >
         <Icon className={`h-5 w-5 ${config.color}`} />
       </div>
@@ -410,7 +410,7 @@ export const ActivityItem = memo(function ActivityItem({activity, isUpcoming = f
             )}
           </div>
           <span
-            className={`text-xs flex-shrink-0 whitespace-nowrap ${isUpcoming ? 'text-blue-600 font-medium' : 'text-neutral-400'}`}
+            className={`text-xs flex-shrink-0 whitespace-nowrap ${isUpcoming ? 'text-neutral-700 font-medium' : 'text-neutral-400'}`}
             title={timestamp.toLocaleString()}
           >
             {relativeTime}

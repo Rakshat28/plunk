@@ -384,15 +384,15 @@ interface UsageDisplayProps {
 
 const UsageDisplay = memo(function UsageDisplay({category, usage, currency}: UsageDisplayProps) {
   const statusColor = useMemo(() => {
-    if (usage.isBlocked) return 'text-red-600';
-    if (usage.isWarning) return 'text-orange-600';
-    return 'text-green-600';
+    if (usage.isBlocked) return 'text-red-700';
+    if (usage.isWarning) return 'text-amber-700';
+    return 'text-neutral-600';
   }, [usage.isBlocked, usage.isWarning]);
 
   const progressColor = useMemo(() => {
     if (usage.isBlocked) return 'bg-red-600';
-    if (usage.isWarning) return 'bg-orange-500';
-    return 'bg-green-600';
+    if (usage.isWarning) return 'bg-amber-500';
+    return 'bg-neutral-900';
   }, [usage.isBlocked, usage.isWarning]);
 
   const statusIcon = useMemo(() => {
@@ -440,10 +440,10 @@ const UsageDisplay = memo(function UsageDisplay({category, usage, currency}: Usa
           <Progress value={Math.min(usage.percentage, 100)} className="h-2" indicatorClassName={progressColor} />
 
           {usage.isBlocked && (
-            <Alert className="mt-3 bg-red-50 border-red-200 text-red-900">
+            <Alert variant="destructive" className="mt-3">
               <AlertCircle className="h-4 w-4" />
               <div className="ml-2">
-                <p className={'text-sm'}>
+                <p className="text-sm">
                   <strong>Limit reached:</strong> No more {category.toLowerCase()} emails can be sent this month.
                 </p>
               </div>
@@ -451,7 +451,7 @@ const UsageDisplay = memo(function UsageDisplay({category, usage, currency}: Usa
           )}
 
           {usage.isWarning && !usage.isBlocked && (
-            <Alert className="mt-3 bg-orange-50 border-orange-200 text-orange-900">
+            <Alert variant="warning" className="mt-3">
               <AlertTriangle className="h-4 w-4" />
               <div className="ml-2">
                 <p className="text-sm">

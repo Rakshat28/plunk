@@ -1,4 +1,5 @@
 import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -219,14 +220,10 @@ export default function SegmentDetailPage() {
             </Link>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-bold text-neutral-900">{segment.name}</h1>
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    isStatic ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
-                  }`}
-                >
+                <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">{segment.name}</h1>
+                <Badge variant={isStatic ? 'neutral' : 'default'}>
                   {isStatic ? 'Static' : 'Dynamic'}
-                </span>
+                </Badge>
               </div>
               {segment.description && <p className="text-neutral-500 mt-1">{segment.description}</p>}
             </div>
@@ -395,11 +392,10 @@ export default function SegmentDetailPage() {
                             </Link>
                             {isStatic && (
                               <Button
-                                variant="ghost"
+                                variant="destructiveGhost"
                                 size="sm"
                                 onClick={() => handleRemoveMember(contact.email)}
                                 disabled={removingEmail === contact.email}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
                               >
                                 <UserMinus className="h-4 w-4" />
                               </Button>

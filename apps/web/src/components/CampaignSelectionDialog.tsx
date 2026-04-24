@@ -12,6 +12,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  EmptyState,
   Label,
   Select,
   SelectContent,
@@ -26,7 +27,6 @@ import type {PaginatedResponse} from '@plunk/types';
 import {ArrowLeft, Calendar, Mail, Users} from 'lucide-react';
 import {useState} from 'react';
 import useSWR from 'swr';
-import {EmptyState} from './EmptyState';
 
 interface CampaignSelectionDialogProps {
   open: boolean;
@@ -97,23 +97,16 @@ export function CampaignSelectionDialog({open, onOpenChange, onSelectCampaign}: 
   };
 
   const getStatusBadge = (status: CampaignStatus) => {
-    const variants: Record<
-      CampaignStatus,
-      {variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string; className?: string}
-    > = {
-      DRAFT: {variant: 'secondary', label: 'Draft', className: 'bg-neutral-100 text-neutral-700'},
-      SCHEDULED: {variant: 'default', label: 'Scheduled', className: 'bg-blue-100 text-blue-700'},
-      SENDING: {variant: 'default', label: 'Sending', className: 'bg-purple-100 text-purple-700'},
-      SENT: {variant: 'default', label: 'Sent', className: 'bg-green-100 text-green-700'},
-      CANCELLED: {variant: 'destructive', label: 'Cancelled', className: 'bg-red-100 text-red-700'},
+    const variants: Record<CampaignStatus, {variant: 'neutral' | 'default' | 'success'; label: string}> = {
+      DRAFT:     {variant: 'neutral', label: 'Draft'},
+      SCHEDULED: {variant: 'default', label: 'Scheduled'},
+      SENDING:   {variant: 'default', label: 'Sending'},
+      SENT:      {variant: 'success', label: 'Sent'},
+      CANCELLED: {variant: 'neutral', label: 'Cancelled'},
     };
 
     const config = variants[status];
-    return (
-      <Badge variant={config.variant} className={config.className}>
-        {config.label}
-      </Badge>
-    );
+    return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
   const getAudienceLabel = (campaign: Campaign) => {
@@ -132,7 +125,7 @@ export function CampaignSelectionDialog({open, onOpenChange, onSelectCampaign}: 
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {step === 'configure' && (
-              <Button variant="ghost" size="sm" onClick={handleBack} className="h-8 w-8 p-0">
+              <Button variant="ghost" size="icon" onClick={handleBack}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             )}

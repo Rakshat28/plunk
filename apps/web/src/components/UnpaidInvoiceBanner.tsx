@@ -73,12 +73,7 @@ export function UnpaidInvoiceBanner({projectId, hasSubscription}: UnpaidInvoiceB
               Please pay your outstanding invoices to avoid service interruption.
             </p>
           </div>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={handlePayNow}
-            className="ml-4 bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
-          >
+          <Button variant="destructive" size="sm" onClick={handlePayNow} className="ml-4">
             Pay Now
             <ExternalLink className="h-3 w-3" />
           </Button>

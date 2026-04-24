@@ -3,6 +3,7 @@ import {
   Alert,
   AlertDescription,
   AlertTitle,
+  Badge,
   Button,
   Card,
   CardContent,
@@ -18,6 +19,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  EmptyState,
   Input,
   Label,
   Select,
@@ -36,7 +38,6 @@ import {
 import type {Template, Workflow, WorkflowExecution, WorkflowStep, WorkflowTransition} from '@plunk/db';
 import type {PaginatedResponse} from '@plunk/types';
 import {DashboardLayout} from '../../components/DashboardLayout';
-import {EmptyState} from '../../components/EmptyState';
 import {network} from '../../lib/network';
 import {
   AlertTriangle,
@@ -659,23 +660,21 @@ export default function WorkflowEditorPage() {
                             {execution.contact.email}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            <Badge
+                              variant={
                                 execution.status === 'COMPLETED'
-                                  ? 'bg-green-100 text-green-800'
-                                  : execution.status === 'RUNNING'
-                                    ? 'bg-blue-100 text-blue-800'
+                                  ? 'success'
+                                  : execution.status === 'FAILED'
+                                    ? 'destructive'
                                     : execution.status === 'WAITING'
-                                      ? 'bg-yellow-100 text-yellow-800'
-                                      : execution.status === 'FAILED'
-                                        ? 'bg-red-100 text-red-800'
-                                        : execution.status === 'CANCELLED'
-                                          ? 'bg-neutral-100 text-neutral-800'
-                                          : 'bg-neutral-100 text-neutral-800'
-                              }`}
+                                      ? 'warning'
+                                      : execution.status === 'RUNNING'
+                                        ? 'default'
+                                        : 'neutral'
+                              }
                             >
                               {execution.status}
-                            </span>
+                            </Badge>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
                             {execution.currentStep?.name ?? '-'}
@@ -690,13 +689,14 @@ export default function WorkflowEditorPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             {(execution.status === 'RUNNING' || execution.status === 'WAITING') && (
-                              <button
+                              <Button
+                                variant="destructiveGhost"
+                                size="sm"
                                 onClick={() => setExecutionToCancel(execution.id)}
-                                className="text-red-600 hover:text-red-900 disabled:opacity-50"
                                 disabled={isCancelling}
                               >
                                 Cancel
-                              </button>
+                              </Button>
                             )}
                           </td>
                         </tr>
@@ -2471,13 +2471,15 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-semibold text-neutral-500">Branch {idx + 1}</span>
                           {conditionBranches.length > 1 && (
-                            <button
+                            <Button
                               type="button"
+                              variant="destructiveGhost"
+                              size="icon"
+                              className="h-7 w-7"
                               onClick={() => setConditionBranches(prev => prev.filter(b => b.id !== branch.id))}
-                              className="text-xs text-red-500 hover:text-red-700"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
-                            </button>
+                            </Button>
                           )}
                         </div>
 
@@ -2551,7 +2553,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                             {id: crypto.randomUUID().slice(0, 8), name: '', operator: 'equals', value: ''},
                           ])
                         }
-                        className="flex items-center gap-1.5 text-sm text-purple-600 hover:text-purple-800 font-medium"
+                        className="flex items-center gap-1.5 text-sm text-neutral-700 hover:text-neutral-900 font-medium"
                       >
                         <Plus className="h-3.5 w-3.5" />
                         Add Branch

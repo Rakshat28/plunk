@@ -85,7 +85,7 @@ export default function NewSegmentPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-neutral-900">Create Segment</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Create Segment</h1>
               <p className="text-neutral-500 mt-1">
                 {segmentType === 'DYNAMIC'
                   ? 'Build complex audience filters with AND/OR logic'

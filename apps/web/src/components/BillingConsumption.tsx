@@ -111,8 +111,8 @@ export function BillingConsumption({projectId, hasSubscription}: BillingConsumpt
           {/* Total Usage */}
           <div className="border border-neutral-200 rounded-lg p-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-blue-600" />
+              <div className="p-2 bg-neutral-100 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-neutral-600" />
               </div>
               <div>
                 <p className="text-sm text-neutral-500">Total Emails Sent</p>
@@ -123,19 +123,19 @@ export function BillingConsumption({projectId, hasSubscription}: BillingConsumpt
 
           {/* Account Credits */}
           {consumptionData.credits && consumptionData.credits.hasCredits && (
-            <div className="border border-green-200 rounded-lg p-6 bg-green-50">
+            <div className="border border-neutral-200 rounded-lg p-6">
               <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-white rounded-lg shadow-sm border border-green-200">
-                  <Coins className="h-5 w-5 text-green-600" />
+                <div className="p-2 bg-neutral-100 rounded-lg">
+                  <Coins className="h-5 w-5 text-neutral-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-green-700">Account Credits</p>
-                  <p className="text-2xl font-bold text-green-900">
+                  <p className="text-sm text-neutral-500">Account Credits</p>
+                  <p className="text-2xl font-bold text-neutral-900">
                     {formatCurrency(consumptionData.credits.creditAmount, consumptionData.credits.currency)}
                   </p>
                 </div>
               </div>
-              <p className="text-xs text-green-700 mt-2">
+              <p className="text-xs text-neutral-500 mt-2">
                 Credits will be automatically applied to your upcoming invoices
               </p>
             </div>

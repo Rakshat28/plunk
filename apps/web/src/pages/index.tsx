@@ -8,6 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Skeleton,
 } from '@plunk/ui';
 import {AlertCircle, Mail, Send, TrendingUp, Users} from 'lucide-react';
 import {NextSeo} from 'next-seo';
@@ -192,11 +193,7 @@ export default function Index() {
                       <Icon className="h-4 w-4 text-neutral-500" />
                     </div>
                     <CardTitle className="text-2xl tabular-nums">
-                      {isLoading ? (
-                        <div className="h-7 w-16 bg-neutral-100 rounded animate-pulse" />
-                      ) : (
-                        stat.value
-                      )}
+                      {isLoading ? <Skeleton className="h-7 w-16" /> : stat.value}
                     </CardTitle>
                   </CardHeader>
                 </Card>

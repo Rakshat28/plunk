@@ -1,8 +1,7 @@
-import {Button, IconSpinner} from '@plunk/ui';
+import {Button, EmptyState, IconSpinner} from '@plunk/ui';
 import type {Activity, CursorPaginatedResponse} from '@plunk/types';
 import {network} from '../lib/network';
 import {ActivityItem} from './ActivityItem';
-import {EmptyState} from './EmptyState';
 import {Activity as ActivityIcon} from 'lucide-react';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 

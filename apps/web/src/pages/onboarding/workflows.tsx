@@ -1,4 +1,4 @@
-import {Button} from '@plunk/ui';
+import {Button, Skeleton} from '@plunk/ui';
 import {motion} from 'framer-motion';
 import {ArrowLeft, ArrowRight, FileText, ShieldCheck, Workflow, Zap} from 'lucide-react';
 import {NextSeo} from 'next-seo';
@@ -201,7 +201,7 @@ export default function OnboardingWorkflows() {
                           description="Use this key to track events from browsers or clients."
                         />
                       ) : (
-                        <div className="h-16 animate-pulse rounded-lg bg-neutral-100" />
+                        <Skeleton className="h-16 rounded-lg" />
                       )}
                       <div className="overflow-hidden rounded-lg border border-neutral-200">
                         <CodeTabs snippets={snippets} />

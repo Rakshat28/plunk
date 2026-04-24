@@ -19,8 +19,8 @@ import {
 } from '@plunk/ui';
 import type {Workflow} from '@plunk/db';
 import type {PaginatedResponse} from '@plunk/types';
+import {EmptyState} from '@plunk/ui';
 import {DashboardLayout} from '../../components/DashboardLayout';
-import {EmptyState} from '../../components/EmptyState';
 import {network} from '../../lib/network';
 import {formatRelativeTime} from '../../lib/dateUtils';
 import {Calendar, Edit, Plus, Power, PowerOff, Search, Trash2, Workflow as WorkflowIcon, X, Zap} from 'lucide-react';
@@ -165,7 +165,7 @@ export default function WorkflowsPage() {
                       >
                         <div className="flex items-start justify-between gap-3 mb-3">
                           <h3 className="font-semibold text-neutral-900 leading-snug">{workflow.name}</h3>
-                          <Badge variant={workflow.enabled ? 'green' : 'neutral'} className="shrink-0 mt-0.5">
+                          <Badge variant={workflow.enabled ? 'success' : 'neutral'} className="shrink-0 mt-0.5">
                             {workflow.enabled ? (
                               <><Power className="h-3 w-3 mr-1" />Active</>
                             ) : (

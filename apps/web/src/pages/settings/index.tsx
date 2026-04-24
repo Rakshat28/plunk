@@ -375,7 +375,7 @@ export default function Settings() {
         <div className="space-y-8">
           {/* Header */}
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900">Settings</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Settings</h1>
             <p className="text-neutral-500 mt-2">Manage your project settings and preferences</p>
           </div>
 
@@ -574,7 +574,7 @@ export default function Settings() {
                     <div className="flex items-start justify-between gap-4 p-5 rounded-lg border border-neutral-200 bg-white transition-all">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <Database className="h-4 w-4 text-orange-600" />
+                          <Database className="h-4 w-4 text-amber-700" />
                           <h4 className="font-semibold text-neutral-900">Reset Project Data</h4>
                         </div>
                         <p className="text-sm text-neutral-600 mb-3">
@@ -586,12 +586,7 @@ export default function Settings() {
                           <span>API keys, domains, billing information</span>
                         </div>
                       </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setShowResetDialog(true)}
-                        className="shrink-0 border-orange-300 text-orange-700 hover:bg-orange-50 hover:border-orange-400"
-                      >
+                      <Button type="button" variant="outline" onClick={() => setShowResetDialog(true)} className="shrink-0">
                         Reset Data
                       </Button>
                     </div>
@@ -823,7 +818,7 @@ export default function Settings() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-orange-500" />
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
                 Regenerate API Keys
               </DialogTitle>
               <DialogDescription className="space-y-3">
@@ -841,7 +836,7 @@ export default function Settings() {
               <Button variant="outline" onClick={() => setShowRegenerateDialog(false)}>
                 Cancel
               </Button>
-              <Button variant="default" onClick={handleRegenerateKeys} className="bg-orange-600 hover:bg-orange-700">
+              <Button variant="destructive" onClick={handleRegenerateKeys}>
                 Regenerate Keys
               </Button>
             </DialogFooter>
@@ -852,8 +847,8 @@ export default function Settings() {
         <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader className="space-y-3">
-              <div className="mx-auto w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                <Database className="h-6 w-6 text-orange-600" />
+              <div className="mx-auto w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                <Database className="h-6 w-6 text-amber-700" />
               </div>
               <DialogTitle className="text-center text-xl">Reset Project Data?</DialogTitle>
               <DialogDescription className="text-center text-base">
@@ -865,7 +860,7 @@ export default function Settings() {
             <div className="py-4">
               <label className="text-sm font-medium text-neutral-700 block mb-2 text-center">
                 Type{' '}
-                <span className="font-mono font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded">RESET</span>{' '}
+                <span className="font-mono font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">RESET</span>{' '}
                 to confirm
               </label>
               <Input
@@ -889,9 +884,10 @@ export default function Settings() {
                 Cancel
               </Button>
               <Button
+                variant="destructive"
                 onClick={handleResetProject}
                 disabled={resetConfirmText !== 'RESET'}
-                className="w-full bg-orange-600 hover:bg-orange-700 disabled:opacity-50"
+                className="w-full"
               >
                 Reset Data
               </Button>
@@ -946,9 +942,10 @@ export default function Settings() {
                 Cancel
               </Button>
               <Button
+                variant="destructive"
                 onClick={handleDeleteProject}
                 disabled={deleteConfirmText !== 'DELETE'}
-                className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50"
+                className="w-full"
               >
                 Delete Forever
               </Button>

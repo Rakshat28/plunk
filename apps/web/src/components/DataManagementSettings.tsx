@@ -14,6 +14,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  EmptyState,
   Table,
   TableBody,
   TableCell,
@@ -23,7 +24,6 @@ import {
   IconSpinner,
 } from '@plunk/ui';
 import {AlertCircle, Database, Trash2, Zap} from 'lucide-react';
-import {EmptyState} from './EmptyState';
 import {toast} from 'sonner';
 import useSWR from 'swr';
 import {useActiveProject} from '../lib/contexts/ActiveProjectProvider';

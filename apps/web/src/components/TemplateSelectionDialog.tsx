@@ -12,6 +12,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  EmptyState,
   IconSpinner,
   Input,
   Label,
@@ -21,7 +22,6 @@ import type {PaginatedResponse} from '@plunk/types';
 import {ArrowLeft, FileText, Search} from 'lucide-react';
 import {useState} from 'react';
 import useSWR from 'swr';
-import {EmptyState} from './EmptyState';
 
 interface TemplateSelectionDialogProps {
   open: boolean;
@@ -106,7 +106,7 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {step === 'configure' && (
-              <Button variant="ghost" size="sm" onClick={handleBack} className="h-8 w-8 p-0">
+              <Button variant="ghost" size="icon" onClick={handleBack}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             )}
@@ -228,7 +228,7 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <CardTitle className="text-base truncate">{template.name}</CardTitle>
-                          <Badge className="capitalize" variant={template.type === 'MARKETING' ? 'info' : template.type === 'HEADLESS' ? 'warning' : 'success'}>
+                          <Badge className="capitalize" variant="neutral">
                             {template.type.toLowerCase()}
                           </Badge>
                         </div>
@@ -285,10 +285,7 @@ export function TemplateSelectionDialog({open, onOpenChange, onSelectTemplate}: 
                 <div className="pb-4 mb-1 border-b border-neutral-100">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-neutral-900">{selectedTemplate.name}</span>
-                    <Badge
-                      className="capitalize"
-                      variant={selectedTemplate.type === 'MARKETING' ? 'info' : 'success'}
-                    >
+                    <Badge className="capitalize" variant="neutral">
                       {selectedTemplate.type.toLowerCase()}
                     </Badge>
                   </div>

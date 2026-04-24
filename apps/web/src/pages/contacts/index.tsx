@@ -19,8 +19,8 @@ import {
 } from '@plunk/ui';
 import type {Contact} from '@plunk/db';
 import type {CursorPaginatedResponse} from '@plunk/types';
+import {EmptyState} from '@plunk/ui';
 import {DashboardLayout} from '../../components/DashboardLayout';
-import {EmptyState} from '../../components/EmptyState';
 import {KeyValueEditor} from '../../components/KeyValueEditor';
 import {network} from '../../lib/network';
 import {formatRelativeTime} from '../../lib/dateUtils';

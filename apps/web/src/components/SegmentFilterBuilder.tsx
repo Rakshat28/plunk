@@ -528,13 +528,7 @@ const FilterRow = memo(function FilterRow({filter, onChange, onRemove, available
         </div>
       </div>
 
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={onRemove}
-        className="mt-6 text-red-600 hover:text-red-700 hover:bg-red-50"
-      >
+      <Button type="button" variant="destructiveGhost" size="sm" onClick={onRemove} className="mt-6">
         <Trash2 className="h-4 w-4" />
       </Button>
     </div>
@@ -603,12 +597,12 @@ function FilterGroupComponent({group, onChange, onRemove, depth = 0, availableFi
     onChange(rest);
   }, [group, onChange]);
 
-  const bgColors = ['bg-white', 'bg-blue-50/50', 'bg-purple-50/50', 'bg-green-50/50'];
-  const borderColors = ['border-neutral-300', 'border-blue-300', 'border-purple-300', 'border-green-300'];
+  const bgColors = ['bg-white', 'bg-neutral-50', 'bg-white', 'bg-neutral-50'];
+  const borderColors = ['border-neutral-200', 'border-neutral-200', 'border-neutral-300', 'border-neutral-300'];
 
   return (
     <div
-      className={`p-4 rounded-lg border-2 ${borderColors[depth % borderColors.length]} ${bgColors[depth % bgColors.length]}`}
+      className={`p-4 rounded-lg border ${borderColors[depth % borderColors.length]} ${bgColors[depth % bgColors.length]}`}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -616,13 +610,7 @@ function FilterGroupComponent({group, onChange, onRemove, depth = 0, availableFi
           <span className="text-sm font-medium text-neutral-700">Filter Group {depth > 0 && `(Nested)`}</span>
         </div>
         {onRemove && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={onRemove}
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-          >
+          <Button type="button" variant="destructiveGhost" size="sm" onClick={onRemove}>
             <Trash2 className="h-4 w-4" />
           </Button>
         )}
@@ -645,10 +633,10 @@ function FilterGroupComponent({group, onChange, onRemove, depth = 0, availableFi
               <span className="text-xs font-medium text-neutral-600 uppercase tracking-wide">Nested Conditions</span>
               <Button
                 type="button"
-                variant="ghost"
+                variant="destructiveGhost"
                 size="sm"
                 onClick={removeNestedCondition}
-                className="h-6 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                className="h-6 text-xs"
               >
                 Remove nested
               </Button>
