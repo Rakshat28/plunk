@@ -80,6 +80,7 @@ export default function ContactsPage() {
   }, [data, cursor]);
 
   useEffect(() => {
+    if (searchInput === search) return;
     const timer = setTimeout(() => {
       setSearch(searchInput);
       setCursor(undefined);
@@ -88,7 +89,7 @@ export default function ContactsPage() {
       setContacts([]);
     }, 350);
     return () => clearTimeout(timer);
-  }, [searchInput]);
+  }, [searchInput, search]);
 
   const handleNextPage = () => {
     if (data?.cursor) {
