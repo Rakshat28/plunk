@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
   ConfirmDialog,
+  EmptyState,
   IconSpinner,
   Input,
   Label,
@@ -194,12 +195,12 @@ export default function SegmentDetailPage() {
           <p className="text-neutral-500 mb-6">
             The segment you&apos;re looking for doesn&apos;t exist or has been deleted.
           </p>
-          <Link href="/segments">
-            <Button>
+          <Button asChild>
+            <Link href="/segments">
               <ArrowLeft className="h-4 w-4" />
               Back to Segments
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </DashboardLayout>
     );
@@ -213,11 +214,9 @@ export default function SegmentDetailPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/segments">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/segments"><ArrowLeft className="h-4 w-4" /></Link>
+            </Button>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">{segment.name}</h1>
@@ -276,7 +275,7 @@ export default function SegmentDetailPage() {
                       type="checkbox"
                       checked={trackMembership}
                       onChange={e => setTrackMembership(e.target.checked)}
-                      className="mt-1 h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300 rounded"
+                      className="mt-1 h-4 w-4 text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border-neutral-300 rounded"
                     />
                     <div className="flex-1">
                       <Label htmlFor="trackMembership" className="font-medium cursor-pointer">
@@ -365,12 +364,11 @@ export default function SegmentDetailPage() {
                     <p className="text-sm text-neutral-500">Loading contacts...</p>
                   </div>
                 ) : contactsData?.data.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Users className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
-                    <p className="text-neutral-500">
-                      {isStatic ? 'No members in this segment yet' : 'No contacts match this segment'}
-                    </p>
-                  </div>
+                  <EmptyState
+                    icon={Users}
+                    title={isStatic ? 'No members yet' : 'No contacts match'}
+                    description={isStatic ? 'Add contacts to this segment to get started.' : 'No contacts currently match these filter conditions.'}
+                  />
                 ) : (
                   <>
                     <div className="space-y-2">
@@ -385,11 +383,9 @@ export default function SegmentDetailPage() {
                             <span className="text-sm font-medium">{contact.email}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Link href={`/contacts/${contact.id}`}>
-                              <Button variant="ghost" size="sm">
-                                View
-                              </Button>
-                            </Link>
+                            <Button asChild variant="ghost" size="sm">
+                              <Link href={`/contacts/${contact.id}`}>View</Link>
+                            </Button>
                             {isStatic && (
                               <Button
                                 variant="destructiveGhost"
@@ -494,7 +490,7 @@ export default function SegmentDetailPage() {
                   <p className="text-sm font-medium text-neutral-900">Created</p>
                   <div className="group relative inline-block cursor-help">
                     <p className="text-sm text-neutral-500">{dayjs(segment.createdAt).fromNow()}</p>
-                    <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                    <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-md bottom-full left-0 mb-1 whitespace-nowrap">
                       {dayjs(segment.createdAt).format('DD MMMM YYYY, hh:mm')}
                     </div>
                   </div>
@@ -504,7 +500,7 @@ export default function SegmentDetailPage() {
                   <p className="text-sm font-medium text-neutral-900">Last Updated</p>
                   <div className="group relative inline-block cursor-help">
                     <p className="text-sm text-neutral-500">{dayjs(segment.updatedAt).fromNow()}</p>
-                    <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                    <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-md bottom-full left-0 mb-1 whitespace-nowrap">
                       {dayjs(segment.updatedAt).format('DD MMMM YYYY, hh:mm')}
                     </div>
                   </div>

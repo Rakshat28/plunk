@@ -80,7 +80,7 @@ export default function OnboardingWelcome() {
                   transition={{duration: 0.35, delay: 0.08 + index * 0.06, ease: [0.22, 1, 0.36, 1]}}
                   whileHover={{y: -2}}
                   whileTap={{scale: 0.995}}
-                  className="group flex flex-col gap-5 rounded-xl border border-neutral-200 bg-white p-6 text-left shadow-sm transition-colors hover:border-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
+                  className="group flex flex-col gap-5 rounded-xl border border-neutral-200 bg-white p-6 text-left shadow-sm transition-colors hover:border-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <div className="flex items-center justify-between">
                     <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50 text-neutral-900">

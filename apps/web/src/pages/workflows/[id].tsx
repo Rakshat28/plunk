@@ -443,11 +443,9 @@ export default function WorkflowEditorPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3 sm:gap-4">
-          <Link href="/workflows">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/workflows"><ArrowLeft className="h-4 w-4" /></Link>
+          </Button>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 sm:gap-3">
               <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 truncate">{workflow.name}</h1>
@@ -573,7 +571,7 @@ export default function WorkflowEditorPage() {
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setActiveTab('builder')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`py-2 px-1 border-b-2 font-medium text-sm rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                 activeTab === 'builder'
                   ? 'border-neutral-900 text-neutral-900'
                   : 'border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300'
@@ -583,7 +581,7 @@ export default function WorkflowEditorPage() {
             </button>
             <button
               onClick={() => setActiveTab('executions')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`py-2 px-1 border-b-2 font-medium text-sm rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                 activeTab === 'executions'
                   ? 'border-neutral-900 text-neutral-900'
                   : 'border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300'
@@ -682,7 +680,7 @@ export default function WorkflowEditorPage() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
                             <div className="group relative inline-block cursor-help">
                               {dayjs(execution.startedAt).fromNow()}
-                              <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-1/2 transform -translate-x-1/2 mb-1 whitespace-nowrap">
+                              <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-md bottom-full left-1/2 transform -translate-x-1/2 mb-1 whitespace-nowrap">
                                 {dayjs(execution.startedAt).format('DD MMMM YYYY, hh:mm')}
                               </div>
                             </div>

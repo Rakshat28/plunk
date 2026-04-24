@@ -165,7 +165,7 @@ export default function Manage() {
                   <button
                     onClick={() => void handleToggleSubscription()}
                     disabled={updating}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2 ${
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                       contact?.subscribed ? 'bg-neutral-900' : 'bg-neutral-200'
                     } ${updating ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >

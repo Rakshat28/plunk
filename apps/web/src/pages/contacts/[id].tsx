@@ -105,12 +105,12 @@ export default function ContactDetailPage() {
           <p className="text-neutral-500 mb-6">
             The contact you&apos;re looking for doesn&apos;t exist or has been deleted.
           </p>
-          <Link href="/contacts">
-            <Button>
+          <Button asChild>
+            <Link href="/contacts">
               <ArrowLeft className="h-4 w-4" />
               Back to Contacts
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </DashboardLayout>
     );
@@ -124,11 +124,9 @@ export default function ContactDetailPage() {
           {/* Header */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-              <Link href="/contacts">
-                <Button variant="outline" size="sm">
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-              </Link>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/contacts"><ArrowLeft className="h-4 w-4" /></Link>
+              </Button>
               <div className="min-w-0">
                 <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 truncate">{contact.email}</h1>
                 <p className="mt-1">
@@ -261,7 +259,7 @@ export default function ContactDetailPage() {
                     <p className="text-sm font-medium text-neutral-900">Created</p>
                     <div className="group relative inline-block cursor-help">
                       <p className="text-sm text-neutral-500">{dayjs(contact.createdAt).fromNow()}</p>
-                      <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                      <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-md bottom-full left-0 mb-1 whitespace-nowrap">
                         {dayjs(contact.createdAt).format('DD MMMM YYYY, hh:mm')}
                       </div>
                     </div>
@@ -271,7 +269,7 @@ export default function ContactDetailPage() {
                     <p className="text-sm font-medium text-neutral-900">Last Updated</p>
                     <div className="group relative inline-block cursor-help">
                       <p className="text-sm text-neutral-500">{dayjs(contact.updatedAt).fromNow()}</p>
-                      <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                      <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-md bottom-full left-0 mb-1 whitespace-nowrap">
                         {dayjs(contact.updatedAt).format('DD MMMM YYYY, hh:mm')}
                       </div>
                     </div>

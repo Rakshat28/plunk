@@ -328,12 +328,12 @@ export default function CampaignsPage() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       ) : (
-                        <Link href="/campaigns/create">
-                          <Button>
+                        <Button asChild>
+                          <Link href="/campaigns/create">
                             <Plus className="h-4 w-4" />
                             Create Campaign
-                          </Button>
-                        </Link>
+                          </Link>
+                        </Button>
                       )
                     }
                   />
@@ -347,10 +347,11 @@ export default function CampaignsPage() {
               const deliveryPct = campaign.totalRecipients > 0 ? (campaign.sentCount / campaign.totalRecipients) * 100 : 0;
 
               return (
-                <Card key={campaign.id} className="transition-colors hover:border-neutral-300 flex flex-col">
+                <Card key={campaign.id} className="transition-colors hover:border-neutral-300 flex flex-col [&:has([data-card-link]:focus-visible)]:ring-2 [&:has([data-card-link]:focus-visible)]:ring-ring [&:has([data-card-link]:focus-visible)]:ring-offset-2">
                   <Link
                     href={`/campaigns/${campaign.id}`}
-                    className="flex-1 block p-6 pb-4 hover:bg-neutral-50/50 transition-colors rounded-t-xl"
+                    data-card-link=""
+                    className="flex-1 block p-6 pb-4 hover:bg-neutral-50/50 transition-colors rounded-t-xl focus-visible:outline-none"
                     aria-label={`Open ${campaign.name}`}
                   >
                     <div className="flex items-start justify-between gap-3 mb-3">
@@ -432,17 +433,15 @@ export default function CampaignsPage() {
                       <Calendar className="h-3 w-3" />
                       <div className="group relative inline-block cursor-help">
                         <span>Updated {formatRelativeTime(campaign.updatedAt)}</span>
-                        <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                        <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-md bottom-full left-0 mb-1 whitespace-nowrap">
                           {dayjs(campaign.updatedAt).format('DD MMMM YYYY, hh:mm')}
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Link href={`/campaigns/${campaign.id}`} aria-label={campaign.status === 'DRAFT' ? 'Edit campaign' : 'View campaign'}>
-                        <Button variant="ghost" size="sm" title={campaign.status === 'DRAFT' ? 'Edit campaign' : 'View campaign'}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </Link>
+                      <Button asChild variant="ghost" size="sm" title={campaign.status === 'DRAFT' ? 'Edit campaign' : 'View campaign'}>
+                        <Link href={`/campaigns/${campaign.id}`} aria-label={campaign.status === 'DRAFT' ? 'Edit campaign' : 'View campaign'}><Edit className="h-4 w-4" /></Link>
+                      </Button>
                       <Button variant="ghost" size="sm" title="Duplicate campaign" onClick={() => handleDuplicate(campaign.id)}>
                         <Copy className="h-4 w-4" />
                       </Button>

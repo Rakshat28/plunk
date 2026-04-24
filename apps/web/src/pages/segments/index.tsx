@@ -90,13 +90,13 @@ export default function SegmentsPage() {
                 Create dynamic audience groups based on contact attributes and behaviors
               </p>
             </div>
-            <Link href="/segments/new" className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto">
+            <Button asChild className="w-full sm:w-auto">
+              <Link href="/segments/new">
                 <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline">Create Segment</span>
                 <span className="sm:hidden">Create</span>
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
 
           {/* Search */}
@@ -145,12 +145,12 @@ export default function SegmentsPage() {
                   description={searchInput ? 'Try a different search term.' : 'Group contacts by attributes to target specific audiences.'}
                   action={
                     !searchInput ? (
-                      <Link href="/segments/new">
-                        <Button>
+                      <Button asChild>
+                        <Link href="/segments/new">
                           <Plus className="h-4 w-4" />
                           Create Segment
-                        </Button>
-                      </Link>
+                        </Link>
+                      </Button>
                     ) : undefined
                   }
                 />
@@ -162,10 +162,11 @@ export default function SegmentsPage() {
                 const isDynamic = (segment as unknown as {type: string}).type !== 'STATIC';
                 const filterCount = isDynamic ? countFiltersInCondition(segment.condition) : 0;
                 return (
-                  <Card key={segment.id} className="transition-colors hover:border-neutral-300 flex flex-col">
+                  <Card key={segment.id} className="transition-colors hover:border-neutral-300 flex flex-col [&:has([data-card-link]:focus-visible)]:ring-2 [&:has([data-card-link]:focus-visible)]:ring-ring [&:has([data-card-link]:focus-visible)]:ring-offset-2">
                     <Link
                       href={`/segments/${segment.id}`}
-                      className="flex-1 block p-6 pb-4 hover:bg-neutral-50/50 transition-colors rounded-t-xl"
+                      data-card-link=""
+                      className="flex-1 block p-6 pb-4 hover:bg-neutral-50/50 transition-colors rounded-t-xl focus-visible:outline-none"
                       aria-label={`Open ${segment.name}`}
                     >
                       <div className="flex items-start justify-between gap-3 mb-3">
@@ -195,17 +196,15 @@ export default function SegmentsPage() {
                         <Calendar className="h-3 w-3" />
                         <div className="group relative inline-block cursor-help">
                           <span>Updated {formatRelativeTime(segment.updatedAt)}</span>
-                          <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                          <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-md bottom-full left-0 mb-1 whitespace-nowrap">
                             {dayjs(segment.updatedAt).format('DD MMMM YYYY, hh:mm')}
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Link href={`/segments/${segment.id}`} aria-label="Edit segment">
-                          <Button variant="ghost" size="sm" title="Edit segment">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </Link>
+                        <Button asChild variant="ghost" size="sm" title="Edit segment">
+                          <Link href={`/segments/${segment.id}`} aria-label="Edit segment"><Edit className="h-4 w-4" /></Link>
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"

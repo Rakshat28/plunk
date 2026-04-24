@@ -342,11 +342,9 @@ export default function CampaignDetailsPage() {
           {/* Header */}
           <div className="space-y-4">
             <div className="flex items-center gap-3 sm:gap-4">
-              <Link href="/campaigns">
-                <Button type="button" variant="ghost" size="sm">
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-              </Link>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/campaigns"><ArrowLeft className="h-4 w-4" /></Link>
+              </Button>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 truncate">{c.name}</h1>
@@ -848,11 +846,9 @@ export default function CampaignDetailsPage() {
         {/* Header */}
         <div className="space-y-4">
           <div className="flex items-center gap-3 sm:gap-4">
-            <Link href="/campaigns">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/campaigns"><ArrowLeft className="h-4 w-4" /></Link>
+            </Button>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 sm:gap-3 mb-2">
                 <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 truncate">{c.name}</h1>

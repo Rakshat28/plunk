@@ -105,9 +105,9 @@ export default function ResetPassword() {
                       This link is invalid or has expired. Request a new one from the login page.
                     </p>
                   </div>
-                  <Link href="/auth/login" className="mt-2">
-                    <Button>Back to login</Button>
-                  </Link>
+                  <Button asChild className="mt-2">
+                    <Link href="/auth/login">Back to login</Link>
+                  </Button>
                 </div>
               </CardContent>
             </Card>

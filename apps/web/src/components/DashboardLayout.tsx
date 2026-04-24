@@ -169,7 +169,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
         <div className="relative" ref={projectMenuRef}>
           <button
             onClick={handleToggleProjectMenu}
-            className="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg hover:bg-neutral-50 transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg hover:bg-neutral-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <div className="h-8 w-8 rounded-lg bg-neutral-900 text-white flex items-center justify-center text-xs font-medium flex-shrink-0">
@@ -194,7 +194,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
                     setActiveProject(project);
                     setShowProjectMenu(false);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 transition-colors whitespace-nowrap"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <div className="h-6 w-6 rounded-md bg-neutral-900 text-white flex items-center justify-center text-xs font-medium flex-shrink-0">
                     {project.name.charAt(0).toUpperCase()}
@@ -209,7 +209,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
               <Link
                 href="/projects/create"
                 onClick={() => setShowProjectMenu(false)}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 transition-colors text-neutral-700 whitespace-nowrap"
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 transition-colors text-neutral-700 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <Plus className="h-4 w-4" />
                 <span>Create project</span>
@@ -238,7 +238,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
                     key={item.name}
                     href={item.href}
                     onClick={() => setShowMobileMenu(false)}
-                    className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                       isActive ? 'bg-neutral-100 text-neutral-900' : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
                     }`}
                   >
@@ -258,7 +258,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
           href={WIKI_URI}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+          className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <BookOpen className="h-5 w-5" />
           Documentation
@@ -267,7 +267,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
         <Link
           href="/settings"
           onClick={() => setShowMobileMenu(false)}
-          className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+          className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
             router.pathname.startsWith('/settings')
               ? 'bg-neutral-100 text-neutral-900'
               : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
@@ -280,7 +280,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
         <div className="relative" ref={userMenuRef}>
           <button
             onClick={handleToggleUserMenu}
-            className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <div className="h-5 w-5 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[10px] font-semibold flex-shrink-0">
               {user?.email?.charAt(0).toUpperCase() ?? '?'}
@@ -299,7 +299,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
               </div>
               <button
                 onClick={handleLogoutClick}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 transition-colors text-red-600"
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 transition-colors text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Log out</span>
@@ -340,7 +340,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
         <div className="lg:hidden h-16 bg-white border-b border-neutral-200 flex items-center px-4">
           <button
             onClick={() => setShowMobileMenu(true)}
-            className="p-2 rounded-lg hover:bg-neutral-100 transition-colors"
+            className="p-2 rounded-lg hover:bg-neutral-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             aria-label="Open menu"
           >
             <Menu className="h-6 w-6 text-neutral-900" />

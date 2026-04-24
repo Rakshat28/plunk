@@ -80,13 +80,13 @@ export default function TemplatesPage() {
                 {data?.total ? `${data.total} total templates` : ''}
               </p>
             </div>
-            <Link href="/templates/create" className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto">
+            <Button asChild className="w-full sm:w-auto">
+              <Link href="/templates/create">
                 <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline">Create Template</span>
                 <span className="sm:hidden">Create</span>
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
 
           {/* Search & Filters */}
@@ -149,12 +149,12 @@ export default function TemplatesPage() {
                     description={search ? 'Try a different search term.' : 'Create reusable email designs for campaigns.'}
                     action={
                       !search ? (
-                        <Link href="/templates/create">
-                          <Button>
+                        <Button asChild>
+                          <Link href="/templates/create">
                             <Plus className="h-4 w-4" />
                             Create Template
-                          </Button>
-                        </Link>
+                          </Link>
+                        </Button>
                       ) : undefined
                     }
                   />
@@ -164,10 +164,11 @@ export default function TemplatesPage() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {data?.data.map(template => (
-                    <Card key={template.id} className="transition-colors hover:border-neutral-300 flex flex-col">
+                    <Card key={template.id} className="transition-colors hover:border-neutral-300 flex flex-col [&:has([data-card-link]:focus-visible)]:ring-2 [&:has([data-card-link]:focus-visible)]:ring-ring [&:has([data-card-link]:focus-visible)]:ring-offset-2">
                       <Link
                         href={`/templates/${template.id}`}
-                        className="flex-1 block p-6 pb-4 hover:bg-neutral-50/50 transition-colors rounded-t-xl"
+                        data-card-link=""
+                        className="flex-1 block p-6 pb-4 hover:bg-neutral-50/50 transition-colors rounded-t-xl focus-visible:outline-none"
                         aria-label={`Edit ${template.name}`}
                       >
                         <div className="flex items-start justify-between gap-3 mb-3">
@@ -186,17 +187,15 @@ export default function TemplatesPage() {
                           <Calendar className="h-3 w-3" />
                           <div className="group relative inline-block cursor-help">
                             <span>Updated {formatRelativeTime(template.updatedAt)}</span>
-                            <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                            <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-md bottom-full left-0 mb-1 whitespace-nowrap">
                               {dayjs(template.updatedAt).format('DD MMMM YYYY, hh:mm')}
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Link href={`/templates/${template.id}`} aria-label="Edit template">
-                            <Button variant="ghost" size="sm" title="Edit template">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </Link>
+                          <Button asChild variant="ghost" size="sm" title="Edit template">
+                            <Link href={`/templates/${template.id}`} aria-label="Edit template"><Edit className="h-4 w-4" /></Link>
+                          </Button>
                           <Button variant="ghost" size="sm" title="Duplicate template" onClick={() => handleDuplicate(template.id)}>
                             <Copy className="h-4 w-4" />
                           </Button>

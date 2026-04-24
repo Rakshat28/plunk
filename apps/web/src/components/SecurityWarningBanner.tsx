@@ -33,11 +33,9 @@ export function SecurityWarningBanner({status}: SecurityWarningBannerProps) {
               : 'Your bounce or complaint rates are approaching limits. Review your contact lists and remove invalid addresses to maintain good standing.'}
           </p>
         </div>
-        <Link href="/settings?tab=security">
-          <Button size="sm" variant="outline" className="w-full sm:w-auto flex-shrink-0">
-            View Details
-          </Button>
-        </Link>
+        <Button asChild size="sm" variant="outline" className="w-full sm:w-auto flex-shrink-0">
+          <Link href="/settings?tab=security">View Details</Link>
+        </Button>
       </AlertDescription>
     </Alert>
   );

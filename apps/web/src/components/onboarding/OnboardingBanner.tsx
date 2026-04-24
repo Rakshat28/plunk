@@ -196,7 +196,7 @@ export function OnboardingBanner() {
                 const Icon = step.icon;
                 const isCurrent = step.id === currentStepId;
                 const base =
-                  'group relative inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2';
+                  'group relative inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
                 const variant = step.done
                   ? 'border-green-200 bg-green-50 text-green-900 hover:border-green-300'
                   : isCurrent

@@ -427,7 +427,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
         </Button>
         {showColorPicker && (
           <div
-            className="absolute top-10 left-0 bg-white border border-neutral-200 rounded-lg shadow-lg p-3 z-50 max-h-96 overflow-y-auto"
+            className="absolute top-10 left-0 bg-white border border-neutral-200 rounded-lg shadow-md p-3 z-50 max-h-96 overflow-y-auto"
             style={{width: '280px'}}
           >
             {/* Custom color input */}
@@ -483,7 +483,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
                         >
                           {selectedColor === color && (
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="w-2 h-2 rounded-full bg-white shadow-lg" />
+                              <div className="w-2 h-2 rounded-full bg-white shadow-sm" />
                             </div>
                           )}
                         </button>
@@ -511,7 +511,7 @@ export function Toolbar({editor, onInsertVariable, onInsertImage, canUploadImage
           <Link className="h-4 w-4" />
         </Button>
         {showLinkInput && (
-          <div className="absolute top-10 right-0 bg-white border border-neutral-200 rounded-lg shadow-lg p-2 z-50 min-w-max">
+          <div className="absolute top-10 right-0 bg-white border border-neutral-200 rounded-lg shadow-md p-2 z-50 min-w-max">
             <div className="flex gap-2 mb-2">
               <input
                 type="url"

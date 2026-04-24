@@ -190,11 +190,9 @@ export default function VerifyEmail() {
                           </p>
                         )}
 
-                        <Link href="/auth/login">
-                          <Button variant="outline" className="w-full">
-                            Back to login
-                          </Button>
-                        </Link>
+                        <Button asChild variant="outline" className="w-full">
+                          <Link href="/auth/login">Back to login</Link>
+                        </Button>
                       </div>
                     </motion.div>
                   )}
@@ -273,11 +271,9 @@ export default function VerifyEmail() {
                           </p>
                         )}
 
-                        <Link href="/auth/login">
-                          <Button variant="outline" className="w-full">
-                            Back to login
-                          </Button>
-                        </Link>
+                        <Button asChild variant="outline" className="w-full">
+                          <Link href="/auth/login">Back to login</Link>
+                        </Button>
                       </div>
                     </motion.div>
                   )}

@@ -157,10 +157,11 @@ export default function WorkflowsPage() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {data?.data.map(workflow => (
-                    <Card key={workflow.id} className="transition-colors hover:border-neutral-300 flex flex-col">
+                    <Card key={workflow.id} className="transition-colors hover:border-neutral-300 flex flex-col [&:has([data-card-link]:focus-visible)]:ring-2 [&:has([data-card-link]:focus-visible)]:ring-ring [&:has([data-card-link]:focus-visible)]:ring-offset-2">
                       <Link
                         href={`/workflows/${workflow.id}`}
-                        className="flex-1 block p-6 pb-4 hover:bg-neutral-50/50 transition-colors rounded-t-xl"
+                        data-card-link=""
+                        className="flex-1 block p-6 pb-4 hover:bg-neutral-50/50 transition-colors rounded-t-xl focus-visible:outline-none"
                         aria-label={`Open ${workflow.name}`}
                       >
                         <div className="flex items-start justify-between gap-3 mb-3">
@@ -201,7 +202,7 @@ export default function WorkflowsPage() {
                           <Calendar className="h-3 w-3" />
                           <div className="group relative inline-block cursor-help">
                             <span>Updated {formatRelativeTime(workflow.updatedAt)}</span>
-                            <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                            <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-md bottom-full left-0 mb-1 whitespace-nowrap">
                               {dayjs(workflow.updatedAt).format('DD MMMM YYYY, hh:mm')}
                             </div>
                           </div>
@@ -215,11 +216,9 @@ export default function WorkflowsPage() {
                           >
                             {workflow.enabled ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
                           </Button>
-                          <Link href={`/workflows/${workflow.id}`} aria-label="Edit workflow">
-                            <Button variant="ghost" size="sm" title="Edit workflow">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </Link>
+                          <Button asChild variant="ghost" size="sm" title="Edit workflow">
+                            <Link href={`/workflows/${workflow.id}`} aria-label="Edit workflow"><Edit className="h-4 w-4" /></Link>
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -359,7 +358,7 @@ function CreateWorkflowDialog({open, onOpenChange, onSuccess}: CreateWorkflowDia
               value={description}
               onChange={e => setDescription(e.target.value)}
               placeholder="Send a series of welcome emails to new subscribers"
-              className="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               rows={3}
             />
           </div>
@@ -433,7 +432,7 @@ function CreateWorkflowDialog({open, onOpenChange, onSuccess}: CreateWorkflowDia
               type="checkbox"
               checked={allowReentry}
               onChange={e => setAllowReentry(e.target.checked)}
-              className="mt-0.5 h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300 rounded"
+              className="mt-0.5 h-4 w-4 text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border-neutral-300 rounded"
             />
             <div className="flex-1">
               <Label htmlFor="allowReentry" className="font-medium cursor-pointer">

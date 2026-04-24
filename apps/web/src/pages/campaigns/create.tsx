@@ -177,11 +177,9 @@ export default function CreateCampaignPage() {
         <div className="space-y-6">
           {/* Header */}
           <div className="flex items-center gap-3 sm:gap-4">
-            <Link href="/campaigns">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/campaigns"><ArrowLeft className="h-4 w-4" /></Link>
+            </Button>
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">Create Campaign</h1>
               <p className="text-neutral-500 mt-1 text-sm sm:text-base">
@@ -396,9 +394,9 @@ export default function CreateCampaignPage() {
 
               {/* Actions */}
               <div className="flex justify-end gap-3">
-                <Link href="/campaigns">
-                  <Button type="button" variant="outline">Cancel</Button>
-                </Link>
+                <Button asChild variant="outline">
+                  <Link href="/campaigns">Cancel</Link>
+                </Button>
                 <Button type="submit" disabled={saving}>
                   {saving ? 'Creating...' : 'Create Campaign'}
                 </Button>

@@ -62,7 +62,7 @@ export function ContactPicker({
             type="button"
             role="combobox"
             aria-expanded={open}
-            className="flex h-10 w-full items-center justify-between rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-500 hover:border-neutral-300 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-0 transition-colors"
+            className="flex h-10 w-full items-center justify-between rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-500 hover:border-neutral-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors"
           >
             <span>{placeholder}</span>
             <ChevronsUpDown className="h-4 w-4 opacity-40 shrink-0" />

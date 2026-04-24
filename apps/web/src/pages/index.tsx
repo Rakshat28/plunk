@@ -113,11 +113,9 @@ export default function Index() {
                     Please contact support to resolve this issue and get your project re-enabled.
                   </p>
                 </div>
-                <Link href="/settings?tab=security">
-                  <Button size="sm" variant="outline" className="w-full sm:w-auto flex-shrink-0">
-                    View Details
-                  </Button>
-                </Link>
+                <Button asChild size="sm" variant="outline" className="w-full sm:w-auto flex-shrink-0">
+                  <Link href="/settings?tab=security">View Details</Link>
+                </Button>
               </AlertDescription>
             </Alert>
           )}
@@ -167,11 +165,9 @@ export default function Index() {
                   <span className="text-sm">
                     Your emails currently include Plunk branding. Upgrade to a subscription to remove it.
                   </span>
-                  <Link href="/settings?tab=billing">
-                    <Button size="sm" className="w-full sm:w-auto">
-                      Upgrade Now
-                    </Button>
-                  </Link>
+                  <Button asChild size="sm" className="w-full sm:w-auto">
+                    <Link href="/settings?tab=billing">Upgrade Now</Link>
+                  </Button>
                 </AlertDescription>
               </Alert>
             )}

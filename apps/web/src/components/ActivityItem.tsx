@@ -353,7 +353,7 @@ export const ActivityItem = memo(function ActivityItem({activity, isUpcoming = f
     <div className={`flex items-start gap-4 ${isUpcoming ? 'opacity-80' : ''}`}>
       {/* Icon */}
       <div
-        className={`h-10 w-10 rounded-lg ${config.bgColor} flex items-center justify-center flex-shrink-0 ${isUpcoming ? 'ring-2 ring-offset-2 ring-neutral-300' : ''}`}
+        className={`h-10 w-10 rounded-lg ${config.bgColor} flex items-center justify-center flex-shrink-0 ${isUpcoming ? 'border-2 border-dashed border-neutral-300' : ''}`}
       >
         <Icon className={`h-5 w-5 ${config.color}`} />
       </div>
