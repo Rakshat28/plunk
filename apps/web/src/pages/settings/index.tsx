@@ -86,7 +86,7 @@ const buildTabs = (options: {billingEnabled: boolean; smtpEnabled: boolean}): Ta
 
 export default function Settings() {
   const router = useRouter();
-  const {activeProject, setActiveProject} = useActiveProject();
+  const {activeProject, setActiveProject, updateActiveProject} = useActiveProject();
   const {mutate: projectsMutate} = useProjects();
   const {data: config} = useConfig();
   const {data: user} = useUser();
@@ -201,8 +201,8 @@ export default function Settings() {
         values,
       );
 
-      // Update the active project in context
-      setActiveProject(updatedProject);
+      // Update the active project in context without invalidating the full SWR cache
+      updateActiveProject(updatedProject);
 
       // Refresh projects list
       await projectsMutate();
@@ -395,6 +395,7 @@ export default function Settings() {
 
             {/* General Tab */}
             <TabsContent value="general">
+              <div className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Project Settings</CardTitle>
@@ -491,12 +492,6 @@ export default function Settings() {
                         )}
                       />
 
-                      <div className="flex justify-end">
-                        <Button type="submit" disabled={form.formState.isSubmitting}>
-                          {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
-                        </Button>
-                      </div>
-
                       {/* Success/Error Messages */}
                       <AnimatePresence mode="wait">
                         {successMessage && (
@@ -520,13 +515,19 @@ export default function Settings() {
                           </motion.div>
                         )}
                       </AnimatePresence>
+
+                      <div className="flex justify-end">
+                        <Button type="submit" disabled={form.formState.isSubmitting}>
+                          {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
+                        </Button>
+                      </div>
                     </form>
                   </Form>
                 </CardContent>
               </Card>
 
               {/* API Keys - Separate Card */}
-              <Card className="mt-6">
+              <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
@@ -554,7 +555,7 @@ export default function Settings() {
               </Card>
 
               {/* Danger Zone - Separate Card */}
-              <Card className="border-red-200 mt-6">
+              <Card className="border-red-200">
                 <CardHeader className="border-b border-red-100 bg-red-50">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-white rounded-lg shadow-sm border border-red-200">
@@ -568,12 +569,12 @@ export default function Settings() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="pt-6 space-y-6">
-                  {/* Reset Project */}
-                  <div className="group">
-                    <div className="flex items-start justify-between gap-4 p-5 rounded-lg border border-neutral-200 bg-white transition-all">
+                <CardContent className="p-0">
+                  <div className="divide-y divide-neutral-100">
+                    {/* Reset Project */}
+                    <div className="flex items-start justify-between gap-4 px-6 py-5">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-2 mb-1.5">
                           <Database className="h-4 w-4 text-amber-700" />
                           <h4 className="font-semibold text-neutral-900">Reset Project Data</h4>
                         </div>
@@ -590,13 +591,11 @@ export default function Settings() {
                         Reset Data
                       </Button>
                     </div>
-                  </div>
 
-                  {/* Delete Project */}
-                  <div className="group">
-                    <div className="flex items-start justify-between gap-4 p-5 rounded-lg border-2 border-red-200 bg-red-50/50 transition-all">
+                    {/* Delete Project */}
+                    <div className="flex items-start justify-between gap-4 px-6 py-5 bg-red-50/40">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-2 mb-1.5">
                           <AlertTriangle className="h-4 w-4 text-red-600" />
                           <h4 className="font-semibold text-red-900">Delete Project Permanently</h4>
                         </div>
@@ -624,6 +623,7 @@ export default function Settings() {
                   </div>
                 </CardContent>
               </Card>
+              </div>
             </TabsContent>
 
             {/* Billing Tab */}

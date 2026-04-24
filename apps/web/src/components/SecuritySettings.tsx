@@ -107,17 +107,19 @@ export function SecuritySettings({metrics, isLoading}: SecuritySettingsProps) {
           <CardTitle>Bounce Rate</CardTitle>
           <CardDescription>Hard bounces indicate invalid or non-existent email addresses</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <HealthMetric
-            label="Last 7 Days"
-            level={levels.bounce7Day}
-            detail={`${status.sevenDay.bounceRate.toFixed(2)}% bounce rate (${status.sevenDay.bounces.toLocaleString()} of ${status.sevenDay.total.toLocaleString()} emails)`}
-          />
-          <HealthMetric
-            label="All Time"
-            level={levels.bounceAllTime}
-            detail={`${status.allTime.bounceRate.toFixed(2)}% bounce rate (${status.allTime.bounces.toLocaleString()} of ${status.allTime.total.toLocaleString()} emails)`}
-          />
+        <CardContent className="p-0">
+          <div className="divide-y divide-neutral-100">
+            <HealthMetric
+              label="Last 7 Days"
+              level={levels.bounce7Day}
+              detail={`${status.sevenDay.bounceRate.toFixed(2)}% bounce rate (${status.sevenDay.bounces.toLocaleString()} of ${status.sevenDay.total.toLocaleString()} emails)`}
+            />
+            <HealthMetric
+              label="All Time"
+              level={levels.bounceAllTime}
+              detail={`${status.allTime.bounceRate.toFixed(2)}% bounce rate (${status.allTime.bounces.toLocaleString()} of ${status.allTime.total.toLocaleString()} emails)`}
+            />
+          </div>
         </CardContent>
       </Card>
 
@@ -127,17 +129,19 @@ export function SecuritySettings({metrics, isLoading}: SecuritySettingsProps) {
           <CardTitle>Complaint Rate</CardTitle>
           <CardDescription>Complaints occur when recipients mark emails as spam</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <HealthMetric
-            label="Last 7 Days"
-            level={levels.complaint7Day}
-            detail={`${status.sevenDay.complaintRate.toFixed(3)}% complaint rate (${status.sevenDay.complaints.toLocaleString()} of ${status.sevenDay.total.toLocaleString()} emails)`}
-          />
-          <HealthMetric
-            label="All Time"
-            level={levels.complaintAllTime}
-            detail={`${status.allTime.complaintRate.toFixed(3)}% complaint rate (${status.allTime.complaints.toLocaleString()} of ${status.allTime.total.toLocaleString()} emails)`}
-          />
+        <CardContent className="p-0">
+          <div className="divide-y divide-neutral-100">
+            <HealthMetric
+              label="Last 7 Days"
+              level={levels.complaint7Day}
+              detail={`${status.sevenDay.complaintRate.toFixed(3)}% complaint rate (${status.sevenDay.complaints.toLocaleString()} of ${status.sevenDay.total.toLocaleString()} emails)`}
+            />
+            <HealthMetric
+              label="All Time"
+              level={levels.complaintAllTime}
+              detail={`${status.allTime.complaintRate.toFixed(3)}% complaint rate (${status.allTime.complaints.toLocaleString()} of ${status.allTime.total.toLocaleString()} emails)`}
+            />
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -155,10 +159,10 @@ function HealthMetric({label, level, detail}: HealthMetricProps) {
   const Icon = config.icon;
 
   return (
-    <div className="flex items-center justify-between border border-neutral-200 rounded-lg p-4">
+    <div className="flex items-center justify-between px-6 py-4">
       <div>
         <h3 className="font-medium text-neutral-900">{label}</h3>
-        <p className="text-sm text-neutral-600 mt-1">{detail}</p>
+        <p className="text-sm text-neutral-600 mt-0.5">{detail}</p>
       </div>
       <div className={`flex items-center gap-2 ${config.color}`}>
         <Icon className="h-4 w-4" />
