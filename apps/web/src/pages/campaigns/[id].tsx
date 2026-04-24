@@ -59,6 +59,7 @@ import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
+import {NextSeo} from 'next-seo';
 import {useActiveProject} from '../../lib/contexts/ActiveProjectProvider';
 
 interface CampaignStats {
@@ -338,6 +339,7 @@ export default function CampaignDetailsPage() {
   if (isEditMode) {
     return (
       <DashboardLayout>
+        <NextSeo title={campaign.data.name} />
         <form onSubmit={handleSave} className={`space-y-6 ${hasChanges ? 'pb-32' : ''}`}>
           {/* Header */}
           <div className="space-y-4">
@@ -842,6 +844,7 @@ export default function CampaignDetailsPage() {
   // Render stats view for sent/scheduled campaigns
   return (
     <DashboardLayout>
+      <NextSeo title={campaign.data.name} />
       <div className="space-y-6">
         {/* Header */}
         <div className="space-y-4">

@@ -19,6 +19,7 @@ import {network} from '../../lib/network';
 import {useChangeTracking} from '../../lib/hooks/useChangeTracking';
 import {ArrowLeft, Save, Trash2, TriangleAlert} from 'lucide-react';
 import Link from 'next/link';
+import {NextSeo} from 'next-seo';
 import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
 import {toast} from 'sonner';
@@ -126,6 +127,7 @@ export default function TemplateEditorPage() {
 
   return (
     <DashboardLayout>
+      <NextSeo title={template.name} />
       <form onSubmit={handleSave} className={`max-w-5xl mx-auto space-y-6 ${hasChanges ? 'pb-32' : ''}`}>
         {/* Header */}
         <div className="space-y-4">

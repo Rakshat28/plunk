@@ -159,9 +159,17 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
   ) => (
     <>
       {/* Logo */}
-      <div className="h-16 flex items-center gap-2 px-6 border-b border-neutral-200">
-        <Image src="/assets/logo.png" alt="Plunk" width={28} height={28} className="rounded" />
-        <h1 className="text-xl font-bold text-neutral-900">Plunk</h1>
+      <div className="h-16 flex items-center justify-between px-6 border-b border-neutral-200">
+        <div className="flex items-center gap-2">
+          <Image src="/assets/logo.png" alt="Plunk" width={28} height={28} className="rounded" />
+          <h1 className="text-xl font-bold text-neutral-900">Plunk</h1>
+        </div>
+        <button
+          onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', {key: 'k', metaKey: true, bubbles: true}))}
+          className="hidden lg:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-neutral-400 bg-neutral-100 border border-neutral-200 rounded hover:bg-neutral-200 hover:text-neutral-600 transition-colors cursor-pointer"
+        >
+          <span>⌘</span><span>K</span>
+        </button>
       </div>
 
       {/* Project Switcher */}

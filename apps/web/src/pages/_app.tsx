@@ -8,9 +8,11 @@ import {DefaultSeo} from 'next-seo';
 import {NuqsAdapter} from 'nuqs/adapters/next/pages';
 import {Loader} from '@plunk/ui';
 import {ActiveProjectProvider} from '../lib/contexts/ActiveProjectProvider';
+import {CommandPalette} from '../components/CommandPalette';
 import {useProjects} from '../lib/hooks/useProject';
 import {useUser} from '../lib/hooks/useUser';
 import {network} from '../lib/network';
+import {addRecentPage, getFallbackLabel} from '../lib/recentPages';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
@@ -135,6 +137,31 @@ function Root(props: AppProps) {
     route => router.pathname === route || router.pathname.startsWith(`${route}/`),
   );
 
+  useEffect(() => {
+    const handleRouteChange = () => {
+      const pathname = window.location.pathname;
+
+      // Pass 1: record immediately with a route-pattern label so detail pages
+      // are always captured even before their data loads.
+      const fallback = getFallbackLabel(pathname);
+      if (fallback) {
+        addRecentPage({label: fallback, href: pathname});
+      }
+
+      // Pass 2: after data loads, replace the label with the page's own title
+      // (e.g. contact email set by NextSeo after the API response arrives).
+      setTimeout(() => {
+        const titleLabel = document.title.split(' | ')[0]?.trim();
+        if (titleLabel && titleLabel !== 'Plunk' && titleLabel !== fallback) {
+          addRecentPage({label: titleLabel, href: pathname});
+        }
+      }, 800);
+    };
+
+    router.events.on('routeChangeComplete', handleRouteChange);
+    return () => router.events.off('routeChangeComplete', handleRouteChange);
+  }, [router.events]);
+
   return (
     <>
       <Toaster position={'top-right'} />
@@ -145,6 +172,7 @@ function Root(props: AppProps) {
             <App {...props} />
           ) : (
             <ProjectGuard>
+              <CommandPalette />
               <App {...props} />
             </ProjectGuard>
           )}

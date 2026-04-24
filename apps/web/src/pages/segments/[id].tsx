@@ -22,6 +22,7 @@ import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
+import {NextSeo} from 'next-seo';
 import type {FilterCondition} from '@plunk/types';
 import {SegmentSchemas} from '@plunk/shared';
 import {SegmentFilterBuilder} from '../../components/SegmentFilterBuilder';
@@ -210,6 +211,7 @@ export default function SegmentDetailPage() {
 
   return (
     <DashboardLayout>
+      <NextSeo title={segment.name} />
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

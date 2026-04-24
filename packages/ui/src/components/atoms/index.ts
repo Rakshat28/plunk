@@ -10,6 +10,7 @@ export * from './Dialog';
 export * from './DropdownMenu';
 export * from './Form';
 export * from './IconSpinner';
+export * from './Kbd';
 export * from './Input';
 export * from './Label';
 export * from './Loader';

@@ -62,6 +62,7 @@ import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
+import {NextSeo} from 'next-seo';
 import {WorkflowBuilder} from '../../components/WorkflowBuilder';
 import {KeyValueEditor} from '../../components/KeyValueEditor';
 import {TemplateSearchPicker} from '../../components/TemplateSearchPicker';
@@ -440,6 +441,7 @@ export default function WorkflowEditorPage() {
 
   return (
     <DashboardLayout>
+      <NextSeo title={workflow.name} />
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3 sm:gap-4">
