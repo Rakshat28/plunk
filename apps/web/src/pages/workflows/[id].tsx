@@ -441,60 +441,61 @@ export default function WorkflowEditorPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <Link href="/workflows">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 truncate">{workflow.name}</h1>
-                <span
-                  className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${
-                    workflow.enabled ? 'bg-green-100 text-green-800' : 'bg-neutral-100 text-neutral-800'
-                  }`}
-                >
-                  {workflow.enabled ? (
-                    <>
-                      <Power className="h-3 w-3 sm:mr-1" />
-                      <span className="hidden sm:inline">Active</span>
-                    </>
-                  ) : (
-                    <>
-                      <PowerOff className="h-3 w-3 sm:mr-1" />
-                      <span className="hidden sm:inline">Disabled</span>
-                    </>
-                  )}
-                </span>
-              </div>
-              {workflow.description && (
-                <p className="text-neutral-500 mt-1 text-sm sm:text-base">{workflow.description}</p>
-              )}
+        <div className="flex items-center gap-3 sm:gap-4">
+          <Link href="/workflows">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 truncate">{workflow.name}</h1>
+              <span
+                className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${
+                  workflow.enabled ? 'bg-green-100 text-green-800' : 'bg-neutral-100 text-neutral-800'
+                }`}
+              >
+                {workflow.enabled ? (
+                  <>
+                    <Power className="h-3 w-3 sm:mr-1" />
+                    <span className="hidden sm:inline">Active</span>
+                  </>
+                ) : (
+                  <>
+                    <PowerOff className="h-3 w-3 sm:mr-1" />
+                    <span className="hidden sm:inline">Disabled</span>
+                  </>
+                )}
+              </span>
             </div>
+            {workflow.description && (
+              <p className="text-neutral-500 mt-1 text-sm sm:text-base">{workflow.description}</p>
+            )}
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" onClick={() => setShowSettingsDialog(true)} className="flex-1 sm:flex-none">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <Button variant="ghost" size="icon" onClick={() => setShowSettingsDialog(true)} aria-label="Settings">
               <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Settings</span>
             </Button>
-            <Button variant="destructive" onClick={() => setShowDeleteDialog(true)} className="flex-1 sm:flex-none">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowDeleteDialog(true)}
+              aria-label="Delete workflow"
+              className="text-neutral-400 hover:text-red-600 hover:bg-red-50"
+            >
               <Trash2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Delete</span>
             </Button>
-            <Button onClick={handleToggleEnabled} className="flex-1 sm:flex-none">
+            <div className="h-5 w-px bg-neutral-200 mx-1" />
+            <Button variant={workflow.enabled ? 'outline' : 'default'} onClick={handleToggleEnabled}>
               {workflow.enabled ? (
                 <>
                   <PowerOff className="h-4 w-4" />
-                  <span className="hidden sm:inline">Disable</span>
-                  <span className="sm:hidden">Off</span>
+                  Disable
                 </>
               ) : (
                 <>
                   <Power className="h-4 w-4" />
-                  <span className="hidden sm:inline">Enable</span>
-                  <span className="sm:hidden">On</span>
+                  Enable
                 </>
               )}
             </Button>
@@ -528,7 +529,7 @@ export default function WorkflowEditorPage() {
           </Alert>
         )}
 
-        {/* Validation Warning Banner */}
+        {/* Validation Warning Banner / Ready-to-enable Banner */}
         {!workflow.enabled &&
           (() => {
             const validation = validateWorkflow(workflow);
@@ -544,6 +545,21 @@ export default function WorkflowEditorPage() {
                         <li key={i}>{error}</li>
                       ))}
                     </ul>
+                  </AlertDescription>
+                </Alert>
+              );
+            }
+            if (workflow.steps.length > 0) {
+              return (
+                <Alert>
+                  <Power className="h-4 w-4" />
+                  <AlertTitle>Workflow is disabled</AlertTitle>
+                  <AlertDescription className="flex items-center justify-between gap-4">
+                    <span>Contacts won&apos;t be processed until this workflow is enabled.</span>
+                    <Button size="sm" onClick={handleToggleEnabled} className="shrink-0">
+                      <Power className="h-3.5 w-3.5" />
+                      Enable
+                    </Button>
                   </AlertDescription>
                 </Alert>
               );
