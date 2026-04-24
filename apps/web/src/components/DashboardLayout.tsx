@@ -180,7 +180,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
             className="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg hover:bg-neutral-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <div className="h-8 w-8 rounded-lg bg-neutral-900 text-white flex items-center justify-center text-xs font-medium flex-shrink-0">
+              <div className="h-8 w-8 rounded-lg bg-neutral-100 text-neutral-700 flex items-center justify-center text-xs font-medium flex-shrink-0">
                 {activeProject?.name.charAt(0).toUpperCase() || 'P'}
               </div>
               <span className="font-medium text-neutral-900 truncate">{activeProject?.name || 'Select project'}</span>
@@ -204,7 +204,7 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
                   }}
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
-                  <div className="h-6 w-6 rounded-md bg-neutral-900 text-white flex items-center justify-center text-xs font-medium flex-shrink-0">
+                  <div className="h-6 w-6 rounded-md bg-neutral-100 text-neutral-700 flex items-center justify-center text-xs font-medium flex-shrink-0">
                     {project.name.charAt(0).toUpperCase()}
                   </div>
                   <span className="text-neutral-900 text-left flex-1">{project.name}</span>
