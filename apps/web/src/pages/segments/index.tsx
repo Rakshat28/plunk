@@ -1,14 +1,13 @@
 import {
   Alert,
   AlertDescription,
+  Badge,
   Button,
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
   ConfirmDialog,
   IconSpinner,
+  Input,
 } from '@plunk/ui';
 import type {Segment} from '@plunk/db';
 import type {FilterCondition} from '@plunk/types';
@@ -16,10 +15,10 @@ import {DashboardLayout} from '../../components/DashboardLayout';
 import {EmptyState} from '../../components/EmptyState';
 import {network} from '../../lib/network';
 import {formatRelativeTime} from '../../lib/dateUtils';
-import {AlertTriangle, Calendar, Edit, Filter, Plus, Trash2, Users} from 'lucide-react';
+import {AlertTriangle, Calendar, Edit, Filter, Plus, Search, Trash2, X} from 'lucide-react';
 import {NextSeo} from 'next-seo';
 import Link from 'next/link';
-import {useState} from 'react';
+import {useMemo, useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
 import dayjs from 'dayjs';
@@ -53,9 +52,16 @@ export default function SegmentsPage() {
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [segmentToDelete, setSegmentToDelete] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState('');
 
   // Show warning if there are many segments
   const showLimitWarning = segments && segments.length >= 50;
+
+  const filteredSegments = useMemo(() => {
+    if (!segments || !searchInput.trim()) return segments;
+    const q = searchInput.toLowerCase();
+    return segments.filter(s => s.name.toLowerCase().includes(q) || s.description?.toLowerCase().includes(q));
+  }, [segments, searchInput]);
 
   const handleDelete = async () => {
     if (!segmentToDelete) return;
@@ -93,6 +99,28 @@ export default function SegmentsPage() {
             </Link>
           </div>
 
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+            <Input
+              type="text"
+              placeholder="Search segments..."
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchInput && (
+              <button
+                type="button"
+                aria-label="Clear search"
+                onClick={() => setSearchInput('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
           {/* Warning if too many segments */}
           {showLimitWarning && (
             <Alert variant="default">
@@ -108,115 +136,92 @@ export default function SegmentsPage() {
             <div className="flex items-center justify-center py-12">
               <IconSpinner />
             </div>
-          ) : segments?.length === 0 ? (
+          ) : filteredSegments?.length === 0 ? (
             <Card>
               <CardContent>
                 <EmptyState
                   icon={Filter}
-                  title="No segments yet"
-                  description="Group contacts by attributes to target specific audiences."
+                  title={searchInput ? 'No segments match' : 'No segments yet'}
+                  description={searchInput ? 'Try a different search term.' : 'Group contacts by attributes to target specific audiences.'}
                   action={
-                    <Link href="/segments/new">
-                      <Button>
-                        <Plus className="h-4 w-4" />
-                        Create Segment
-                      </Button>
-                    </Link>
+                    !searchInput ? (
+                      <Link href="/segments/new">
+                        <Button>
+                          <Plus className="h-4 w-4" />
+                          Create Segment
+                        </Button>
+                      </Link>
+                    ) : undefined
                   }
                 />
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {segments?.map(segment => (
-                <Card key={segment.id}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <CardTitle className="text-lg">{segment.name}</CardTitle>
-                          <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                              (segment as unknown as {type: string}).type === 'STATIC'
-                                ? 'bg-purple-100 text-purple-700'
-                                : 'bg-blue-100 text-blue-700'
-                            }`}
-                          >
-                            {(segment as unknown as {type: string}).type === 'STATIC' ? 'Static' : 'Dynamic'}
-                          </span>
-                        </div>
-                        {segment.description && (
-                          <CardDescription className="mt-1">{segment.description}</CardDescription>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredSegments?.map(segment => {
+                const isDynamic = (segment as unknown as {type: string}).type !== 'STATIC';
+                const filterCount = isDynamic ? countFiltersInCondition(segment.condition) : 0;
+                return (
+                  <Card key={segment.id} className="transition-colors hover:border-neutral-300 flex flex-col">
+                    <Link
+                      href={`/segments/${segment.id}`}
+                      className="flex-1 block p-6 pb-4 hover:bg-neutral-50/50 transition-colors rounded-t-xl"
+                      aria-label={`Open ${segment.name}`}
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <h3 className="font-semibold text-neutral-900 leading-snug">{segment.name}</h3>
+                        <Badge variant={isDynamic ? 'info' : 'default'} className="shrink-0 mt-0.5">
+                          {isDynamic ? 'Dynamic' : 'Static'}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm">
+                        <span>
+                          <strong className="font-semibold text-neutral-900">{segment.memberCount.toLocaleString()}</strong>
+                          <span className="text-neutral-400 ml-1 text-xs">members</span>
+                        </span>
+                        {isDynamic && (
+                          <>
+                            <span className="h-3 w-px bg-neutral-200" />
+                            <span>
+                              <strong className="font-semibold text-neutral-900">{filterCount}</strong>
+                              <span className="text-neutral-400 ml-1 text-xs">filters</span>
+                            </span>
+                          </>
                         )}
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {/* Stats */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4 text-neutral-500" />
-                          <span className="text-sm text-neutral-600">Members</span>
-                        </div>
-                        <span className="text-lg font-semibold text-neutral-900">{segment.memberCount}</span>
-                      </div>
-
-                      {(segment as unknown as {type: string}).type !== 'STATIC' && (
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Filter className="h-4 w-4 text-neutral-500" />
-                            <span className="text-sm text-neutral-600">Filters</span>
-                          </div>
-                          <span className="text-sm font-medium text-neutral-900">
-                            {countFiltersInCondition(segment.condition)}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-2 pt-2 border-t border-neutral-200">
-                        <Link href={`/segments/${segment.id}`} className="flex-1">
-                          <Button variant="outline" size="sm" className="w-full">
-                            <Edit className="h-4 w-4" />
-                            Edit
-                          </Button>
-                        </Link>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setSegmentToDelete(segment.id);
-                            setShowDeleteDialog(true);
-                          }}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      {/* Metadata */}
-                      <div className="flex items-center gap-4 text-xs text-neutral-500 pt-3 border-t border-neutral-100">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="h-3 w-3" />
-                          <div className="group relative inline-block cursor-help">
-                            <span>Created {formatRelativeTime(segment.createdAt)}</span>
-                            <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
-                              {dayjs(segment.createdAt).format('DD MMMM YYYY, hh:mm')}
-                            </div>
-                          </div>
-                        </div>
+                    </Link>
+                    <div className="px-6 py-3 border-t border-neutral-100 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs text-neutral-400">
+                        <Calendar className="h-3 w-3" />
                         <div className="group relative inline-block cursor-help">
-                          <span>• Updated {formatRelativeTime(segment.updatedAt)}</span>
+                          <span>Updated {formatRelativeTime(segment.updatedAt)}</span>
                           <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
                             {dayjs(segment.updatedAt).format('DD MMMM YYYY, hh:mm')}
                           </div>
                         </div>
                       </div>
+                      <div className="flex items-center gap-1">
+                        <Link href={`/segments/${segment.id}`} aria-label="Edit segment">
+                          <Button variant="ghost" size="sm" title="Edit segment">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title="Delete segment"
+                          onClick={() => {
+                            setSegmentToDelete(segment.id);
+                            setShowDeleteDialog(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>

@@ -3,9 +3,6 @@ import {
   Button,
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
   ConfirmDialog,
   DropdownMenu,
   DropdownMenuContent,
@@ -26,20 +23,7 @@ import {TemplateSelectionDialog} from '../../components/TemplateSelectionDialog'
 import {CampaignSelectionDialog} from '../../components/CampaignSelectionDialog';
 import {network} from '../../lib/network';
 import {formatRelativeTime} from '../../lib/dateUtils';
-import {
-  AlertCircle,
-  Calendar,
-  ChevronDown,
-  Copy,
-  FileText,
-  Info,
-  Mail,
-  MousePointerClick,
-  Plus,
-  RefreshCw,
-  Trash2,
-  Users,
-} from 'lucide-react';
+import {Ban, Calendar, ChevronDown, Copy, Edit, FileText, Mail, Plus, RefreshCw, Trash2} from 'lucide-react';
 import {NextSeo} from 'next-seo';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
@@ -65,23 +49,15 @@ export default function CampaignsPage() {
   );
 
   const getStatusBadge = (status: CampaignStatus) => {
-    const variants: Record<
-      CampaignStatus,
-      {variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string; className?: string}
-    > = {
-      DRAFT: {variant: 'secondary', label: 'Draft', className: 'bg-neutral-100 text-neutral-700'},
-      SCHEDULED: {variant: 'default', label: 'Scheduled', className: 'bg-blue-100 text-blue-700'},
-      SENDING: {variant: 'default', label: 'Sending', className: 'bg-purple-100 text-purple-700'},
-      SENT: {variant: 'default', label: 'Sent', className: 'bg-green-100 text-green-700'},
-      CANCELLED: {variant: 'destructive', label: 'Cancelled', className: 'bg-red-100 text-red-700'},
+    const config: Record<CampaignStatus, {label: string; className: string}> = {
+      DRAFT:     {label: 'Draft',     className: 'bg-neutral-100 text-neutral-600 border-transparent'},
+      SCHEDULED: {label: 'Scheduled', className: 'bg-blue-100 text-blue-700 border-transparent'},
+      SENDING:   {label: 'Sending',   className: 'bg-purple-100 text-purple-700 border-transparent'},
+      SENT:      {label: 'Sent',      className: 'bg-green-100 text-green-700 border-transparent'},
+      CANCELLED: {label: 'Cancelled', className: 'bg-red-100 text-red-700 border-transparent'},
     };
-
-    const config = variants[status];
-    return (
-      <Badge variant={config.variant} className={config.className}>
-        {config.label}
-      </Badge>
-    );
+    const {label, className} = config[status];
+    return <Badge className={`${className} shrink-0`}>{label}</Badge>;
   };
 
   const handleCancel = async () => {
@@ -270,27 +246,21 @@ export default function CampaignsPage() {
           </div>
 
           {/* Filters */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Statuses" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ALL">All Statuses</SelectItem>
-                      <SelectItem value="DRAFT">Draft</SelectItem>
-                      <SelectItem value="SCHEDULED">Scheduled</SelectItem>
-                      <SelectItem value="SENDING">Sending</SelectItem>
-                      <SelectItem value="SENT">Sent</SelectItem>
-                      <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="w-56">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Statuses</SelectItem>
+                <SelectItem value="DRAFT">Draft</SelectItem>
+                <SelectItem value="SCHEDULED">Scheduled</SelectItem>
+                <SelectItem value="SENDING">Sending</SelectItem>
+                <SelectItem value="SENT">Sent</SelectItem>
+                <SelectItem value="CANCELLED">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Campaigns List */}
           <div className="space-y-4">
@@ -374,152 +344,113 @@ export default function CampaignsPage() {
             {data?.data.map(campaign => {
               const openRate = campaign.sentCount > 0 ? (campaign.openedCount / campaign.sentCount) * 100 : 0;
               const clickRate = campaign.sentCount > 0 ? (campaign.clickedCount / campaign.sentCount) * 100 : 0;
-              const deliveryProgress =
-                campaign.totalRecipients > 0 ? (campaign.sentCount / campaign.totalRecipients) * 100 : 0;
+              const deliveryPct = campaign.totalRecipients > 0 ? (campaign.sentCount / campaign.totalRecipients) * 100 : 0;
 
               return (
-                <Card key={campaign.id} className="transition-colors hover:border-neutral-300">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-2">
-                          <Link
-                            href={`/campaigns/${campaign.id}`}
-                            className="hover:text-primary transition-colors flex-1 min-w-0"
-                          >
-                            <CardTitle className="text-xl truncate">{campaign.name}</CardTitle>
-                          </Link>
-                          {getStatusBadge(campaign.status)}
-                        </div>
-                        {campaign.description && (
-                          <CardDescription className="line-clamp-2">{campaign.description}</CardDescription>
-                        )}
-                      </div>
+                <Card key={campaign.id} className="transition-colors hover:border-neutral-300 flex flex-col">
+                  <Link
+                    href={`/campaigns/${campaign.id}`}
+                    className="flex-1 block p-6 pb-4 hover:bg-neutral-50/50 transition-colors rounded-t-xl"
+                    aria-label={`Open ${campaign.name}`}
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <h3 className="font-semibold text-neutral-900 leading-snug truncate">{campaign.name}</h3>
+                      {getStatusBadge(campaign.status)}
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {/* Recipients */}
-                      <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Users className="h-3.5 w-3.5 text-blue-600" />
-                          <span className="text-xs font-medium text-blue-900">Recipients</span>
-                          {(campaign.status === 'DRAFT' || campaign.status === 'SCHEDULED') && (
-                            <div className="group relative">
-                              <Info className="h-3 w-3 text-blue-600 cursor-help" />
-                              <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-1/2 transform -translate-x-1/2 mb-1">
-                                This count will be recalculated before sending
-                              </div>
-                            </div>
+
+                    <div className="flex items-center gap-3 text-sm flex-wrap">
+                      {campaign.status === 'DRAFT' && (
+                        <>
+                          <span>
+                            <strong className="font-semibold text-neutral-900">{campaign.totalRecipients.toLocaleString()}</strong>
+                            <span className="text-neutral-400 ml-1 text-xs">estimated recipients</span>
+                          </span>
+                        </>
+                      )}
+                      {campaign.status === 'SCHEDULED' && (
+                        <>
+                          <span>
+                            <strong className="font-semibold text-neutral-900">{campaign.totalRecipients.toLocaleString()}</strong>
+                            <span className="text-neutral-400 ml-1 text-xs">recipients</span>
+                          </span>
+                          {campaign.scheduledFor && (
+                            <>
+                              <span className="h-3 w-px bg-neutral-200" />
+                              <span className="text-xs text-neutral-500">
+                                Sending {dayjs(campaign.scheduledFor).format('MMM D, YYYY [at] h:mm A')}
+                              </span>
+                            </>
                           )}
-                        </div>
-                        <p className="text-lg font-bold text-blue-900">{campaign.totalRecipients.toLocaleString()}</p>
-                        {campaign.totalRecipients > 0 && campaign.status !== 'DRAFT' && (
-                          <p className="text-xs text-blue-700 mt-1">{deliveryProgress.toFixed(0)}% sent</p>
-                        )}
-                        {campaign.status === 'DRAFT' && <p className="text-xs text-blue-600 mt-1">Estimated</p>}
-                      </div>
-
-                      {/* Open Rate */}
-                      {campaign.sentCount > 0 && (
-                        <div className="bg-purple-50 border border-purple-100 rounded-lg p-3">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Mail className="h-3.5 w-3.5 text-purple-600" />
-                            <span className="text-xs font-medium text-purple-900">Opens</span>
-                          </div>
-                          <p className="text-lg font-bold text-purple-900">{openRate.toFixed(1)}%</p>
-                          <p className="text-xs text-purple-700 mt-1">{campaign.openedCount.toLocaleString()} opened</p>
-                        </div>
+                        </>
                       )}
-
-                      {/* Click Rate */}
-                      {campaign.clickedCount > 0 && (
-                        <div className="bg-orange-50 border border-orange-100 rounded-lg p-3">
-                          <div className="flex items-center gap-2 mb-1">
-                            <MousePointerClick className="h-3.5 w-3.5 text-orange-600" />
-                            <span className="text-xs font-medium text-orange-900">Clicks</span>
-                          </div>
-                          <p className="text-lg font-bold text-orange-900">{clickRate.toFixed(1)}%</p>
-                          <p className="text-xs text-orange-700 mt-1">
-                            {campaign.clickedCount.toLocaleString()} clicked
-                          </p>
-                        </div>
+                      {campaign.status === 'SENDING' && (
+                        <>
+                          <span>
+                            <strong className="font-semibold text-neutral-900">{deliveryPct.toFixed(0)}%</strong>
+                            <span className="text-neutral-400 ml-1 text-xs">delivered</span>
+                          </span>
+                          <span className="h-3 w-px bg-neutral-200" />
+                          <span>
+                            <strong className="font-semibold text-neutral-900">{openRate.toFixed(1)}%</strong>
+                            <span className="text-neutral-400 ml-1 text-xs">opens</span>
+                          </span>
+                        </>
                       )}
-
-                      {/* Bounced Rate */}
-                      {campaign.bouncedCount > 0 && campaign.sentCount > 0 && (
-                        <div className="bg-red-50 border border-red-100 rounded-lg p-3">
-                          <div className="flex items-center gap-2 mb-1">
-                            <AlertCircle className="h-3.5 w-3.5 text-red-600" />
-                            <span className="text-xs font-medium text-red-900">Bounced</span>
-                          </div>
-                          <p className="text-lg font-bold text-red-900">
-                            {((campaign.bouncedCount / campaign.sentCount) * 100).toFixed(1)}%
-                          </p>
-                          <p className="text-xs text-red-700 mt-1">{campaign.bouncedCount.toLocaleString()} bounced</p>
-                        </div>
+                      {campaign.status === 'SENT' && (
+                        <>
+                          <span>
+                            <strong className="font-semibold text-neutral-900">{campaign.sentCount.toLocaleString()}</strong>
+                            <span className="text-neutral-400 ml-1 text-xs">sent</span>
+                          </span>
+                          <span className="h-3 w-px bg-neutral-200" />
+                          <span>
+                            <strong className="font-semibold text-neutral-900">{openRate.toFixed(1)}%</strong>
+                            <span className="text-neutral-400 ml-1 text-xs">opens</span>
+                          </span>
+                          {clickRate > 0 && (
+                            <>
+                              <span className="h-3 w-px bg-neutral-200" />
+                              <span>
+                                <strong className="font-semibold text-neutral-900">{clickRate.toFixed(1)}%</strong>
+                                <span className="text-neutral-400 ml-1 text-xs">clicks</span>
+                              </span>
+                            </>
+                          )}
+                        </>
                       )}
-
-                      {/* Scheduled For */}
-                      {campaign.scheduledFor && (
-                        <div className="bg-green-50 border border-green-100 rounded-lg p-3 md:col-span-2">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Calendar className="h-3.5 w-3.5 text-green-600" />
-                            <span className="text-xs font-medium text-green-900">Scheduled</span>
-                          </div>
-                          <p className="text-sm font-semibold text-green-900">
-                            {new Date(campaign.scheduledFor).toLocaleDateString(undefined, {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })}
-                          </p>
-                          <p className="text-xs text-green-700 mt-1">
-                            {new Date(campaign.scheduledFor).toLocaleTimeString(undefined, {
-                              hour: 'numeric',
-                              minute: '2-digit',
-                            })}
-                          </p>
-                        </div>
+                      {campaign.status === 'CANCELLED' && (
+                        <span>
+                          <strong className="font-semibold text-neutral-900">{campaign.totalRecipients.toLocaleString()}</strong>
+                          <span className="text-neutral-400 ml-1 text-xs">recipients</span>
+                        </span>
                       )}
                     </div>
+                  </Link>
 
-                    {/* Metadata */}
-                    <div className="flex items-center gap-4 text-xs text-neutral-500 pt-3 border-t border-neutral-100">
-                      <div className="flex items-center gap-1.5">
-                        <Calendar className="h-3 w-3" />
-                        <div className="group relative inline-block cursor-help">
-                          <span>Created {formatRelativeTime(campaign.createdAt)}</span>
-                          <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
-                            {dayjs(campaign.createdAt).format('DD MMMM YYYY, hh:mm')}
-                          </div>
-                        </div>
-                      </div>
+                  <div className="px-6 py-3 border-t border-neutral-100 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs text-neutral-400">
+                      <Calendar className="h-3 w-3" />
                       <div className="group relative inline-block cursor-help">
-                        <span>• Updated {formatRelativeTime(campaign.updatedAt)}</span>
+                        <span>Updated {formatRelativeTime(campaign.updatedAt)}</span>
                         <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
                           {dayjs(campaign.updatedAt).format('DD MMMM YYYY, hh:mm')}
                         </div>
                       </div>
                     </div>
-
-                    {/* Actions */}
-                    <div className="flex gap-2 pt-2 border-t border-neutral-100">
-                      <Link href={`/campaigns/${campaign.id}`} className="flex-1">
-                        <Button variant="outline" size="sm" className="w-full">
-                          {campaign.status === 'DRAFT' ? 'Edit Campaign' : 'View Details'}
+                    <div className="flex items-center gap-1">
+                      <Link href={`/campaigns/${campaign.id}`} aria-label={campaign.status === 'DRAFT' ? 'Edit campaign' : 'View campaign'}>
+                        <Button variant="ghost" size="sm" title={campaign.status === 'DRAFT' ? 'Edit campaign' : 'View campaign'}>
+                          <Edit className="h-4 w-4" />
                         </Button>
                       </Link>
-
-                      <Button variant="outline" size="sm" onClick={() => handleDuplicate(campaign.id)}>
+                      <Button variant="ghost" size="sm" title="Duplicate campaign" onClick={() => handleDuplicate(campaign.id)}>
                         <Copy className="h-4 w-4" />
                       </Button>
-
                       {campaign.status === 'DRAFT' && (
                         <Button
-                          variant="destructive"
+                          variant="ghost"
                           size="sm"
+                          title="Delete campaign"
                           onClick={() => {
                             setCampaignToDelete(campaign.id);
                             setShowDeleteDialog(true);
@@ -528,21 +459,21 @@ export default function CampaignsPage() {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       )}
-
                       {(campaign.status === 'SCHEDULED' || campaign.status === 'SENDING') && (
                         <Button
-                          variant="destructive"
+                          variant="ghost"
                           size="sm"
+                          title="Cancel campaign"
                           onClick={() => {
                             setCampaignToCancel(campaign.id);
                             setShowCancelDialog(true);
                           }}
                         >
-                          Cancel
+                          <Ban className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
-                  </CardContent>
+                  </div>
                 </Card>
               );
             })}

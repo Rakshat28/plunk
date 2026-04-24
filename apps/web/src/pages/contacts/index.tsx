@@ -37,6 +37,7 @@ import {
   Search,
   Trash2,
   Upload,
+  X,
   XCircle,
 } from 'lucide-react';
 import {NextSeo} from 'next-seo';
@@ -78,14 +79,16 @@ export default function ContactsPage() {
     }
   }, [data, cursor]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSearch(searchInput);
-    setCursor(undefined);
-    setCursorHistory([undefined]);
-    setCurrentPage(0);
-    setContacts([]);
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput);
+      setCursor(undefined);
+      setCursorHistory([undefined]);
+      setCurrentPage(0);
+      setContacts([]);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const handleNextPage = () => {
     if (data?.cursor) {
@@ -187,40 +190,34 @@ export default function ContactsPage() {
             </div>
           </div>
 
-          {/* Search & Filters */}
-          <Card>
-            <CardContent className="pt-6">
-              <form onSubmit={handleSearch} className="flex gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
-                  <Input
-                    type="text"
-                    placeholder="Search by email..."
-                    value={searchInput}
-                    onChange={e => setSearchInput(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <Button type="submit">Search</Button>
-                {search && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setSearch('');
-                      setSearchInput('');
-                      setCursor(undefined);
-                      setCursorHistory([undefined]);
-                      setCurrentPage(0);
-                      setContacts([]);
-                    }}
-                  >
-                    Clear
-                  </Button>
-                )}
-              </form>
-            </CardContent>
-          </Card>
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+            <Input
+              type="text"
+              placeholder="Search by email..."
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchInput && (
+              <button
+                type="button"
+                aria-label="Clear search"
+                onClick={() => {
+                  setSearchInput('');
+                  setSearch('');
+                  setCursor(undefined);
+                  setCursorHistory([undefined]);
+                  setCurrentPage(0);
+                  setContacts([]);
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
 
           {/* Bulk Actions Toolbar */}
           {selectedContacts.size > 0 && (

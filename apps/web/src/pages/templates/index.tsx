@@ -3,9 +3,6 @@ import {
   Button,
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
   ConfirmDialog,
   IconSpinner,
   Input,
@@ -16,10 +13,10 @@ import {DashboardLayout} from '../../components/DashboardLayout';
 import {EmptyState} from '../../components/EmptyState';
 import {network} from '../../lib/network';
 import {formatRelativeTime} from '../../lib/dateUtils';
-import {Calendar, Copy, Edit, FileText, Plus, Search, Trash2} from 'lucide-react';
+import {Calendar, Copy, Edit, FileText, Plus, Search, Trash2, X} from 'lucide-react';
 import {NextSeo} from 'next-seo';
 import Link from 'next/link';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
 import dayjs from 'dayjs';
@@ -37,11 +34,13 @@ export default function TemplatesPage() {
     {revalidateOnFocus: false},
   );
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSearch(searchInput);
-    setPage(1);
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput);
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const handleDelete = async () => {
     if (!templateToDelete) return;
@@ -91,77 +90,48 @@ export default function TemplatesPage() {
           </div>
 
           {/* Search & Filters */}
-          <Card>
-            <CardContent className="pt-6">
-              <form onSubmit={handleSearch} className="space-y-4">
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
-                    <Input
-                      type="text"
-                      placeholder="Search templates..."
-                      value={searchInput}
-                      onChange={e => setSearchInput(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  <Button type="submit">Search</Button>
-                  {search && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setSearch('');
-                        setSearchInput('');
-                        setPage(1);
-                      }}
-                    >
-                      Clear
-                    </Button>
-                  )}
-                </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+              <Input
+                type="text"
+                placeholder="Search templates..."
+                value={searchInput}
+                onChange={e => setSearchInput(e.target.value)}
+                className="pl-10 pr-10"
+              />
+              {searchInput && (
+                <button
+                  type="button"
+                  aria-label="Clear search"
+                  onClick={() => {
+                    setSearchInput('');
+                    setSearch('');
+                    setPage(1);
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <div className="flex gap-1.5 shrink-0">
+              {(['ALL', 'MARKETING', 'TRANSACTIONAL', 'HEADLESS'] as const).map(type => (
+                <Button
+                  key={type}
+                  type="button"
+                  onClick={() => { setTypeFilter(type); setPage(1); }}
+                  variant={typeFilter === type ? 'default' : 'secondary'}
+                  size="sm"
+                >
+                  {type === 'ALL' ? 'All' : type.charAt(0) + type.slice(1).toLowerCase()}
+                </Button>
+              ))}
+            </div>
+          </div>
 
-                {/* Type Filter */}
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    onClick={() => setTypeFilter('ALL')}
-                    variant={typeFilter === 'ALL' ? 'default' : 'secondary'}
-                    size="sm"
-                  >
-                    All Templates
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => setTypeFilter('MARKETING')}
-                    variant={typeFilter === 'MARKETING' ? 'default' : 'secondary'}
-                    size="sm"
-                  >
-                    Marketing
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => setTypeFilter('TRANSACTIONAL')}
-                    variant={typeFilter === 'TRANSACTIONAL' ? 'default' : 'secondary'}
-                    size="sm"
-                  >
-                    Transactional
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => setTypeFilter('HEADLESS')}
-                    variant={typeFilter === 'HEADLESS' ? 'default' : 'secondary'}
-                    size="sm"
-                  >
-                    Headless
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-
-          {/* Templates Grid */}
-          <div className="grid gap-4">
+          {/* Templates */}
+          <div>
             {isLoading ? (
               <Card>
                 <CardContent className="pt-6">
@@ -192,36 +162,48 @@ export default function TemplatesPage() {
               </Card>
             ) : (
               <>
-                {data?.data.map(template => (
-                  <Card key={template.id}>
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3">
-                            <CardTitle>{template.name}</CardTitle>
-                            <Badge
-                              className={'capitalize'}
-                              variant={template.type === 'MARKETING' ? 'info' : template.type === 'HEADLESS' ? 'warning' : 'success'}
-                            >
-                              {template.type.toLowerCase()}
-                            </Badge>
-                          </div>
-                          {template.description && (
-                            <CardDescription className="mt-2">{template.description}</CardDescription>
-                          )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {data?.data.map(template => (
+                    <Card key={template.id} className="transition-colors hover:border-neutral-300 flex flex-col">
+                      <Link
+                        href={`/templates/${template.id}`}
+                        className="flex-1 block p-6 pb-4 hover:bg-neutral-50/50 transition-colors rounded-t-xl"
+                        aria-label={`Edit ${template.name}`}
+                      >
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <h3 className="font-semibold text-neutral-900 leading-snug">{template.name}</h3>
+                          <Badge
+                            className="capitalize shrink-0 mt-0.5"
+                            variant={template.type === 'MARKETING' ? 'info' : template.type === 'HEADLESS' ? 'warning' : 'success'}
+                          >
+                            {template.type.toLowerCase()}
+                          </Badge>
                         </div>
-                        <div className="flex items-center gap-2 ml-4">
-                          <Link href={`/templates/${template.id}`}>
-                            <Button variant="ghost" size="sm">
+                        <p className="text-sm font-medium text-neutral-700 truncate">{template.subject}</p>
+                      </Link>
+                      <div className="px-6 py-3 border-t border-neutral-100 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-xs text-neutral-400">
+                          <Calendar className="h-3 w-3" />
+                          <div className="group relative inline-block cursor-help">
+                            <span>Updated {formatRelativeTime(template.updatedAt)}</span>
+                            <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
+                              {dayjs(template.updatedAt).format('DD MMMM YYYY, hh:mm')}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Link href={`/templates/${template.id}`} aria-label="Edit template">
+                            <Button variant="ghost" size="sm" title="Edit template">
                               <Edit className="h-4 w-4" />
                             </Button>
                           </Link>
-                          <Button variant="ghost" size="sm" onClick={() => handleDuplicate(template.id)}>
+                          <Button variant="ghost" size="sm" title="Duplicate template" onClick={() => handleDuplicate(template.id)}>
                             <Copy className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
+                            title="Delete template"
                             onClick={() => {
                               setTemplateToDelete(template.id);
                               setShowDeleteDialog(true);
@@ -231,43 +213,9 @@ export default function TemplatesPage() {
                           </Button>
                         </div>
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <div>
-                          <p className="text-xs text-neutral-500 mb-1">Subject</p>
-                          <p className="text-sm font-medium text-neutral-900">{template.subject}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-neutral-500 mb-1">From</p>
-                          <p className="text-sm text-neutral-700">{template.from}</p>
-                        </div>
-                        <div className="flex items-center gap-4 text-xs text-neutral-500 pt-3 border-t border-neutral-100">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="h-3 w-3" />
-                            <div className="group relative inline-block cursor-help">
-                              <span>Created {formatRelativeTime(template.createdAt)}</span>
-                              <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
-                                {dayjs(template.createdAt).format('DD MMMM YYYY, hh:mm')}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="group relative inline-block cursor-help">
-                            <span>• Updated {formatRelativeTime(template.updatedAt)}</span>
-                            <div className="hidden group-hover:block absolute z-10 w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg bottom-full left-0 mb-1 whitespace-nowrap">
-                              {dayjs(template.updatedAt).format('DD MMMM YYYY, hh:mm')}
-                            </div>
-                          </div>
-                          {template.replyTo && (
-                            <div>
-                              Reply to: <span className="text-neutral-700">{template.replyTo}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    </Card>
+                  ))}
+                </div>
 
                 {/* Pagination */}
                 {data && data.totalPages > 1 && (
