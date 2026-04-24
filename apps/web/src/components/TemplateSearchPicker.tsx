@@ -2,6 +2,7 @@ import {Input} from '@plunk/ui';
 import type {Template} from '@plunk/db';
 import type {PaginatedResponse} from '@plunk/types';
 import {Command, CommandGroup, CommandItem, CommandList} from '@plunk/ui';
+import {ChevronDown} from 'lucide-react';
 import {useCallback, useRef, useState} from 'react';
 import useSWR from 'swr';
 
@@ -63,7 +64,9 @@ export function TemplateSearchPicker({value, initialName, onChange}: TemplateSea
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         placeholder="Search templates…"
         autoComplete="off"
+        className="pr-8"
       />
+      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
 
       {open && (
         <div className="absolute z-50 w-full mt-1 rounded-md border border-neutral-200 bg-white shadow-md max-h-60 overflow-y-auto">

@@ -5,6 +5,7 @@ import {
   type Edge,
   Handle,
   MarkerType,
+  MiniMap,
   type Node,
   Panel,
   Position,
@@ -14,8 +15,8 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type {WorkflowStep} from '@plunk/db';
-import {AlertTriangle, Clock, GitBranch, Hourglass, Link, LogOut, Mail, Timer, UserCog, Webhook} from 'lucide-react';
-import {useEffect, useMemo} from 'react';
+import {AlertTriangle, Clock, GitBranch, Hourglass, Link, LogOut, Mail, Maximize2, Minimize2, Timer, UserCog, Webhook} from 'lucide-react';
+import {useEffect, useMemo, useState} from 'react';
 import dagre from 'dagre';
 
 interface WorkflowVisualizerProps {
@@ -140,17 +141,10 @@ function CustomNode({
 
   return (
     <>
-      {/* Target Handle (top) - where edges come IN */}
       <Handle
         type="target"
         position={Position.Top}
-        style={{
-          background: color,
-          width: 12,
-          height: 12,
-          border: '2px solid white',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-        }}
+        style={{opacity: 0, cursor: 'default', pointerEvents: 'none'}}
       />
 
       <div
@@ -228,17 +222,10 @@ function CustomNode({
         )}
       </div>
 
-      {/* Source Handle (bottom) - where edges go OUT */}
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{
-          background: color,
-          width: 12,
-          height: 12,
-          border: '2px solid white',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-        }}
+        style={{opacity: 0, cursor: 'default', pointerEvents: 'none'}}
       />
     </>
   );
@@ -460,6 +447,7 @@ export function WorkflowVisualizer({steps}: WorkflowVisualizerProps) {
 
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Update nodes/edges when layout changes
   useEffect(() => {
@@ -469,6 +457,15 @@ export function WorkflowVisualizer({steps}: WorkflowVisualizerProps) {
   useEffect(() => {
     setEdges(layoutedEdges);
   }, [layoutedEdges, setEdges]);
+
+  useEffect(() => {
+    if (!isExpanded) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsExpanded(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isExpanded]);
 
   if (steps.length === 0) {
     return (
@@ -481,61 +478,96 @@ export function WorkflowVisualizer({steps}: WorkflowVisualizerProps) {
   }
 
   return (
-    <div className="w-full h-[700px] bg-neutral-50 rounded-lg border border-neutral-200 shadow-inner">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        nodeTypes={nodeTypes}
-        fitView
-        fitViewOptions={{
-          padding: 0.3,
-          minZoom: 0.5,
-          maxZoom: 1.2,
-        }}
-        minZoom={0.1}
-        maxZoom={2}
-        nodesDraggable={true}
-        nodesConnectable={false}
-        elementsSelectable={true}
-        defaultEdgeOptions={{
-          type: 'smoothstep',
-        }}
-        proOptions={{hideAttribution: true}}
-      >
-        <Background color="#e5e7eb" gap={16} size={1} />
-        <Controls
-          showInteractive={false}
-          className="bg-white border border-neutral-200 rounded-lg shadow-md"
+    <>
+      {isExpanded && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40"
+          onClick={() => setIsExpanded(false)}
         />
-        <Panel
-          position="top-left"
-          className="bg-white px-4 py-2.5 rounded-lg shadow-md border border-neutral-200"
+      )}
+      <div
+        className={
+          isExpanded
+            ? 'fixed inset-[5%] z-50 bg-neutral-50 rounded-xl border border-neutral-200 shadow-2xl'
+            : 'w-full h-[700px] bg-neutral-50 rounded-lg border border-neutral-200 shadow-inner'
+        }
+      >
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          nodeTypes={nodeTypes}
+          fitView
+          fitViewOptions={{
+            padding: 0.3,
+            minZoom: 0.5,
+            maxZoom: 1.2,
+          }}
+          minZoom={0.1}
+          maxZoom={2}
+          nodesDraggable={true}
+          nodesConnectable={false}
+          elementsSelectable={true}
+          defaultEdgeOptions={{
+            type: 'smoothstep',
+          }}
+          proOptions={{hideAttribution: true}}
         >
-          <div className="flex items-center gap-3">
-            <GitBranch className="h-4 w-4 text-neutral-700" />
-            <div className="text-sm">
-              <span className="font-semibold text-neutral-900">{steps.length}</span>
-              <span className="text-neutral-600"> step{steps.length !== 1 ? 's' : ''}</span>
-              <span className="text-neutral-400 mx-2">·</span>
-              <span className="font-semibold text-neutral-900">{rawEdges.length}</span>
-              <span className="text-neutral-600"> transition{rawEdges.length !== 1 ? 's' : ''}</span>
-            </div>
-          </div>
-        </Panel>
-        {rawEdges.length === 0 && steps.length > 1 && (
+          <Background color="#e5e7eb" gap={16} size={1} />
+          <Controls
+            showInteractive={false}
+            className="bg-white border border-neutral-200 rounded-lg shadow-md"
+          />
+          <MiniMap
+            nodeColor={node => {
+              const step = steps.find(s => s.id === node.id);
+              return step ? STEP_TYPE_COLORS[step.type as keyof typeof STEP_TYPE_COLORS] : '#6b7280';
+            }}
+            className="bg-white border border-neutral-200 rounded-lg shadow-md"
+            maskColor="rgba(0, 0, 0, 0.05)"
+          />
           <Panel
-            position="bottom-center"
-            className="bg-white border border-neutral-200 px-4 py-2.5 rounded-lg shadow-sm"
+            position="top-left"
+            className="bg-white px-4 py-2.5 rounded-lg shadow-md border border-neutral-200"
           >
-            <div className="flex items-center gap-2 text-sm text-neutral-600">
-              <AlertTriangle className="h-4 w-4" />
-              <span>No transitions found. Connect your steps to see the flow.</span>
+            <div className="flex items-center gap-3">
+              <GitBranch className="h-4 w-4 text-neutral-700" />
+              <div className="text-sm">
+                <span className="font-semibold text-neutral-900">{steps.length}</span>
+                <span className="text-neutral-600"> step{steps.length !== 1 ? 's' : ''}</span>
+                <span className="text-neutral-400 mx-2">·</span>
+                <span className="font-semibold text-neutral-900">{rawEdges.length}</span>
+                <span className="text-neutral-600"> transition{rawEdges.length !== 1 ? 's' : ''}</span>
+              </div>
             </div>
           </Panel>
-        )}
-      </ReactFlow>
-    </div>
+          <Panel position="top-right">
+            <button
+              onClick={() => setIsExpanded(e => !e)}
+              className="bg-white border border-neutral-200 rounded-lg shadow-md p-2 hover:bg-neutral-50 transition-colors"
+              title={isExpanded ? 'Exit fullscreen' : 'Expand to fullscreen'}
+            >
+              {isExpanded ? (
+                <Minimize2 className="h-4 w-4 text-neutral-600" />
+              ) : (
+                <Maximize2 className="h-4 w-4 text-neutral-600" />
+              )}
+            </button>
+          </Panel>
+          {rawEdges.length === 0 && steps.length > 1 && (
+            <Panel
+              position="bottom-center"
+              className="bg-white border border-neutral-200 px-4 py-2.5 rounded-lg shadow-sm"
+            >
+              <div className="flex items-center gap-2 text-sm text-neutral-600">
+                <AlertTriangle className="h-4 w-4" />
+                <span>No transitions found. Connect your steps to see the flow.</span>
+              </div>
+            </Panel>
+          )}
+        </ReactFlow>
+      </div>
+    </>
   );
 }

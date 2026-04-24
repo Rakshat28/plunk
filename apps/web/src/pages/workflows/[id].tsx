@@ -62,10 +62,12 @@ import {useEffect, useState} from 'react';
 import {toast} from 'sonner';
 import useSWR from 'swr';
 import {WorkflowBuilder} from '../../components/WorkflowBuilder';
+import {KeyValueEditor} from '../../components/KeyValueEditor';
 import {TemplateSearchPicker} from '../../components/TemplateSearchPicker';
 import {ReactFlowProvider} from '@xyflow/react';
 import {WorkflowSchemas} from '@plunk/shared';
 import dayjs from 'dayjs';
+import {WIKI_URI} from '../../lib/constants';
 
 interface WorkflowWithDetails extends Workflow {
   steps: (WorkflowStep & {
@@ -87,6 +89,28 @@ interface PaginatedExecutions {
 }
 
 // Step type styling (matching WorkflowBuilder)
+const STEP_TYPE_LABELS: Record<string, string> = {
+  TRIGGER: 'Trigger',
+  SEND_EMAIL: 'Send Email',
+  DELAY: 'Delay',
+  WAIT_FOR_EVENT: 'Wait for Event',
+  CONDITION: 'Condition',
+  EXIT: 'Exit',
+  WEBHOOK: 'Webhook',
+  UPDATE_CONTACT: 'Update Contact',
+};
+
+const STEP_TYPE_DESCRIPTIONS: Record<string, string> = {
+  TRIGGER: 'Starts the workflow when a specific event is received.',
+  SEND_EMAIL: 'Sends an email to the contact using a template you choose.',
+  DELAY: 'Pauses the workflow for a set amount of time before continuing.',
+  WAIT_FOR_EVENT: 'Waits until the contact triggers a specific event, then continues.',
+  CONDITION: 'Splits the flow based on contact data — each path leads to different steps.',
+  EXIT: 'Ends the workflow for the contact.',
+  WEBHOOK: 'Makes an HTTP request to an external URL with the contact\'s data.',
+  UPDATE_CONTACT: 'Sets or updates fields on the contact\'s profile.',
+};
+
 const STEP_TYPE_ICONS = {
   TRIGGER: GitBranch,
   SEND_EMAIL: Mail,
@@ -983,7 +1007,7 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
   const [webhookHeaders, setWebhookHeaders] = useState('');
 
   // UPDATE_CONTACT fields
-  const [contactUpdates, setContactUpdates] = useState('');
+  const [contactUpdateData, setContactUpdateData] = useState<Record<string, string | number | boolean> | null>(null);
 
   // EXIT fields
   const [exitReason, setExitReason] = useState('completed');
@@ -1140,20 +1164,13 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
           headers,
         };
       } else if (type === 'UPDATE_CONTACT') {
-        if (!contactUpdates.trim()) {
-          toast.error('Contact updates are required');
+        if (!contactUpdateData || Object.keys(contactUpdateData).length === 0) {
+          toast.error('At least one field to update is required');
           setIsSubmitting(false);
           return;
         }
 
-        try {
-          const updates = JSON.parse(contactUpdates);
-          config = {updates};
-        } catch {
-          toast.error('Invalid JSON in contact updates');
-          setIsSubmitting(false);
-          return;
-        }
+        config = {updates: contactUpdateData};
       } else if (type === 'WAIT_FOR_EVENT') {
         if (!eventName) {
           toast.error('Event name is required');
@@ -1218,7 +1235,7 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
       setWebhookUrl('');
       setWebhookMethod('POST');
       setWebhookHeaders('');
-      setContactUpdates('');
+      setContactUpdateData(null);
       setExitReason('completed');
 
       onOpenChange(false);
@@ -1234,20 +1251,15 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add Workflow Step</DialogTitle>
-          <p className="text-sm text-neutral-500 mt-2">Configure a new step to add to your workflow</p>
+          <DialogTitle>Add Step</DialogTitle>
+          {STEP_TYPE_DESCRIPTIONS[type] && (
+            <p className="text-sm text-neutral-500 mt-1">{STEP_TYPE_DESCRIPTIONS[type]}</p>
+          )}
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information Section */}
-          <div className="space-y-4">
-            <div className="pb-2 border-b border-neutral-200">
-              <h3 className="text-sm font-semibold text-neutral-900">Basic Information</h3>
-            </div>
-
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="type" className="text-sm font-medium">
-                Step Type *
-              </Label>
+              <Label htmlFor="type">Type</Label>
               <Select value={type} onValueChange={value => setType(value as WorkflowStep['type'])}>
                 <SelectTrigger id="type" className="mt-1.5">
                   <SelectValue />
@@ -1290,13 +1302,10 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                   />
                 </SelectContent>
               </Select>
-              <p className="text-xs text-neutral-500 mt-1.5">Choose the type of action this step will perform</p>
             </div>
 
             <div>
-              <Label htmlFor="name" className="text-sm font-medium">
-                Step Name *
-              </Label>
+              <Label htmlFor="name">Step Name</Label>
               <Input
                 id="name"
                 type="text"
@@ -1306,90 +1315,63 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                 placeholder="e.g., Send Welcome Email"
                 className="mt-1.5"
               />
-              <p className="text-xs text-neutral-500 mt-1.5">
-                A descriptive name to identify this step in the workflow
-              </p>
             </div>
           </div>
 
           {/* SEND_EMAIL Configuration */}
           {type === 'SEND_EMAIL' && (
             <div className="space-y-4">
-              <div className="pb-2 border-b border-neutral-200">
-                <h3 className="text-sm font-semibold text-neutral-900">Email Configuration</h3>
+              <div>
+                <Label htmlFor="template">Email Template</Label>
+                <TemplateSearchPicker value={templateId} onChange={setTemplateId} />
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="template" className="text-sm font-medium">
-                    Email Template *
-                  </Label>
-                  <TemplateSearchPicker value={templateId} onChange={setTemplateId} />
-                  <p className="text-xs text-neutral-500 mt-1.5">The email template to use for this step</p>
-                </div>
-
-                <div>
-                  <Label htmlFor="recipientType" className="text-sm font-medium">
-                    Send To *
-                  </Label>
-                  <Select
-                    value={recipientType}
-                    onValueChange={value => setRecipientType(value as 'CONTACT' | 'CUSTOM')}
-                  >
-                    <SelectTrigger id="recipientType" className="mt-1.5">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItemWithDescription
-                        value="CONTACT"
-                        title="Contact"
-                        description="Send to the contact that triggered the workflow"
-                      />
-                      <SelectItemWithDescription
-                        value="CUSTOM"
-                        title="Custom Email"
-                        description="Send to a specific email address"
-                      />
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-neutral-500 mt-1.5">Choose who should receive this email</p>
-                </div>
-
-                {recipientType === 'CUSTOM' && (
-                  <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200">
-                    <Label htmlFor="customEmail" className="text-sm font-medium">
-                      Email Address *
-                    </Label>
-                    <Input
-                      id="customEmail"
-                      type="email"
-                      value={customEmail}
-                      onChange={e => setCustomEmail(e.target.value)}
-                      required
-                      placeholder="e.g., admin@example.com"
-                      className="mt-1.5"
+              <div>
+                <Label htmlFor="recipientType">Send To</Label>
+                <Select
+                  value={recipientType}
+                  onValueChange={value => setRecipientType(value as 'CONTACT' | 'CUSTOM')}
+                >
+                  <SelectTrigger id="recipientType" className="mt-1.5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItemWithDescription
+                      value="CONTACT"
+                      title="Contact"
+                      description="Send to the contact that triggered the workflow"
                     />
-                    <p className="text-xs text-neutral-500 mt-1.5">
-                      The specific email address that will receive this email
-                    </p>
-                  </div>
-                )}
+                    <SelectItemWithDescription
+                      value="CUSTOM"
+                      title="Custom Email"
+                      description="Send to a specific email address"
+                    />
+                  </SelectContent>
+                </Select>
               </div>
+
+              {recipientType === 'CUSTOM' && (
+                <div>
+                  <Label htmlFor="customEmail">Email Address</Label>
+                  <Input
+                    id="customEmail"
+                    type="email"
+                    value={customEmail}
+                    onChange={e => setCustomEmail(e.target.value)}
+                    required
+                    placeholder="e.g., admin@example.com"
+                    className="mt-1.5"
+                  />
+                </div>
+              )}
             </div>
           )}
 
           {/* DELAY Configuration */}
           {type === 'DELAY' && (
-            <div className="space-y-4">
-              <div className="pb-2 border-b border-neutral-200">
-                <h3 className="text-sm font-semibold text-neutral-900">Delay Configuration</h3>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="delayAmount" className="text-sm font-medium">
-                    Amount *
-                  </Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                  <Label htmlFor="delayAmount">Amount</Label>
                   <Input
                     id="delayAmount"
                     type="number"
@@ -1427,26 +1409,14 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-              <p className="text-xs text-neutral-500">Maximum delay: 365 days</p>
             </div>
           )}
 
           {/* CONDITION Configuration */}
           {type === 'CONDITION' && (
             <div className="space-y-4">
-              <div className="pb-2 border-b border-neutral-200">
-                <h3 className="text-sm font-semibold text-neutral-900">Condition Configuration</h3>
-              </div>
-              <p className="text-sm text-neutral-600">
-                Define the condition that determines which path contacts will follow
-              </p>
-
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="conditionField" className="text-sm font-medium">
-                    Field to Check *
-                  </Label>
+              <div>
+                  <Label htmlFor="conditionField">Field to Check</Label>
                   {loadingFields ? (
                     <div className="flex items-center gap-2 px-3 py-2 border border-neutral-200 rounded-lg text-sm text-neutral-500 mt-1.5">
                       <IconSpinner size="sm" />
@@ -1483,31 +1453,22 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-neutral-500 mt-1.5">
-                        {availableFields.length} field{availableFields.length !== 1 ? 's' : ''} available from your
-                        contacts
-                      </p>
                     </>
                   ) : (
-                    <>
-                      <Input
-                        id="conditionField"
-                        type="text"
-                        value={conditionField}
-                        onChange={e => setConditionField(e.target.value)}
-                        required
-                        placeholder="e.g., contact.subscribed or contact.data.plan"
-                        className="mt-1.5"
-                      />
-                      <p className="text-xs text-neutral-500 mt-1.5">Enter a field path (e.g., contact.data.plan)</p>
-                    </>
+                    <Input
+                      id="conditionField"
+                      type="text"
+                      value={conditionField}
+                      onChange={e => setConditionField(e.target.value)}
+                      required
+                      placeholder="e.g., contact.subscribed or contact.data.plan"
+                      className="mt-1.5"
+                    />
                   )}
-                </div>
+              </div>
 
-                <div>
-                  <Label htmlFor="conditionOperator" className="text-sm font-medium">
-                    Operator *
-                  </Label>
+              <div>
+                  <Label htmlFor="conditionOperator">Operator</Label>
                   <Select value={conditionOperator} onValueChange={setConditionOperator}>
                     <SelectTrigger id="conditionOperator" className="mt-1.5">
                       <SelectValue />
@@ -1520,20 +1481,11 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                       ))}
                     </SelectContent>
                   </Select>
-                  {currentFieldType && (
-                    <p className="text-xs text-neutral-500 mt-1.5">
-                      Operators for{' '}
-                      <span className="font-mono bg-neutral-100 px-1.5 py-0.5 rounded">{currentFieldType}</span> type
-                      fields
-                    </p>
-                  )}
-                </div>
+              </div>
 
-                {needsValue && (
-                  <div>
-                    <Label htmlFor="conditionValue" className="text-sm font-medium">
-                      Value *
-                    </Label>
+              {needsValue && (
+                <div>
+                    <Label htmlFor="conditionValue">Value</Label>
                     {currentFieldType === 'boolean' ? (
                       <Select value={conditionValue || 'true'} onValueChange={setConditionValue}>
                         <SelectTrigger id="conditionValue" className="mt-1.5">
@@ -1574,25 +1526,16 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                         className="mt-1.5"
                       />
                     )}
-                    <p className="text-xs text-neutral-500 mt-1.5">The value to compare against</p>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           )}
 
           {/* WAIT_FOR_EVENT Configuration */}
           {type === 'WAIT_FOR_EVENT' && (
             <div className="space-y-4">
-              <div className="pb-2 border-b border-neutral-200">
-                <h3 className="text-sm font-semibold text-neutral-900">Wait for Event Configuration</h3>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="eventName" className="text-sm font-medium">
-                    Event Name *
-                  </Label>
+              <div>
+                  <Label htmlFor="eventName">Event Name</Label>
                   <div className="relative">
                     <Input
                       id="eventName"
@@ -1638,15 +1581,10 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                       </div>
                     )}
                   </div>
-                  <p className="text-xs text-neutral-500 mt-1.5">
-                    Enter the event name to wait for, or select from previously tracked events
-                  </p>
-                </div>
+              </div>
 
-                <div>
-                  <Label htmlFor="eventTimeoutAmount" className="text-sm font-medium">
-                    Timeout (Optional)
-                  </Label>
+              <div>
+                  <Label htmlFor="eventTimeoutAmount">Timeout (optional)</Label>
                   <div className="flex gap-2 mt-1.5">
                     <Input
                       id="eventTimeoutAmount"
@@ -1681,9 +1619,8 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
                     </Select>
                   </div>
                   <p className="text-xs text-neutral-500 mt-1.5">
-                    Continue the workflow after this time even if the event hasn&apos;t occurred
+                    If not received, the workflow continues after this time
                   </p>
-                </div>
               </div>
             </div>
           )}
@@ -1691,122 +1628,77 @@ function AddStepDialog({open, onOpenChange, workflowId, onSuccess}: AddStepDialo
           {/* WEBHOOK Configuration */}
           {type === 'WEBHOOK' && (
             <div className="space-y-4">
-              <div className="pb-2 border-b border-neutral-200">
-                <h3 className="text-sm font-semibold text-neutral-900">Webhook Configuration</h3>
+              <div>
+                <Label htmlFor="webhookUrl">URL</Label>
+                <Input
+                  id="webhookUrl"
+                  type="url"
+                  value={webhookUrl}
+                  onChange={e => setWebhookUrl(e.target.value)}
+                  required
+                  placeholder="https://api.example.com/webhook"
+                  className="font-mono mt-1.5"
+                />
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="webhookUrl" className="text-sm font-medium">
-                    Webhook URL *
-                  </Label>
-                  <Input
-                    id="webhookUrl"
-                    type="url"
-                    value={webhookUrl}
-                    onChange={e => setWebhookUrl(e.target.value)}
-                    required
-                    placeholder="https://api.example.com/webhook"
-                    className="mt-1.5"
-                  />
-                  <p className="text-xs text-neutral-500 mt-1.5">The endpoint that will receive the webhook request</p>
-                </div>
+              <div>
+                <Label htmlFor="webhookMethod">Method</Label>
+                <Select value={webhookMethod} onValueChange={setWebhookMethod}>
+                  <SelectTrigger id="webhookMethod" className="font-mono mt-1.5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="GET">GET</SelectItem>
+                    <SelectItem value="POST">POST</SelectItem>
+                    <SelectItem value="PUT">PUT</SelectItem>
+                    <SelectItem value="PATCH">PATCH</SelectItem>
+                    <SelectItem value="DELETE">DELETE</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                <div>
-                  <Label htmlFor="webhookMethod" className="text-sm font-medium">
-                    HTTP Method *
-                  </Label>
-                  <Select value={webhookMethod} onValueChange={setWebhookMethod}>
-                    <SelectTrigger id="webhookMethod" className="mt-1.5">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="GET">GET</SelectItem>
-                      <SelectItem value="POST">POST</SelectItem>
-                      <SelectItem value="PUT">PUT</SelectItem>
-                      <SelectItem value="PATCH">PATCH</SelectItem>
-                      <SelectItem value="DELETE">DELETE</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="webhookHeaders" className="text-sm font-medium">
-                    Headers (Optional)
-                  </Label>
-                  <textarea
-                    id="webhookHeaders"
-                    value={webhookHeaders}
-                    onChange={e => setWebhookHeaders(e.target.value)}
-                    placeholder='{"Authorization": "Bearer token", "Content-Type": "application/json"}'
-                    className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono mt-1.5"
-                    rows={3}
-                  />
-                  <p className="text-xs text-neutral-500 mt-1.5">
-                    Custom headers as JSON (e.g., authentication tokens)
-                  </p>
-                </div>
+              <div>
+                <Label htmlFor="webhookHeaders">Headers (optional)</Label>
+                <textarea
+                  id="webhookHeaders"
+                  value={webhookHeaders}
+                  onChange={e => setWebhookHeaders(e.target.value)}
+                  placeholder='{"Authorization": "Bearer token"}'
+                  className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono mt-1.5"
+                  rows={3}
+                />
               </div>
             </div>
           )}
 
           {/* UPDATE_CONTACT Configuration */}
           {type === 'UPDATE_CONTACT' && (
-            <div className="space-y-4">
-              <div className="pb-2 border-b border-neutral-200">
-                <h3 className="text-sm font-semibold text-neutral-900">Contact Update Configuration</h3>
-              </div>
-
-              <div>
-                <Label htmlFor="contactUpdates" className="text-sm font-medium">
-                  Contact Data Updates (JSON) *
-                </Label>
-                <textarea
-                  id="contactUpdates"
-                  value={contactUpdates}
-                  onChange={e => setContactUpdates(e.target.value)}
-                  required
-                  placeholder='{"plan": "premium", "lastEngaged": "2025-01-19"}'
-                  className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono mt-1.5"
-                  rows={4}
-                />
-                <p className="text-xs text-neutral-500 mt-1.5">
-                  JSON object with fields to update in the contact&apos;s data
-                </p>
-              </div>
-            </div>
+            <KeyValueEditor
+              key={open ? 'add-open' : 'add-closed'}
+              initialData={null}
+              onChange={setContactUpdateData}
+            />
           )}
 
           {/* EXIT Configuration */}
           {type === 'EXIT' && (
-            <div className="space-y-4">
-              <div className="pb-2 border-b border-neutral-200">
-                <h3 className="text-sm font-semibold text-neutral-900">Exit Configuration</h3>
-              </div>
-
-              <div>
-                <Label htmlFor="exitReason" className="text-sm font-medium">
-                  Exit Reason
-                </Label>
-                <Select value={exitReason} onValueChange={setExitReason}>
-                  <SelectTrigger id="exitReason" className="mt-1.5">
-                    <SelectValue placeholder="Select exit reason..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="completed">Completed - Contact completed the workflow successfully</SelectItem>
-                    <SelectItem value="unsubscribed">Unsubscribed - Contact unsubscribed</SelectItem>
-                    <SelectItem value="not_eligible">Not Eligible - Contact doesn&apos;t meet criteria</SelectItem>
-                    <SelectItem value="opted_out">Opted Out - Contact opted out of this workflow</SelectItem>
-                    <SelectItem value="goal_achieved">Goal Achieved - Workflow goal was met early</SelectItem>
-                    <SelectItem value="duplicate">Duplicate - Contact already in workflow</SelectItem>
-                    <SelectItem value="error">Error - Technical issue occurred</SelectItem>
-                    <SelectItem value="other">Other - Custom reason</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-neutral-500 mt-1.5">
-                  Specify why the workflow is ending for tracking purposes
-                </p>
-              </div>
+            <div>
+              <Label htmlFor="exitReason">Exit Reason</Label>
+              <Select value={exitReason} onValueChange={setExitReason}>
+                <SelectTrigger id="exitReason" className="mt-1.5">
+                  <SelectValue placeholder="Select exit reason..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItemWithDescription value="completed" title="Completed" description="Contact finished the workflow successfully" />
+                  <SelectItemWithDescription value="unsubscribed" title="Unsubscribed" description="Contact unsubscribed from communications" />
+                  <SelectItemWithDescription value="not_eligible" title="Not Eligible" description="Contact doesn't meet the required criteria" />
+                  <SelectItemWithDescription value="opted_out" title="Opted Out" description="Contact opted out of this workflow" />
+                  <SelectItemWithDescription value="goal_achieved" title="Goal Achieved" description="Workflow goal was met before completion" />
+                  <SelectItemWithDescription value="duplicate" title="Duplicate" description="Contact was already in this workflow" />
+                  <SelectItemWithDescription value="error" title="Error" description="A technical issue occurred" />
+                  <SelectItemWithDescription value="other" title="Other" description="Custom or unlisted reason" />
+                </SelectContent>
+              </Select>
             </div>
           )}
 
@@ -1838,10 +1730,6 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
 
   const [name, setName] = useState(step.name);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const Icon = STEP_TYPE_ICONS[step.type as keyof typeof STEP_TYPE_ICONS] || GitBranch;
-  const color = STEP_TYPE_COLORS[step.type as keyof typeof STEP_TYPE_COLORS] || '#6b7280';
-  const bgColor = STEP_TYPE_BG[step.type as keyof typeof STEP_TYPE_BG] || '#f3f4f6';
 
   // SEND_EMAIL fields
   const [templateId, setTemplateId] = useState(step.template?.id || '');
@@ -2020,7 +1908,9 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
   const [showWebhookInfo, setShowWebhookInfo] = useState(false);
 
   // UPDATE_CONTACT fields
-  const [contactUpdates, setContactUpdates] = useState(config?.updates ? JSON.stringify(config.updates, null, 2) : '');
+  const [contactUpdateData, setContactUpdateData] = useState<Record<string, string | number | boolean> | null>(
+    config?.updates && typeof config.updates === 'object' ? (config.updates as Record<string, string | number | boolean>) : null,
+  );
 
   // EXIT fields
   const [exitReason, setExitReason] = useState(String(config?.reason || 'completed'));
@@ -2179,20 +2069,13 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
           headers,
         };
       } else if (step.type === 'UPDATE_CONTACT') {
-        if (!contactUpdates.trim()) {
-          toast.error('Contact updates are required');
+        if (!contactUpdateData || Object.keys(contactUpdateData).length === 0) {
+          toast.error('At least one field to update is required');
           setIsSubmitting(false);
           return;
         }
 
-        try {
-          const updates = JSON.parse(contactUpdates);
-          newConfig = {updates};
-        } catch {
-          toast.error('Invalid JSON in contact updates');
-          setIsSubmitting(false);
-          return;
-        }
+        newConfig = {updates: contactUpdateData};
       } else if (step.type === 'WAIT_FOR_EVENT') {
         if (!eventName) {
           toast.error('Event name is required');
@@ -2253,70 +2136,36 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Step</DialogTitle>
-          <div className="flex items-center gap-2 mt-3">
-            <div className="w-8 h-8 rounded flex items-center justify-center" style={{backgroundColor: bgColor}}>
-              <Icon className="h-4 w-4" style={{color}} />
-            </div>
-            <div>
-              <span
-                className="text-xs font-medium px-2 py-1 rounded"
-                style={{
-                  backgroundColor: bgColor,
-                  color,
-                }}
-              >
-                {step.type.replace(/_/g, ' ')}
-              </span>
-            </div>
-          </div>
+          <DialogTitle>Edit {STEP_TYPE_LABELS[step.type] ?? step.type}</DialogTitle>
+          {STEP_TYPE_DESCRIPTIONS[step.type] && (
+            <p className="text-sm text-neutral-500 mt-1">{STEP_TYPE_DESCRIPTIONS[step.type]}</p>
+          )}
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <div className="pb-2 border-b border-neutral-200">
-              <h3 className="text-sm font-semibold text-neutral-900">Basic Information</h3>
-            </div>
-
-            <div>
-              <Label htmlFor="editStepName" className="text-sm font-medium">
-                Step Name *
-              </Label>
-              <Input
-                id="editStepName"
-                type="text"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                required
-                placeholder="e.g., Send Welcome Email"
-                className="mt-1.5"
-              />
-              <p className="text-xs text-neutral-500 mt-1.5">
-                A descriptive name to identify this step in the workflow
-              </p>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <Label htmlFor="editStepName">Step Name</Label>
+            <Input
+              id="editStepName"
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
+              placeholder="e.g., Send Welcome Email"
+              className="mt-1.5"
+            />
           </div>
 
           {/* SEND_EMAIL Configuration */}
           {step.type === 'SEND_EMAIL' && (
             <div className="space-y-4">
-              <div className="pb-2 border-b border-neutral-200">
-                <h3 className="text-sm font-semibold text-neutral-900">Email Configuration</h3>
-              </div>
-
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="editTemplate" className="text-sm font-medium">
-                    Email Template *
-                  </Label>
+                  <Label htmlFor="editTemplate">Email Template</Label>
                   <TemplateSearchPicker value={templateId} initialName={step.template?.name} onChange={setTemplateId} />
-                  <p className="text-xs text-neutral-500 mt-1.5">The email template to use for this step</p>
                 </div>
 
                 <div>
-                  <Label htmlFor="editRecipientType" className="text-sm font-medium">
-                    Send To *
-                  </Label>
+                  <Label htmlFor="editRecipientType">Send To</Label>
                   <Select
                     value={recipientType}
                     onValueChange={value => setRecipientType(value as 'CONTACT' | 'CUSTOM')}
@@ -2337,14 +2186,11 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                       />
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-neutral-500 mt-1.5">Choose who should receive this email</p>
                 </div>
 
                 {recipientType === 'CUSTOM' && (
-                  <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200">
-                    <Label htmlFor="editCustomEmail" className="text-sm font-medium">
-                      Email Address *
-                    </Label>
+                  <div>
+                    <Label htmlFor="editCustomEmail">Email Address</Label>
                     <Input
                       id="editCustomEmail"
                       type="email"
@@ -2354,9 +2200,6 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                       placeholder="e.g., admin@example.com"
                       className="mt-1.5"
                     />
-                    <p className="text-xs text-neutral-500 mt-1.5">
-                      The specific email address that will receive this email
-                    </p>
                   </div>
                 )}
               </div>
@@ -2365,64 +2208,50 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
 
           {/* DELAY Configuration */}
           {step.type === 'DELAY' && (
-            <div className="space-y-4">
-              <div className="pb-2 border-b border-neutral-200">
-                <h3 className="text-sm font-semibold text-neutral-900">Delay Configuration</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="editDelayAmount">Amount</Label>
+                <Input
+                  id="editDelayAmount"
+                  type="number"
+                  value={delayAmount}
+                  onChange={e => setDelayAmount(e.target.value)}
+                  required
+                  min="1"
+                  max={
+                    delayUnit === 'minutes'
+                      ? 525600
+                      : delayUnit === 'hours'
+                        ? 8760
+                        : delayUnit === 'days'
+                          ? 365
+                          : undefined
+                  }
+                  className="mt-1.5"
+                />
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="editDelayAmount" className="text-sm font-medium">
-                    Amount *
-                  </Label>
-                  <Input
-                    id="editDelayAmount"
-                    type="number"
-                    value={delayAmount}
-                    onChange={e => setDelayAmount(e.target.value)}
-                    required
-                    min="1"
-                    max={
-                      delayUnit === 'minutes'
-                        ? 525600
-                        : delayUnit === 'hours'
-                          ? 8760
-                          : delayUnit === 'days'
-                            ? 365
-                            : undefined
-                    }
-                    className="mt-1.5"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="editDelayUnit" className="text-sm font-medium">
-                    Unit *
-                  </Label>
-                  <Select
-                    value={delayUnit}
-                    onValueChange={value => setDelayUnit(value as 'hours' | 'days' | 'minutes')}
-                  >
-                    <SelectTrigger id="editDelayUnit" className="mt-1.5">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="minutes">Minutes</SelectItem>
-                      <SelectItem value="hours">Hours</SelectItem>
-                      <SelectItem value="days">Days</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div>
+                <Label htmlFor="editDelayUnit">Unit</Label>
+                <Select
+                  value={delayUnit}
+                  onValueChange={value => setDelayUnit(value as 'hours' | 'days' | 'minutes')}
+                >
+                  <SelectTrigger id="editDelayUnit" className="mt-1.5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="minutes">Minutes</SelectItem>
+                    <SelectItem value="hours">Hours</SelectItem>
+                    <SelectItem value="days">Days</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <p className="text-xs text-neutral-500">Maximum delay: 365 days</p>
             </div>
           )}
 
           {/* CONDITION Configuration */}
           {step.type === 'CONDITION' && (
             <div className="space-y-6">
-              <div className="pb-2 border-b border-neutral-200">
-                <h3 className="text-sm font-semibold text-neutral-900">Condition Configuration</h3>
-              </div>
 
               <div className="space-y-4">
                 {/* Mode toggle */}
@@ -2528,27 +2357,17 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-neutral-500 mt-1.5">
-                        Select from {availableFields.length} field{availableFields.length !== 1 ? 's' : ''} in your
-                        contacts
-                      </p>
                     </>
                   ) : (
-                    <>
-                      <Input
-                        id="editConditionField"
-                        type="text"
-                        value={conditionField}
-                        onChange={e => setConditionField(e.target.value)}
-                        required
-                        placeholder="e.g., contact.subscribed or contact.data.plan"
-                        className="mt-1.5"
-                      />
-                      <p className="text-xs text-neutral-500 mt-1.5">
-                        No fields found in contacts. Enter a field manually (e.g., contact.subscribed or
-                        contact.data.plan)
-                      </p>
-                    </>
+                    <Input
+                      id="editConditionField"
+                      type="text"
+                      value={conditionField}
+                      onChange={e => setConditionField(e.target.value)}
+                      required
+                      placeholder="e.g., contact.subscribed or contact.data.plan"
+                      className="mt-1.5"
+                    />
                   )}
                 </div>
 
@@ -2556,7 +2375,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                 {conditionMode === 'binary' && (
                   <>
                     <div>
-                      <Label htmlFor="editConditionOperator">Operator *</Label>
+                      <Label htmlFor="editConditionOperator">Operator</Label>
                       <Select value={conditionOperator} onValueChange={setConditionOperator}>
                         <SelectTrigger id="editConditionOperator" className="mt-1.5">
                           <SelectValue />
@@ -2569,17 +2388,11 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                           ))}
                         </SelectContent>
                       </Select>
-                      {currentFieldType && (
-                        <p className="text-xs text-neutral-500 mt-1.5">
-                          Showing operators for{' '}
-                          <span className="font-mono bg-neutral-200 px-1 rounded">{currentFieldType}</span> fields
-                        </p>
-                      )}
                     </div>
 
                     {needsValue && (
                       <div>
-                        <Label htmlFor="editConditionValue">Value *</Label>
+                        <Label htmlFor="editConditionValue">Value</Label>
                         {currentFieldType === 'boolean' ? (
                           <Select value={conditionValue || 'true'} onValueChange={setConditionValue}>
                             <SelectTrigger id="editConditionValue" className="mt-1.5">
@@ -2591,43 +2404,34 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                             </SelectContent>
                           </Select>
                         ) : currentFieldType === 'number' ? (
-                          <>
-                            <Input
-                              id="editConditionValue"
-                              type="number"
-                              value={conditionValue}
-                              onChange={e => setConditionValue(e.target.value)}
-                              required
-                              placeholder="e.g., 100"
-                              className="mt-1.5"
-                            />
-                            <p className="text-xs text-neutral-500 mt-1.5">Enter a numeric value to compare against</p>
-                          </>
+                          <Input
+                            id="editConditionValue"
+                            type="number"
+                            value={conditionValue}
+                            onChange={e => setConditionValue(e.target.value)}
+                            required
+                            placeholder="e.g., 100"
+                            className="mt-1.5"
+                          />
                         ) : currentFieldType === 'date' ? (
-                          <>
-                            <Input
-                              id="editConditionValue"
-                              type="datetime-local"
-                              value={conditionValue}
-                              onChange={e => setConditionValue(e.target.value)}
-                              required
-                              className="mt-1.5"
-                            />
-                            <p className="text-xs text-neutral-500 mt-1.5">Select a date and time to compare against</p>
-                          </>
+                          <Input
+                            id="editConditionValue"
+                            type="datetime-local"
+                            value={conditionValue}
+                            onChange={e => setConditionValue(e.target.value)}
+                            required
+                            className="mt-1.5"
+                          />
                         ) : (
-                          <>
-                            <Input
-                              id="editConditionValue"
-                              type="text"
-                              value={conditionValue}
-                              onChange={e => setConditionValue(e.target.value)}
-                              required
-                              placeholder="e.g., premium, active"
-                              className="mt-1.5"
-                            />
-                            <p className="text-xs text-neutral-500 mt-1.5">Enter the text value to compare against</p>
-                          </>
+                          <Input
+                            id="editConditionValue"
+                            type="text"
+                            value={conditionValue}
+                            onChange={e => setConditionValue(e.target.value)}
+                            required
+                            placeholder="e.g., premium, active"
+                            className="mt-1.5"
+                          />
                         )}
                       </div>
                     )}
@@ -2637,7 +2441,7 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                 {/* Multi-branch mode: dynamic list of branches */}
                 {conditionMode === 'multi' && (
                   <div className="space-y-3">
-                    <Label className="text-sm font-medium">Branches</Label>
+                    <Label>Branches</Label>
                     <p className="text-xs text-neutral-500">
                       Each branch defines a condition. The first matching branch is taken. Contacts not matching any
                       branch follow the Default path.
@@ -2753,14 +2557,9 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
 
           {/* WAIT_FOR_EVENT Configuration */}
           {step.type === 'WAIT_FOR_EVENT' && (
-            <div className="space-y-6">
-              <div className="pb-2 border-b border-neutral-200">
-                <h3 className="text-sm font-semibold text-neutral-900">Event Configuration</h3>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="editEventName">Event Name *</Label>
+            <div className="space-y-4">
+              <div>
+                  <Label htmlFor="editEventName">Event Name</Label>
                   <div className="relative">
                     <Input
                       id="editEventName"
@@ -2806,12 +2605,9 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                       </div>
                     )}
                   </div>
-                  <p className="text-xs text-neutral-500 mt-1.5">
-                    Enter the event name to wait for, or select from previously tracked events
-                  </p>
                 </div>
 
-                <div>
+              <div>
                   <Label htmlFor="editEventTimeoutAmount">Timeout (optional)</Label>
                   <div className="flex gap-2 mt-1.5">
                     <Input
@@ -2847,168 +2643,129 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
                     </Select>
                   </div>
                   <p className="text-xs text-neutral-500 mt-1.5">
-                    If the event doesn&apos;t occur within this time, the workflow will continue automatically (max: 365
-                    days)
+                    If not received, the workflow continues after this time
                   </p>
-                </div>
               </div>
             </div>
           )}
 
           {/* WEBHOOK Configuration */}
           {step.type === 'WEBHOOK' && (
-            <div className="space-y-6">
-              <div className="pb-2 border-b border-neutral-200">
-                <h3 className="text-sm font-semibold text-neutral-900">Webhook Configuration</h3>
+            <div className="space-y-4">
+              <Collapsible open={showWebhookInfo} onOpenChange={setShowWebhookInfo}>
+                <div className="flex items-center justify-between">
+                  <CollapsibleTrigger className="flex items-center gap-1 text-xs text-neutral-500 hover:text-neutral-700">
+                    <ChevronDown
+                      className={`h-3 w-3 transition-transform ${showWebhookInfo ? 'rotate-180' : ''}`}
+                    />
+                    {showWebhookInfo ? 'Hide' : 'View'} request payload
+                  </CollapsibleTrigger>
+                  <Link
+                    href={`${WIKI_URI}/guides/webhooks#webhook-payload`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-neutral-500 hover:text-neutral-700 underline underline-offset-2"
+                  >
+                    Webhook guide
+                  </Link>
+                </div>
+                <CollapsibleContent className="mt-2">
+                  <pre className="text-[10px] bg-neutral-50 p-2 rounded border border-neutral-200 overflow-x-auto">
+                    {`{
+  "contact": { "email": "user@example.com", "subscribed": true, "data": { ... } },
+  "workflow": { "id": "wf_...", "name": "Welcome Series" },
+  "execution": { "id": "exec_...", "startedAt": "2025-01-19T..." },
+  "event": { ... }
+}`}
+                  </pre>
+                </CollapsibleContent>
+              </Collapsible>
+
+              <div>
+                <Label htmlFor="editWebhookUrl">URL</Label>
+                <Input
+                  className="font-mono mt-1.5"
+                  id="editWebhookUrl"
+                  type="url"
+                  value={webhookUrl}
+                  onChange={e => setWebhookUrl(e.target.value)}
+                  required
+                  placeholder="https://api.example.com/webhook"
+                />
               </div>
 
-              <div className="space-y-4">
-                {/* Info Alert about webhook body */}
-                <Alert>
-                  <Info className="h-4 w-4" />
-                  <AlertTitle>Request Body</AlertTitle>
-                  <AlertDescription>
-                    <div className="space-y-2">
-                      <p className="text-xs">
-                        Plunk will automatically send the following JSON payload with each webhook request:
-                      </p>
-                      <Collapsible open={showWebhookInfo} onOpenChange={setShowWebhookInfo}>
-                        <CollapsibleTrigger className="flex items-center gap-1 text-xs font-medium text-neutral-700 hover:text-neutral-900">
-                          <ChevronDown
-                            className={`h-3 w-3 transition-transform ${showWebhookInfo ? 'rotate-180' : ''}`}
-                          />
-                          {showWebhookInfo ? 'Hide' : 'Show'} payload structure
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="mt-2">
-                          <pre className="text-[10px] bg-neutral-50 p-2 rounded border border-neutral-200 overflow-x-auto">
-                            {`{
-  "contact": {
-    "email": "user@example.com",
-    "subscribed": true,
-    "data": {
-      // All custom contact fields
-      "name": "John Doe",
-      "plan": "premium"
-    }
-  },
-  "workflow": {
-    "id": "wf_...",
-    "name": "Welcome Series"
-  },
-  "execution": {
-    "id": "exec_...",
-    "startedAt": "2025-01-19T..."
-  },
-  "event": {
-    // Event data that triggered
-    // the workflow (if any)
-  }
-}`}
-                          </pre>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    </div>
-                  </AlertDescription>
-                </Alert>
+              <div>
+                <Label htmlFor="editWebhookMethod">Method</Label>
+                <Select value={webhookMethod} onValueChange={setWebhookMethod}>
+                  <SelectTrigger id="editWebhookMethod" className="font-mono mt-1.5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="GET">GET</SelectItem>
+                    <SelectItem value="POST">POST</SelectItem>
+                    <SelectItem value="PUT">PUT</SelectItem>
+                    <SelectItem value="PATCH">PATCH</SelectItem>
+                    <SelectItem value="DELETE">DELETE</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                <div>
-                  <Label htmlFor="editWebhookUrl">Webhook URL *</Label>
-                  <Input
-                    className="font-mono mt-1.5"
-                    id="editWebhookUrl"
-                    type="url"
-                    value={webhookUrl}
-                    onChange={e => setWebhookUrl(e.target.value)}
-                    required
-                    placeholder="https://api.example.com/webhook"
-                  />
-                  <p className="text-xs text-neutral-500 mt-1.5">The endpoint where Plunk will send the HTTP request</p>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Headers</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setWebhookHeaders([...webhookHeaders, {key: '', value: ''}])}
+                    className="h-7 text-xs"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Add
+                  </Button>
                 </div>
 
-                <div>
-                  <Label htmlFor="editWebhookMethod">HTTP Method *</Label>
-                  <Select value={webhookMethod} onValueChange={setWebhookMethod}>
-                    <SelectTrigger id="editWebhookMethod" className="font-mono mt-1.5">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="GET">GET</SelectItem>
-                      <SelectItem value="POST">POST</SelectItem>
-                      <SelectItem value="PUT">PUT</SelectItem>
-                      <SelectItem value="PATCH">PATCH</SelectItem>
-                      <SelectItem value="DELETE">DELETE</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-neutral-500 mt-1.5">POST is recommended for most webhook integrations</p>
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <Label>HTTP Headers (optional)</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setWebhookHeaders([...webhookHeaders, {key: '', value: ''}])}
-                      className="h-7 text-xs"
-                    >
-                      <Plus className="h-3 w-3 mr-1" />
-                      Add Header
-                    </Button>
-                  </div>
-
-                  {webhookHeaders.length === 0 ? (
-                    <p className="text-xs text-neutral-500 py-2">
-                      No custom headers. Click &quot;Add Header&quot; to include authentication or other headers.
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      {webhookHeaders.map((header, index) => (
-                        <div key={index} className="flex gap-2 items-start">
-                          <div className="flex-1">
-                            <Input
-                              placeholder="Header name (e.g., Authorization)"
-                              value={header.key}
-                              onChange={e => {
-                                const newHeaders = [...webhookHeaders];
-                                if (newHeaders[index]) {
-                                  newHeaders[index].key = e.target.value;
-                                }
-                                setWebhookHeaders(newHeaders);
-                              }}
-                              className="text-sm font-mono"
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <Input
-                              placeholder="Header value (e.g., Bearer token123)"
-                              value={header.value}
-                              onChange={e => {
-                                const newHeaders = [...webhookHeaders];
-                                if (newHeaders[index]) {
-                                  newHeaders[index].value = e.target.value;
-                                }
-                                setWebhookHeaders(newHeaders);
-                              }}
-                              className="text-sm font-mono"
-                            />
-                          </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              const newHeaders = webhookHeaders.filter((_, i) => i !== index);
-                              setWebhookHeaders(newHeaders);
-                            }}
-                            className="h-9 w-9 p-0"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ))}
+                <div className="space-y-2">
+                  {webhookHeaders.map((header, index) => (
+                    <div key={index} className="flex gap-2 items-center">
+                      <Input
+                        placeholder="Name"
+                        value={header.key}
+                        onChange={e => {
+                          const newHeaders = [...webhookHeaders];
+                          if (newHeaders[index]) {
+                            newHeaders[index].key = e.target.value;
+                          }
+                          setWebhookHeaders(newHeaders);
+                        }}
+                        className="text-sm font-mono"
+                      />
+                      <Input
+                        placeholder="Value"
+                        value={header.value}
+                        onChange={e => {
+                          const newHeaders = [...webhookHeaders];
+                          if (newHeaders[index]) {
+                            newHeaders[index].value = e.target.value;
+                          }
+                          setWebhookHeaders(newHeaders);
+                        }}
+                        className="text-sm font-mono"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const newHeaders = webhookHeaders.filter((_, i) => i !== index);
+                          setWebhookHeaders(newHeaders);
+                        }}
+                        className="h-9 w-9 p-0 flex-shrink-0"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
-                  )}
+                  ))}
                 </div>
               </div>
             </div>
@@ -3016,112 +2773,32 @@ function EditStepDialog({step, workflowId, open, onOpenChange, onSuccess}: EditS
 
           {/* UPDATE_CONTACT Configuration */}
           {step.type === 'UPDATE_CONTACT' && (
-            <div className="space-y-6">
-              <div className="pb-2 border-b border-neutral-200">
-                <h3 className="text-sm font-semibold text-neutral-900">Contact Updates</h3>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="editContactUpdates">Contact Data Updates (JSON) *</Label>
-                  <textarea
-                    id="editContactUpdates"
-                    value={contactUpdates}
-                    onChange={e => setContactUpdates(e.target.value)}
-                    required
-                    placeholder='{"plan": "premium", "lastEngaged": "2025-01-19"}'
-                    className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono mt-1.5"
-                    rows={4}
-                  />
-                  <p className="text-xs text-neutral-500 mt-1.5">
-                    Provide a JSON object with fields to update in contact.data. These updates will be merged with
-                    existing data.
-                  </p>
-                </div>
-
-                <Alert>
-                  <Info className="h-4 w-4" />
-                  <AlertDescription className="text-xs">
-                    <p className="font-medium mb-1">Example format:</p>
-                    <code className="block bg-neutral-50 p-2 rounded border border-neutral-200 font-mono text-[10px]">
-                      {`{"plan": "premium", "tier": "gold", "updatedAt": "2025-01-19"}`}
-                    </code>
-                  </AlertDescription>
-                </Alert>
-              </div>
-            </div>
+            <KeyValueEditor
+              key={`edit-${step.id}`}
+              initialData={contactUpdateData}
+              onChange={setContactUpdateData}
+            />
           )}
 
           {/* EXIT Configuration */}
           {step.type === 'EXIT' && (
-            <div className="space-y-6">
-              <div className="pb-2 border-b border-neutral-200">
-                <h3 className="text-sm font-semibold text-neutral-900">Exit Configuration</h3>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="editExitReason">Exit Reason (optional)</Label>
-                  <Select value={exitReason} onValueChange={setExitReason}>
-                    <SelectTrigger id="editExitReason" className="mt-1.5">
-                      <SelectValue placeholder="Select exit reason..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="completed">
-                        <div className="flex flex-col items-start">
-                          <span className="font-medium">Completed</span>
-                          <span className="text-xs text-neutral-500">Contact completed the workflow successfully</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="unsubscribed">
-                        <div className="flex flex-col items-start">
-                          <span className="font-medium">Unsubscribed</span>
-                          <span className="text-xs text-neutral-500">Contact unsubscribed from communications</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="not_eligible">
-                        <div className="flex flex-col items-start">
-                          <span className="font-medium">Not Eligible</span>
-                          <span className="text-xs text-neutral-500">Contact doesn&apos;t meet criteria</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="opted_out">
-                        <div className="flex flex-col items-start">
-                          <span className="font-medium">Opted Out</span>
-                          <span className="text-xs text-neutral-500">Contact opted out of this workflow</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="goal_achieved">
-                        <div className="flex flex-col items-start">
-                          <span className="font-medium">Goal Achieved</span>
-                          <span className="text-xs text-neutral-500">Workflow goal was met early</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="duplicate">
-                        <div className="flex flex-col items-start">
-                          <span className="font-medium">Duplicate</span>
-                          <span className="text-xs text-neutral-500">Contact already in workflow</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="error">
-                        <div className="flex flex-col items-start">
-                          <span className="font-medium">Error</span>
-                          <span className="text-xs text-neutral-500">Technical issue occurred</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="other">
-                        <div className="flex flex-col items-start">
-                          <span className="font-medium">Other</span>
-                          <span className="text-xs text-neutral-500">Custom reason</span>
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-neutral-500 mt-1.5">
-                    This reason will be recorded in workflow execution logs for tracking and analytics
-                  </p>
-                </div>
-              </div>
+            <div>
+              <Label htmlFor="editExitReason">Exit Reason (optional)</Label>
+              <Select value={exitReason} onValueChange={setExitReason}>
+                <SelectTrigger id="editExitReason" className="mt-1.5">
+                  <SelectValue placeholder="Select exit reason..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItemWithDescription value="completed" title="Completed" description="Contact finished the workflow successfully" />
+                  <SelectItemWithDescription value="unsubscribed" title="Unsubscribed" description="Contact unsubscribed from communications" />
+                  <SelectItemWithDescription value="not_eligible" title="Not Eligible" description="Contact doesn't meet the required criteria" />
+                  <SelectItemWithDescription value="opted_out" title="Opted Out" description="Contact opted out of this workflow" />
+                  <SelectItemWithDescription value="goal_achieved" title="Goal Achieved" description="Workflow goal was met before completion" />
+                  <SelectItemWithDescription value="duplicate" title="Duplicate" description="Contact was already in this workflow" />
+                  <SelectItemWithDescription value="error" title="Error" description="A technical issue occurred" />
+                  <SelectItemWithDescription value="other" title="Other" description="Custom or unlisted reason" />
+                </SelectContent>
+              </Select>
             </div>
           )}
 

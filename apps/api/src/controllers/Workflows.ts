@@ -219,12 +219,17 @@ export class Workflows {
     const auth = res.locals.auth;
     const workflowId = req.params.id;
     const stepId = req.params.stepId;
+    const splice = req.query.splice === 'true';
 
     if (!workflowId || !stepId) {
       return res.status(400).json({error: 'Workflow ID and Step ID are required'});
     }
 
-    await WorkflowService.deleteStep(auth.projectId!, workflowId, stepId);
+    if (splice) {
+      await WorkflowService.spliceStep(auth.projectId!, workflowId, stepId);
+    } else {
+      await WorkflowService.deleteStep(auth.projectId!, workflowId, stepId);
+    }
 
     return res.status(204).send();
   }

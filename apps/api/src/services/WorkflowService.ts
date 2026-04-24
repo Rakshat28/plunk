@@ -577,6 +577,66 @@ export class WorkflowService {
   }
 
   /**
+   * Splice a step out of the flow: re-wire its parent(s) directly to its child,
+   * then delete only the step itself. Not allowed for CONDITION or TRIGGER steps.
+   */
+  public static async spliceStep(projectId: string, workflowId: string, stepId: string): Promise<void> {
+    await this.get(projectId, workflowId);
+
+    const step = await prisma.workflowStep.findUnique({
+      where: {id: stepId},
+      include: {
+        outgoingTransitions: true,
+        incomingTransitions: true,
+      },
+    });
+
+    if (step?.workflowId !== workflowId) {
+      throw new HttpException(404, 'Workflow step not found');
+    }
+
+    if (step.type === 'TRIGGER') {
+      throw new HttpException(400, 'Cannot remove the trigger step.');
+    }
+
+    if (step.type === 'CONDITION') {
+      throw new HttpException(400, 'Cannot splice a condition step out of the flow.');
+    }
+
+    // Check for active executions on this step
+    const executionsOnStep = await prisma.workflowExecution.count({
+      where: {
+        workflowId,
+        currentStepId: stepId,
+        status: {in: [WorkflowExecutionStatus.RUNNING, WorkflowExecutionStatus.WAITING]},
+      },
+    });
+
+    if (executionsOnStep > 0) {
+      throw new HttpException(
+        409,
+        `Cannot remove step "${step.name}" while ${executionsOnStep} execution(s) are currently on it. ` +
+          'Please disable the workflow first or wait for executions to complete.',
+      );
+    }
+
+    // Re-wire: for each incoming transition, point it to our child (if we have one)
+    const child = step.outgoingTransitions[0];
+
+    if (child) {
+      for (const incoming of step.incomingTransitions) {
+        await prisma.workflowTransition.update({
+          where: {id: incoming.id},
+          data: {toStepId: child.toStepId},
+        });
+      }
+    }
+
+    // Delete the step — cascades and removes its own transitions
+    await prisma.workflowStep.delete({where: {id: stepId}});
+  }
+
+  /**
    * Create a transition between two steps
    */
   public static async createTransition(
