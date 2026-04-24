@@ -36,6 +36,17 @@ interface WorkflowVisualizerProps {
   })[];
 }
 
+const STEP_TYPE_LABELS: Record<string, string> = {
+  TRIGGER: 'Trigger',
+  SEND_EMAIL: 'Send Email',
+  DELAY: 'Delay',
+  WAIT_FOR_EVENT: 'Wait for Event',
+  CONDITION: 'Condition',
+  EXIT: 'Exit',
+  WEBHOOK: 'Webhook',
+  UPDATE_CONTACT: 'Update Contact',
+};
+
 const STEP_TYPE_ICONS = {
   TRIGGER: GitBranch,
   SEND_EMAIL: Mail,
@@ -167,7 +178,7 @@ function CustomNode({
                 color,
               }}
             >
-              {data.type}
+              {STEP_TYPE_LABELS[data.type] ?? data.type}
             </span>
           </div>
         </div>
@@ -347,12 +358,12 @@ export function WorkflowVisualizer({steps}: WorkflowVisualizerProps) {
             labelBgPadding: [8, 4] as [number, number],
             labelBgBorderRadius: 4,
             style: {
-              stroke: isConditional ? (branch === 'yes' ? '#16a34a' : '#dc2626') : '#94a3b8',
+              stroke: '#94a3b8',
               strokeWidth: 2,
             },
             markerEnd: {
               type: MarkerType.ArrowClosed,
-              color: isConditional ? (branch === 'yes' ? '#16a34a' : '#dc2626') : '#94a3b8',
+              color: '#94a3b8',
               width: 20,
               height: 20,
             },
@@ -390,13 +401,13 @@ export function WorkflowVisualizer({steps}: WorkflowVisualizerProps) {
             labelBgPadding: [8, 4] as [number, number],
             labelBgBorderRadius: 4,
             style: {
-              stroke: '#16a34a',
+              stroke: '#94a3b8',
               strokeWidth: 2,
               strokeDasharray: '5,5',
             },
             markerEnd: {
               type: MarkerType.ArrowClosed,
-              color: '#16a34a',
+              color: '#94a3b8',
               width: 20,
               height: 20,
             },
@@ -423,13 +434,13 @@ export function WorkflowVisualizer({steps}: WorkflowVisualizerProps) {
             labelBgPadding: [8, 4] as [number, number],
             labelBgBorderRadius: 4,
             style: {
-              stroke: '#dc2626',
+              stroke: '#94a3b8',
               strokeWidth: 2,
               strokeDasharray: '5,5',
             },
             markerEnd: {
               type: MarkerType.ArrowClosed,
-              color: '#dc2626',
+              color: '#94a3b8',
               width: 20,
               height: 20,
             },

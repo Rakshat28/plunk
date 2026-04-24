@@ -58,6 +58,17 @@ interface WorkflowBuilderProps {
   onUpdate: () => void;
 }
 
+const STEP_TYPE_LABELS: Record<string, string> = {
+  TRIGGER: 'Trigger',
+  SEND_EMAIL: 'Send Email',
+  DELAY: 'Delay',
+  WAIT_FOR_EVENT: 'Wait for Event',
+  CONDITION: 'Condition',
+  EXIT: 'Exit',
+  WEBHOOK: 'Webhook',
+  UPDATE_CONTACT: 'Update Contact',
+};
+
 const STEP_TYPE_ICONS = {
   TRIGGER: GitBranch,
   SEND_EMAIL: Mail,
@@ -327,7 +338,7 @@ function CustomNode({
                 color,
               }}
             >
-              {data.type}
+              {STEP_TYPE_LABELS[data.type] ?? data.type}
             </span>
           </div>
         </div>
@@ -564,7 +575,7 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
             source: step.id,
             target: transition.toStepId,
             type: 'smoothstep',
-            animated: step.type === 'DELAY' || step.type === 'WAIT_FOR_EVENT',
+            animated: false,
             label: isConditional ? branchLabel : undefined,
             labelStyle: {
               fill: isConditional ? branchColor : '#64748b',
@@ -578,14 +589,14 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
             labelBgPadding: [8, 4] as [number, number],
             labelBgBorderRadius: 4,
             style: {
-              stroke: isConditional ? branchColor : '#94a3b8',
-              strokeWidth: 2.5,
+              stroke: '#94a3b8',
+              strokeWidth: 2,
             },
             markerEnd: {
               type: MarkerType.ArrowClosed,
-              color: isConditional ? branchColor : '#94a3b8',
-              width: 22,
-              height: 22,
+              color: '#94a3b8',
+              width: 20,
+              height: 20,
             },
           });
         });
@@ -621,8 +632,8 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
               labelBgStyle: {fill: '#fff', fillOpacity: 0.95},
               labelBgPadding: [8, 4] as [number, number],
               labelBgBorderRadius: 4,
-              style: {stroke: color, strokeWidth: 2.5, strokeDasharray: '5,5'},
-              markerEnd: {type: MarkerType.ArrowClosed, color, width: 22, height: 22},
+              style: {stroke: '#94a3b8', strokeWidth: 2, strokeDasharray: '5,5'},
+              markerEnd: {type: MarkerType.ArrowClosed, color: '#94a3b8', width: 20, height: 20},
             });
           }
         });
@@ -632,10 +643,10 @@ export function WorkflowBuilder({workflowId, steps, onUpdate}: WorkflowBuilderPr
             id: `${step.id}-add-edge`,
             source: step.id,
             target: `${step.id}-add`,
-            type: 'straight',
+            type: 'smoothstep',
             animated: false,
-            style: {stroke: '#94a3b8', strokeWidth: 2.5, strokeDasharray: '5,5'},
-            markerEnd: {type: MarkerType.ArrowClosed, color: '#94a3b8', width: 22, height: 22},
+            style: {stroke: '#94a3b8', strokeWidth: 2, strokeDasharray: '5,5'},
+            markerEnd: {type: MarkerType.ArrowClosed, color: '#94a3b8', width: 20, height: 20},
           });
         }
       }
