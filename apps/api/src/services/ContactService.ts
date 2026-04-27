@@ -234,10 +234,22 @@ export class ContactService {
           continue;
         }
 
+        // Skip empty string values - they don't provide meaningful data
+        // and can cause issues with template rendering and data integrity
+        if (value === '') {
+          continue;
+        }
+
+        // Delete field if null is passed (allows removing fields from contact data)
+        if (value === null) {
+          delete mergedData[key];
+          continue;
+        }
+
         // Validate locale field (special user-settable field)
         // Only validate type - any locale string is accepted since we default to English if unsupported
         if (key === 'locale') {
-          if (value !== null && value !== undefined && typeof value !== 'string') {
+          if (value !== undefined && typeof value !== 'string') {
             throw new HttpException(400, 'Locale must be a string');
           }
         }
@@ -265,33 +277,49 @@ export class ContactService {
       const isSubscriptionChanging = subscribed !== undefined && existing.subscribed !== subscribed;
       const wasSubscribed = existing.subscribed;
 
-      const updated = await prisma.contact.update({
-        where: {id: existing.id},
-        data: {
-          data: Object.keys(mergedData).length > 0 ? toPrismaJson(mergedData) : Prisma.JsonNull,
-          ...(subscribed !== undefined ? {subscribed} : {}),
-        },
-      });
+      try {
+        const updated = await prisma.contact.update({
+          where: {id: existing.id},
+          data: {
+            data: Object.keys(mergedData).length > 0 ? toPrismaJson(mergedData) : Prisma.JsonNull,
+            ...(subscribed !== undefined ? {subscribed} : {}),
+          },
+        });
 
-      // Track subscription event if status changed
-      if (isSubscriptionChanging) {
-        if (subscribed && !wasSubscribed) {
-          await EventService.trackEvent(projectId, 'contact.subscribed', updated.id);
-        } else if (!subscribed && wasSubscribed) {
-          await EventService.trackEvent(projectId, 'contact.unsubscribed', updated.id);
+        // Track subscription event if status changed
+        if (isSubscriptionChanging) {
+          if (subscribed && !wasSubscribed) {
+            await EventService.trackEvent(projectId, 'contact.subscribed', updated.id);
+          } else if (!subscribed && wasSubscribed) {
+            await EventService.trackEvent(projectId, 'contact.unsubscribed', updated.id);
+          }
         }
-      }
 
-      return updated;
+        return updated;
+      } catch (error) {
+        // Provide helpful error message for database/validation issues
+        throw new HttpException(
+          500,
+          `Failed to update contact: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+      }
     } else {
-      return prisma.contact.create({
-        data: {
-          projectId,
-          email,
-          data: Object.keys(mergedData).length > 0 ? toPrismaJson(mergedData) : Prisma.JsonNull,
-          subscribed: subscribed ?? defaultSubscribed,
-        },
-      });
+      try {
+        return await prisma.contact.create({
+          data: {
+            projectId,
+            email,
+            data: Object.keys(mergedData).length > 0 ? toPrismaJson(mergedData) : Prisma.JsonNull,
+            subscribed: subscribed ?? defaultSubscribed,
+          },
+        });
+      } catch (error) {
+        // Provide helpful error message for database/validation issues
+        throw new HttpException(
+          500,
+          `Failed to create contact: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+      }
     }
   }
 

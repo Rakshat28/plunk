@@ -7,16 +7,20 @@ icon: Users
 Contacts in Plunk represent an individual email recipient. Each contact has an identifier and is linked to an email address.
 
 ## Adding contacts
+
 Contacts can be added to your Plunk project in several ways:
+
 - Using [/v1/track](/api-reference/public-api/trackEvent), when tracking an event for a contact that does not yet exist, Plunk will automatically create it.
 - Using [/contacts](/api-reference/contacts/createContact), to create a single contact.
 - Import through CSV
 - Manually through the dashboard
 
 ## Contact Data
+
 You can associate custom data with each contact using key-value pairs. This data can be used for segmentation and personalization.
 
 ### Data types
+
 Contact data types are inferred based on the value provided:
 | Type | Description |
 |------|-------------|
@@ -25,13 +29,27 @@ Contact data types are inferred based on the value provided:
 | Boolean | True or false values |
 | Date | Date values in ISO 8601 format |
 
-<Callout
- title="Default data type"
- variant="idea">
-If you accidentally mix data types for a specific key, Plunk will default to treating the value as a string.
+<Callout title="Default data type" variant="idea">
+  If you accidentally mix data types for a specific key, Plunk will default to treating the value as a string.
+</Callout>
+
+### Special value handling
+
+When creating or updating contacts, certain values are handled specially:
+
+| Value               | Behavior                                    | Example                               |
+| ------------------- | ------------------------------------------- | ------------------------------------- |
+| Empty string (`""`) | Ignored - field is not stored or updated    | `{ name: "" }` → Field is skipped     |
+| `null`              | Delete - field is removed from contact data | `{ name: null }` → Field is deleted   |
+| Other values        | Stored/updated normally                     | `{ name: "John" }` → Stored as "John" |
+
+<Callout title="Removing contact data" variant="idea">
+  To remove a field from a contact's data, set it to `null` when creating or updating the contact. Empty strings are
+  automatically filtered out and won't overwrite existing data.
 </Callout>
 
 ### Reserved keys
+
 Certain keys are reserved by the system and automatically set by Plunk:
 | Key | Description |
 |-----|-------------|
@@ -41,8 +59,9 @@ Certain keys are reserved by the system and automatically set by Plunk:
 | subscribed | Boolean indicating if the contact is globally subscribed or not |
 
 ### Special keys
-| Key | Description |
-|-----|-------------|
+
+| Key    | Description                                                                                                                                                                                  |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | locale | The contact's preferred locale in ISO 639 (e.g. 'en', 'fr', 'es'). Specifying the locale field on a contact will override the project-wide locale for contact-facing pages and email footers |
 
 ## Subscription State
@@ -52,6 +71,7 @@ Every contact has a `subscribed` field that determines which types of emails the
 ### How contacts become unsubscribed
 
 A contact can become unsubscribed in several ways:
+
 - **Manually** through the dashboard or via the API
 - **Self-service** by clicking the unsubscribe link in an email
 - **Automatically** when an email to the contact bounces or results in a complaint
@@ -60,18 +80,17 @@ A contact can become unsubscribed in several ways:
 
 The subscription state controls whether a contact receives marketing emails. Transactional emails are always delivered regardless of subscription state.
 
-| Email type | Subscribed | Unsubscribed |
-|---|---|---|
-| **Transactional** (via [/v1/send](/api-reference/public-api/sendTransactionalEmail)) | Delivered | Delivered |
-| **Campaigns** (marketing) | Delivered | Not delivered |
-| **Campaigns** (headless) | Delivered | Not delivered |
-| **Campaigns** (transactional) | Delivered | Delivered |
-| **Automations** (marketing template) | Delivered | Not delivered |
-| **Automations** (headless template) | Delivered | Not delivered |
-| **Automations** (transactional template) | Delivered | Delivered |
+| Email type                                                                           | Subscribed | Unsubscribed  |
+| ------------------------------------------------------------------------------------ | ---------- | ------------- |
+| **Transactional** (via [/v1/send](/api-reference/public-api/sendTransactionalEmail)) | Delivered  | Delivered     |
+| **Campaigns** (marketing)                                                            | Delivered  | Not delivered |
+| **Campaigns** (headless)                                                             | Delivered  | Not delivered |
+| **Campaigns** (transactional)                                                        | Delivered  | Delivered     |
+| **Automations** (marketing template)                                                 | Delivered  | Not delivered |
+| **Automations** (headless template)                                                  | Delivered  | Not delivered |
+| **Automations** (transactional template)                                             | Delivered  | Delivered     |
 
-<Callout
- title="Transactional emails and marketing templates"
- variant="warn">
-Even when using the transactional API endpoint (`/v1/send`), you cannot send a marketing template to an unsubscribed contact. Use a transactional template instead if the email must reach unsubscribed contacts.
+<Callout title="Transactional emails and marketing templates" variant="warn">
+  Even when using the transactional API endpoint (`/v1/send`), you cannot send a marketing template to an unsubscribed
+  contact. Use a transactional template instead if the email must reach unsubscribed contacts.
 </Callout>

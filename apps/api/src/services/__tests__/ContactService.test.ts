@@ -336,18 +336,74 @@ describe('ContactService - Duplicate Prevention & Data Merging', () => {
       });
     });
 
-    it('should handle null values in data', async () => {
+    it('should delete keys when null value is passed', async () => {
       const email = 'test@example.com';
 
       const contact = await ContactService.upsert(projectId, email, {
         firstName: 'John',
-        middleName: null,
+        middleName: null, // null should delete/not store the key
         lastName: 'Doe',
       });
 
       expect(contact.data).toHaveProperty('firstName', 'John');
-      expect(contact.data).toHaveProperty('middleName', null);
+      expect(contact.data).not.toHaveProperty('middleName'); // Key should not exist
       expect(contact.data).toHaveProperty('lastName', 'Doe');
+    });
+
+    it('should remove existing fields when null is passed', async () => {
+      const email = 'test@example.com';
+
+      // Create contact with data
+      await ContactService.upsert(projectId, email, {
+        firstName: 'John',
+        middleName: 'Michael',
+        lastName: 'Doe',
+      });
+
+      // Update with null to remove middleName
+      const updated = await ContactService.upsert(projectId, email, {
+        middleName: null, // Should delete this field
+      });
+
+      expect(updated.data).toHaveProperty('firstName', 'John'); // Preserved
+      expect(updated.data).not.toHaveProperty('middleName'); // Removed
+      expect(updated.data).toHaveProperty('lastName', 'Doe'); // Preserved
+    });
+
+    it('should filter out empty string values from data', async () => {
+      const email = 'test@example.com';
+
+      const contact = await ContactService.upsert(projectId, email, {
+        firstName: 'John',
+        middleName: '', // Empty string should be filtered out
+        lastName: 'Doe',
+        company: '', // Empty string should be filtered out
+      });
+
+      expect(contact.data).toHaveProperty('firstName', 'John');
+      expect(contact.data).toHaveProperty('lastName', 'Doe');
+      expect(contact.data).not.toHaveProperty('middleName');
+      expect(contact.data).not.toHaveProperty('company');
+    });
+
+    it('should not overwrite existing data with empty strings', async () => {
+      const email = 'test@example.com';
+
+      // Create contact with data
+      await ContactService.upsert(projectId, email, {
+        firstName: 'John',
+        company: 'Acme Inc',
+      });
+
+      // Update with empty string - should preserve existing values
+      const updated = await ContactService.upsert(projectId, email, {
+        firstName: '', // Should be filtered out, preserving "John"
+        lastName: 'Doe',
+      });
+
+      expect(updated.data).toHaveProperty('firstName', 'John'); // Preserved
+      expect(updated.data).toHaveProperty('company', 'Acme Inc'); // Preserved
+      expect(updated.data).toHaveProperty('lastName', 'Doe'); // New value
     });
   });
 
