@@ -19,6 +19,7 @@ import {prisma} from './database/prisma.js';
 const API_URI = process.env.API_URI ?? 'http://localhost:3000';
 const SMTP_DOMAIN = process.env.SMTP_DOMAIN ?? '';
 const MAX_RECIPIENTS = parseInt(process.env.MAX_RECIPIENTS ?? '5', 10);
+const MAX_ATTACHMENT_SIZE_MB = parseInt(process.env.MAX_ATTACHMENT_SIZE_MB ?? '10', 10);
 const PORT_SECURE = parseInt(process.env.PORT_SECURE ?? '465', 10);
 const PORT_SUBMISSION = parseInt(process.env.PORT_SUBMISSION ?? '587', 10);
 const CERT_PATH = process.env.CERT_PATH ?? '/certs';
@@ -441,7 +442,7 @@ function createSMTPServer(options: {secure: boolean; port: number; key?: Buffer;
     onRcptTo: handleRcptTo,
     onData: handleData,
     banner: 'Plunk SMTP Relay',
-    size: 10 * 1024 * 1024, // 10MB max message size
+    size: MAX_ATTACHMENT_SIZE_MB * 1024 * 1024,
     authOptional: false, // Require authentication
   };
 

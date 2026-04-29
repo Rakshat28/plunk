@@ -7,7 +7,14 @@ icon: Send
 Transactional emails are emails sent directly through the API. They are typically used for one-to-one communication, such as password resets, order confirmations, and notifications.
 
 ## Sending with attachments
-Plunk supports sending attachments with transactional emails. You can include up to 10 attachments per email, with a maximum total size of 10MB. Attachments should be base64 encoded and included in the `attachments` array when sending the email via the [/v1/email/send](/api-reference/public-api/sendEmail) endpoint.
+Plunk supports sending attachments with transactional emails. By default, you can include up to 10 attachments per email with a maximum total size of 10MB. Attachments should be base64 encoded and included in the `attachments` array when sending the email via the [/v1/email/send](/api-reference/public-api/sendEmail) endpoint.
+
+Self-hosters can raise these limits via environment variables to match the capacity of the underlying email provider (AWS SES supports up to 40MB per message by default):
+
+| Variable | Default | Description |
+|---|---|---|
+| `MAX_ATTACHMENT_SIZE_MB` | `10` | Maximum total attachment size in megabytes |
+| `MAX_ATTACHMENTS_COUNT` | `10` | Maximum number of attachments per email |
 
 ## Sending from a template
 You can also send transactional emails using a [template](/concepts/templates) you have created in the dashboard. This allows you to reuse the same design and content for multiple emails, while still personalizing them with contact data.

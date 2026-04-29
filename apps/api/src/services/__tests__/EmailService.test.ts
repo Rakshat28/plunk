@@ -787,8 +787,8 @@ describe('EmailService', () => {
       }
     });
 
-    it('should validate attachment size limit (10MB total)', () => {
-      // Exceeds ~13.3M base64 chars limit
+    it('should validate attachment size limit (10MB total default)', () => {
+      // Exceeds ~13.4M base64 chars for the default 10MB limit
       const largeContent = 'A'.repeat(14000000);
 
       const result = ActionSchemas.send.safeParse({

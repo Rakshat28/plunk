@@ -456,7 +456,7 @@ export const ActionSchemas = {
               path: ['contentId'],
             }),
         )
-        .max(10) // Maximum 10 attachments per email
+        .max(Number(process.env['MAX_ATTACHMENTS_COUNT'] ?? 10))
         .optional(),
     })
     .superRefine((data, ctx) => {
@@ -471,12 +471,13 @@ export const ActionSchemas = {
 
       // Validate total attachment size
       if (data.attachments && data.attachments.length > 0) {
+        const maxSizeMb = Number(process.env['MAX_ATTACHMENT_SIZE_MB'] ?? 10);
+        const maxBase64Length = Math.floor((maxSizeMb * 1024 * 1024 * 4) / 3);
         const totalBase64Length = data.attachments.reduce((sum, att) => sum + att.content.length, 0);
-        if (totalBase64Length > 13333333) {
-          // ~10MB limit
+        if (totalBase64Length > maxBase64Length) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: 'Total attachment size must not exceed 10MB',
+            message: `Total attachment size must not exceed ${maxSizeMb}MB`,
             path: ['attachments'],
           });
         }

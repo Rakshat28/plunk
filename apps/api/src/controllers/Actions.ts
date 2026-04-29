@@ -120,7 +120,7 @@ export class Actions {
    * - data: object (optional) - Contact data and template variables
    *   - Simple values are saved to contact (persistent)
    *   - {value: any, persistent: false} are only used for this email (non-persistent)
-   * - attachments: array (optional) - Email attachments (max 10, 10MB total)
+   * - attachments: array (optional) - Email attachments (configurable via MAX_ATTACHMENTS_COUNT / MAX_ATTACHMENT_SIZE_MB, defaults: 10 / 10MB)
    *   - filename: string (required) - Attachment filename
    *   - content: string (required) - Base64 encoded file content
    *   - contentType: string (required) - MIME type (e.g., "application/pdf")
