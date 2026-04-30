@@ -25,7 +25,7 @@ import {
   Shield,
   User,
   Users,
-  Workflow
+  Workflow,
 } from 'lucide-react';
 
 const display = Bricolage_Grotesque({
@@ -130,6 +130,12 @@ const competitors = [
   {name: 'Mailchimp', slug: 'mailchimp'},
   {name: 'Customer.io', slug: 'customerio'},
   {name: 'Mailgun', slug: 'mailgun'},
+];
+
+const customers = [
+  {name: 'Dodo Payments', url: 'https://dodopayments.com', logo: '/assets/dodo.svg'},
+  {name: 'Krumzi', url: 'https://krumzi.com', logo: '/assets/krumzi.svg'},
+  {name: 'Waidwissen', url: 'https://waidwissen.com', logo: '/assets/waidwissen.svg'},
 ];
 
 const tickerItems = [
@@ -248,9 +254,7 @@ export default function Index() {
       <Navbar />
 
       <div className={`${display.variable} ${body.variable} ${mono.variable}`}>
-        <main
-          className={'text-neutral-800'}
-        >
+        <main className={'text-neutral-800'}>
           {/* ========== HERO ========== */}
           <section className={'relative overflow-hidden'}>
             <div
@@ -261,19 +265,6 @@ export default function Index() {
             />
 
             <div className={'mx-auto max-w-[88rem] px-6 pb-24 pt-20 sm:px-10 sm:pt-28 lg:pb-36'}>
-              {/* Top meta row */}
-              <motion.div
-                initial={{opacity: 0, y: 8}}
-                animate={{opacity: 1, y: 0}}
-                transition={{duration: 0.5, ease: [0.22, 1, 0.36, 1]}}
-                style={{fontFamily: 'var(--font-mono)'}}
-                className={
-                  'mb-16 flex items-center justify-between border-t border-neutral-900/90 pt-4 text-[11px] uppercase tracking-[0.18em] text-neutral-700 sm:mb-24'
-                }
-              >
-                <span className={'font-medium text-neutral-900'}>§ 01 &nbsp;— &nbsp;Plunk</span>
-              </motion.div>
-
               {/* Centered hero — single clear message, CTA directly below */}
               <motion.div
                 initial={{opacity: 0, y: 16}}
@@ -352,6 +343,46 @@ export default function Index() {
                     </div>
                   </div>
                 ))}
+              </motion.div>
+            </div>
+          </section>
+
+          {/* ========== CUSTOMER LOGO STRIP ========== */}
+          <section aria-label="Customers">
+            <div className={'mx-auto max-w-[88rem] px-6 pb-14 pt-8 sm:px-10 sm:pb-16 sm:pt-10'}>
+              <motion.div
+                initial={{opacity: 0, y: 8}}
+                whileInView={{opacity: 1, y: 0}}
+                viewport={{once: true}}
+                transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+                className={'flex flex-col items-center gap-4'}
+              >
+                <span
+                  style={{fontFamily: 'var(--font-mono)'}}
+                  className={'text-[11px] uppercase tracking-[0.18em] text-neutral-400'}
+                >
+                  Built into products at
+                </span>
+                <div className={'flex flex-wrap items-center justify-center gap-10 sm:gap-16'}>
+                  {customers.map(c => (
+                    <a
+                      key={c.name}
+                      href={c.url}
+                      target={'_blank'}
+                      rel={'noopener noreferrer'}
+                      className={'group'}
+                      aria-label={c.name}
+                    >
+                      <img
+                        src={c.logo}
+                        alt={c.name}
+                        className={
+                          'h-7 w-auto grayscale opacity-40 transition-all duration-300 group-hover:grayscale-0 group-hover:opacity-100'
+                        }
+                      />
+                    </a>
+                  ))}
+                </div>
               </motion.div>
             </div>
           </section>
@@ -614,7 +645,10 @@ export default function Index() {
                       className={'rounded-[24px] border border-neutral-200 bg-white p-8 text-left'}
                     >
                       <div className={'text-neutral-900'}>{item.icon}</div>
-                      <h3 style={{fontFamily: 'var(--font-display)'}} className={'mt-10 text-2xl font-bold tracking-[-0.02em] text-neutral-900'}>
+                      <h3
+                        style={{fontFamily: 'var(--font-display)'}}
+                        className={'mt-10 text-2xl font-bold tracking-[-0.02em] text-neutral-900'}
+                      >
                         {item.title}
                       </h3>
                       <p className={'mt-2 text-sm text-neutral-600'}>{item.sub}</p>
@@ -773,7 +807,10 @@ export default function Index() {
                     </span>
                   </div>
                   <div>
-                    <h3 style={{fontFamily: 'var(--font-display)'}} className={'text-2xl font-bold tracking-[-0.02em] text-neutral-900'}>
+                    <h3
+                      style={{fontFamily: 'var(--font-display)'}}
+                      className={'text-2xl font-bold tracking-[-0.02em] text-neutral-900'}
+                    >
                       {item.title}
                     </h3>
                     <p className={'mt-2 text-sm text-neutral-600'}>{item.note}</p>
@@ -963,9 +1000,7 @@ export default function Index() {
                   viewport={{once: true}}
                   transition={{duration: 0.9, ease: [0.22, 1, 0.36, 1]}}
                   style={{fontFamily: 'var(--font-display)'}}
-                  className={
-                    'text-[clamp(2.5rem,7vw,6rem)] font-extrabold leading-[0.95] tracking-[-0.035em]'
-                  }
+                  className={'text-[clamp(2.5rem,7vw,6rem)] font-extrabold leading-[0.95] tracking-[-0.035em]'}
                 >
                   Start sending in 5 minutes.
                 </motion.h2>
@@ -1014,4 +1049,3 @@ export default function Index() {
     </>
   );
 }
-
