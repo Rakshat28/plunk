@@ -133,21 +133,23 @@ export async function sendRawEmail({
     rootContentType = `multipart/related; boundary="${relatedBoundary}"`;
   }
 
+  // Build the additional headers (custom headers + List-Unsubscribe), filtering
+  // out empties so we never emit a blank line inside the header section.
+  // Per RFC 5322 §2.1, a blank line terminates the header section, so any blank
+  // line here would push subsequent headers (notably List-Unsubscribe) into the body.
+  const extraHeaderLines = [
+    ...(headers ? Object.entries(headers).map(([key, value]) => `${key}: ${value}`) : []),
+    ...(unsubscribeHeader ? [unsubscribeHeader] : []),
+  ];
+  const extraHeaders = extraHeaderLines.length > 0 ? `\n${extraHeaderLines.join('\n')}` : '';
+
   // Build raw MIME message
   let rawMessage = `From: ${from.name} <${from.email}>
 To: ${toHeader}
 Reply-To: ${reply || from.email}
 Subject: ${content.subject}
 MIME-Version: 1.0
-Content-Type: ${rootContentType}
-${
-  headers
-    ? Object.entries(headers)
-        .map(([key, value]) => `${key}: ${value}`)
-        .join('\n')
-    : ''
-}
-${unsubscribeHeader}
+Content-Type: ${rootContentType}${extraHeaders}
 
 `;
 
